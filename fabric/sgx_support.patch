@@ -1,0 +1,124 @@
+diff --git a/core/chaincode/shim/mockstub.go b/core/chaincode/shim/mockstub.go
+index acc8200..e808052 100644
+--- a/core/chaincode/shim/mockstub.go
++++ b/core/chaincode/shim/mockstub.go
+@@ -12,6 +12,7 @@ import (
+ 	"container/list"
+ 	"fmt"
+ 	"strings"
++	"sync"
+ 
+ 	"github.com/golang/protobuf/ptypes/timestamp"
+ 	"github.com/hyperledger/fabric/common/util"
+@@ -62,6 +63,10 @@ type MockStub struct {
+ 
+ 	// channel to store ChaincodeEvents
+ 	ChaincodeEventsChannel chan *pb.ChaincodeEvent
++
++	Decorations map[string][]byte
++
++	sync.RWMutex
+ }
+ 
+ func (stub *MockStub) GetTxID() string {
+@@ -137,7 +142,7 @@ func (stub *MockStub) MockInvoke(uuid string, args [][]byte) pb.Response {
+ }
+ 
+ func (stub *MockStub) GetDecorations() map[string][]byte {
+-	return nil
++	return stub.Decorations
+ }
+ 
+ // Invoke this chaincode, also starts and ends a transaction.
+@@ -193,6 +198,8 @@ func (stub *MockStub) GetPrivateDataQueryResult(collection, query string) (State
+ 
+ // GetState retrieves the value for a given key from the ledger
+ func (stub *MockStub) GetState(key string) ([]byte, error) {
++	stub.RLock()
++	defer stub.RUnlock()
+ 	value := stub.State[key]
+ 	mockLogger.Debug("MockStub", stub.Name, "Getting", key, value)
+ 	return value, nil
+@@ -200,11 +207,13 @@ func (stub *MockStub) GetState(key string) ([]byte, error) {
+ 
+ // PutState writes the specified `value` and `key` into the ledger.
+ func (stub *MockStub) PutState(key string, value []byte) error {
+-	if stub.TxID == "" {
+-		err := errors.New("cannot PutState without a transactions - call stub.MockTransactionStart()?")
+-		mockLogger.Errorf("%+v", err)
+-		return err
+-	}
++	stub.Lock()
++	defer stub.Unlock()
++	// if stub.TxID == "" {
++	// 	err := errors.New("cannot PutState without a transactions - call stub.MockTransactionStart()?")
++	// 	mockLogger.Errorf("%+v", err)
++	// 	return err
++	// }
+ 
+ 	mockLogger.Debug("MockStub", stub.Name, "Putting", key, value)
+ 	stub.State[key] = value
+@@ -244,6 +253,8 @@ func (stub *MockStub) PutState(key string, value []byte) error {
+ 
+ // DelState removes the specified `key` and its value from the ledger.
+ func (stub *MockStub) DelState(key string) error {
++	stub.Lock()
++	defer stub.Unlock()
+ 	mockLogger.Debug("MockStub", stub.Name, "Deleting", key, stub.State[key])
+ 	delete(stub.State, key)
+ 
+@@ -257,6 +268,8 @@ func (stub *MockStub) DelState(key string) error {
+ }
+ 
+ func (stub *MockStub) GetStateByRange(startKey, endKey string) (StateQueryIteratorInterface, error) {
++	stub.RLock()
++	defer stub.RUnlock()
+ 	if err := validateSimpleKeys(startKey, endKey); err != nil {
+ 		return nil, err
+ 	}
+@@ -288,6 +301,8 @@ func (stub *MockStub) GetHistoryForKey(key string) (HistoryQueryIteratorInterfac
+ //a partial composite key. For a full composite key, an iter with empty response
+ //would be returned.
+ func (stub *MockStub) GetStateByPartialCompositeKey(objectType string, attributes []string) (StateQueryIteratorInterface, error) {
++	stub.RLock()
++	defer stub.RUnlock()
+ 	partialCompositeKey, err := stub.CreateCompositeKey(objectType, attributes)
+ 	if err != nil {
+ 		return nil, err
+@@ -381,6 +396,7 @@ func NewMockStub(name string, cc Chaincode) *MockStub {
+ 	s.Invokables = make(map[string]*MockStub)
+ 	s.Keys = list.New()
+ 	s.ChaincodeEventsChannel = make(chan *pb.ChaincodeEvent, 100) //define large capacity for non-blocking setEvent calls.
++	s.Decorations = make(map[string][]byte)
+ 
+ 	return s
+ }
+diff --git a/core/container/dockercontroller/dockercontroller.go b/core/container/dockercontroller/dockercontroller.go
+index a6ec99e..e5c1f69 100644
+--- a/core/container/dockercontroller/dockercontroller.go
++++ b/core/container/dockercontroller/dockercontroller.go
+@@ -168,6 +168,14 @@ func getDockerHostConfig() *docker.HostConfig {
+ 		CPUQuota:         getInt64("CpuQuota"),
+ 		CPUPeriod:        getInt64("CpuPeriod"),
+ 		BlkioWeight:      getInt64("BlkioWeight"),
++		Binds:            []string{"/var/run/aesmd:/var/run/aesmd"},
++		Devices: []docker.Device{
++			docker.Device{
++				PathOnHost:        "/dev/isgx",
++				PathInContainer:   "/dev/isgx",
++				CgroupPermissions: "rwm",
++			},
++		},
+ 	}
+ 
+ 	return hostConfig
+@@ -176,7 +184,8 @@ func getDockerHostConfig() *docker.HostConfig {
+ func (vm *DockerVM) createContainer(ctxt context.Context, client dockerClient,
+ 	imageID string, containerID string, args []string,
+ 	env []string, attachStdout bool) error {
+-	config := docker.Config{Cmd: args, Image: imageID, Env: env, AttachStdout: attachStdout, AttachStderr: attachStdout}
++	v := map[string]struct{}{"/var/run/aesmd": {}}
++	config := docker.Config{Cmd: args, Image: imageID, Env: env, AttachStdout: attachStdout, AttachStderr: attachStdout, Volumes: v}
+ 	copts := docker.CreateContainerOptions{Name: containerID, Config: &config, HostConfig: getDockerHostConfig()}
+ 	dockerLogger.Debugf("Create container: %s", containerID)
+ 	_, err := client.CreateContainer(copts)

@@ -1,0 +1,104 @@
+common.BlockHeader.data_hash max_size:32, fixed_length:true
+common.BlockHeader.previous_hash max_size:32, fixed_length:true
+
+common.BlockMetadata.metadata max_count:4, type:FT_POINTER
+common.BlockData.data max_count:128, type:FT_POINTER
+
+common.Metadata.signatures type:FT_POINTER
+common.Metadata.value type:FT_POINTER
+
+common.MetadataSignature.signature_header type:FT_POINTER
+common.MetadataSignature.signature type:FT_POINTER
+
+common.Header.signature_header type:FT_POINTER
+common.Header.channel_header type:FT_POINTER
+
+common.SignatureHeader.creator type:FT_POINTER
+common.SignatureHeader.nonce type:FT_POINTER
+
+common.Payload.data type:FT_POINTER
+
+common.Envelope.signature type:FT_POINTER
+common.Envelope.payload type:FT_POINTER
+
+common.ChannelHeader.channel_id type:FT_POINTER
+common.ChannelHeader.tx_id type:FT_POINTER
+
+msp.SerializedIdentity.mspid max_size: 128
+msp.SerializedIdentity.id_bytes type:FT_POINTER
+
+msp.MSPConfig.config type:FT_POINTER
+
+msp.FabricMSPConfig.name type:FT_POINTER
+msp.FabricMSPConfig.root_certs type:FT_POINTER
+msp.FabricMSPConfig.admins type:FT_POINTER
+
+msp.FabricCryptoConfig.signature_hash_family type:FT_POINTER
+msp.FabricCryptoConfig.identity_identifier_hash_function type:FT_POINTER
+
+common.ConfigValue.value type:FT_POINTER
+common.ConfigValue.mod_policy type:FT_POINTER
+
+common.ConfigGroup.groups type:FT_POINTER
+common.ConfigGroup.values type:FT_POINTER
+common.ConfigGroup.policies type:FT_POINTER
+common.ConfigGroup.mod_policy type:FT_POINTER
+common.ConfigGroup.GroupsEntry.key type:FT_POINTER
+common.ConfigGroup.PoliciesEntry.key type:FT_POINTER
+common.ConfigGroup.ValuesEntry.key type:FT_POINTER
+
+common.ConfigGroupSchema.GroupsEntry.key type:FT_POINTER
+common.ConfigGroupSchema.PoliciesEntry.key type:FT_POINTER
+common.ConfigGroupSchema.ValuesEntry.key type:FT_POINTER
+
+protos.Event.register type:FT_IGNORE
+
+protos.Transaction.actions type:FT_POINTER
+protos.TransactionAction.header type:FT_POINTER
+protos.TransactionAction.payload type:FT_POINTER
+protos.ChaincodeActionPayload.chaincode_proposal_payload type:FT_POINTER
+
+protos.ChaincodeProposalPayload.TransientMap type:FT_POINTER
+protos.ChaincodeProposalPayload.input type:FT_POINTER
+
+protos.ChaincodeEndorsedAction.proposal_response_payload type:FT_POINTER
+protos.ChaincodeEndorsedAction.endorsements type:FT_POINTER
+
+protos.ChaincodeID.path type:FT_POINTER
+protos.ChaincodeID.name type:FT_POINTER
+protos.ChaincodeID.version type:FT_POINTER
+
+protos.ChaincodeInput.args type:FT_POINTER
+
+protos.ChaincodeAction.results type:FT_POINTER
+protos.ChaincodeAction.events type:FT_POINTER
+
+protos.Endorsement.endorser type:FT_POINTER
+protos.Endorsement.signature type:FT_POINTER
+
+protos.ProposalResponsePayload.proposal_hash type:FT_POINTER
+protos.ProposalResponsePayload.extension type:FT_POINTER
+
+protos.Response.message type:FT_POINTER
+protos.Response.payload type:FT_POINTER
+
+
+rwset.TxReadWriteSet.ns_rwset type:FT_POINTER
+
+rwset.NsReadWriteSet.namespace type:FT_POINTER
+rwset.NsReadWriteSet.rwset type:FT_POINTER
+
+kvrwset.KVRWSet.reads type:FT_POINTER
+kvrwset.KVRWSet.writes type:FT_POINTER
+kvrwset.KVRWSet.range_queries_info type:FT_POINTER
+
+kvrwset.QueryReads.kv_reads type:FT_POINTER
+kvrwset.QueryReadsMerkleSummary.max_level_hashes type:FT_POINTER
+
+kvrwset.RangeQueryInfo.start_key type:FT_POINTER
+kvrwset.RangeQueryInfo.end_key type:FT_POINTER
+
+kvrwset.KVWrite.key type:FT_POINTER
+kvrwset.KVWrite.value type:FT_POINTER
+
+kvrwset.KVRead.key type:FT_POINTER
