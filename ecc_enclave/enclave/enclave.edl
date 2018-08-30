@@ -1,0 +1,54 @@
+/*
+* Copyright IBM Corp. 2018 All Rights Reserved.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+ */
+
+enclave {
+    from "sgx_tstdc.edl" import *;
+    from "common.edl" import *;
+
+    trusted {
+        public int ecall_bind_tlcc(
+                [in] const sgx_report_t *report,
+                [in, size=64] const uint8_t *pubkey);
+
+        public int ecall_invoke(
+                [in, string] const char *args,
+                [in, string] const char *pk,
+                [out, size=response_len_in] uint8_t *response, uint32_t response_len_in,
+                [out] uint32_t *response_len_out,
+                [out] sgx_ec256_signature_t *signature,
+                [user_check] void *ctx);
+    };
+
+    untrusted {
+        void ocall_get_state(
+                [in, string] const char *key,
+                [out, size=max_val_len] uint8_t *val, uint32_t max_val_len, [out] uint32_t *val_len,
+                [in, out] sgx_cmac_128bit_tag_t *cmac,
+                [user_check] void *ctx);
+
+        void ocall_put_state(
+                [in, string] const char *key,
+                [in, size=val_len] uint8_t *val, uint32_t val_len,
+                [user_check] void *ctx);
+
+        void ocall_get_state_by_partial_composite_key(
+                [in, string] const char *comp_key,
+                [out, size=max_len] uint8_t *values, uint32_t max_len, [out] uint32_t *values_len,
+                [in, out] sgx_cmac_128bit_tag_t *cmac,
+                [user_check] void *ctx);
+    };
+
+};

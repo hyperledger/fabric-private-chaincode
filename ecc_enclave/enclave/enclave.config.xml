@@ -1,0 +1,14 @@
+<EnclaveConfiguration>
+  <ProdID>0</ProdID>
+  <ISVSVN>0</ISVSVN>
+  <!-- 256k -->
+  <StackMaxSize>0x80000</StackMaxSize>
+  <!-- 1MB -->
+  <HeapMaxSize>0x200000</HeapMaxSize>
+  <TCSNum>8</TCSNum>
+  <TCSPolicy>1</TCSPolicy>
+  <!-- Recommend changing 'DisableDebug' to 1 to make the enclave undebuggable for enclave release -->
+  <DisableDebug>0</DisableDebug>
+  <MiscSelect>0</MiscSelect>
+  <MiscMask>0xFFFFFFFF</MiscMask>
+</EnclaveConfiguration>
