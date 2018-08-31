@@ -20,7 +20,7 @@ import (
 	"unsafe"
 
 	"github.com/hyperledger/fabric/common/flogging"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ecc/crypto"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
 )
 
 // #cgo CFLAGS: -I${SRCDIR}/include

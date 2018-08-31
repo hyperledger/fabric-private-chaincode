@@ -25,8 +25,8 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/core/peer"
 	"github.com/spf13/viper"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/tlcc/enclave"
-	th "gitlab.zurich.ibm.com/sgx-dev/sgx-cc/utils"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/tlcc/enclave"
+	th "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
 )
 
 func setupTestLedger(chainid string) {

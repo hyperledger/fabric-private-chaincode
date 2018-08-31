@@ -30,7 +30,7 @@ clean:
 
 
 DOCKER_CONTAINER=$(PEER_NAME)-$(CC_NAME)-0
-DOCKER_IMAGE=$$(docker images | grep $(CC_NAME) | awk '{print $$1;}')
+DOCKER_IMAGE?=$$(docker images | grep $(CC_NAME) | awk '{print $$1;}')
 
 docker:
 	docker build -t $(DOCKER_IMAGE) .

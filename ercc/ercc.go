@@ -22,8 +22,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ercc/attestation"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ercc/attestation/mock"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation/mock"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"

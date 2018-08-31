@@ -11,22 +11,26 @@ the blockchain state.
 
 ## Start with generating proto parser
 
-We use nanopb, a lightweight implementation of Protocol Buffers.
-Install nanopb by following the instruction on http://github.com/nanopb/nanopbopy and copy pb_encode.c, pb_decode.c and pb_common.c to common/protobuf/ directory.
+We use *nanopb*, a lightweight implementation of Protocol Buffers, inside the
+ledger enclave to parse blocks. Install nanopb by following the instruction on
+http://github.com/nanopb/nanopb
 
-Set fabric path and nanpb path in ``compile_protos.sh`` 
+Next copy `pb.h`, ``pb_encode.*``, ``pb_decode.*`` and ``pb_common.*`` to
+``common/protobuf/`` directory in the root folder.
+
+    $ git clone https://github.com/nanopb/nanopb.git ~/nanopb
+    $ mkdir -p common/protobuf
+    $ cp ~/nanopb/pb* common/protobuf 
+
+Now we can generate the proto files by using ``generate_protos.sh``. Check that
+the variables point to Fabric and nanopb.
 
     FABRIC=/path-to/fabric/
     NANOPB_PATH=/path-to/nanopb
 
 and run it.
 
-    $ ./compile_protos.sh
-
-## SGX SSL
-
-The trusted ledger enclave requires SGXSSL. See README in project root
-fore more details. Intel SGX SSL https://github.com/intel/intel-sgx-ssl
+    $ ./generate_protos.sh
 
 ## Build
 

@@ -25,8 +25,8 @@ import (
 	"reflect"
 	"testing"
 
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ecc/ercc"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ercc/attestation"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/ercc"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation"
 )
 
 const enclaveLibFile = "lib/enclave.signed.so"

@@ -30,8 +30,8 @@ import (
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/rwsetutil"
 	"github.com/hyperledger/fabric/protos/peer"
 	"github.com/hyperledger/fabric/protos/utils"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ecc/crypto"
-	sgx_utils "gitlab.zurich.ibm.com/sgx-dev/sgx-cc/utils"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
+	sgx_utils "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
 )
 
 var logger = flogging.MustGetLogger("vscc")

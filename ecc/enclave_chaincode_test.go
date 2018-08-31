@@ -27,12 +27,12 @@ import (
 	"sync"
 	"testing"
 
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ecc/crypto"
-	enc "gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ecc/enclave"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ecc/ercc"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ecc/tlcc"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/eval/benchmark/executor"
-	th "gitlab.zurich.ibm.com/sgx-dev/sgx-cc/utils"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
+	enc "github.com/hyperledger-labs/fabric-secure-chaincode/ecc/enclave"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/ercc"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/tlcc"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/eval/benchmark/executor"
+	th "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )

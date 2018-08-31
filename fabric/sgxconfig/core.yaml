@@ -408,7 +408,7 @@ peer:
             name: DefaultDecorator
           -
             name: ERCCDecorator
-            library: /home/bur/sgx-cc/ercc/ercc-decorator.so
+            library: /path-to/fabric-secure-chaincode/ercc/ercc-decorator.so
         endorsers:
           escc:
             name: DefaultEndorsement
@@ -419,10 +419,10 @@ peer:
             library:
           ercc-vscc:
             name: ercc-vscc
-            library: /home/bur/sgx-cc/ercc/ercc-vscc.so
+            library: /path-to/fabric-secure-chaincode/ercc/ercc-vscc.so
           ecc-vscc:
             name: ecc-vscc
-            library: /home/bur/sgx-cc/ecc/ecc-vscc.so
+            library: /path-to/fabric-secure-chaincode/ecc/ecc-vscc.so
 
 
     #    library: /etc/hyperledger/fabric/plugin/escc.so
@@ -594,7 +594,7 @@ chaincode:
       # - enabled: false
       - enabled: true
         name: tlcc
-        path: /home/bur/sgx-cc/tlcc/tlcc.so
+        path: /path-to/fabric-secure-chaincode/tlcc/tlcc.so
         invokableExternal: true
         invokableCC2CC: true
 

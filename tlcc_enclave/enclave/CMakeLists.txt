@@ -48,6 +48,8 @@ set(PROTO_SOURCE_FILES
 )
 
 add_definitions(-DENCLAVE_CODE)
+add_definitions(-DPB_ENABLE_MALLOC)
+add_definitions(-DPB_FIELD_32BIT)
 
 set(cleanup_files
     ${CMAKE_CURRENT_SOURCE_DIR}/enclave_t.c

@@ -28,9 +28,9 @@ import (
 
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ecc/crypto"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ecc/tlcc"
-	sgx_utils "gitlab.zurich.ibm.com/sgx-dev/sgx-cc/utils"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/tlcc"
+	sgx_utils "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
 )
 
 // #cgo CFLAGS: -I${SRCDIR}/include

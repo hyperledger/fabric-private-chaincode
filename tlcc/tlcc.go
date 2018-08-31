@@ -29,7 +29,7 @@ import (
 	"github.com/hyperledger/fabric/protos/common"
 	pb "github.com/hyperledger/fabric/protos/peer"
 
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/tlcc/enclave"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/tlcc/enclave"
 )
 
 var logger = shim.NewLogger("tlcc")

@@ -33,9 +33,9 @@ import (
 	"github.com/hyperledger/fabric/protos/utils"
 	"github.com/pkg/errors"
 
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ercc/attestation"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ercc/attestation/mock"
-	sgxutil "gitlab.zurich.ibm.com/sgx-dev/sgx-cc/utils"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation"
+	//"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation/mock"
+	sgxutil "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
 )
 
 var logger = flogging.MustGetLogger("vscc")

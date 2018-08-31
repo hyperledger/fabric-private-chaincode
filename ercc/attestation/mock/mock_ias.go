@@ -19,7 +19,7 @@ package mock
 import (
 	"crypto/tls"
 
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ercc/attestation"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation"
 )
 
 type MockIAS struct {
