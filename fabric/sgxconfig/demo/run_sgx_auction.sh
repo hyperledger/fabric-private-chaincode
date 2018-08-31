@@ -14,7 +14,7 @@ set -xe
 # start peer
     # ./build/bin/peer node start
 
-peer=../../.build/bin/peer
+peer=../.build/bin/peer
 chanid=mychannel
 ccid=ecc
 orderer=localhost:7050
@@ -29,7 +29,7 @@ $peer chaincode query -n tlcc -c '{"Args": ["JOIN_CHANNEL"]}' -C $chanid
 sleep 3
 
 # ercc
-$peer chaincode install -n ercc -v 0 -p gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ercc
+$peer chaincode install -n ercc -v 0 -p github.com/hyperledger-labs/fabric-secure-chaincode/ercc
 sleep 1
 $peer chaincode instantiate -n ercc -v 0 -c '{"args":["init"]}' -C $chanid -V ercc-vscc
 sleep 3

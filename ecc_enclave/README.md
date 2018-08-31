@@ -18,6 +18,8 @@ We provide an example chaincode that implements a simple auction.
 ## Deploy and packaging
 
 After successfully building the chaincode enclave you need to copy the build
-ouput to the ecc project by just calling the following.
+ouput to the ecc project by just calling the following. Deploy copys
+``enclave.signed.so``, ``libsgxcc.so``, and ``mrenclave`` to
+``ecc/enclave/lib`` and the the header folder to `enc/enclave/include`.
 
     $ make deploy

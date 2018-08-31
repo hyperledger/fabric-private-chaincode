@@ -20,15 +20,14 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ecc/crypto"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ecc/enclave"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ecc/ercc"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ecc/tlcc"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/enclave"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/ercc"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/tlcc"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/utils"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/utils"
 )
 
 const enclaveLibFile = "enclave/lib/enclave.signed.so"

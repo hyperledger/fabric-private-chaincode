@@ -23,9 +23,9 @@ import (
 	"testing"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ercc/attestation"
-	"gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ercc/attestation/mock"
-	th "gitlab.zurich.ibm.com/sgx-dev/sgx-cc/utils"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation/mock"
+	th "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
 )
 
 const enclavePK = `MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEE9lPD9QkW9oxWlFvwABrmseYAVvoBvvmTt3jzV0sdASR2KDDQPvz8EcyqfomEOTwSz7E+mISktMxYqofRr+4Yw==`

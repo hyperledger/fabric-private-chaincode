@@ -16,7 +16,7 @@
 
 package mock
 
-import "gitlab.zurich.ibm.com/sgx-dev/sgx-cc/ercc/attestation"
+import "github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation"
 
 type MockVerifier struct {
 }
