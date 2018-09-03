@@ -15,7 +15,6 @@
  */
 
 enclave {
-    from "sgx_tstdc.edl" import *;
     from "common.edl" import *;
     from "sgx_tsgxssl.edl" import *;
 

@@ -1,15 +1,16 @@
 # Trusted Ledger Chaincode (tlcc)
 
-Before your continue here make sure you have build tllib before. We
-refer to tllib/README.md
+Before your continue here make sure you have build and deployed
+``tlcc_enclave`` before. We refer to
+[tlcc_enclave/README.md](../tlcc_enclave).
 
 First build tlcc as system chaincode plugin. What is that? See
 https://hyperledger-fabric.readthedocs.io/en/latest/systemchaincode.html
 
-    $make
+    $ make
 
-This build `tlcc.so`. Using this plugin when running the peer inside
-Docker most problby will not work out-of-the-bock, thus, not supported
+This builds `tlcc.so`. Using this plugin when running the peer inside
+Docker most problby will not work out-of-the-box, thus, not supported
 right now.
 
 ## Integrate with fabric
@@ -24,7 +25,7 @@ chaincode:
     systemPlugins:
         - enabled: true
         name: tlcc
-        path: /your/file/system/sgx-cc/tlcc/tlcc.so
+        path: /path-to/fabric-secure-chaincode/tlcc/tlcc.so
         invokableExternal: true
         invokableCC2CC: true
 ```
@@ -33,7 +34,7 @@ chaincode:
 
 Make sure `LD_LIBRARY_PATH` points to the enclave lib.
 
-    $LD_LIBRARY_PATH=/your/file/system/sgx-cc/tlcc/enclave/lib bin/node start
+    $ LD_LIBRARY_PATH=/path-to/fabric-secure-chaincode/tlcc/enclave/lib bin/node start
 
 ## Join the channel
 
@@ -42,9 +43,9 @@ This prototype currently supports a single channel. Start with using
 call tlcc (mis)using query operation to join the channel. See example
 below.
 
-    $bin/peer channel create -o localhost:7050 -c mychannel -f mychannel.tx
-    $bin/peer channel join -b mychannel.block
-    $bin/peer chaincode query -n tlcc -c '{"Args": ["JOIN_CHANNEL", "mychannel"]}' -C mychannel
+    $ bin/peer channel create -o localhost:7050 -c mychannel -f mychannel.tx
+    $ bin/peer channel join -b mychannel.block
+    $ bin/peer chaincode query -n tlcc -c '{"Args": ["JOIN_CHANNEL", "mychannel"]}' -C mychannel
 
 Your trusted ledger should be up and running now.
 
