@@ -43,7 +43,11 @@ We use cmake to build tlcc_enclave.
 
 ## Test
 
-    make test
+    $ make test
+
+## Deploy
+
+    $ make deploy
 
 ## Debugging
 
