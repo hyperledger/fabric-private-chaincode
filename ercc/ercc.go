@@ -200,8 +200,8 @@ func (ercc *EnclaveRegistryCC) getSPID(stub shim.ChaincodeStubInterface, args []
 
 func main() {
 	// start chaincode
-	err := shim.Start(NewTestErcc())
-	// err := shim.Start(NewErcc())
+	// err := shim.Start(NewTestErcc())
+	err := shim.Start(NewErcc())
 	if err != nil {
 		logger.Errorf("Error starting registry chaincode: %s", err)
 	}
