@@ -38,6 +38,7 @@ func setupTestLedger(chainid string) {
 func TestTrustedLedgerCC_Init(t *testing.T) {
 	tlcc := createTlcc()
 	stub := shim.NewMockStub("tlcc", tlcc)
+	stub.ChannelID = "mychannel"
 	setupTestLedger("mychannel")
 	th.CheckInit(t, stub, [][]byte{})
 }
@@ -45,6 +46,7 @@ func TestTrustedLedgerCC_Init(t *testing.T) {
 func TestTrustedLedgerCC_JoinChannel(t *testing.T) {
 	tlcc := createTlcc()
 	stub := shim.NewMockStub("tlcc", tlcc)
+	stub.ChannelID = "mychannel"
 
 	setupTestLedger("mychannel")
 	th.CheckInit(t, stub, [][]byte{})
@@ -54,6 +56,7 @@ func TestTrustedLedgerCC_JoinChannel(t *testing.T) {
 func TestTrustedLedgerCC_GetReport(t *testing.T) {
 	tlcc := createTlcc()
 	stub := shim.NewMockStub("tlcc", tlcc)
+	stub.ChannelID = "mychannel"
 
 	setupTestLedger("mychannel")
 	th.CheckInit(t, stub, [][]byte{})
@@ -73,6 +76,7 @@ func TestTrustedLedgerCC_GetReport(t *testing.T) {
 func TestTrustedLedgerCC_GetStateCMAC(t *testing.T) {
 	tlcc := createTlcc()
 	stub := shim.NewMockStub("tlcc", tlcc)
+	stub.ChannelID = "mychannel"
 
 	setupTestLedger("mychannel")
 	th.CheckInit(t, stub, [][]byte{})
