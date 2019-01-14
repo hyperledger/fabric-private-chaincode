@@ -29,9 +29,16 @@ to run the auction demo.
 
 ### IAS
 
-In order to use Intel's Attestation Service (IAS) you can register
-[here](https://software.intel.com/en-us/sgx).  Place your client certificate
-and your SPID in the ``ias`` folder.
+In order to use Intel's Attestation Service (IAS) you need to register
+with Intel. [Here](https://software.intel.com/en-us/articles/code-sample-intel-software-guard-extensions-remote-attestation-end-to-end-example)
+you can find more details on how to obtain a signed client certificate,
+registering it and get a SPID.
+
+Place your client certificate and your SPID in the ``ias`` folder.
+
+    cp client.crt /path-to/fabric/sgxconfig/ias/client.crt
+    cp client.key /path-to/fabric/sgxconfig/ias/client.key
+    echo 'YOURSPID' | xxd -r -p > /path-to/fabric/sgxconfig/ias/spid.txt
 
 ## Run the Auction
 
@@ -49,18 +56,37 @@ the peer in two separate terminals using the corresponding scripts.  In a
 third terminal, you can you run the auction demo with ``run_sgx_auction.sh``.
 Please edit ``start_peer.sh`` and point LD_LIBRARY_PATH to the tlcc enclave lib.
 
+Note that when you run ``run_sgx_auction.sh`` the first time, you may
+see the following error:
+
+    ../.build/bin/peer chaincode instantiate -o localhost:7050 -C mychannel -n ecc -v 0 -c '{"args":["init"]}' -V ecc-vscc
+    Error: could not assemble transaction, err Proposal response was not successful, error code 500, msg transaction returned with failure:
+    Incorrect number of arguments. Expecting 4 
+
+Don't worry, that is OK! :) The short answer to resolve this is to just
+rebuild ecc. Go to ``path-to/fabric-secure-chaincode/ecc`` and run
+``make docker``.  You can, then, re-run ``run_sgx_auction.sh`` and the
+error is gone.
+
+The long answer is the following: When a new chaincode is installed, the
+Fabric peer takes care of building the corresponding docker image that
+is used to execute the chaincode.  As we need a custom SGX-enabled
+environment to execute our chaincode inside an enclave, we need to tell
+the peer to use our custom docker image.
+
 * Terminal 1
 
         $ cd fabric/sgxconfig
         $ ./demo/create_channel.sh
         $ ./demo/start_orderer.sh
-        
+
 * Terminal 2
 
         $ cd fabric/sgxconfig
         $ ./demo/start_peer.sh
-    
+
 * Terminal 3
 
         $ cd fabric/sgxconfig
         $ ./demo/run_sgx_auction.sh
+
