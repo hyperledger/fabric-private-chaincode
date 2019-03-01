@@ -9,10 +9,10 @@ few peers and a ordering service.
 
 ## Patch and Build
 
-Clone fabric and checkout the 1.2 release.
+Clone fabric and checkout the 1.4 release.
 
     $ git clone https://github.com/hyperledger/fabric.git
-    $ git checkout release-1.2
+    $ git checkout release-1.4
     $ git apply path-to-this-patch/sgx_support.patch
 
 When building the peer make sure fabric is your ``GOPATH`` and you enable the
