@@ -97,7 +97,7 @@ deploying and running an example chaincode.
 * CMake 3.5.1 or higher
 * Go 1.11 or higher
 * Install Fabric v1.4 https://github.com/hyperledger/fabric 
-* Install the Linux SGX SDK v2.1.3 https://github.com/intel/linux-sgx 
+* Install the Linux SGX SDK v2.4 https://github.com/intel/linux-sgx 
 * You also need to install Intel SGX SSL https://github.com/intel/intel-sgx-ssl
 
 ### SGX SDK and SSL
