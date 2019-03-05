@@ -22,11 +22,9 @@ import (
 
 	commonerrors "github.com/hyperledger/fabric/common/errors"
 	"github.com/hyperledger/fabric/core/handlers/validation/api"
-	. "github.com/hyperledger/fabric/core/handlers/validation/api/capabilities"
-	. "github.com/hyperledger/fabric/core/handlers/validation/api/identities"
 	. "github.com/hyperledger/fabric/core/handlers/validation/api/policies"
 	. "github.com/hyperledger/fabric/core/handlers/validation/api/state"
-	default_vscc "github.com/hyperledger/fabric/core/handlers/validation/builtin"
+	defaultvscc "github.com/hyperledger/fabric/core/handlers/validation/builtin"
 	"github.com/hyperledger/fabric/protos/common"
 	"github.com/pkg/errors"
 )
@@ -43,7 +41,7 @@ func (*ERCCValidationFactory) New() validation.Plugin {
 }
 
 type ERCCValidation struct {
-	DefaultTxValidator TransactionValidator
+	DefaultTxValidator validation.Plugin
 	ERCCTxValidator    TransactionValidator
 }
 
@@ -72,7 +70,7 @@ func (v *ERCCValidation) Validate(block *common.Block, namespace string, txPosit
 	}
 
 	// do defalt vscc
-	err := v.DefaultTxValidator.Validate(block.Data.Data[txPosition], serializedPolicy.Bytes())
+	err := v.DefaultTxValidator.Validate(block, namespace, txPosition, actionPosition, contextData...)
 	if err != nil {
 		logger.Debugf("block %d, namespace: %s, tx %d validation results is: %v", block.Header.Number, namespace, txPosition, err)
 		return convertErrorTypeOrPanic(err)
@@ -102,41 +100,25 @@ func convertErrorTypeOrPanic(err error) error {
 }
 
 func (v *ERCCValidation) Init(dependencies ...validation.Dependency) error {
-	var (
-		d  IdentityDeserializer
-		c  Capabilities
-		sf StateFetcher
-		pe PolicyEvaluator
-	)
+	var sf StateFetcher
 	for _, dep := range dependencies {
-		if deserializer, isIdentityDeserializer := dep.(IdentityDeserializer); isIdentityDeserializer {
-			d = deserializer
-		}
-		if capabilities, isCapabilities := dep.(Capabilities); isCapabilities {
-			c = capabilities
-		}
 		if stateFetcher, isStateFetcher := dep.(StateFetcher); isStateFetcher {
 			sf = stateFetcher
 		}
-		if policyEvaluator, isPolicyFetcher := dep.(PolicyEvaluator); isPolicyFetcher {
-			pe = policyEvaluator
-		}
 	}
 	if sf == nil {
-		return errors.New("stateFetcher not passed in init")
+		return errors.New("ERCC-VSCC: stateFetcher not passed in init")
 	}
-	if d == nil {
-		return errors.New("identityDeserializer not passed in init")
-	}
-	if c == nil {
-		return errors.New("capabilities not passed in init")
-	}
-	if pe == nil {
-		return errors.New("policy fetcher not passed in init")
-	}
-	// use default vscc and our custom ercc vscc
-	v.DefaultTxValidator = default_vscc.New(c, sf, d, pe)
+
 	v.ERCCTxValidator = New(sf)
+
+	// use default vscc and our custom ercc vscc
+	factory := &defaultvscc.DefaultValidationFactory{}
+	v.DefaultTxValidator = factory.New()
+	err := v.DefaultTxValidator.Init(dependencies...)
+	if err != nil {
+		return errors.Errorf("Error while creating default vscc: %s", err)
+	}
 
 	return nil
 }

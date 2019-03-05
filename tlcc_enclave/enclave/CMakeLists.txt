@@ -45,6 +45,8 @@ set(PROTO_SOURCE_FILES
     protos/peer/query.pb.c
     protos/peer/signed_cc_dep_spec.pb.c
     protos/peer/transaction.pb.c
+    protos/token/expectations.pb.c
+    protos/token/transaction.pb.c
 )
 
 add_definitions(-DENCLAVE_CODE)

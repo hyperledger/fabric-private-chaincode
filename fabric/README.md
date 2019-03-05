@@ -3,22 +3,22 @@
 To enable SGX support for a Fabric peer start with a fresh copy of Fabric and
 apply our patch. https://github.com/hyperledger/fabric
 
-We assume that you are familiar with build Fabric manually otherwise we
+We assume that you are familiar with building Fabric manually; otherwise we highly
 recommend to spend some time to build Fabric and run a simple network with a
 few peers and a ordering service.
 
 ## Patch and Build
 
-Clone fabric and checkout the 1.2 release.
+Clone fabric and checkout the 1.4 release.
 
     $ git clone https://github.com/hyperledger/fabric.git
-    $ git checkout release-1.2
+    $ git checkout release-1.4
     $ git apply path-to-this-patch/sgx_support.patch
 
 When building the peer make sure fabric is your ``GOPATH`` and you enable the
 plugin feature. Otherwise our custom validation plugins can not be loaded.
 
-    $ GO_TAGS=pluginsenabled EXPERIMENTAL=false DOCKER_DYNAMIC_LINK=true make peer
+    $ GO_TAGS=pluginsenabled make peer
 
 To make your life easier we have prepared an example configuration and an
 auction demo. You can copy ``sgxconfig`` to your fabric directory and modify
@@ -39,6 +39,9 @@ Place your client certificate and your SPID in the ``ias`` folder.
     cp client.crt /path-to/fabric/sgxconfig/ias/client.crt
     cp client.key /path-to/fabric/sgxconfig/ias/client.key
     echo 'YOURSPID' | xxd -r -p > /path-to/fabric/sgxconfig/ias/spid.txt
+
+We currently make use of `unlinkable signatures` for the attestation, thus, when registering with the IAS please choose
+unlinkable signatures.
 
 ## Run the Auction
 

@@ -15,18 +15,23 @@ We use *nanopb*, a lightweight implementation of Protocol Buffers, inside the
 ledger enclave to parse blocks. Install nanopb by following the instruction on
 http://github.com/nanopb/nanopb
 
+    $ git clone https://github.com/nanopb/nanopb.git ~/nanopb
+    $ cd ~/nanopb/
+    $ git checkout nanopb-0.3.9.2
+    $ cd generator/proto && make
+
+
 Next copy `pb.h`, ``pb_encode.*``, ``pb_decode.*`` and ``pb_common.*`` to
 ``common/protobuf/`` directory in the root folder.
 
-    $ git clone https://github.com/nanopb/nanopb.git ~/nanopb
     $ mkdir -p common/protobuf
     $ cp ~/nanopb/pb* common/protobuf 
 
 Now we can generate the proto files by using ``generate_protos.sh``. Check that
-the variables point to Fabric and nanopb.
+you export the following variables pointing to Fabric and nanopb.
 
-    FABRIC=/path-to/fabric/
-    NANOPB_PATH=/path-to/nanopb
+    export FABRIC_PATH=/path-to/fabric/
+    export NANOPB_PATH=/path-to/nanopb/
 
 and run it.
 

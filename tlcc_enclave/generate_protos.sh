@@ -2,8 +2,8 @@
 
 # set -eux
 
-FABRIC_PATH=~/fabric-v1.2
-NANOPB_PATH=~/nanopb
+FABRIC_PATH=${FABRIC_PATH-~/fabric}
+NANOPB_PATH=${NANOPB_PATH-~/nanopb}
 
 PROTOC_OPTS="--plugin=protoc-gen-nanopb=$NANOPB_PATH/generator/protoc-gen-nanopb"
 
@@ -16,7 +16,7 @@ mkdir -p $BUILD_DIR
 # compile google protos (timestamp)
 $(protoc "$PROTOC_OPTS" --proto_path="protos" --nanopb_out=$BUILD_DIR protos/google/protobuf/*.proto)
 
-declare -a arr=("common" "ledger" "msp" "peer")
+declare -a arr=("common" "ledger" "msp" "peer" "token")
 
 ## now loop through the above array
 for i in "${arr[@]}"
