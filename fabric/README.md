@@ -1,11 +1,12 @@
 # SGX support for a Fabric peer
 
 To enable SGX support for a Fabric peer start with a fresh copy of Fabric and
-apply our patch. https://github.com/hyperledger/fabric
+apply our patches. https://github.com/hyperledger/fabric
 
 We assume that you are familiar with building Fabric manually; otherwise we highly
 recommend to spend some time to build Fabric and run a simple network with a
-few peers and a ordering service.
+few peers and a ordering service. In the examples, we also assume that you have 
+fabric and secure-chaincode in the same directory-tree from $GOPATH.
 
 If you are new to Fabric, we recommend the Fabric documentation as your starting point. You should start with
 [installing](https://hyperledger-fabric.readthedocs.io/en/release-1.4/prereqs.html) Fabric dependencies and setting up
@@ -18,7 +19,7 @@ Clone fabric and checkout the 1.4 release.
     $ git clone https://github.com/hyperledger/fabric.git $GOPATH/src/hyperledger/fabric
     $ cd $GOPATH/src/hyperledger/fabric
     $ git checkout release-1.4
-    $ git apply path-to-this-patch/sgx_support.patch
+    $ git am ../../hyperledger-labs/fabric-secure-chaincode/fabric/*.patch 
 
 When building the peer  make sure fabric is your ``$GOPATH`` and you enable the
 plugin feature. Otherwise our custom validation plugins can not be loaded.
