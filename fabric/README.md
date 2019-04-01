@@ -46,7 +46,12 @@ Place your client certificate and your SPID in the ``ias`` folder.
     echo 'YOURSPID' | xxd -r -p > /path-to/fabric/sgxconfig/ias/spid.txt
 
 We currently make use of `unlinkable signatures` for the attestation, thus, when registering with the IAS please choose
-unlinkable signatures.
+unlinkable signatures.  In the case you prefer linkable attestation,
+e.g., because you already have linkable IAS EPID credentials, change
+in line 217 of [../ecc_enclave/sgxcclib/sgxcclib.c](../ecc_enclave/sgxcclib/sgxcclib.c)
+the constant `SGX_UNLINKABLE_SIGNATURE` to `SGX_LINKABLE_SIGNATURE`,
+re-compile and re-deplay [ecc_enclave](../ecc_enclave#build) and [ecc](../ecc#getting-started),
+configure your IAS settings as above with your linkable credentials and run the auction example as follows.
 
 ## Run the Auction
 
@@ -56,7 +61,7 @@ enclave, ledger enclave, etc ...
 To run the demo you can use the scripts in
 [sgxconfig/demo](sgxconfig/demo). Make sure that the scripts point to your
 fabric-secure-chaincode directory. Note that for better demonstration
-transaction arguments are in clear. 
+transaction arguments are in clear.
 
 Before you start the ordering service and the peer you should create a channel
 using the ``create_channel.sh`` script.  Next, start the ordering service and
@@ -69,7 +74,7 @@ see the following error:
 
     ../.build/bin/peer chaincode instantiate -o localhost:7050 -C mychannel -n ecc -v 0 -c '{"args":["init"]}' -V ecc-vscc
     Error: could not assemble transaction, err Proposal response was not successful, error code 500, msg transaction returned with failure:
-    Incorrect number of arguments. Expecting 4 
+    Incorrect number of arguments. Expecting 4
 
 Don't worry, that is OK! :) The short answer to resolve this is to just
 rebuild ecc. Go to ``path-to/fabric-secure-chaincode/ecc`` and run
@@ -97,4 +102,3 @@ the peer to use our custom docker image.
 
         $ cd fabric/sgxconfig
         $ ./demo/run_sgx_auction.sh
-
