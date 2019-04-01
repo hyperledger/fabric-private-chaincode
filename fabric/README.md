@@ -27,7 +27,12 @@ the sgx section in ``core.yaml`` accordingly. In particular, grep for all
 example config contains the MSP for a simple consortium and a bunch of scripts
 to run the auction demo.
 
-### IAS
+### Intel Attestation Service (IAS)
+
+The requirements are:
+* your certificate registered with IAS
+* the private key associated to your certificate
+* your Service Provider ID (SPID)
 
 In order to use Intel's Attestation Service (IAS) you need to register
 with Intel. [Here](https://software.intel.com/en-us/articles/code-sample-intel-software-guard-extensions-remote-attestation-end-to-end-example)
