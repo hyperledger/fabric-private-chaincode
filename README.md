@@ -99,6 +99,7 @@ deploying and running an example chaincode.
 * Install Fabric v1.4 https://github.com/hyperledger/fabric 
 * Install the Linux SGX SDK v2.4 https://github.com/intel/linux-sgx 
 * You also need to install Intel SGX SSL https://github.com/intel/intel-sgx-ssl
+* (for hardware-mode SGX build) credentials for IAS, read [here](fabric#intel-attestation-service-ias)
 
 ### SGX SDK and SSL
 
