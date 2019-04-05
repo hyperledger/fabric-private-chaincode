@@ -42,7 +42,7 @@ XJuKwZqjRlEtSEz8gZQeFfVYgcwSfo96oSMAzVr7V0L6HSDLRnpb6xxmbPdqNol4
 tQIDAQAB
 -----END PUBLIC KEY-----`
 
-const iasURL = "https://test-as.sgx.trustedservices.intel.com:443/attestation/sgx/v2/report"
+const iasURL = "https://test-as.sgx.trustedservices.intel.com:443/attestation/sgx/v3/report"
 
 // IASReportBody received from IAS (Intel attestation service)
 type IASReportBody struct {
