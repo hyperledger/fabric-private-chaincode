@@ -687,7 +687,7 @@ sgx:
     enclave:
         library: /path-to/fabric-secure-chaincode/tlcc/enclave/lib/enclave.signed.so
     ias:
-        url: https://test-as.sgx.trustedservices.intel.com:443/attestation/sgx/v2/report
+        url: https://test-as.sgx.trustedservices.intel.com:443/attestation/sgx/v3/report
         cert:
             file: ias/client.crt
         key:
