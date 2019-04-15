@@ -7,15 +7,20 @@ We assume that you are familiar with building Fabric manually; otherwise we high
 recommend to spend some time to build Fabric and run a simple network with a
 few peers and a ordering service.
 
+If you are new to Fabric, we recommend the Fabric documentation as your starting point. You should start with
+[installing](https://hyperledger-fabric.readthedocs.io/en/release-1.4/prereqs.html) Fabric dependencies and setting up
+your [development environment](https://hyperledger-fabric.readthedocs.io/en/release-1.4/dev-setup/build.html).
+
 ## Patch and Build
 
 Clone fabric and checkout the 1.4 release.
 
-    $ git clone https://github.com/hyperledger/fabric.git
+    $ git clone https://github.com/hyperledger/fabric.git $GOPATH/src/hyperledger/fabric
+    $ cd $GOPATH/src/hyperledger/fabric
     $ git checkout release-1.4
     $ git apply path-to-this-patch/sgx_support.patch
 
-When building the peer make sure fabric is your ``GOPATH`` and you enable the
+When building the peer  make sure fabric is your ``$GOPATH`` and you enable the
 plugin feature. Otherwise our custom validation plugins can not be loaded.
 
     $ GO_TAGS=pluginsenabled make peer
@@ -39,23 +44,26 @@ with Intel. [Here](https://software.intel.com/en-us/articles/code-sample-intel-s
 you can find more details on how to obtain a signed client certificate,
 registering it and get a SPID.
 
-Place your client certificate and your SPID in the ``ias`` folder.
-
-    cp client.crt /path-to/fabric/sgxconfig/ias/client.crt
-    cp client.key /path-to/fabric/sgxconfig/ias/client.key
-    echo 'YOURSPID' | xxd -r -p > /path-to/fabric/sgxconfig/ias/spid.txt
-
 We currently make use of `unlinkable signatures` for the attestation, thus, when registering with the IAS please choose
-unlinkable signatures.  In the case you prefer linkable attestation,
+unlinkable signatures. In the case you prefer linkable attestation,
 e.g., because you already have linkable IAS EPID credentials, change
 in line 217 of [../ecc_enclave/sgxcclib/sgxcclib.c](../ecc_enclave/sgxcclib/sgxcclib.c)
 the constant `SGX_UNLINKABLE_SIGNATURE` to `SGX_LINKABLE_SIGNATURE`,
 re-compile and re-deplay [ecc_enclave](../ecc_enclave#build) and [ecc](../ecc#getting-started),
 configure your IAS settings as above with your linkable credentials and run the auction example as follows.
 
+Place your client certificate and your SPID in the ``ias`` folder.
+
+    cp client.crt /path-to/fabric/sgxconfig/ias/client.crt
+    cp client.key /path-to/fabric/sgxconfig/ias/client.key
+    echo 'YOURSPID' | xxd -r -p > /path-to/fabric/sgxconfig/ias/spid.txt
+
 ## Run the Auction
 
-Before you continue here build the other components, such as the chaincode
+Before you continue here build the main components of Fabric Secure Chaincode by going through the section `Custom
+chaincode environment docker image` and `Build the chaincode enclave and ledger enclave` in main [README](../README.md)
+
+other components, such as the chaincode
 enclave, ledger enclave, etc ...
 
 To run the demo you can use the scripts in

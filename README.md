@@ -95,19 +95,26 @@ deploying and running an example chaincode.
 ## Requirements
 
 * CMake 3.5.1 or higher
-* Go 1.11 or higher
-* Install Fabric v1.4 https://github.com/hyperledger/fabric 
-* Install the Linux SGX SDK v2.4 https://github.com/intel/linux-sgx 
-* You also need to install Intel SGX SSL https://github.com/intel/intel-sgx-ssl
+* Go 1.11.x or higher
+* Hyperledger Fabric v1.4 https://github.com/hyperledger/fabric 
+
+    If you are new to Fabric, we recommend the Fabric documentation as your starting point. You should start with
+    [installing](https://hyperledger-fabric.readthedocs.io/en/release-1.4/prereqs.html) Fabric dependencies and setting
+    up your [development environment](https://hyperledger-fabric.readthedocs.io/en/release-1.4/dev-setup/build.html).
+    
+* SGX SDK v2.4 for Linux https://github.com/intel/linux-sgx 
+* SSL for SGX SDK v2.4.1 https://github.com/intel/intel-sgx-ssl (we recommend using OpenSSL 1.1.0j)
 * (for hardware-mode SGX build) credentials for IAS, read [here](fabric#intel-attestation-service-ias)
 
 ### SGX SDK and SSL
 
-The the chaincode envlave and the trusted ledger enclave require SGXSSL.  See
-README in project root fore more details. Intel SGX SSL
+The the chaincode envlave and the trusted ledger enclave require SGX SSL.  See
+README in project root for more details. Intel SGX SSL
 https://github.com/intel/intel-sgx-ssl
 
-The makefiles are configured with meaningful defaults for variables
+After installing the SGX SDK and SGX SSL double check that ``SGX_SDK`` and
+``SGX_SSL`` variables are set correctly in your env. In particular, 
+the makefiles are configured with meaningful defaults for variables
 like ``SGX_SDK``, ``SGX_ARCH``, ``SGX_MODE``, ``SGX_BUILD`` or
 ``SGX_SSL``.  However, if you have non-standard values for install
 location or would like build with debug and/or simulator mode, you can
@@ -119,8 +126,8 @@ SGX_SSL=/my/sgx/ssl/install/`.
 ## Time to get the code
 
 Checkout the code and make sure it is on your ``GOPATH``.
-   
-    $ git clone https://github.com/hyperledger-labs/fabric-secure-chaincode.git
+
+    $ git clone https://github.com/hyperledger-labs/fabric-secure-chaincode.git $GOPATH/src/hyperledger-labs/fabric-secure-chaincode
 
 ## Prepare your Fabric
 
@@ -128,7 +135,7 @@ First we need to enable a Fabric peer to excute chaincode using our
 project. In [fabric](fabric) you find a details described how to patch fabric
 and build the peer.
 
-## Custom chaincode environemt docker image
+## Custom chaincode environment docker image
 
 In [utils/fabric-ccenv-sgx](utils/fabric-ccenv-sgx) you can find instructions
 to create a custom fabric-ccenv docker image that is required to execute a
@@ -136,7 +143,7 @@ chaincode within an enclave.
 
 ## Build the chaincode enclave and ledger enclave
 
-Next build the chaincode enclave [ecc_enclave](ecc_enclave) and the ledgger
+Next build the chaincode enclave [ecc_enclave](ecc_enclave) and the ledger
 enclave [tlcc_enclave](tlcc_enclave). Follow the instructions in the
 corresponding directories.
 
