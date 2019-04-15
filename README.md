@@ -150,6 +150,12 @@ Now we have a components we need to run the example auction chaincode in an encl
   Sorniotti: Blockchain and Trusted Computing: Problems, Pitfalls, and a
   Solution for Hyperledger Fabric. https://arxiv.org/abs/1805.08541
 
+# Project Status
+Hyperledger Fabric Secure Chaincode operates as a Hyperledger Labs project.
+This code is provided solely to demonstrate basic Fabric Secure Chaincode
+mechanisms and to facilitate collaboration to refine the project architecture
+and define minimum viable product requirements. The code provided in this
+repository is prototype code and not intended for production use.
 
 # Initial Committers
 - [Marcus Brandenburger](https://github.com/mbrandenburger) (bur@zurich.ibm.com)
