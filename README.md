@@ -107,8 +107,14 @@ The the chaincode envlave and the trusted ledger enclave require SGXSSL.  See
 README in project root fore more details. Intel SGX SSL
 https://github.com/intel/intel-sgx-ssl
 
-After installing the SGX SDK and SGX SSL double check that ``SGX_SDK`` and
-``SGX_SSL`` is set correctly in ``cmake/Init.cmake``.
+The makefiles are configured with meaningful defaults for variables
+like ``SGX_SDK``, ``SGX_ARCH``, ``SGX_MODE``, ``SGX_BUILD`` or
+``SGX_SSL``.  However, if you have non-standard values for install
+location or would like build with debug and/or simulator mode, you can
+override the default values by defining a corresponding environment
+variable, e.g., `export SGX_MODE=SIM SGX_BUILD=DEBUG
+SGX_SSL=/my/sgx/ssl/install/`.
+
 
 ## Time to get the code
 

@@ -4,8 +4,6 @@ enable_testing()
 
 include(../cmake/Init.cmake)
 
-set(SGX_BUILD DEBUG)
-
 include(${CMAKE_MODULE_PATH}/ConfigSGX.cmake)
 
 set(COMMON_SOURCE_DIR ${PROJECT_SOURCE_DIR}/../common)

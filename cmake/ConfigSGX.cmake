@@ -1,6 +1,34 @@
 # get arch information
 execute_process(COMMAND getconf LONG_BIT OUTPUT_VARIABLE VAR_LONG_BIT)
 
+# Set variables for common SGX variables.
+# if they are defined in the environment, take them from there, otherwise
+# set them to the usual defaults.
+set(SGX_SDK "$ENV{SGX_SDK}")
+if("${SGX_SDK} " STREQUAL " ")
+       set(SGX_SDK /opt/intel/sgxsdk)
+endif()
+
+set(SGX_ARCH "$ENV{SGX_ARCH}")
+if("${SGX_ARCH} " STREQUAL " ")
+       set(SGX_ARCH x64)
+endif()
+
+set(SGX_MODE "$ENV{SGX_MODE}")
+if("${SGX_MODE} " STREQUAL " ")
+       set(SGX_MODE HW) # SGX mode: sim, hw
+endif()
+
+set(SGX_BUILD "$ENV{SGX_BUILD}")
+if("${SGX_BUILD} " STREQUAL " ")
+       set(SGX_BUILD PRERELEASE)
+endif()
+
+set(SGX_SSL "$ENV{SGX_SSL}")
+if("${SGX_SSL} " STREQUAL " ")
+       set(SGX_SSL /opt/intel/sgxssl)
+endif()
+
 set(SGX_COMMON_CFLAGS -m64)
 set(SGX_LIBRARY_PATH ${SGX_SDK}/lib64)
 set(SGX_ENCLAVE_SIGNER ${SGX_SDK}/bin/x64/sgx_sign)
