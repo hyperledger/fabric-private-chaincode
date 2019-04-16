@@ -13,9 +13,9 @@ This builds `tlcc.so`. Using this plugin when running the peer inside
 Docker most problby will not work out-of-the-box, thus, not supported
 right now.
 
-## Integrate with fabric
+## Integrate with Fabric
 
-Add tlcc as system chaincode plugin to your `core.yaml`. Example:
+Add `tlcc` as system chaincode plugin to your `core.yaml`. Example:
 
 ```
 chaincode:
@@ -30,15 +30,15 @@ chaincode:
         invokableCC2CC: true
 ```
 
-## Start the peer
+## Starting the peer
 
-Make sure `LD_LIBRARY_PATH` points to the enclave lib.
+When starting the peer make sure that `LD_LIBRARY_PATH` points to the enclave lib.
 
-    $ LD_LIBRARY_PATH=/path-to/fabric-secure-chaincode/tlcc/enclave/lib bin/node start
+    $ LD_LIBRARY_PATH=/path-to/fabric-secure-chaincode/tlcc/enclave/lib .build/bin/node start
 
 ## Join the channel
 
-This prototype currently supports a single channel. Start with using
+This prototype currently supports a single channel only. Start with using
 `configtxgen` to create a new channel and let your peer join it. Next,
 call tlcc (mis)using query operation to join the channel. See example
 below.
@@ -50,3 +50,7 @@ below.
 Your trusted ledger should be up and running now.
 
 
+## Demo
+
+We have prepared an auction demo script available in [fabric/sgxconfig](../fabric/sgxconfig/demo).
+See `start_peer.sh` and `run_sgx_auction.sh` as an example.

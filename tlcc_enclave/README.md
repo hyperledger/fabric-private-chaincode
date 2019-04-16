@@ -11,9 +11,9 @@ the blockchain state.
 
 ## Start with generating proto parser
 
-We use *nanopb*, a lightweight implementation of Protocol Buffers, inside the
-ledger enclave to parse blocks. Install nanopb by following the instruction on
-http://github.com/nanopb/nanopb
+We use *nanopb*, a lightweight implementation of Protocol Buffers, inside the ledger enclave to parse blocks of
+transactions. Install nanopb by following the instruction below. For more detailed information consult the official
+nanopb documentation http://github.com/nanopb/nanopb.
 
     $ git clone https://github.com/nanopb/nanopb.git ~/nanopb
     $ cd ~/nanopb/
