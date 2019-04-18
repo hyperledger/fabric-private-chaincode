@@ -24,13 +24,12 @@ import (
 	"sync"
 	"unsafe"
 
-	"golang.org/x/sync/semaphore"
-
-	"github.com/hyperledger/fabric/common/flogging"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
 	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/tlcc"
 	sgx_utils "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
+	"github.com/hyperledger/fabric/common/flogging"
+	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"golang.org/x/sync/semaphore"
 )
 
 // #cgo CFLAGS: -I${SRCDIR}/include

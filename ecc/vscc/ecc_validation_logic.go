@@ -24,14 +24,14 @@ import (
 	"sort"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
+	sgx_utils "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
 	commonerrors "github.com/hyperledger/fabric/common/errors"
 	"github.com/hyperledger/fabric/common/flogging"
 	. "github.com/hyperledger/fabric/core/handlers/validation/api/state"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/rwsetutil"
 	"github.com/hyperledger/fabric/protos/peer"
 	"github.com/hyperledger/fabric/protos/utils"
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
-	sgx_utils "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
 )
 
 var logger = flogging.MustGetLogger("vscc")
