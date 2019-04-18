@@ -21,7 +21,7 @@ import (
 	"reflect"
 
 	commonerrors "github.com/hyperledger/fabric/common/errors"
-	"github.com/hyperledger/fabric/core/handlers/validation/api"
+	validation "github.com/hyperledger/fabric/core/handlers/validation/api"
 	. "github.com/hyperledger/fabric/core/handlers/validation/api/policies"
 	. "github.com/hyperledger/fabric/core/handlers/validation/api/state"
 	defaultvscc "github.com/hyperledger/fabric/core/handlers/validation/builtin"

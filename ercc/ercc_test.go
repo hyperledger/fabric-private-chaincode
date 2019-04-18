@@ -22,10 +22,10 @@ import (
 	"encoding/pem"
 	"testing"
 
-	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation"
 	"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation/mock"
 	th "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
+	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
 const enclavePK = `MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEE9lPD9QkW9oxWlFvwABrmseYAVvoBvvmTt3jzV0sdASR2KDDQPvz8EcyqfomEOTwSz7E+mISktMxYqofRr+4Yw==`

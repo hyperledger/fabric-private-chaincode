@@ -22,11 +22,11 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hyperledger-labs/fabric-secure-chaincode/tlcc/enclave"
+	. "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/core/peer"
 	"github.com/spf13/viper"
-	"github.com/hyperledger-labs/fabric-secure-chaincode/tlcc/enclave"
-	th "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
 )
 
 func setupTestLedger(chainid string) {
@@ -40,7 +40,7 @@ func TestTrustedLedgerCC_Init(t *testing.T) {
 	stub := shim.NewMockStub("tlcc", tlcc)
 	stub.ChannelID = "mychannel"
 	setupTestLedger("mychannel")
-	th.CheckInit(t, stub, [][]byte{})
+	CheckInit(t, stub, [][]byte{})
 }
 
 func TestTrustedLedgerCC_JoinChannel(t *testing.T) {
@@ -49,8 +49,8 @@ func TestTrustedLedgerCC_JoinChannel(t *testing.T) {
 	stub.ChannelID = "mychannel"
 
 	setupTestLedger("mychannel")
-	th.CheckInit(t, stub, [][]byte{})
-	th.CheckInvoke(t, stub, [][]byte{[]byte("JOIN_CHANNEL"), []byte("mychannel")})
+	CheckInit(t, stub, [][]byte{})
+	CheckInvoke(t, stub, [][]byte{[]byte("JOIN_CHANNEL"), []byte("mychannel")})
 }
 
 func TestTrustedLedgerCC_GetReport(t *testing.T) {
@@ -59,8 +59,8 @@ func TestTrustedLedgerCC_GetReport(t *testing.T) {
 	stub.ChannelID = "mychannel"
 
 	setupTestLedger("mychannel")
-	th.CheckInit(t, stub, [][]byte{})
-	th.CheckInvoke(t, stub, [][]byte{[]byte("JOIN_CHANNEL"), []byte("mychannel")})
+	CheckInit(t, stub, [][]byte{})
+	CheckInvoke(t, stub, [][]byte{[]byte("JOIN_CHANNEL"), []byte("mychannel")})
 
 	// note this is a debugging call :D
 	targetInfo, _ := tlcc.GetTargetInfo()
@@ -79,8 +79,8 @@ func TestTrustedLedgerCC_GetStateCMAC(t *testing.T) {
 	stub.ChannelID = "mychannel"
 
 	setupTestLedger("mychannel")
-	th.CheckInit(t, stub, [][]byte{})
-	th.CheckInvoke(t, stub, [][]byte{[]byte("JOIN_CHANNEL"), []byte("mychannel")})
+	CheckInit(t, stub, [][]byte{})
+	CheckInvoke(t, stub, [][]byte{[]byte("JOIN_CHANNEL"), []byte("mychannel")})
 
 	key := []byte("some.channel.someKey")
 	nonce := []byte(base64.StdEncoding.EncodeToString([]byte("moin")))
@@ -97,7 +97,7 @@ func TestTrustedLedgerCC_GetStateCMAC(t *testing.T) {
 }
 
 func TestLoadPlugin(t *testing.T) {
-	th.CheckLoadPlugin(t, "tlcc.so")
+	CheckLoadPlugin(t, "tlcc.so")
 }
 
 func createTlcc() *TrustedLedgerCC {

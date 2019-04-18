@@ -19,8 +19,8 @@ package enclave
 import (
 	"unsafe"
 
-	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
+	"github.com/hyperledger/fabric/common/flogging"
 )
 
 // #cgo CFLAGS: -I${SRCDIR}/include
