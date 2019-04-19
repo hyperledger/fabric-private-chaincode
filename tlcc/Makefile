@@ -7,6 +7,7 @@ LD_LIB_PATH=$(LD_LIBRARY_PATH):./enclave/lib
 all: build build-plugin test
 
 build:
+	go get github.com/spf13/viper
 	LD_LIBRARY_PATH=$(LD_LIB_PATH) go build
 
 build-plugin:

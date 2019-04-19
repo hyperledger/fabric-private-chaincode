@@ -7,6 +7,9 @@ LD_LIB_PATH=$(LD_LIBRARY_PATH):./enclave/lib
 all: build vscc-plugin
 
 build:
+	go get golang.org/x/sync/semaphore
+	go get github.com/pkg/errors
+	go get github.com/golang/protobuf/proto
 	LD_LIBRARY_PATH=$(LD_LIB_PATH) go build
 
 vscc-plugin:
@@ -30,7 +33,7 @@ clean:
 
 
 DOCKER_CONTAINER=$(PEER_NAME)-$(CC_NAME)-0
-DOCKER_IMAGE?=$$(docker images | grep $(CC_NAME) | awk '{print $$1;}')
+DOCKER_IMAGE?=$$(docker images | grep -- -$(CC_NAME)- | awk '{print $$1;}')
 
 docker:
 	docker build -t $(DOCKER_IMAGE) .

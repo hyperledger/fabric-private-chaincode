@@ -1,2 +1,5 @@
+#!/bin/bash
+SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
+. ${SCRIPTDIR}/common.sh
 
-../.build/bin/configtxgen -channelID mychannel -profile SampleSingleMSPChannel -outputCreateChannelTx mychannel.tx
+${FABRIC_BIN_DIR}/configtxgen -channelID mychannel -profile SampleSingleMSPChannel -outputCreateChannelTx mychannel.tx
