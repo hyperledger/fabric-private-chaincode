@@ -1,0 +1,60 @@
+From 58b0d843aff2c51efc485c8cb51dd604c36d8ae1 Mon Sep 17 00:00:00 2001
+From: Michael Steiner <michael.steiner@intel.com>
+Date: Mon, 25 Mar 2019 18:48:56 -0700
+Subject: [PATCH] proxy-enable chaincode containers if necessary
+
+---
+ core/chaincode/chaincode_support.go | 21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/core/chaincode/chaincode_support.go b/core/chaincode/chaincode_support.go
+index 0c684ceaa..ab6f1fa7d 100644
+--- a/core/chaincode/chaincode_support.go
++++ b/core/chaincode/chaincode_support.go
+@@ -8,6 +8,7 @@ package chaincode
+ 
+ import (
+ 	"fmt"
++	"os"
+ 	"time"
+ 
+ 	"github.com/golang/protobuf/proto"
+@@ -94,17 +95,33 @@ func NewChaincodeSupport(
+ 		certGenerator = nil
+ 	}
+ 
++	// Pass proxy environment variables, if existing, to chaincode container for case it has to do network operations
++	proxyEnv := []string{}
++	proxyEnvVarNames := []string{
++		"http_proxy",
++		"https_proxy",
++		"no_proxy",
++		"HTTP_PROXY",
++		"HTTPS_PROXY",
++		"NO_PROXY",
++	}
++	for _, name := range proxyEnvVarNames {
++		if val, found := os.LookupEnv(name); found {
++			proxyEnv = append(proxyEnv, name+"="+val)
++		}
++	}
++
+ 	cs.Runtime = &ContainerRuntime{
+ 		CertGenerator:    certGenerator,
+ 		Processor:        processor,
+ 		CACert:           caCert,
+ 		PeerAddress:      peerAddress,
+ 		PlatformRegistry: platformRegistry,
+-		CommonEnv: []string{
++		CommonEnv: append([]string{
+ 			"CORE_CHAINCODE_LOGGING_LEVEL=" + config.LogLevel,
+ 			"CORE_CHAINCODE_LOGGING_SHIM=" + config.ShimLogLevel,
+ 			"CORE_CHAINCODE_LOGGING_FORMAT=" + config.LogFormat,
+-		},
++		}, proxyEnv...),
+ 	}
+ 
+ 	cs.Launcher = &RuntimeLauncher{
+-- 
+2.17.1
+

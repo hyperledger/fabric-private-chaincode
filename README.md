@@ -123,6 +123,16 @@ variable, e.g., `export SGX_MODE=SIM SGX_BUILD=DEBUG
 SGX_SSL=/my/sgx/ssl/install/`.
 
 
+## Working from behind a proxy
+
+The current code should work behind a proxy assuming
+  * you have defined the corresponding environment variables (i.e.,
+  `http_proxy`, `https_proxy` and, potentially, `no_proxy`) properly
+  defined, and
+  * docker (daemon & client) is properly set up for proxies as
+    outlined in the Docker documentation for [clients](https://docs.docker.com/network/proxy/) and the [daemon](https://docs.docker.com/config/daemon/systemd/#httphttps-proxy).
+If you run Ubuntu 18.04, make sure you run docker 18.09 or later. Otherwise you will run into problems with DNS resolution inside the container.
+
 ## Time to get the code
 
 Checkout the code and make sure it is on your ``GOPATH``.

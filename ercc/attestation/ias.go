@@ -93,7 +93,10 @@ func (ias *intelAttestationServiceImpl) RequestAttestationReport(cert tls.Certif
 		InsecureSkipVerify: true,
 	}
 	tlsConfig.BuildNameToCertificate()
-	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	transport := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		TLSClientConfig: tlsConfig,
+	}
 	client := &http.Client{Transport: transport}
 
 	// transform quote bytes to base64 and build request body
