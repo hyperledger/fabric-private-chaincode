@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #include "sgx_eid.h"  // sgx_enclave_id_t
 #include "sgx_quote.h"

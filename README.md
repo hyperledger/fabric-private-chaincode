@@ -96,13 +96,13 @@ deploying and running an example chaincode.
 
 * CMake 3.5.1 or higher
 * Go 1.11.x or higher
-* Hyperledger Fabric v1.4 https://github.com/hyperledger/fabric 
+* Hyperledger Fabric v1.4.1 https://github.com/hyperledger/fabric
 
     If you are new to Fabric, we recommend the Fabric documentation as your starting point. You should start with
     [installing](https://hyperledger-fabric.readthedocs.io/en/release-1.4/prereqs.html) Fabric dependencies and setting
     up your [development environment](https://hyperledger-fabric.readthedocs.io/en/release-1.4/dev-setup/build.html).
-    
-* SGX SDK v2.4 for Linux https://github.com/intel/linux-sgx 
+
+* SGX SDK v2.4 or v2.5 for Linux https://github.com/intel/linux-sgx
 * SSL for SGX SDK v2.4.1 https://github.com/intel/intel-sgx-ssl (we recommend using OpenSSL 1.1.0j)
 * (for hardware-mode SGX build) credentials for IAS, read [here](fabric#intel-attestation-service-ias)
 
@@ -113,7 +113,7 @@ README in project root for more details. Intel SGX SSL
 https://github.com/intel/intel-sgx-ssl
 
 After installing the SGX SDK and SGX SSL double check that ``SGX_SDK`` and
-``SGX_SSL`` variables are set correctly in your env. In particular, 
+``SGX_SSL`` variables are set correctly in your env. In particular,
 the makefiles are configured with meaningful defaults for variables
 like ``SGX_SDK``, ``SGX_ARCH``, ``SGX_MODE``, ``SGX_BUILD`` or
 ``SGX_SSL``.  However, if you have non-standard values for install
@@ -133,9 +133,20 @@ The current code should work behind a proxy assuming
     outlined in the Docker documentation for [clients](https://docs.docker.com/network/proxy/) and the [daemon](https://docs.docker.com/config/daemon/systemd/#httphttps-proxy).
 If you run Ubuntu 18.04, make sure you run docker 18.09 or later. Otherwise you will run into problems with DNS resolution inside the container.
 
+Another problem you might encounter when running the sample scripts
+insofar that some '0.0.0.0' in ``fabric/sgxconfig/core.yaml`` used by
+clients -- e.g., the peer CLI using the ``address: 0.0.0.0:7051`` config
+as part of the ``peer`` section -- result in the client being unable
+to find the server. The likely error you will see is
+ ``err: rpc error: code = Unavailable desc = transport is closing``.
+In that case, you will have to replace the '0.0.0.0' with a concrete
+ip address such as '127.0.0.1'.
+
 ## Time to get the code
 
 Checkout the code and make sure it is on your ``GOPATH``.
+(Important: we assume in this documentation and default configuration
+that your GOPATH has a _single_ root-directoy!)
 
     $ git clone https://github.com/hyperledger-labs/fabric-secure-chaincode.git $GOPATH/src/hyperledger-labs/fabric-secure-chaincode
 

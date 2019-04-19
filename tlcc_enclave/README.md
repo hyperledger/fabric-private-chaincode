@@ -15,8 +15,9 @@ We use *nanopb*, a lightweight implementation of Protocol Buffers, inside the le
 transactions. Install nanopb by following the instruction below. For more detailed information consult the official
 nanopb documentation http://github.com/nanopb/nanopb.
 
-    $ git clone https://github.com/nanopb/nanopb.git ~/nanopb
-    $ cd ~/nanopb/
+    $ export NANOPB_PATH=/path-to/install/nanopb/
+    $ git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH}
+    $ cd ${NANOPB_PATH}
     $ git checkout nanopb-0.3.9.2
     $ cd generator/proto && make
 
@@ -25,13 +26,13 @@ Next copy `pb.h`, ``pb_encode.*``, ``pb_decode.*`` and ``pb_common.*`` to
 ``common/protobuf/`` directory in the root folder.
 
     $ mkdir -p common/protobuf
-    $ cp ~/nanopb/pb* common/protobuf 
+    $ cp ${NANOPB_PATH}/pb* common/protobuf 
 
 Now we can generate the proto files by using ``generate_protos.sh``. Check that
-you export the following variables pointing to Fabric and nanopb.
+you export the environment variables ``NANOPB_PATH` (see above) and
+``FABRIC_PATH`` pointing to Fabric source
 
-    export FABRIC_PATH=/path-to/fabric/
-    export NANOPB_PATH=/path-to/nanopb/
+    $ export FABRIC_PATH=${GOPATH}/src/github.com/hyperledger/fabric
 
 and run it.
 

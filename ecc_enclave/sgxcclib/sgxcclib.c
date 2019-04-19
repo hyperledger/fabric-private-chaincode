@@ -13,12 +13,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
  */
-
 #include "sgxcclib.h"
 #include "enclave_u.h"
 
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 // for RA:
 #include "sgx_quote.h"

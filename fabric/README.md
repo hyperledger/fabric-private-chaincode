@@ -5,7 +5,7 @@ apply our patches. https://github.com/hyperledger/fabric
 
 We assume that you are familiar with building Fabric manually; otherwise we highly
 recommend to spend some time to build Fabric and run a simple network with a
-few peers and a ordering service. In the examples, we also assume that you have 
+few peers and a ordering service. In the examples, we also assume that you have
 fabric and secure-chaincode in the same directory-tree from $GOPATH.
 
 If you are new to Fabric, we recommend the Fabric documentation as your starting point. You should start with
@@ -14,24 +14,30 @@ your [development environment](https://hyperledger-fabric.readthedocs.io/en/rele
 
 ## Patch and Build
 
-Clone fabric and checkout the 1.4 release.
+Clone fabric and checkout the 1.4.1 release.
 
-    $ git clone https://github.com/hyperledger/fabric.git $GOPATH/src/hyperledger/fabric
-    $ cd $GOPATH/src/hyperledger/fabric
-    $ git checkout release-1.4
-    $ git am ../../hyperledger-labs/fabric-secure-chaincode/fabric/*.patch 
+    $ git clone --branch v1.4.1 https://github.com/hyperledger/fabric.git $GOPATH/src/github.com/hyperledger/fabric
+    $ cd $GOPATH/src/github.com/hyperledger/fabric
+    $ git am ../../hyperledger-labs/fabric-secure-chaincode/fabric/*.patch
 
 When building the peer  make sure fabric is your ``$GOPATH`` and you enable the
-plugin feature. Otherwise our custom validation plugins can not be loaded.
+plugin feature. Otherwise our custom validation plugins will
+(silently!) ignored by the peer, despite the settings in ``core.yaml``.
 
     $ GO_TAGS=pluginsenabled make peer
 
+For our sample scripts you will also have to build the orderer and configtxgen
+
+	$ make orderer configtxgen
+
+It is ok to also to build everything with ``make`` with absent
+(default) target and/or with ``GO_TAGS``.  However, (a) make sure that
+peer _always_ is built with GO_TAGS and (b) if you build the default
+target be not surprised if unit tests fail ..
+
 To make your life easier we have prepared an example configuration and an
-auction demo. You can copy ``sgxconfig`` to your fabric directory and modify
-the sgx section in ``core.yaml`` accordingly. In particular, grep for all
-``/path-to/fabric-secure-chaincode/`` and replace with the correct path.  Our
-example config contains the MSP for a simple consortium and a bunch of scripts
-to run the auction demo.
+auction demo in ``sgxconfig``.  Our example config contains the MSP
+for a simple consortium and a bunch of scripts to run the auction demo.
 
 ### Intel Attestation Service (IAS)
 
@@ -52,12 +58,16 @@ in line 217 of [../ecc_enclave/sgxcclib/sgxcclib.c](../ecc_enclave/sgxcclib/sgxc
 the constant `SGX_UNLINKABLE_SIGNATURE` to `SGX_LINKABLE_SIGNATURE`,
 re-compile and re-deplay [ecc_enclave](../ecc_enclave#build) and [ecc](../ecc#getting-started),
 configure your IAS settings as above with your linkable credentials and run the auction example as follows.
+Note that a mismatch between your IAS credentials and the linkable setting
+will result in an (HTTP) error '400' visible in the log-files when the
+code tries to verify the attestation. (Another cause for such error '400'
+could a mismatch between provided SPID and client key as specified below).
 
 Place your client certificate and your SPID in the ``ias`` folder.
 
-    cp client.crt /path-to/fabric/sgxconfig/ias/client.crt
-    cp client.key /path-to/fabric/sgxconfig/ias/client.key
-    echo 'YOURSPID' | xxd -r -p > /path-to/fabric/sgxconfig/ias/spid.txt
+    cp client.crt ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig/ias/client.crt
+    cp client.key ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig/ias/client.key
+    echo 'YOURSPID' | xxd -r -p > ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig/ias/spid.txt
 
 ## Run the Auction
 
@@ -81,12 +91,12 @@ Please edit ``start_peer.sh`` and point LD_LIBRARY_PATH to the tlcc enclave lib.
 Note that when you run ``run_sgx_auction.sh`` the first time, you may
 see the following error:
 
-    ../.build/bin/peer chaincode instantiate -o localhost:7050 -C mychannel -n ecc -v 0 -c '{"args":["init"]}' -V ecc-vscc
+    ....bin/peer chaincode instantiate -o localhost:7050 -C mychannel -n ecc -v 0 -c '{"args":["init"]}' -V ecc-vscc
     Error: could not assemble transaction, err Proposal response was not successful, error code 500, msg transaction returned with failure:
     Incorrect number of arguments. Expecting 4
 
 Don't worry, that is OK! :) The short answer to resolve this is to just
-rebuild ecc. Go to ``path-to/fabric-secure-chaincode/ecc`` and run
+rebuild ecc. Go to ``${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/ecc`` and run
 ``make docker``.  You can, then, re-run ``run_sgx_auction.sh`` and the
 error is gone.
 
