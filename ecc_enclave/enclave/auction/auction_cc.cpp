@@ -26,8 +26,10 @@
 #define OK "OK"
 #define AUCTION_DRAW "DRAW"
 #define AUCTION_NO_BIDS "NO_BIDS"
-#define AUCTION_ALREADY_EXISTS "AUCTION_ALREADY_EXISTS"
+#define AUCTION_ALREADY_EXISTING "AUCTION_ALREADY_EXISTING"
+#define AUCTION_NOT_EXISTING "AUCTION_NOT_EXISTING"
 #define AUCTION_ALREADY_CLOSED "AUCTION_ALREADY_CLOSED"
+#define AUCTION_STILL_OPEN "AUCTION_STILL_OPEN"
 
 static std::string SEP = ".";
 static std::string PREFIX = SEP + "somePrefix" + SEP;
@@ -90,7 +92,7 @@ std::string auction_create(std::string auction_name, void* ctx)
     if (auction_bytes_len > 0) {
         // auction already exists
         LOG_DEBUG("AuctionCC: Auction already exists");
-        return AUCTION_ALREADY_EXISTS;
+        return AUCTION_ALREADY_EXISTING;
     }
 
     // create new auction
@@ -114,7 +116,7 @@ std::string auction_submit(std::string auction_name, std::string bidder_name, in
 
     if (auction_bytes_len == 0) {
         LOG_DEBUG("AuctionCC: Auction does not exist");
-        return AUCTION_ALREADY_EXISTS;
+        return AUCTION_NOT_EXISTING;
     }
 
     // get auction struct from json
@@ -150,7 +152,7 @@ std::string auction_close(std::string auction_name, void* ctx)
 
     if (auction_bytes_len == 0) {
         LOG_DEBUG("AuctionCC: Auction does not exist");
-        return AUCTION_ALREADY_EXISTS;
+        return AUCTION_NOT_EXISTING;
     }
 
     // get auction struct from json
@@ -181,7 +183,7 @@ std::string auction_eval(std::string auction_name, void* ctx)
 
     if (auction_bytes_len == 0) {
         LOG_DEBUG("AuctionCC: Auction does not exist");
-        return AUCTION_ALREADY_EXISTS;
+        return AUCTION_NOT_EXISTING;
     }
 
     // get auction struct from json
@@ -191,7 +193,7 @@ std::string auction_eval(std::string auction_name, void* ctx)
     // check if auction is closed
     if (the_auction.is_open) {
         LOG_DEBUG("AuctionCC: Auction is still open");
-        return AUCTION_ALREADY_CLOSED;
+        return AUCTION_STILL_OPEN;
     }
 
     // get all bids
