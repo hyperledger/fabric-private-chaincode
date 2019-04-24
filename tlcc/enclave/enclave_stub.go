@@ -17,6 +17,7 @@
 package enclave
 
 import (
+	"fmt"
 	"unsafe"
 
 	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
@@ -101,11 +102,13 @@ func (e *StubImpl) GetLocalAttestationReport(targetInfo []byte) ([]byte, []byte,
 	defer C.free(targetInfoPtr)
 
 	// call enclave
-	// TODO read error
-	C.tlcc_get_local_attestation_report(e.eid,
+	ret := C.tlcc_get_local_attestation_report(e.eid,
 		(*C.target_info_t)(targetInfoPtr),
 		(*C.report_t)(reportPtr),
 		(*C.ec256_public_t)(pubkeyPtr))
+	if ret != 0 { // 0 is SGX_SUCCESS
+		return nil, nil, fmt.Errorf("Error requesting local attestation from tlcc")
+	}
 
 	// convert sgx format to DER-encoded PKIX format
 	pk, err := crypto.MarshalEnclavePk(C.GoBytes(pubkeyPtr, C.int(PUB_KEY_SIZE)))
