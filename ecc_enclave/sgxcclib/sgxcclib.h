@@ -18,6 +18,7 @@
 #define _SGXCCLIB_H_
 
 #include "types.h"
+#include "sgx_attestation_type.h"
 
 #ifdef __cplusplus
 extern "C" {
