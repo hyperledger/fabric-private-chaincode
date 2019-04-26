@@ -146,7 +146,7 @@ int sgxcc_get_remote_attestation_report(
         return SGX_ERROR_OUT_OF_MEMORY;
     }
 
-    ret = sgx_get_quote(&report, SGX_UNLINKABLE_SIGNATURE,
+    ret = sgx_get_quote(&report, SGX_QUOTE_SIGN_TYPE,
         (sgx_spid_t *)spid,  // spid
         NULL,                // nonce
         NULL,                // sig_rl

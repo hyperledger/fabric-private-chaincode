@@ -1,3 +1,5 @@
+INCLUDE(CMakeVariables.txt)
+
 set(SOURCE_FILES
     sgxcclib.c
     enclave_u.c
@@ -29,7 +31,7 @@ include_directories(
     ${SGX_SDK}/include
     )
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wall -Wno-attributes -std=c11")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wall -Wno-attributes -std=c11 ${SGX_ATTESTATION_FLAG}")
 
 set_target_properties(libsgxcc PROPERTIES PREFIX "")
 
