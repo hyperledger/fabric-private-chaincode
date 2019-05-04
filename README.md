@@ -172,10 +172,10 @@ In the next step we need to integrate the enclave code into a Fabric
 chaincode.  Please follow the instructions in [ecc](ecc) for the chaincode
 enclave and [tlcc](tlcc) for the ledger enclave.
 
-In order to run deploy a chaincode enclave we need to build the enclave
+In order to run and deploy a chaincode enclave we need to build the enclave
 registry. See [ercc](ercc).
 
-Now we have a components we need to run the example auction chaincode in an enclave.
+Now we have all components we need to run the example auction chaincode in an enclave.
 
 
 # References
