@@ -54,7 +54,7 @@ func (t *EnclaveRegistryStubImpl) RegisterEnclave(stub shim.ChaincodeStubInterfa
 
 	resp := stub.InvokeChaincode(chaincodeName, [][]byte{[]byte("registerEnclave"), enclavePk, enclaveQuote, certPEM, keyPEM}, channel)
 	if resp.Status != shim.OK {
-		return errors.New("Setup failed: Con not register enclave at ercc" + string(resp.Message))
+		return errors.New("Setup failed: Can not register enclave at ercc: " + string(resp.Message))
 	}
 	return nil
 }
