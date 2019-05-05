@@ -15,7 +15,7 @@
 SET(ECC_ATTESTATION_TYPE "$ENV{ECC_ATTESTATION_TYPE}")
 
 IF("$ENV{ECC_ATTESTATION_TYPE} " STREQUAL " ")
-    #default attestation flag is "epid_unlikable"
+    #default attestation flag is "epid_unlinkable"
     SET(SGX_ATTESTATION_FLAG "-DUSE_EPID_UNLINKABLE")
 ELSE()
     IF("${ECC_ATTESTATION_TYPE} " STREQUAL "epid_linkable ")

@@ -14,6 +14,7 @@
 * limitations under the License.
  */
 #include "sgxcclib.h"
+#include "sgx_attestation_type.h"
 #include "enclave_u.h"
 
 #include <string.h>
@@ -145,6 +146,8 @@ int sgxcc_get_remote_attestation_report(
         LOG_ERROR("Lib: ERROR - quote size to small needed: %i but have %i", needed, quote_size);
         return SGX_ERROR_OUT_OF_MEMORY;
     }
+
+    // TODO: retrieve SigRL from IAS instead of just passing NULL below ...
 
     ret = sgx_get_quote(&report, SGX_QUOTE_SIGN_TYPE,
         (sgx_spid_t *)spid,  // spid

@@ -25,6 +25,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -42,7 +43,9 @@ XJuKwZqjRlEtSEz8gZQeFfVYgcwSfo96oSMAzVr7V0L6HSDLRnpb6xxmbPdqNol4
 tQIDAQAB
 -----END PUBLIC KEY-----`
 
-const iasURL = "https://test-as.sgx.trustedservices.intel.com:443/attestation/sgx/v3/report"
+const iasURL = "https://api.trustedservices.intel.com/sgx/dev/attestation/v3/report"
+
+var logger = shim.NewLogger("ercc.ias")
 
 // IASReportBody received from IAS (Intel attestation service)
 type IASReportBody struct {
@@ -69,7 +72,7 @@ type IASAttestationReport struct {
 
 // IntelAttestationService sent to IAS (Intel attestation service)
 type IntelAttestationService interface {
-	RequestAttestationReport(cert tls.Certificate, quoteAsBytes []byte) (IASAttestationReport, error)
+	RequestAttestationReport(apiKey string, quoteAsBytes []byte) (IASAttestationReport, error)
 	GetIntelVerificationKey() (interface{}, error)
 }
 
@@ -84,17 +87,16 @@ func NewIAS() IntelAttestationService {
 
 // RequestAttestationReport sends a quote to Intel for verification and in return receives an IASAttestationReport
 // Calling Intel qualifies ercc as a system chaincode since in the future chaincodes might be restricted and can not make call outside their docker container
-func (ias *intelAttestationServiceImpl) RequestAttestationReport(cert tls.Certificate, quoteAsBytes []byte) (IASAttestationReport, error) {
+func (ias *intelAttestationServiceImpl) RequestAttestationReport(apiKey string, quoteAsBytes []byte) (IASAttestationReport, error) {
 
 	// Setup HTTPS client
 	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
 		// RootCAs:            caCertPool,
-		InsecureSkipVerify: true,
+		InsecureSkipVerify: true, // TODO: fix this. with api-keys we really should verify IAS ...
 	}
 	tlsConfig.BuildNameToCertificate()
 	transport := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
+		Proxy:           http.ProxyFromEnvironment,
 		TLSClientConfig: tlsConfig,
 	}
 	client := &http.Client{Transport: transport}
@@ -109,6 +111,8 @@ func (ias *intelAttestationServiceImpl) RequestAttestationReport(cert tls.Certif
 		return IASAttestationReport{}, fmt.Errorf("IAS connection error: %s", err)
 	}
 	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Ocp-Apim-Subscription-Key", apiKey)
+	logger.Debugf("Sending IAS request %s", req)
 
 	// submit quote for verification
 	resp, err := client.Do(req)

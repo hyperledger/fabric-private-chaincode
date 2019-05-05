@@ -42,31 +42,25 @@ for a simple consortium and a bunch of scripts to run the auction demo.
 ### Intel Attestation Service (IAS)
 
 The requirements are:
-* your certificate registered with IAS
-* the private key associated to your certificate
-* your Service Provider ID (SPID)
+* a Service Provider ID (SPID)
+* the (primary) api-key associated with your SPID
 
-In order to use Intel's Attestation Service (IAS) you need to register
-with Intel. [Here](https://software.intel.com/en-us/articles/code-sample-intel-software-guard-extensions-remote-attestation-end-to-end-example)
-you can find more details on how to obtain a signed client certificate,
-registering it and get a SPID.
+In order to use Intel's Attestation Service (IAS), you need to register
+with Intel. On the [IAS EPID registration page](https://api.portal.trustedservices.intel.com/EPID-attestation)
+you can find more details on how to register and obtain your SPID plus corresponding api-key.
 
-We currently make use of `unlinkable signatures` for the attestation, thus, when registering with the IAS please choose
-unlinkable signatures. In the case you prefer linkable attestation,
-e.g., because you already have linkable IAS EPID credentials, change
-in line 217 of [../ecc_enclave/sgxcclib/sgxcclib.c](../ecc_enclave/sgxcclib/sgxcclib.c)
-the constant `SGX_UNLINKABLE_SIGNATURE` to `SGX_LINKABLE_SIGNATURE`,
-re-compile and re-deplay [ecc_enclave](../ecc_enclave#build) and [ecc](../ecc#getting-started),
-configure your IAS settings as above with your linkable credentials and run the auction example as follows.
+We currently support both `linkable' and 'unlinkable' signatures for the attestation.
+The type of attestation used is selected based on the 'ECC_ATTESTATION_TYPE' environment variable:
+'epid_unlinkable' for unlinkable or 'epid_linkable' for linkable signatures. If you 
+do not define that environment variable, the chosen attestation method is 'epid_unlinkable'.
 Note that a mismatch between your IAS credentials and the linkable setting
 will result in an (HTTP) error '400' visible in the log-files when the
 code tries to verify the attestation. (Another cause for such error '400'
-could a mismatch between provided SPID and client key as specified below).
+could a mismatch between provided SPID and api key as specified below).
 
-Place your client certificate and your SPID in the ``ias`` folder.
+Place your ias api key and your SPID in the ``ias`` folder as follows:
 
-    cp client.crt ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig/ias/client.crt
-    cp client.key ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig/ias/client.key
+    echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig/ias/api_key.txt
     echo 'YOURSPID' | xxd -r -p > ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig/ias/spid.txt
 
 ## Run the Auction
@@ -76,6 +70,10 @@ chaincode environment docker image` and `Build the chaincode enclave and ledger 
 
 other components, such as the chaincode
 enclave, ledger enclave, etc ...
+
+Also, if you have run it previously _and_ changed ecc or ercc code, you will have to manually remove
+the docker images with `(cd ../ecc; make docker-clean; cd ../ercc; make docker-clean)` or you will get
+unexpected results running on (partially) stale code!
 
 To run the demo you can use the scripts in
 [sgxconfig/demo](sgxconfig/demo). Make sure that the scripts point to your

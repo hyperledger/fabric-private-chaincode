@@ -14,6 +14,11 @@ decorator-plugin:
 test:
 	go test -v
 
-clean:
+clean: docker-clean
 	go clean
 
+ERCC_NAME?=ercc
+DOCKER_IMAGE?=$$(docker images | grep -- -$(ERCC_NAME)- | awk '{print $$1;}')
+
+docker-clean: docker-stop
+	-docker rmi $(DOCKER_IMAGE)

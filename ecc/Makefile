@@ -25,7 +25,7 @@ debug:
 	LD_LIBRARY_PATH=$(LD_LIB_PATH) go test -c
 	LD_LIBRARY_PATH=$(LD_LIB_PATH) sgx-gdb ecc.test -d $GOROOT
 
-clean:
+clean: docker-clean
 	go clean
 	rm enclave/include/*
 	rm enclave/lib/*
@@ -51,6 +51,10 @@ docker-run:
 		$(DOCKER_IMAGE) \
 		chaincode
 
-docker-clean:
-	docker stop $(DOCKER_CONTAINER)
-	docker rm $(DOCKER_CONTAINER)
+docker-stop:
+	-docker stop $(DOCKER_CONTAINER)
+	-docker rm $(DOCKER_CONTAINER)
+
+docker-clean: docker-stop
+	-docker rmi $(DOCKER_IMAGE)
+
