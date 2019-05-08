@@ -1,4 +1,3 @@
 ecc
-enclave/mrenclave*
-enclave/lib
-enclave/include
+ecc-vscc.so
+tags

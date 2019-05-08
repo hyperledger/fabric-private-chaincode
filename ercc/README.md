@@ -14,3 +14,7 @@ build the vscc plugin by running the following.
 
     $ make
 
+As Fabric creates a docker image for every installed chaincode, it sometimes
+could be useful to delete the ercc docker image as follows.
+
+    $ make docker-clean

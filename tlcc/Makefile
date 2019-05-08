@@ -1,27 +1,19 @@
-.PHONY: all
+TOP = ..
+include $(TOP)/build.mk
 
-PEER_NAME?=dev-jdoe
-LD_LIB_PATH=$(LD_LIBRARY_PATH):./enclave/lib
+ENV_VARS := LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):./enclave/lib
+SRC := tlcc.go
+OUTPUT := tlcc.so
 
+$(OUTPUT): $(SRC)
+	$(GO) get github.com/spf13/viper
+	$(ENV_VARS) $(GO) build -o $@ -buildmode=plugin $<
 
-all: build build-plugin test
+build: $(OUTPUT)
 
-build:
-	go get github.com/spf13/viper
-	LD_LIBRARY_PATH=$(LD_LIB_PATH) go build
-
-build-plugin:
-	LD_LIBRARY_PATH=$(LD_LIB_PATH) go build -o ./tlcc.so -buildmode=plugin tlcc.go
-
-test: build-plugin
-	LD_LIBRARY_PATH=$(LD_LIB_PATH) go test -test.v
-
-run: build
-	LD_LIBRARY_PATH=$(LD_LIB_PATH) CORE_CHAINCODE_LOGGING_LEVEL=DEBUG CORE_CHAINCODE_LOGGING_SHIM=INFO CORE_PEER_ADDRESS=localhost:7051 CORE_CHAINCODE_ID_NAME=ecc:0 ./tlcc
+test: build
+	$(ENV_VARS) $(GO) $@ -test.v
 
 clean:
-	go clean
-	rm enclave/include/*
-	rm enclave/lib/*
-	rm enclave/mrenclave.go
+	$(GO) clean
 	rm -rf ledgersData

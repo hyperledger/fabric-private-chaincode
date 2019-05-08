@@ -1,45 +1,61 @@
-.PHONY: all
+TOP = ..
+include $(TOP)/build.mk
 
-PEER_NAME?=dev-jdoe
-CC_NAME?=ecc
-LD_LIB_PATH=$(LD_LIBRARY_PATH):./enclave/lib
+ENV_VARS := LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):./enclave/lib
+PEER_NAME ?= dev-jdoe
+CC_NAME ?= ecc
 
-all: build vscc-plugin
+VSCC_SRC = vscc/ecc_validation_plugin.go vscc/ecc_validation_logic.go
+VSCC_OUT = ecc-vscc.so
 
-build:
-	go get golang.org/x/sync/semaphore
-	go get github.com/pkg/errors
-	go get github.com/golang/protobuf/proto
-	LD_LIBRARY_PATH=$(LD_LIB_PATH) go build
+DOCKER_CONTAINER = $(PEER_NAME)-$(CC_NAME)-0
+DOCKER_IMAGE ?= $$(docker images | grep -- -$(CC_NAME)- | awk '{print $$1;}')
 
-vscc-plugin:
-	go build -o ./ecc-vscc.so -buildmode=plugin vscc/ecc_validation_plugin.go vscc/ecc_validation_logic.go
+#it seems that tests for ecc are broken;
+#TODO fix tests and include test target to all
+all: build
+build: ecc vscc-plugin
 
-test:
-	LD_LIBRARY_PATH=$(LD_LIB_PATH) go test -v
+ECC_ENCLAVE_BUILD = ../ecc_enclave/_build
+ERR_MSG = "ecc_enclave build does not exist!"
 
+ecc_enclave:
+	@if [ ! -d $(ECC_ENCLAVE_BUILD)/lib ]; then echo $(ERR_MSG); exit 1; fi
+	@if [ ! -d $(ECC_ENCLAVE_BUILD)/include]; then echo $(ERR_MSG); exit 1; fi
+
+ecc: ecc_enclave
+	$(GO) get golang.org/x/sync/semaphore
+	$(GO) get github.com/pkg/errors
+	$(GO) get github.com/golang/protobuf/proto
+	$(ENV_VARS) $(GO) build
+
+vscc-plugin: $(VSCC_SRC)
+	$(ENV_VARS) $(GO) build -o $(VSCC_OUT) -buildmode=plugin $^
+
+# TODO fix test and enable this target
+#test: ecc
+#	$(ENV_VARS) $(GO) $@ -v
+
+.PHONY: stress
 stress:
-	LD_LIBRARY_PATH=$(LD_LIB_PATH) go test -v -run TestEnclaveChaincode_Invoke_Auction
+	$(ENV_VARS) $(GO) test -v -run TestEnclaveChaincode_Invoke_Auction
 
-debug: 
-	LD_LIBRARY_PATH=$(LD_LIB_PATH) go test -c
-	LD_LIBRARY_PATH=$(LD_LIB_PATH) sgx-gdb ecc.test -d $GOROOT
+.PHONY: debug
+debug:
+	$(ENV_VARS) $(GO) test -c
+	$(ENV_VARS) sgx-gdb ecc.test -d $GOROOT
 
 clean: docker-clean
-	go clean
-	rm enclave/include/*
-	rm enclave/lib/*
-	rm enclave/mrenclave.go
-
-
-DOCKER_CONTAINER=$(PEER_NAME)-$(CC_NAME)-0
-DOCKER_IMAGE?=$$(docker images | grep -- -$(CC_NAME)- | awk '{print $$1;}')
+	$(GO) clean
+#	rm enclave/include/*
+#	rm enclave/lib/*
+#	rm enclave/mrenclave.go
 
 docker:
-	docker build -t $(DOCKER_IMAGE) .
+	$(DOCKER) build -t $(DOCKER_IMAGE) .
 
 docker-run:
-	docker run \
+	$(DOCKER) run \
 		-it \
 		--device /dev/isgx \
 		-v /var/run/aesmd:/var/run/aesmd \
@@ -47,7 +63,7 @@ docker-run:
 		-e "CORE_CHAINCODE_LOGGING_LEVEL=DEBUG" \
 		-e "CORE_CHAINCODE_LOGGING_SHIM=INFO" \
 		-e "CORE_PEER_ADDRESS=172.17.0.1:7051" \
-		-e "CORE_CHAINCODE_ID_NAME=ecc:0" \
+		-e "CORE_CHAINCODE_ID_NAME=$(CC_NAME):0" \
 		$(DOCKER_IMAGE) \
 		chaincode
 

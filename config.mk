@@ -1,0 +1,5 @@
+GOFLAGS :=
+GO := go $(GOFLAGS)
+
+DOCKERFLAGS :=
+DOCKER := docker $(DOCKERFLAGS)

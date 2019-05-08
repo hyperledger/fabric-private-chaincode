@@ -1,24 +1,30 @@
-.PHONY: all
+TOP = ..
+include $(TOP)/build.mk
 
-all: build vscc-plugin decorator-plugin
+VSCC_SRC = vscc/ercc_validation_plugin.go vscc/ercc_validation_logic.go
+VSCC_OUT = ercc-vscc.so
+DECO_SRC = attestation/ias_credentials/decoration.go
+DECO_OUT = ercc-decorator.so
 
-build:
-	go build
+build: ercc vscc-plugin decorator-plugin
 
-vscc-plugin:
-	go build -o ./ercc-vscc.so -buildmode=plugin vscc/ercc_validation_plugin.go vscc/ercc_validation_logic.go
+ercc:
+	$(GO) build
 
-decorator-plugin:
-	go build -o ./ercc-decorator.so -buildmode=plugin attestation/ias_credentials/decoration.go
+vscc-plugin: $(VSCC_SRC)
+	$(GO) build -o $(VSCC_OUT) -buildmode=plugin $^
 
-test:
-	go test -v
+decorator-plugin: $(DECO_SRC)
+	$(GO) build -o $(DECO_OUT) -buildmode=plugin $^
+
+test: build
+	$(GO) test -v
 
 clean: docker-clean
-	go clean
+	$(GO) $@
 
 ERCC_NAME?=ercc
 DOCKER_IMAGE?=$$(docker images | grep -- -$(ERCC_NAME)- | awk '{print $$1;}')
 
-docker-clean: docker-stop
+docker-clean:
 	-docker rmi $(DOCKER_IMAGE)

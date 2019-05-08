@@ -1,13 +1,13 @@
 # Chaincode wrapper (ecc)
 
-Before your continue here make sure you have build and deployed
-``ecc_enclave`` before. We refer to
-[ecc_enclave/README.md](../ecc_enclave).
+Before your continue here make sure you have build ``ecc_enclave`` before.
+We refer to [ecc_enclave/README.md](../ecc_enclave). Otherwise, the build
+might fail with the message `ecc_enclave build does not exist!`.
 
 This is a go chaincode that is used to invoke the enclave. The chaincode logic
 is implemented in C++ as enclave code and is loaded by by the go chaincode as
 C library (``ecc/enclave/lib/enclave.signed.so``).  For more details on the
-chaincode implementation see ecc_encalve/.
+chaincode implementation see [ecc_enclave](../ecc_enclave).
 
 
 The following steps guide you through the build phase. Make sure this project is on your `$GOPATH`.
@@ -53,3 +53,7 @@ You can also define the peer name and the chaincode name manually.
 For debugging you can also start the docker image.
 
     $ make docker-run
+
+When developing a new chaincode it is useful to also wipe out the old docker image.
+
+    $ make docker-clean 
