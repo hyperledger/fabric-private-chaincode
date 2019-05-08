@@ -39,29 +39,6 @@ To make your life easier we have prepared an example configuration and an
 auction demo in ``sgxconfig``.  Our example config contains the MSP
 for a simple consortium and a bunch of scripts to run the auction demo.
 
-### Intel Attestation Service (IAS)
-
-The requirements are:
-* a Service Provider ID (SPID)
-* the (primary) api-key associated with your SPID
-
-In order to use Intel's Attestation Service (IAS), you need to register
-with Intel. On the [IAS EPID registration page](https://api.portal.trustedservices.intel.com/EPID-attestation)
-you can find more details on how to register and obtain your SPID plus corresponding api-key.
-
-We currently support both `linkable' and 'unlinkable' signatures for the attestation.
-The type of attestation used is selected based on the 'ECC_ATTESTATION_TYPE' environment variable:
-'epid_unlinkable' for unlinkable or 'epid_linkable' for linkable signatures. If you 
-do not define that environment variable, the chosen attestation method is 'epid_unlinkable'.
-Note that a mismatch between your IAS credentials and the linkable setting
-will result in an (HTTP) error '400' visible in the log-files when the
-code tries to verify the attestation. (Another cause for such error '400'
-could a mismatch between provided SPID and api key as specified below).
-
-Place your ias api key and your SPID in the ``ias`` folder as follows:
-
-    echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig/ias/api_key.txt
-    echo 'YOURSPID' | xxd -r -p > ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig/ias/spid.txt
 
 ## Run the Auction
 

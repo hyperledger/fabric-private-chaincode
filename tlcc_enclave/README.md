@@ -9,51 +9,23 @@ an interface to the chaincode enclave for accessing the integrity-specific
 metadata. This is used to verify the correctness of the data retrieved from
 the blockchain state.
 
-## Start with generating proto parser
+## Protos
 
-We use *nanopb*, a lightweight implementation of Protocol Buffers, inside the ledger enclave to parse blocks of
-transactions. Install nanopb by following the instruction below. For more detailed information consult the official
-nanopb documentation http://github.com/nanopb/nanopb.
-
-    $ export NANOPB_PATH=/path-to/install/nanopb/
-    $ git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH}
-    $ cd ${NANOPB_PATH}
-    $ git checkout nanopb-0.3.9.2
-    $ cd generator/proto && make
-
-
-Next copy `pb.h`, ``pb_encode.*``, ``pb_decode.*`` and ``pb_common.*`` to
-``common/protobuf/`` directory in the root folder.
-
-    $ mkdir -p common/protobuf
-    $ cp ${NANOPB_PATH}/pb* common/protobuf 
-
-Now we can generate the proto files by using ``generate_protos.sh``. Check that
-you export the environment variables ``NANOPB_PATH` (see above) and
-``FABRIC_PATH`` pointing to Fabric source
-
-    $ export FABRIC_PATH=${GOPATH}/src/github.com/hyperledger/fabric
-
-and run it.
-
-    $ ./generate_protos.sh
+We use nanopb for proto buffers inside the trusted ledger enclave.
+We can generate the proto files by using ``make protos``. Check that
+you export the environment variables `NANOPB_PATH` and
+`FABRIC_PATH` pointing to Fabric source.
 
 ## Build
 
-We use cmake to build tlcc_enclave.
+We use cmake to build tlcc_enclave. For convince, you can just invoke ``make``
+to trigger the cmake build.
 
-    $ mkdir build 
-    $ cd build
-    $ cmake ../.
     $ make
 
 ## Test
 
     $ make test
-
-## Deploy
-
-    $ make deploy
 
 ## Debugging
 
@@ -63,4 +35,9 @@ Run gdb
     $ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./ sgx-gdb test_runner
     > enable sgx_emmt
     > r
+
 Note that OPENSSL sometimes complains, here you can just continue debugging.
+
+## Cleaning
+
+    $ make clean

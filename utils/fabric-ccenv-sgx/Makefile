@@ -1,13 +1,21 @@
-.PHONY: all
+TOP = ../..
+include $(TOP)/build.mk
 
-all: prep build
+DOCKER_BASE := docker-sgx
+IMAGE_NAME := hyperledger/fabric-ccenv-sgx:latest
 
-prep: 
-	git clone https://github.com/tozd/docker-sgx.git 
-	cd docker-sgx && git checkout 08c2457 && ln -s ubuntu-xenial.dockerfile Dockerfile && git apply ../sgx_2.4.patch
+all: build
 
-build:
-	docker build -t hyperledger/fabric-ccenv-sgx:latest docker-sgx
+$(DOCKER_BASE): 
+	git clone https://github.com/tozd/docker-sgx.git $@
+	cd $@ && git checkout 08c2457 && ln -s ubuntu-xenial.dockerfile Dockerfile && git apply ../sgx_2.4.patch
 
-clean:
-	rm -rf docker-sgx
+build: $(DOCKER_BASE)
+	$(DOCKER) build -t $(IMAGE_NAME) $<
+
+# Building this docker image is an expensive tasks. 
+# For this reason, we don't use the clean target to wipe
+# the docker image.
+docker-clean:
+	-rm -rf $(DOCKER_BASE)
+	-$(DOCKER) rmi $(IMAGE_NAME)

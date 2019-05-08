@@ -1,16 +1,15 @@
 # Trusted Ledger Chaincode (tlcc)
 
-Before your continue here make sure you have build and deployed
-``tlcc_enclave`` before. We refer to
-[tlcc_enclave/README.md](../tlcc_enclave).
+Before your continue here make sure you have build ``tlcc_enclave`` before.
+We refer to [tlcc_enclave/README.md](../tlcc_enclave).
 
-First build tlcc as system chaincode plugin. What is that? See
+First we build tlcc as system chaincode plugin. What is that? See
 https://hyperledger-fabric.readthedocs.io/en/latest/systemchaincode.html
 
     $ make
 
 This builds `tlcc.so`. Using this plugin when running the peer inside
-Docker most problby will not work out-of-the-box, thus, not supported
+Docker most probably will not work out-of-the-box, thus, not supported
 right now.
 
 ## Integrate with Fabric
