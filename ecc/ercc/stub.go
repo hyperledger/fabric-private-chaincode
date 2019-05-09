@@ -42,17 +42,12 @@ func (t *EnclaveRegistryStubImpl) GetSPID(stub shim.ChaincodeStubInterface, chai
 
 // RegisterEnclave registers enclave at ercc
 func (t *EnclaveRegistryStubImpl) RegisterEnclave(stub shim.ChaincodeStubInterface, chaincodeName, channel string, enclavePk, enclaveQuote []byte) error {
-	certPEM, ok := stub.GetDecorations()["certPEM"]
+	apiKey, ok := stub.GetDecorations()["apiKey"]
 	if !ok {
-		return errors.New("Can not load CertPEM")
+		return errors.New("Can not load api-key")
 	}
 
-	keyPEM, ok := stub.GetDecorations()["keyPEM"]
-	if !ok {
-		return errors.New("Can not load KeyPEM")
-	}
-
-	resp := stub.InvokeChaincode(chaincodeName, [][]byte{[]byte("registerEnclave"), enclavePk, enclaveQuote, certPEM, keyPEM}, channel)
+	resp := stub.InvokeChaincode(chaincodeName, [][]byte{[]byte("registerEnclave"), enclavePk, enclaveQuote, apiKey}, channel)
 	if resp.Status != shim.OK {
 		return errors.New("Setup failed: Can not register enclave at ercc: " + string(resp.Message))
 	}

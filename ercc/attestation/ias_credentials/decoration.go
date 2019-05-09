@@ -17,7 +17,6 @@
 package main
 
 import (
-	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 
@@ -32,20 +31,14 @@ func NewDecorator() decoration.Decorator {
 	common.InitConfig("core")
 
 	// fabric/core/config.GetPath()
-	certFile := config.GetPath("sgx.ias.cert.file")
-	keyFile := config.GetPath("sgx.ias.key.file")
+	apiKeyFile := config.GetPath("sgx.ias.apiKey.file")
 	spidFile := config.GetPath("sgx.ias.spid.file")
 
-	fmt.Printf("cert: %s\n key: %s\n spid: %s\n", certFile, keyFile, spidFile)
+	fmt.Printf("api-key: %s\n spid: %s\n", apiKeyFile, spidFile)
 
-	certPEM, err := readPemFromFile(certFile)
+	apiKey, err := readApiKeyFromFile(apiKeyFile)
 	if err != nil {
-		panic("not read Cert from file: " + err.Error())
-	}
-
-	keyPEM, err := readPemFromFile(keyFile)
-	if err != nil {
-		panic("not read Cert from file: " + err.Error())
+		panic("not read api-key from file: " + err.Error())
 	}
 
 	spid, err := readSPIDFromFile(spidFile)
@@ -54,43 +47,35 @@ func NewDecorator() decoration.Decorator {
 	}
 
 	return &decorator{
-		certPEM: certPEM,
-		keyPEM:  keyPEM,
-		spid:    spid,
+		apiKey: apiKey,
+		spid:   spid,
 	}
 }
 
 type decorator struct {
-	certPEM []byte
-	keyPEM  []byte
-	spid    []byte
+	apiKey []byte
+	spid   []byte
 }
 
 // Decorate decorates a chaincode input by changing it
 func (d *decorator) Decorate(proposal *peer.Proposal, input *peer.ChaincodeInput) *peer.ChaincodeInput {
 	input.Decorations["SPID"] = d.spid
-	input.Decorations["certPEM"] = d.certPEM
-	input.Decorations["keyPEM"] = d.keyPEM
+	input.Decorations["apiKey"] = d.apiKey
 	return input
 }
 
-func readSPIDFromFile(spidFile string) ([]byte, error) {
-	bytes, err := readFile(spidFile)
+func readApiKeyFromFile(apiKeyFile string) ([]byte, error) {
+	bytes, err := readFile(apiKeyFile)
 	if err != nil {
 		return nil, err
 	}
 	return bytes, nil
 }
 
-func readPemFromFile(file string) ([]byte, error) {
-	bytes, err := readFile(file)
+func readSPIDFromFile(spidFile string) ([]byte, error) {
+	bytes, err := readFile(spidFile)
 	if err != nil {
 		return nil, err
-	}
-
-	b, _ := pem.Decode(bytes)
-	if b == nil { // TODO: also check that the type is what we expect (cert vs key..)
-		return nil, fmt.Errorf("No pem content for file %s", file)
 	}
 	return bytes, nil
 }

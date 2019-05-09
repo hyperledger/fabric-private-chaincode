@@ -44,6 +44,7 @@ type EnclaveChaincode struct {
 
 // NewEcc is a helpful factory method for creating this beauty
 func NewEcc() *EnclaveChaincode {
+	logger.Debug("NewEcc")
 	return &EnclaveChaincode{
 		erccStub: &ercc.EnclaveRegistryStubImpl{},
 		tlccStub: &tlcc.TLCCStubImpl{},
@@ -54,7 +55,7 @@ func NewEcc() *EnclaveChaincode {
 
 // Init sets the chaincode state to "init"
 func (t *EnclaveChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
-	logger.Debugf("ecc: Init chaincode [%s]", enclave.MrEnclave)
+	logger.Debugf("Init: chaincode [%s]", enclave.MrEnclave)
 	if err := stub.PutState(utils.MrEnclaveStateKey, []byte(enclave.MrEnclave)); err != nil {
 		return shim.Error(err.Error())
 	}
@@ -64,7 +65,7 @@ func (t *EnclaveChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 // Invoke receives transactions and forwards to op handlers
 func (t *EnclaveChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, _ := stub.GetFunctionAndParameters()
-	logger.Debugf("ecc: invoke is running [%s]", function)
+	logger.Debugf("Invoke is running [%s]", function)
 
 	if function == "setup" { // create enclave and register at ercc
 		return t.setup(stub)

@@ -17,8 +17,9 @@
 package main
 
 import (
+	"strings"
+
 	"crypto/sha256"
-	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 
@@ -39,6 +40,7 @@ type EnclaveRegistryCC struct {
 
 // NewErcc is a helpful factory method for creating this beauty
 func NewErcc() *EnclaveRegistryCC {
+	logger.Debug("NewErcc called")
 	return &EnclaveRegistryCC{
 		ra:  &attestation.VerifierImpl{},
 		ias: attestation.NewIAS(),
@@ -54,13 +56,14 @@ func NewTestErcc() *EnclaveRegistryCC {
 
 // Init setups the EnclaveRegistry by initializing intel verification key. Currently this is hardcoded!
 func (ercc *EnclaveRegistryCC) Init(stub shim.ChaincodeStubInterface) pb.Response {
+	logger.Debug("Init called")
 	return shim.Success(nil)
 }
 
 // Invoke receives transactions and forwards to op handlers
 func (ercc *EnclaveRegistryCC) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	function, args := stub.GetFunctionAndParameters()
-	logger.Debug("ercc: invoke is running " + function)
+	logger.Debugf("Invoke(function=%s, %s) called", function, args)
 
 	if function == "registerEnclave" {
 		return ercc.registerEnclave(stub, args)
@@ -80,9 +83,8 @@ func (ercc *EnclaveRegistryCC) registerEnclave(stub shim.ChaincodeStubInterface,
 	// args:
 	// 0: enclavePkBase64
 	// 1: quoteBase64
-	// 2: certPem
-	// 3: keyPem
-	// if certPem and keyPem not available as argument we try to read them from decorator
+	// 2: apiKey
+	// if apiKey not available as argument we try to read them from decorator
 
 	if len(args) < 2 {
 		return shim.Error("Incorrect number of arguments. Expecting enclave pk and quote to register")
@@ -99,29 +101,18 @@ func (ercc *EnclaveRegistryCC) registerEnclave(stub shim.ChaincodeStubInterface,
 		return shim.Error("Can not parse quoteBase64 string: " + err.Error())
 	}
 
-	// get ercc client cert for IAS
-	var certPem []byte
+	// get ercc api key for IAS
+	var apiKey string
 	if len(args) >= 3 {
-		certPem = []byte(args[2])
+		apiKey = args[2]
 	} else {
-		certPem = stub.GetDecorations()["certPEM"]
+		apiKey = string(stub.GetDecorations()["apiKey"])
 	}
-
-	// get ercc client key for IAS
-	var keyPem []byte
-	if len(args) >= 4 {
-		keyPem = []byte(args[3])
-	} else {
-		keyPem = stub.GetDecorations()["keyPEM"]
-	}
-
-	cert, err := tls.X509KeyPair(certPem, keyPem)
-	if err != nil {
-		return shim.Error("Can not load client cert: " + err.Error())
-	}
+	apiKey = strings.TrimSpace(apiKey) // make sure there are no trailing newlines and alike ..
+	logger.Debugf("registerEnclave: api-key: %s / len(args)=%d", apiKey, len(args))
 
 	// send quote to intel for verification
-	attestationReport, err := ercc.ias.RequestAttestationReport(cert, quoteAsBytes)
+	attestationReport, err := ercc.ias.RequestAttestationReport(apiKey, quoteAsBytes)
 	if err != nil {
 		return shim.Error("Error while retrieving attestation report: " + err.Error())
 	}

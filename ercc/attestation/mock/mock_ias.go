@@ -17,15 +17,13 @@
 package mock
 
 import (
-	"crypto/tls"
-
 	"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation"
 )
 
 type MockIAS struct {
 }
 
-func (ias *MockIAS) RequestAttestationReport(cert tls.Certificate, quoteAsBytes []byte) (attestation.IASAttestationReport, error) {
+func (ias *MockIAS) RequestAttestationReport(api_key string, quoteAsBytes []byte) (attestation.IASAttestationReport, error) {
 	report := attestation.IASAttestationReport{
 		IASReportSignature:          "some X-IASReport-Signature",
 		IASReportSigningCertificate: "some X-IASReport-Signing-Certificate",

@@ -687,10 +687,8 @@ sgx:
     enclave:
         library: ../../tlcc/enclave/lib/enclave.signed.so
     ias:
-        url: https://test-as.sgx.trustedservices.intel.com:443/attestation/sgx/v3/report
-        cert:
-            file: ias/client.crt
-        key:
-            file: ias/client.key
+        url: https://api.trustedservices.intel.com/sgx/dev/attestation/v3/report
+        apiKey:
+            file: ias/api_key.txt
         spid:
             file: ias/spid.txt
