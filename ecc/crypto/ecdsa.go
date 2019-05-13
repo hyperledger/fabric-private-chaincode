@@ -113,7 +113,7 @@ func EnclavePk2ECDSAPK(input []byte) (*ecdsa.PublicKey, error) {
 		return nil, fmt.Errorf("Public key not valid (Point not on curve)")
 	}
 
-	return &ecdsa.PublicKey{curve, x, y}, nil
+	return &ecdsa.PublicKey{Curve: curve, X: x, Y: y}, nil
 }
 
 // MarshallEnclavePk converts sgx format Big endian to DER-encoded PKIX format

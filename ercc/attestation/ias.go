@@ -25,10 +25,11 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
 // intel verification key

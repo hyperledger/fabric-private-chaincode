@@ -2,7 +2,7 @@
 
 # set -eux
 
-FABRIC_PATH=${FABRIC_PATH-~/fabric}
+FABRIC_PATH=${FABRIC_PATH-../../../hyperledger/fabric}
 NANOPB_PATH=${NANOPB_PATH-~/nanopb}
 
 PROTOC_OPTS="--plugin=protoc-gen-nanopb=$NANOPB_PATH/generator/protoc-gen-nanopb"

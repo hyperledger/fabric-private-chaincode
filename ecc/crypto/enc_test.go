@@ -32,13 +32,12 @@ func TestDH(t *testing.T) {
 	enclavePriv, err := ecdsa.GenerateKey(p256, rand.Reader)
 	enclavePub, ok := enclavePriv.Public().(*ecdsa.PublicKey)
 	if !ok {
-		panic("error: cast")
+		t.Error("cannot cast ecdsa pub key", err)
 	}
 
 	priv, pub, err := GenKeyPair()
 	if err != nil {
-		fmt.Errorf("Can not gen key pair")
-		t.FailNow()
+		t.Error("cannot generate key pair", err)
 	}
 	pubBytes := make([]byte, 0)
 	pubBytes = append(pubBytes, pub.X.Bytes()...)
