@@ -43,7 +43,7 @@ stress:
 .PHONY: debug
 debug:
 	$(LD_LIBRARY_PATH) $(GO) test -c
-	$(LD_LIBRARY_PATH) sgx-gdb ecc.test -d $GOROOT
+	$(LD_LIBRARY_PATH) sgx-gdb ecc.test -d $(GOROOT)
 
 clean: docker-clean
 	$(GO) clean
@@ -52,7 +52,7 @@ clean: docker-clean
 #	rm enclave/mrenclave.go
 
 docker:
-	$(DOCKER) build -t $(DOCKER_IMAGE) .
+	$(DOCKER) build -t $(DOCKER_IMAGE) -f Dockerfile ..
 
 docker-run:
 	$(DOCKER) run \
