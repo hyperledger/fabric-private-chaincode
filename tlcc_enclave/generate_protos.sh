@@ -9,7 +9,11 @@ PROTOC_OPTS="--plugin=protoc-gen-nanopb=$NANOPB_PATH/generator/protoc-gen-nanopb
 
 FABRIC_PROTOS=$FABRIC_PATH/protos
 
-BUILD_DIR=enclave/protos
+if [ "$1" != "" ]; then
+    BUILD_DIR=$1
+else
+    BUILD_DIR=enclave/protos
+fi
 rm -rf $BUILD_DIR
 mkdir -p $BUILD_DIR
 

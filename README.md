@@ -104,7 +104,9 @@ deploying and running an example chaincode.
 
 * SGX SDK v2.4 or v2.5 for Linux https://github.com/intel/linux-sgx
 * SSL for SGX SDK v2.4.1 https://github.com/intel/intel-sgx-ssl (we recommend using OpenSSL 1.1.0j)
-* (for hardware-mode SGX build) credentials for IAS, read [here](fabric#intel-attestation-service-ias)
+* (for hardware-mode SGX build) credentials for IAS, read [here](#intel-attestation-service-ias)
+* Docker 18.x
+* Nanopb 0.3.9.2 (see [below](#get-nanopb))
 
 ### SGX SDK and SSL
 
@@ -150,26 +152,73 @@ that your GOPATH has a _single_ root-directoy!)
 
     $ git clone https://github.com/hyperledger-labs/fabric-secure-chaincode.git $GOPATH/src/hyperledger-labs/fabric-secure-chaincode
 
-## Prepare your Fabric
+### Patch your Fabric
 
 First we need to enable a Fabric peer to excute chaincode using our
-project. In [fabric](fabric) you find a details described how to patch fabric
-and build the peer.
+project. In [Fabric](fabric) you find a details described how to patch fabric
+and build the peer. Set `FABRIC_PATH` to the location of Fabric in your `$GOPATH`.
 
-## Custom chaincode environment docker image
+    $ export FABRIC_PATH=${GOPATH}/src/github.com/hyperledger/fabric
+
+### Intel Attestation Service (IAS)
+
+We use Intel's Attestation Service to perform attestation with chaincode enclaves.
+What you need:
+* a Service Provider ID (SPID)
+* the (primary) api-key associated with your SPID
+
+In order to use Intel's Attestation Service (IAS), you need to register
+with Intel. On the [IAS EPID registration page](https://api.portal.trustedservices.intel.com/EPID-attestation)
+you can find more details on how to register and obtain your SPID plus corresponding api-key.
+
+We currently support both `linkable' and 'unlinkable' signatures for the attestation.
+The type of attestation used is selected based on the 'ECC_ATTESTATION_TYPE' environment variable:
+'epid_unlinkable' for unlinkable or 'epid_linkable' for linkable signatures. If you 
+do not define that environment variable, the chosen attestation method is 'epid_unlinkable'.
+Note that a mismatch between your IAS credentials and the linkable setting
+will result in an (HTTP) error '400' visible in the log-files when the
+code tries to verify the attestation. (Another cause for such error '400'
+could a mismatch between provided SPID and api key as specified below).
+
+Place your ias api key and your SPID in the ``ias`` folder as follows:
+
+    echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig/ias/api_key.txt
+    echo 'YOURSPID' | xxd -r -p > ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig/ias/spid.txt
+
+
+### Get NanoPB
+
+We use *nanopb*, a lightweight implementation of Protocol Buffers, inside the ledger enclave to parse blocks of
+transactions. Install nanopb by following the instruction below. For more detailed information consult the official
+nanopb documentation http://github.com/nanopb/nanopb. 
+
+    $ export NANOPB_PATH=/path-to/install/nanopb/
+    $ git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH}
+    $ cd ${NANOPB_PATH}
+    $ git checkout nanopb-0.3.9.2
+    $ cd generator/proto && make
+
+Make sure that you set `$NANOPB_PATH` as it is needed to build Fabric Private Chaincode.
+
+## Build the project
+
+Now it's time to build the project. Just hit ``make `` and go grep a coffee. It may take a few
+moments when you build the project for the first time.
+
+    $ make
+ 
+This will build all required components. 
 
 In [utils/fabric-ccenv-sgx](utils/fabric-ccenv-sgx) you can find instructions
 to create a custom fabric-ccenv docker image that is required to execute a
 chaincode within an enclave.
 
-## Build the chaincode enclave and ledger enclave
+The chaincode enclave [ecc_enclave](ecc_enclave) and the ledger
+enclave [tlcc_enclave](tlcc_enclave) can be build manually.
+Follow the instructions in the corresponding directories.
 
-Next build the chaincode enclave [ecc_enclave](ecc_enclave) and the ledger
-enclave [tlcc_enclave](tlcc_enclave). Follow the instructions in the
-corresponding directories.
-
-In the next step we need to integrate the enclave code into a Fabric
-chaincode.  Please follow the instructions in [ecc](ecc) for the chaincode
+For the integration of the enclave code into a Fabric
+chaincode, please follow the instructions in [ecc](ecc) for the chaincode
 enclave and [tlcc](tlcc) for the ledger enclave.
 
 In order to run and deploy a chaincode enclave we need to build the enclave
@@ -177,6 +226,11 @@ registry. See [ercc](ercc).
 
 Now we have all components we need to run the example auction chaincode in an enclave.
 
+
+## Run the example chaincode
+
+Once you have successfully built the project you can play with the auction chaincode.
+Just follow the description in [fabric](fabric#).
 
 # References
 

@@ -1,3 +1,5 @@
+include(${CMAKE_MODULE_PATH}/NanoPB.cmake)
+
 set(SOURCE_FILES
     asn1_utils.c
     crypto.cpp
@@ -13,10 +15,10 @@ set(COMMON_SOURCE_FILES
     ${COMMON_SOURCE_DIR}/base64/base64.cpp
     ${COMMON_SOURCE_DIR}/json/parson.c
     ${COMMON_SOURCE_DIR}/utils.c
-    ${COMMON_SOURCE_DIR}/protobuf/pb_common.c
-    ${COMMON_SOURCE_DIR}/protobuf/pb_decode.c
-    ${COMMON_SOURCE_DIR}/protobuf/pb_encode.c
     ${COMMON_SOURCE_DIR}/logging.c
+    ${NANOPB_PATH}/pb_common.c
+    ${NANOPB_PATH}/pb_decode.c
+    ${NANOPB_PATH}/pb_encode.c
 )
 
 set(PROTO_SOURCE_FILES
@@ -79,8 +81,8 @@ include_directories(
     ${COMMON_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}/base64
     ${COMMON_SOURCE_DIR}/enclave
-    ${COMMON_SOURCE_DIR}/protobuf
     ${COMMON_SOURCE_DIR}/json
+    ${NANOPB_PATH}
     ${SGX_SDK}/include
     ${SGX_SDK}/include/tlibc
     ${SGX_SDK}/include/libcxx

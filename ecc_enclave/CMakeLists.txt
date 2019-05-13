@@ -12,8 +12,3 @@ add_subdirectory(sgxcclib)
 
 set(BUILD_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/include ${CMAKE_BINARY_DIR}/lib)
 set(DEPLOY_DIR ${PROJECT_SOURCE_DIR}/../ecc/enclave)
-
-add_custom_target(deploy
-    COMMAND cp -rv ${BUILD_DIR} ${CMAKE_BINARY_DIR}/mrenclave.go ${DEPLOY_DIR}
-    COMMENT "Deploy ecclib to ${DEPLOY_DIR}"
-    DEPENDS enclave sgxcclib)
