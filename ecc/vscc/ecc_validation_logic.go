@@ -24,8 +24,8 @@ import (
 	"sort"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
-	sgx_utils "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
+	sgx_utils "github.com/hyperledger-labs/fabric-private-chaincode/utils"
 	commonerrors "github.com/hyperledger/fabric/common/errors"
 	"github.com/hyperledger/fabric/common/flogging"
 	. "github.com/hyperledger/fabric/core/handlers/validation/api/state"

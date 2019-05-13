@@ -20,7 +20,7 @@ First, build the chaincode and the validation plugin
 
 Fabric uses docker to deploy and run chaincodes in isolated containers. Normally, the peer creates the docker image
 automatically when a chaincode is installed.  In particular, it fetches the source code, builds the chaincode
-executable, and copies them into a new docker images based on the Fabric chaincode enviroment (`fabric-ccenv`) base
+executable, and copies them into a new docker images based on the Fabric chaincode environment (`fabric-ccenv`) base
 image.  Note that, since the peer is lazy, the docker image is not recreated if it already exists. The image name
 comprise of the peer name, the chaincode name, and a hash.
 
@@ -40,7 +40,7 @@ image has been created successfully. For example:
 
 You can see that the peer has successfully created the docker image comprising the `dummy` chaincode.
 
-Next, just run ``make docker`` to build and override the existing docker image with our secure chaincode. To verify that
+Next, just run ``make docker`` to build and override the existing docker image with our private chaincode. To verify that
 the image contains our enclave code, let's have a look inside the image and see if we can see an enclave folder.
 
     $ make docker

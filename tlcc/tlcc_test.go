@@ -22,8 +22,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hyperledger-labs/fabric-secure-chaincode/tlcc/enclave"
-	. "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
+	"github.com/hyperledger-labs/fabric-private-chaincode/tlcc/enclave"
+	. "github.com/hyperledger-labs/fabric-private-chaincode/utils"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/core/peer"
 	"github.com/spf13/viper"

@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hyperledger-labs/fabric-secure-chaincode/eval/benchmark/executor/worker"
+	"github.com/hyperledger-labs/fabric-private-chaincode/eval/benchmark/executor/worker"
 )
 
 // State is the state of the executor

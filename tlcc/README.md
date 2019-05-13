@@ -24,7 +24,7 @@ chaincode:
     systemPlugins:
         - enabled: true
         name: tlcc
-        path: /path-to/fabric-secure-chaincode/tlcc/tlcc.so
+        path: /path-to/fabric-private-chaincode/tlcc/tlcc.so
         invokableExternal: true
         invokableCC2CC: true
 ```
@@ -33,7 +33,7 @@ chaincode:
 
 When starting the peer make sure that `LD_LIBRARY_PATH` points to the enclave lib.
 
-    $ LD_LIBRARY_PATH=/path-to/fabric-secure-chaincode/tlcc/enclave/lib .build/bin/node start
+    $ LD_LIBRARY_PATH=/path-to/fabric-private-chaincode/tlcc/enclave/lib .build/bin/node start
 
 ## Join the channel
 
