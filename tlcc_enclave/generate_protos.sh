@@ -17,19 +17,6 @@ fi
 rm -rf $BUILD_DIR
 mkdir -p $BUILD_DIR
 
-
-# make sure that pb_common.c and pb_common.h are installed
-COMMON_PROTO_DIR=../common/protobuf
-
-if [ ! -d "$COMMON_PROTO_DIR" ]; then
-    mkdir -p $COMMON_PROTO_DIR;
-    cp $NANOPB_PATH/pb.h $COMMON_PROTO_DIR;
-    cp $NANOPB_PATH/pb_encode.* $COMMON_PROTO_DIR;
-    cp $NANOPB_PATH/pb_decode.* $COMMON_PROTO_DIR;
-    cp $NANOPB_PATH/pb_common.* $COMMON_PROTO_DIR;
-fi
-
-
 # compile google protos (timestamp)
 $(protoc "$PROTOC_OPTS" --proto_path="protos" --nanopb_out=$BUILD_DIR protos/google/protobuf/*.proto)
 
