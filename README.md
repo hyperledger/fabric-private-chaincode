@@ -118,7 +118,8 @@ After installing the SGX SDK and SGX SSL double check that ``SGX_SDK`` and
 ``SGX_SSL`` variables are set correctly in your env. In particular,
 the makefiles are configured with meaningful defaults for variables
 like ``SGX_SDK``, ``SGX_ARCH``, ``SGX_MODE``, ``SGX_BUILD`` or
-``SGX_SSL``.  However, if you have non-standard values for install
+``SGX_SSL``. Notice: by default, ``SGX_MODE=HW``.
+However, if you have non-standard values for install
 location or would like build with debug and/or simulator mode, you can
 override the default values by defining a corresponding environment
 variable, e.g., `export SGX_MODE=SIM SGX_BUILD=DEBUG
