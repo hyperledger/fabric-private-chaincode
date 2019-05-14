@@ -4,11 +4,11 @@ include $(TOP)/config.mk
 -include $(TOP)/config.override.mk
 
 .PHONY: all
-#all: build check test integration
-all: build test
+#all: build checks test integration
+all: build checks test
 
 .PHONY: build
-#.PHONY: check
+.PHONY: checks
 .PHONY: test
 #.PHONY: integration
 .PHONY: clean

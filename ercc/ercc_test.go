@@ -43,7 +43,7 @@ func TestEnclaveRegistry_Init(t *testing.T) {
 func TestEnclaveRegistry_Register(t *testing.T) {
 	ercc := NewTestErcc()
 	stub := shim.NewMockStub("ercc", ercc)
-	stub.Decorations["apiKey"] = []byte(mock.MOCK_ApiKey)
+	stub.Decorations["apiKey"] = mock.MOCK_API_KEY[:]
 
 	// Init
 	th.CheckInit(t, stub, [][]byte{})
@@ -56,7 +56,7 @@ func TestEnclaveRegistry_Register(t *testing.T) {
 func TestEnclaveRegistry_GetAttestationReport(t *testing.T) {
 	ercc := NewTestErcc()
 	stub := shim.NewMockStub("ercc", ercc)
-	stub.Decorations["apiKey"] = []byte(mock.MOCK_ApiKey)
+	stub.Decorations["apiKey"] = mock.MOCK_API_KEY[:]
 
 	// Init
 	th.CheckInit(t, stub, [][]byte{})
