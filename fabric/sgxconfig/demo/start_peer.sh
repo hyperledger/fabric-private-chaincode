@@ -4,6 +4,6 @@ SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
 
 # core.yaml does not understand environment variables, hence paths are relative to fabric/sgxconfig,
 # so make sure we always start peer from that location, regardless where script is invoked
-cd ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig
+cd ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/sgxconfig
 
-LD_LIBRARY_PATH=${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/tlcc/enclave/lib ${FABRIC_BIN_DIR}/peer node start
+LD_LIBRARY_PATH=${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/tlcc/enclave/lib ${FABRIC_BIN_DIR}/peer node start

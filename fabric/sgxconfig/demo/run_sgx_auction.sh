@@ -19,7 +19,7 @@ set -xe
 
 # core.yaml does not understand environment variables, hence paths are relative to fabric/sgxconfig,
 # so make sure we always start peer from that location, regardless where script is invoked
-cd ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig
+cd ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/sgxconfig
 
 peer=${FABRIC_BIN_DIR}/peer
 chanid=mychannel
@@ -45,7 +45,7 @@ sleep 3
 
 # ercc
 # - install, once per peer
-$peer chaincode install -n ercc -v 0 -p github.com/hyperledger-labs/fabric-secure-chaincode/ercc
+$peer chaincode install -n ercc -v 0 -p github.com/hyperledger-labs/fabric-private-chaincode/ercc
 sleep 1
 # - instantiate, once per channel, by single peer/admin
 $peer chaincode instantiate -n ercc -v 0 -c '{"args":["init"]}' -C $chanid -V ercc-vscc

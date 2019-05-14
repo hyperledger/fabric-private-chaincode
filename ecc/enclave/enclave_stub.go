@@ -24,9 +24,9 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/tlcc"
-	sgx_utils "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/tlcc"
+	sgx_utils "github.com/hyperledger-labs/fabric-private-chaincode/utils"
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"golang.org/x/sync/semaphore"

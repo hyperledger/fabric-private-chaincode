@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
 	"github.com/hyperledger/fabric/common/flogging"
 )
 

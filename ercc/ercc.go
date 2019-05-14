@@ -23,8 +23,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation"
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation/mock"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation/mock"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"

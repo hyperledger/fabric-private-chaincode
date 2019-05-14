@@ -6,7 +6,7 @@ apply our patches. https://github.com/hyperledger/fabric
 We assume that you are familiar with building Fabric manually; otherwise we highly
 recommend to spend some time to build Fabric and run a simple network with a
 few peers and a ordering service. In the examples, we also assume that you have
-fabric and secure-chaincode in the same directory-tree from $GOPATH.
+Fabric and Fabric Private Chaincode in the same directory-tree from $GOPATH.
 
 If you are new to Fabric, we recommend the Fabric documentation as your starting point. You should start with
 [installing](https://hyperledger-fabric.readthedocs.io/en/release-1.4/prereqs.html) Fabric dependencies and setting up
@@ -18,7 +18,7 @@ Clone fabric and checkout the 1.4.1 release.
 
     $ git clone --branch v1.4.1 https://github.com/hyperledger/fabric.git $GOPATH/src/github.com/hyperledger/fabric
     $ cd $GOPATH/src/github.com/hyperledger/fabric
-    $ git am ../../hyperledger-labs/fabric-secure-chaincode/fabric/*.patch
+    $ git am ../../hyperledger-labs/fabric-private-chaincode/fabric/*.patch
 
 When building the peer  make sure fabric is your ``$GOPATH`` and you enable the
 plugin feature. Otherwise our custom validation plugins will
@@ -42,7 +42,7 @@ for a simple consortium and a bunch of scripts to run the auction demo.
 
 ## Run the Auction
 
-Before you continue here build the main components of Fabric Secure Chaincode by going through the section `Custom
+Before you continue here build the main components of Fabric Private Chaincode by going through the section `Custom
 chaincode environment docker image` and `Build the chaincode enclave and ledger enclave` in main [README](../README.md)
 
 other components, such as the chaincode
@@ -54,7 +54,7 @@ unexpected results running on (partially) stale code!
 
 To run the demo you can use the scripts in
 [sgxconfig/demo](sgxconfig/demo). Make sure that the scripts point to your
-fabric-secure-chaincode directory. Note that for better demonstration
+Fabric Private Chaincode directory. Note that for better demonstration
 transaction arguments are in clear.
 
 Before you start the ordering service and the peer you should create a channel
@@ -71,7 +71,7 @@ see the following error:
     Incorrect number of arguments. Expecting 4
 
 Don't worry, that is OK! :) The short answer to resolve this is to just
-rebuild ecc. Go to ``${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/ecc`` and run
+rebuild ecc. Go to ``${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/ecc`` and run
 ``make docker``.  You can, then, re-run ``run_sgx_auction.sh`` and the
 error is gone.
 

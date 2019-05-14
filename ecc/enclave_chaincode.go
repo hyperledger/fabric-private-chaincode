@@ -21,11 +21,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/enclave"
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/ercc"
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/tlcc"
-	"github.com/hyperledger-labs/fabric-secure-chaincode/utils"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/enclave"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/ercc"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/tlcc"
+	"github.com/hyperledger-labs/fabric-private-chaincode/utils"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )

@@ -1,7 +1,7 @@
-# Hyperledger Fabric Secure Chaincode Execution
+# Hyperledger Fabric Private Chaincode
 
-This lab enables Secure Chaincode Execution using Intel SGX for Hyperledger
-Fabric.
+Hyperledger Fabric Private Chaincode (FPC) enables the execution of chaincodes
+using Intel SGX for Hyperledger Fabric.
 
 The transparency and resilience gained from blockchain protocols ensure the
 integrity of blockchain applications and yet contradicts the goal to keep
@@ -20,7 +20,7 @@ This lab provides a framework to develop and execute Fabric chaincode within
 an enclave.  Furthermore, Fabric extensions for chaincode enclave registration
 and transaction verification are provided.
 
-This lab proposes an architecture to enable Secure Chaincode Execution using
+This lab proposes an architecture to enable private chaincode execution using
 Intel SGX for Hyperledger Fabric as presented and published in the paper:
 
 * Marcus Brandenburger, Christian Cachin, Rüdiger Kapitza, Alessandro
@@ -150,7 +150,7 @@ Checkout the code and make sure it is on your ``GOPATH``.
 (Important: we assume in this documentation and default configuration
 that your GOPATH has a _single_ root-directoy!)
 
-    $ git clone https://github.com/hyperledger-labs/fabric-secure-chaincode.git $GOPATH/src/hyperledger-labs/fabric-secure-chaincode
+    $ git clone https://github.com/hyperledger-labs/fabric-private-chaincode.git $GOPATH/src/hyperledger-labs/fabric-private-chaincode
 
 ### Patch your Fabric
 
@@ -182,8 +182,8 @@ could a mismatch between provided SPID and api key as specified below).
 
 Place your ias api key and your SPID in the ``ias`` folder as follows:
 
-    echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig/ias/api_key.txt
-    echo 'YOURSPID' | xxd -r -p > ${GOPATH}/src/github.com/hyperledger-labs/fabric-secure-chaincode/fabric/sgxconfig/ias/spid.txt
+    echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/sgxconfig/ias/api_key.txt
+    echo 'YOURSPID' | xxd -r -p > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/sgxconfig/ias/spid.txt
 
 
 ### Get NanoPB
@@ -239,8 +239,8 @@ Just follow the description in [fabric](fabric#).
   Solution for Hyperledger Fabric. https://arxiv.org/abs/1805.08541
 
 # Project Status
-Hyperledger Fabric Secure Chaincode operates as a Hyperledger Labs project.
-This code is provided solely to demonstrate basic Fabric Secure Chaincode
+Hyperledger Fabric Private Chaincode operates as a Hyperledger Labs project.
+This code is provided solely to demonstrate basic Fabric Private Chaincode
 mechanisms and to facilitate collaboration to refine the project architecture
 and define minimum viable product requirements. The code provided in this
 repository is prototype code and not intended for production use.
@@ -255,6 +255,6 @@ repository is prototype code and not intended for production use.
 [Gari Singh](https://github.com/mastersingh24) (garis@us.ibm.com)
 
 # License
-Hyperledger Fabric Secure Chaincode Execution source code files are made
+Hyperledger Fabric Private Chaincode source code files are made
 available under the Apache License, Version 2.0 (Apache-2.0), located in the
 [LICENSE file](LICENSE).

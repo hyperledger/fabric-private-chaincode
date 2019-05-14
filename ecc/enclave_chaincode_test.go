@@ -27,12 +27,12 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/crypto"
-	enc "github.com/hyperledger-labs/fabric-secure-chaincode/ecc/enclave"
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/ercc"
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ecc/tlcc"
-	"github.com/hyperledger-labs/fabric-secure-chaincode/eval/benchmark/executor"
-	th "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
+	enc "github.com/hyperledger-labs/fabric-private-chaincode/ecc/enclave"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/ercc"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/tlcc"
+	"github.com/hyperledger-labs/fabric-private-chaincode/eval/benchmark/executor"
+	th "github.com/hyperledger-labs/fabric-private-chaincode/utils"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )

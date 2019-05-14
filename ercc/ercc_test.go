@@ -22,9 +22,9 @@ import (
 	"encoding/pem"
 	"testing"
 
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation"
-	"github.com/hyperledger-labs/fabric-secure-chaincode/ercc/attestation/mock"
-	th "github.com/hyperledger-labs/fabric-secure-chaincode/utils"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation/mock"
+	th "github.com/hyperledger-labs/fabric-private-chaincode/utils"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
