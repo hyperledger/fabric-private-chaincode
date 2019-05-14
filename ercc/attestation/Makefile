@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.PHONY: all clean
+TOP = ../..
+include $(TOP)/build.mk
+
+.PHONY: all clean .sgx_mode
 
 IAS_GO_DEFINES=
 
@@ -20,13 +23,25 @@ ifeq (${SGX_MODE}, HW)
 IAS_GO_DEFINES+=-DUSE_SGX_HARDWARE_MODE
 endif
 
+TEMPLATE_SUFFIX=.template
 GO_TARGETS=ias.go verifier.go
+GO_TEMPLATES=$(addsuffix $(TEMPLATE_SUFFIX), $(GO_TARGETS))
 
-all: $(GO_TARGETS)
+# put a dependency on the SGX_MODE environment variable
+ifneq "$(SGX_MODE)" "$(shell cat .sgx_mode 2>/dev/null)"
+SGX_MODE_DEPENDENCY=.sgx_mode
+else
+SGX_MODE_DEPENDENCY=
+endif
 
-$(GO_TARGETS):
-	$(CC) -E -P $(IAS_GO_DEFINES) - < $@.template > $@
+all: $(SGX_MODE_DEPENDENCY) $(GO_TARGETS)
+
+$(GO_TARGETS): $(SGX_MODE_DEPENDENCY) $(GO_TEMPLATES)
+	$(CC) -E -P $(IAS_GO_DEFINES) - < $@$(TEMPLATE_SUFFIX) > $@
 	gofmt -w $@ && goimports -w $@
 
 clean:
-	rm -rf $(GO_TARGETS)
+	rm -rf $(GO_TARGETS) .sgx_mode
+
+.sgx_mode:
+	@echo $(SGX_MODE) > $@
