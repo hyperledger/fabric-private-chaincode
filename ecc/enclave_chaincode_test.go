@@ -220,20 +220,17 @@ func TestEnclaveChaincode_EncryptedInvoke(t *testing.T) {
 	// transform enclave pk
 	pk, err := x509.ParsePKIXPublicKey(r.PublicKey)
 	if err != nil {
-		fmt.Errorf("Failed parsing ecdsa public key [%s]", err)
-		t.FailNow()
+		t.Errorf("failed parsing ecdsa public key [%s]", err)
 	}
 	enclavePub, ok := pk.(*ecdsa.PublicKey)
 	if !ok {
-		fmt.Errorf("Verification key is not of type ECDSA")
-		t.FailNow()
+		t.Error("verification key is not of type ECDSA")
 	}
 
 	// gen my keypair
 	priv, pub, err := crypto.GenKeyPair()
 	if err != nil {
-		fmt.Errorf("Failed to generate key pair [%s]", err)
-		t.FailNow()
+		t.Errorf("failed to generate key pair [%s]", err)
 	}
 
 	// gen shared secret
