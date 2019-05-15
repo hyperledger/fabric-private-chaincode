@@ -27,7 +27,7 @@ ERR_MSG = "ecc_enclave build does not exist!"
 
 ecc_enclave:
 	@if [ ! -d $(ECC_ENCLAVE_BUILD)/lib ]; then echo $(ERR_MSG); exit 1; fi
-	@if [ ! -d $(ECC_ENCLAVE_BUILD)/include]; then echo $(ERR_MSG); exit 1; fi
+	@if [ ! -d $(ECC_ENCLAVE_BUILD)/include ]; then echo $(ERR_MSG); exit 1; fi
 
 ecc: ecc_enclave
 	$(GO) get golang.org/x/sync/semaphore
