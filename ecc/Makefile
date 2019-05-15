@@ -14,6 +14,8 @@ VSCC_OUT = ecc-vscc.so
 
 DOCKER_CONTAINER = $(PEER_NAME)-$(CC_NAME)-0
 DOCKER_IMAGE ?= $$(docker images | grep -- -$(CC_NAME)- | awk '{print $$1;}')
+DOCKER_CONTAINER_ID?=$$(docker ps | grep -- -$(CC_NAME)- | awk '{print $$1;}')
+
 
 #it seems that tests for ecc are broken;
 #TODO fix tests and include test target to all
@@ -72,9 +74,9 @@ docker-run:
 		chaincode
 
 docker-stop:
-	-docker stop $(DOCKER_CONTAINER)
-	-docker rm $(DOCKER_CONTAINER)
+	-if [ ! -z "$(DOCKER_CONTAINER_ID)" ]; then docker stop $(DOCKER_CONTAINER); fi
+	-if [ ! -z "$(DOCKER_CONTAINER_ID)" ]; then docker rm $(DOCKER_CONTAINER); fi
 
 docker-clean: docker-stop
-	-docker rmi $(DOCKER_IMAGE)
+	-if [ ! -z "$(DOCKER_IMAGE)" ]; then docker rmi -f $(DOCKER_IMAGE); fi
 
