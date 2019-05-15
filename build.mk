@@ -1,3 +1,7 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 include $(TOP)/config.mk
 
 # optionlly allow local overriding defaults
