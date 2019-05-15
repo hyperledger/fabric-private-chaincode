@@ -58,6 +58,10 @@ clean: docker-clean
 #	rm enclave/mrenclave.go
 
 docker:
+	@if [ -z "${DOCKER_IMAGE}" ]; then\
+		echo "\033[0;31mERROR: no $(CC_NAME) docker image found\033[0m";\
+		exit 1;\
+	fi
 	$(DOCKER) build -t $(DOCKER_IMAGE) -f Dockerfile ..
 
 docker-run:
