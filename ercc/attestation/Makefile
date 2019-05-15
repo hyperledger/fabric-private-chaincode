@@ -15,7 +15,7 @@
 TOP = ../..
 include $(TOP)/build.mk
 
-.PHONY: all clean .sgx_mode
+.PHONY: .sgx_mode
 
 IAS_GO_DEFINES=
 
