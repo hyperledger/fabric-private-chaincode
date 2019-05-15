@@ -29,7 +29,7 @@ build: $(BUILD_DIR) protos
 .PHONY: enclave-clean
 enclave-clean:
 	-rm -rf $(BUILD_DIR)
-	-rm enclave/*_t.*
-	-rm trusted_ledger/*_u.*
+	-rm -f enclave/*_t.*
+	-rm -f trusted_ledger/*_u.*
 
 clean: enclave-clean protos-clean
