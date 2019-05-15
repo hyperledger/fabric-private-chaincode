@@ -19,5 +19,5 @@ build: $(BUILD_DIR)
 
 clean:
 	-rm -rf $(BUILD_DIR)
-	-rm enclave/*_t.*
-	-rm sgxcclib/*_u.*
+	-rm -f enclave/*_t.*
+	-rm -f sgxcclib/*_u.*
