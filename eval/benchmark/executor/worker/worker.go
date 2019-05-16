@@ -1,3 +1,9 @@
+/*
+* Copyright IBM Corp. All Rights Reserved.
+*
+* SPDX-License-Identifier: Apache-2.0
+ */
+
 package worker
 
 // State is the state of a Worker
