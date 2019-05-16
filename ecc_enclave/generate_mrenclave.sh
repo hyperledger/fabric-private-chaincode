@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 build_dir=$1
 enclave_dir=$2
 

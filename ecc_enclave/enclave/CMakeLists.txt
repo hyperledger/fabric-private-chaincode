@@ -1,3 +1,7 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 set(SOURCE_FILES
     auction/auction_cc.cpp
     auction/auction_json.cpp
