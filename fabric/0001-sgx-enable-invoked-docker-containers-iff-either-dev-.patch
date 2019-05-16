@@ -1,0 +1,72 @@
+From 17260b2070f7e58b8861db5d550874816bfcc000 Mon Sep 17 00:00:00 2001
+From: Michael Steiner <michael.steiner@intel.com>
+Date: Fri, 10 May 2019 21:54:07 -0700
+Subject: [PATCH] - sgx-enable invoked docker containers iff either /dev/sgx or
+ /dev/isgx exist
+
+---
+ .../dockercontroller/dockercontroller.go      | 27 ++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/core/container/dockercontroller/dockercontroller.go b/core/container/dockercontroller/dockercontroller.go
+index 2a709ed0b..53717139c 100644
+--- a/core/container/dockercontroller/dockercontroller.go
++++ b/core/container/dockercontroller/dockercontroller.go
+@@ -16,6 +16,7 @@ import (
+ 	"fmt"
+ 	"io"
+ 	"regexp"
++	"os"
+ 	"strconv"
+ 	"strings"
+ 	"time"
+@@ -141,7 +142,18 @@ func getDockerHostConfig() *docker.HostConfig {
+ 	}
+ 	dockerLogger.Debugf("docker container hostconfig NetworkMode: %s", networkMode)
+ 
+-	return &docker.HostConfig{
++	// Check whether sgx driver (and which version) exists
++	hasSGX := false
++	sgxDeviceName := ""
++	for _, name := range []string{ "/dev/sgx", "/dev/isgx" } {
++		if _, err := os.Stat(name); err == nil {
++			hasSGX = true
++			sgxDeviceName=name
++			break
++		}
++        }
++
++	config := &docker.HostConfig{
+ 		CapAdd:  viper.GetStringSlice(dockerKey("CapAdd")),
+ 		CapDrop: viper.GetStringSlice(dockerKey("CapDrop")),
+ 
+@@ -169,6 +181,18 @@ func getDockerHostConfig() *docker.HostConfig {
+ 		CPUPeriod:        getInt64("CpuPeriod"),
+ 		BlkioWeight:      getInt64("BlkioWeight"),
+ 	}
++	if hasSGX {
++		dockerLogger.Debugf("docker container enabled for SGX for device %s", sgxDeviceName)
++		config.Binds = []string{"/var/run/aesmd:/var/run/aesmd"}
++		config.Devices = []docker.Device{
++			{
++				PathOnHost:        sgxDeviceName,
++				PathInContainer:   sgxDeviceName,
++				CgroupPermissions: "rwm",
++			},
++		}
++	}
++	return config
+ }
+ 
+ func (vm *DockerVM) createContainer(client dockerClient, imageID, containerID string, args, env []string, attachStdout bool) error {
+@@ -182,6 +206,7 @@ func (vm *DockerVM) createContainer(client dockerClient, imageID, containerID st
+ 			Env:          env,
+ 			AttachStdout: attachStdout,
+ 			AttachStderr: attachStdout,
++			Volumes:      map[string]struct{}{"/var/run/aesmd": {}},
+ 		},
+ 		HostConfig: getDockerHostConfig(),
+ 	})
+-- 
+2.17.1
+

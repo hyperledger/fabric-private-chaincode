@@ -1,4 +1,5 @@
 /*
+* Copyright Intel Corp. 2019 All Rights Reserved.
 * Copyright IBM Corp. 2018 All Rights Reserved.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,19 +17,25 @@
 
 package attestation
 
+#ifdef USE_SGX_HARDWARE_MODE
+
 import (
 	"bytes"
 	"crypto/tls"
-	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
-	"encoding/pem"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
+)
 
+#endif
+
+import (
+	"crypto/x509"
+	"encoding/pem"
+	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
@@ -90,6 +97,8 @@ func NewIAS() IntelAttestationService {
 // Calling Intel qualifies ercc as a system chaincode since in the future chaincodes might be restricted and can not make call outside their docker container
 func (ias *intelAttestationServiceImpl) RequestAttestationReport(apiKey string, quoteAsBytes []byte) (IASAttestationReport, error) {
 
+#ifdef USE_SGX_HARDWARE_MODE
+
 	// Setup HTTPS client
 	tlsConfig := &tls.Config{
 		// RootCAs:            caCertPool,
@@ -147,6 +156,14 @@ func (ias *intelAttestationServiceImpl) RequestAttestationReport(apiKey string, 
 	}
 
 	return report, nil
+
+#else // USE_SGX_HARDWARE_MODE
+
+    logger.Debugf("Returning empty IAS attestation report (simulation mode)")
+    return IASAttestationReport{}, nil
+
+#endif
+
 }
 
 func (ias *intelAttestationServiceImpl) GetIntelVerificationKey() (interface{}, error) {

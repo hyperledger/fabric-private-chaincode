@@ -1,3 +1,4 @@
+# Copyright 2019 Intel Corporation
 # Copyright IBM Corp. All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -10,7 +11,17 @@ VSCC_OUT = ercc-vscc.so
 DECO_SRC = attestation/ias_credentials/decoration.go
 DECO_OUT = ercc-decorator.so
 
-build: ercc vscc-plugin decorator-plugin
+SUBDIRS = attestation
+
+.PHONY: $(SUBDIRS)
+
+$(SUBDIRS):
+	$(MAKE) -C $(SUBDIRS)
+
+$(SUBDIRS)-clean:
+	$(MAKE) -C $(SUBDIRS) clean
+
+build: $(SUBDIRS) ercc vscc-plugin decorator-plugin
 
 ercc:
 	$(GO) build
@@ -24,7 +35,7 @@ decorator-plugin: $(DECO_SRC)
 test: build
 	$(GO) test -v
 
-clean: docker-clean
+clean: docker-clean $(SUBDIRS)-clean
 	$(GO) $@
 
 ERCC_NAME?=ercc

@@ -7,3 +7,5 @@ GO := go $(GOFLAGS)
 
 DOCKERFLAGS :=
 DOCKER := docker $(DOCKERFLAGS)
+
+export SGX_MODE ?= HW
