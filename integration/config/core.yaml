@@ -35,7 +35,7 @@ peer:
     # in the same organization. For peers in other organization, see
     # gossip.externalEndpoint for more info.
     # When used as CLI config, this means the peer's endpoint to interact with
-    address: 0.0.0.0:7051
+    address: 127.0.0.1:7051 # Note: setting to 127.0.0.1 restricts to localhost but does make it work behind proxies
 
     # Whether the Peer should programmatically determine its address
     # This case is useful for docker containers.
