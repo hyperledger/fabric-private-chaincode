@@ -14,7 +14,7 @@ checks: license linter
 
 license:
 	@echo "License: Running licence checks.."
-	@sh ${GOPATH}/src/github.com/hyperledger/fabric/scripts/check_license.sh
+	@${GOPATH}/src/github.com/hyperledger/fabric/scripts/check_license.sh
 
 linter:
 	@echo "LINT: Running code checks.."
