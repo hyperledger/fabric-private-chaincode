@@ -5,7 +5,7 @@
 TOP = ..
 include $(TOP)/build.mk
 
-LD_LIBRARY_PATH := LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:./enclave/lib
+LD_LIBRARY_PATH := LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$$(pwd)/enclave/lib
 SRC := tlcc.go
 OUTPUT := tlcc.so
 
@@ -16,7 +16,7 @@ $(OUTPUT): $(SRC)
 build: $(OUTPUT)
 
 test: build
-	$(ENV_VARS) $(GO) $@ -test.v
+	$(LD_LIBRARY_PATH) $(GO) $@ -test.v ./enclave
 
 clean:
 	$(GO) clean

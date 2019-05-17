@@ -26,6 +26,9 @@ $(BUILD_DIR): protos
 build: $(BUILD_DIR) protos
 	$(MAKE) all --directory=$<
 
+test:
+	$(MAKE) $@ --directory=$(BUILD_DIR)
+
 .PHONY: enclave-clean
 enclave-clean:
 	-rm -rf $(BUILD_DIR)
