@@ -1,4 +1,11 @@
+# Copyright 2019 Intel Corporation
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 ercc
 ercc-decorator.so
 ercc-vscc.so
 tags
+provider.go
+.sgx_mode
