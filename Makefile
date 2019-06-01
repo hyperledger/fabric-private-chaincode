@@ -5,7 +5,7 @@
 TOP = .
 include $(TOP)/build.mk
 
-SUB_DIRS = utils/fabric-ccenv-sgx ercc ecc_enclave ecc tlcc_enclave tlcc
+SUB_DIRS = utils/fabric-ccenv-sgx ercc ecc_enclave ecc tlcc_enclave tlcc integration
 
 all build test clean :
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@;)

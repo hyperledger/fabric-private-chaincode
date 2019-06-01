@@ -1,3 +1,4 @@
+# Copyright Intel Corp. All Rights Reserved.
 # Copyright IBM Corp. All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -156,7 +157,7 @@ FileLedger:
     # Location: The directory to store the blocks in.
     # NOTE: If this is unset, a new temporary location will be chosen every time
     # the orderer is restarted, using the prefix specified by Prefix.
-    Location: /tmp/hyperledger/production/orderer
+    Location: /tmp/hyperledger/test/orderer
 
     # The prefix to use when generating a ledger directory in temporary space.
     # Otherwise, this value is ignored.
@@ -370,8 +371,8 @@ Consensus:
 
     # WALDir specifies the location at which Write Ahead Logs for etcd/raft are
     # stored. Each channel will have its own subdir named after channel ID.
-    WALDir: /tmp/hyperledger/production/orderer/etcdraft/wal
+    WALDir: /tmp/hyperledger/test/orderer/etcdraft/wal
 
     # SnapDir specifies the location at which snapshots for etcd/raft are
     # stored. Each channel will have its own subdir named after channel ID.
-    SnapDir: /tmp/hyperledger/production/orderer/etcdraft/snapshot
+    SnapDir: /tmp/hyperledger/test/orderer/etcdraft/snapshot

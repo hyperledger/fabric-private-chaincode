@@ -10,6 +10,7 @@ include $(TOP)/config.mk
 .PHONY: all
 #all: build checks test integration
 all: build checks test
+test: build checks
 
 .PHONY: build
 .PHONY: checks
