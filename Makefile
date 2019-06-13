@@ -16,8 +16,11 @@ license:
 	@echo "License: Running licence checks.."
 	@${GOPATH}/src/github.com/hyperledger/fabric/scripts/check_license.sh
 
-linter:
+linter: gotools build
 	@echo "LINT: Running code checks.."
-	@./scripts/golinter.sh
+	@cd $$(/bin/pwd) && ./scripts/golinter.sh
 	@./scripts/cpplinter.sh
 
+gotools:
+	# install goimports if not present
+	$(GO) get golang.org/x/tools/cmd/goimports
