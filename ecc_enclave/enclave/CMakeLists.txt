@@ -79,7 +79,7 @@ add_custom_command(TARGET enclave
 
 add_custom_command(TARGET enclave
     POST_BUILD
-    COMMAND ${PROJECT_SOURCE_DIR}/generate_mrenclave.sh ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMAND ${COMMON_SOURCE_DIR}/enclave/generate_mrenclave.sh ${CMAKE_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}
     COMMAND cp ${CMAKE_BINARY_DIR}/mrenclave ${CMAKE_BINARY_DIR}/lib
     COMMAND cp ${CMAKE_BINARY_DIR}/enclave.signed.so ${CMAKE_BINARY_DIR}/lib
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
