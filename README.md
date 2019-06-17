@@ -182,8 +182,8 @@ could a mismatch between provided SPID and api key as specified below).
 
 Place your ias api key and your SPID in the ``ias`` folder as follows:
 
-    echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/sgxconfig/ias/api_key.txt
-    echo 'YOURSPID' | xxd -r -p > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/sgxconfig/ias/spid.txt
+    echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/api_key.txt
+    echo 'YOURSPID' | xxd -r -p > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/spid.txt
 
 
 ### Get NanoPB

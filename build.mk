@@ -9,7 +9,8 @@ include $(TOP)/config.mk
 
 .PHONY: all
 #all: build checks test integration
-all: build checks test
+all: build test checks # keep checks last as license test is brittle ...
+test: build
 
 .PHONY: build
 .PHONY: checks

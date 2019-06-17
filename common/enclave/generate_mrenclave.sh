@@ -4,6 +4,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+# abort on error
+set -e
+
 build_dir=$1
 enclave_dir=$2
 

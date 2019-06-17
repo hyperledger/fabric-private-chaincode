@@ -1,4 +1,5 @@
 # Copyright IBM Corp. All Rights Reserved.
+# Copyright Intel Corp. All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -11,10 +12,10 @@
 peer:
 
     # The Peer id is used for identifying this Peer instance.
-    id: jdoe
+    id: jdoe_test
 
     # The networkId allows for logical seperation of networks
-    networkId: dev
+    networkId: dev_test
 
     # The Address at local network interface this Peer will listen on.
     # By default, it will listen on all network interfaces
@@ -35,7 +36,7 @@ peer:
     # in the same organization. For peers in other organization, see
     # gossip.externalEndpoint for more info.
     # When used as CLI config, this means the peer's endpoint to interact with
-    address: 0.0.0.0:7051
+    address: 127.0.0.1:7051 # Note: setting to 127.0.0.1 restricts to localhost but does make it work behind proxies
 
     # Whether the Peer should programmatically determine its address
     # This case is useful for docker containers.
@@ -240,7 +241,7 @@ peer:
     # Path on the file system where peer will store data (eg ledger). This
     # location must be access control protected to prevent unintended
     # modification that might corrupt the peer operations.
-    fileSystemPath: /tmp/hyperledger/production
+    fileSystemPath: /tmp/hyperledger/test
 
     # BCCSP (Blockchain crypto provider): Select which crypto implementation or
     # library to use
