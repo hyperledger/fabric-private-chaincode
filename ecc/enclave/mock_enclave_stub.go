@@ -14,21 +14,27 @@
 * limitations under the License.
  */
 
-package mock
+package enclave
 
-import "github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
-
-type MockVerifier struct {
+// MockStub implements the interface
+type MockStub struct {
 }
 
-func (v *MockVerifier) VerifyAttestionReport(verificationPubKey interface{}, report attestation.IASAttestationReport) (bool, error) {
-	return true, nil
+func (m *MockStub) Attestation(spid []byte) ([]byte, []byte, error) {
+	return []byte{}, []byte{}, nil
 }
 
-func (v *MockVerifier) CheckMrEnclave(mrEnclaveBase64 string, report attestation.IASAttestationReport) (bool, error) {
-	return true, nil
+func (m *MockStub) Invoke(args []byte, input []byte) ([]byte, []byte, []byte, error) {
+	return []byte{}, []byte{}, []byte{}, nil
 }
 
-func (v *MockVerifier) CheckEnclavePkHash(pkBytes []byte, report attestation.IASAttestationReport) (bool, error) {
-	return true, nil
+func (m *MockStub) GetPublicKey() ([]byte, error) {
+	return []byte{}, nil
+}
+
+func (m *MockStub) Create(enclaveLibFile string) error {
+	return nil
+}
+func (m *MockStub) Destroy() error {
+	return nil
 }

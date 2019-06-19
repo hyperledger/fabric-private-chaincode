@@ -17,3 +17,4 @@ add_subdirectory(trusted_ledger)
 add_subdirectory(test)
 
 set(BUILD_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/include ${CMAKE_BINARY_DIR}/lib)
+set(DEPLOY_DIR ${PROJECT_SOURCE_DIR}/../tlcc/enclave)

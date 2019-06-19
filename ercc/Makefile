@@ -11,33 +11,17 @@ VSCC_OUT = ercc-vscc.so
 DECO_SRC = attestation/ias_credentials/decoration.go
 DECO_OUT = ercc-decorator.so
 
-build: provider ercc vscc-plugin decorator-plugin
+SUBDIRS = attestation
 
-.PHONY: .sgx_mode
+.PHONY: $(SUBDIRS)
 
-IAS_GO_DEFINES=
+$(SUBDIRS):
+	$(MAKE) -C $(SUBDIRS)
 
-ifeq (${SGX_MODE}, HW)
-IAS_GO_DEFINES+=-DUSE_SGX_HARDWARE_MODE
-endif
+$(SUBDIRS)-clean:
+	$(MAKE) -C $(SUBDIRS) clean
 
-TEMPLATE_SUFFIX=.template
-GO_TARGETS=provider.go
-GO_TEMPLATES=$(addsuffix $(TEMPLATE_SUFFIX), $(GO_TARGETS))
-
-# put a dependency on the SGX_MODE environment variable
-ifneq "$(SGX_MODE)" "$(shell cat .sgx_mode 2>/dev/null)"
-SGX_MODE_DEPENDENCY=.sgx_mode
-else
-SGX_MODE_DEPENDENCY=
-endif
-
-provider: $(SGX_MODE_DEPENDENCY) $(GO_TARGETS)
-
-$(GO_TARGETS): $(SGX_MODE_DEPENDENCY) $(GO_TEMPLATES)
-	$(CC) -E -P $(IAS_GO_DEFINES) - < $@$(TEMPLATE_SUFFIX) > $@
-	gofmt -w $@ && goimports -w $@
-
+build: $(SUBDIRS) ercc vscc-plugin decorator-plugin
 
 ercc:
 	$(GO) build
@@ -49,14 +33,10 @@ decorator-plugin: $(DECO_SRC)
 	$(GO) build -o $(DECO_OUT) -buildmode=plugin $^
 
 test: build
-	$(GO) test -v ./...
+	$(GO) test -v
 
-clean: docker-clean
+clean: docker-clean $(SUBDIRS)-clean
 	$(GO) $@
-	rm -rf $(GO_TARGETS) .sgx_mode
-
-.sgx_mode:
-	@echo $(SGX_MODE) > $@
 
 ERCC_NAME?=ercc
 DOCKER_IMAGE?=$$(docker images | grep -- -$(ERCC_NAME)- | awk '{print $$1;}')

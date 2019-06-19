@@ -1,7 +1,17 @@
 /*
-* Copyright IBM Corp. All Rights Reserved.
+* Copyright IBM Corp. 2018 All Rights Reserved.
 *
-* SPDX-License-Identifier: Apache-2.0
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
  */
 
 package main
@@ -23,8 +33,8 @@ import (
 	"github.com/hyperledger/fabric/protos/utils"
 	"github.com/pkg/errors"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/ercc"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
+	//"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation/mock"
 	sgxutil "github.com/hyperledger-labs/fabric-private-chaincode/utils"
 )
 
@@ -35,7 +45,7 @@ var logger = flogging.MustGetLogger("vscc")
 func New(stateFetcher StateFetcher) *VSCCERCC {
 	return &VSCCERCC{
 		// ra: &mock.MockVerifier{},
-		ra: ercc.GetVerifier(),
+		ra: &attestation.VerifierImpl{},
 		sf: stateFetcher,
 	}
 }
@@ -141,9 +151,9 @@ func (t *VSCCERCC) checkAttestation(respPayload *peer.ChaincodeAction) error {
 		}
 
 		// verify attestation report
-		isValid, err := t.ra.VerifyAttestationReport(verificationPK, attestationReport)
+		isValid, err := t.ra.VerifyAttestionReport(verificationPK, attestationReport)
 		if err != nil {
-			return fmt.Errorf("VerifyAttestationReport failed, err %s", err)
+			return fmt.Errorf("VerifyAttestionReport failed, err %s", err)
 		}
 		if !isValid {
 			return errors.New("Attestation report is not valid")

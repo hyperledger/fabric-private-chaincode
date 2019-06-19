@@ -1,109 +1,66 @@
 /*
-* Copyright IBM Corp. All Rights Reserved.
+* Copyright IBM Corp. 2018 All Rights Reserved.
 *
-* SPDX-License-Identifier: Apache-2.0
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
  */
 
-package attestation_test
+package attestation
 
 import (
 	"encoding/base64"
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-
-	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"testing"
 )
 
-const (
-	quote  = "dummyQuote"
-	apiKey = "dummyAPiKey"
-)
+const enclavePK = `MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEE9lPD9QkW9oxWlFvwABrmseYAVvoBvvmTt3jzV0sdASR2KDDQPvz8EcyqfomEOTwSz7E+mISktMxYqofRr+4Yw==`
+const enclavePkHash = `qpEqqBaEkNz9bTO77QK8+CLbvaEN1NATs7ajRTzq70k=`
+const quote = `AgAAAG4NAAAEAAQAAAAAACVC+Q1jMSwdovbiGHbw44nMDb+CvAvF0FJF/38NWjOqAgIC/wEBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABwAAAAAAAAAHAAAAAAAAAJiu1hyR8lijfGjtSUMpdpVkfse75gCMwRGwoSZQ6+uRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACD1xnnferKFHD2uvYqTXdDA8iZ22kCD5xw7h38CMfOngAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD3TvjLWa36sT/kCIRYXhtYoRQ61x2u48Q16bzoq8w6egAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAqAIAAFXdt6ObnofTxKVhK9Eafot/LsUGgr4546W34JUey7aqo9b6mpeP3X6W/DMIc1JbIXpFd5+mHWP+R7swgSEYNg+RUVbjkZ38nOJHzIl0E7Dgxs8X8iilH+hxpcPiYQphpIcBS5NUCmDn6Wsz/I+Dbpbt3e2G74WFPLHqDn+JHva5vtaYHd7cAfmPIhZZXXMCQJ8um5Jcer4L16VOugt8LEE0i3FqLb0khMYUHmEsqWuh1Fss5bNUuRDqotz6XTBq0uQ+nCfzv9ZsT2CDihsuQTzgU0BiZZuf06Aw9NQdywg+vTZoqyWw0Ca/jsAt+OpbQeQzDoH3HAvnaRvRByozHqKQ1Z83vVny2DQPVwWm6hxIEUCDVE2A/fkbo+UjR12fD8XWUw3xXfd6Dob9N2gBAAB1NRKH8uhAp94KvF/EF76xtBOYnlpAkbv4pYsmJfWkt0CtKtt/lvMQqkmZwSi8LQ93XBiAdVEKt255ycfFxcmAHPFPrjwHMb0/5wKNXa9vyBlgJ63tU/8U1JxujZ6QdS05xiQbKb+l2y6Nm++iw1Ba7BBJgQR+xDBud/VMjjLI3/nMlA9JTpVw9sSTsWdqHzA4bJm2P7fxkxL4wUYe6w+1uWGnT8XFwuJOfw1bUKZWlGZCOe8iLiPmDOmKUegpiLy0wY73gk+5bJhq1L8b4EXJMoSVoS4JgzYajh8oEBaUheiR4ze8sD9KuF0y+dfQklcMKdONyXMcI8QcZfj19iQy2FvXY8Ca0AoBkQMk4bn49e19ePChDUhrk7ynGGy5d9Wo8g3aNZLNWol5LuwCduTYv83xbHeKDkEsvk23m5NiXlVnDo6Pwu+32w57sX4K4CcojQZvJRYfFUuRCoN05TY0oJ0qvvZ1pAEAQAuBfOucbX6QZZ4qPcMR`
+const apiKey = "dummyAPiKey"
 
-var _ = Describe("Ias", func() {
+// TODO: below might have to be fixed for changes related to new IAS auth method (issue #47, PR #49).
+// However, i have no idea where NewIASCredentialProviderFromConfig comes from and
+// whether this function is anywhere called/supposed to work and it works without any changes, so probably dead code ...?
+func TestRequestAttestationReport(t *testing.T) {
 
-	When("invoke GetIntelVerificationKey", func() {
-		It("should return Intel pub key", func() {
-			ias := attestation.NewIAS()
-			pem, err := ias.GetIntelVerificationKey()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(pem).NotTo(BeNil())
-		})
-	})
+	ias := NewIAS()
+	verifier := VerifierImpl{}
 
-	Context("invoke RequestAttestationReport", func() {
+	quoteAsBytes, err := base64.StdEncoding.DecodeString(quote)
+	if err != nil {
+		jsonResp := "{\"Error\":\" Can not parse quoteBase64 string: " + err.Error() + " \"}"
+		t.Errorf(jsonResp)
+	}
 
-		When("IAS returns an error", func() {
-			It("should return an error", func() {
-				ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					http.Error(w, "Wrong API ", http.StatusUnauthorized)
+	// send quote to intel for verification
+	attestationReport, err := ias.RequestAttestationReport(apiKey, quoteAsBytes)
+	if err != nil {
+		jsonResp := "{\"Error\":\" Error while retrieving attestation report: " + err.Error() + "\"}"
+		t.Errorf(jsonResp)
+	}
 
-				}))
-				defer ts.Close()
+	verificationPK, err := ias.GetIntelVerificationKey()
+	if err != nil {
+		t.Errorf("Can not parse verifiaction key: %s", err)
+	}
 
-				ias := attestation.NewIASWithMock(ts.URL, ts.Client())
-				_, err := ias.RequestAttestationReport(apiKey, []byte(quote))
-				Expect(err).To(MatchError("IAS returned error: Code 401 Unauthorized"))
-			})
-		})
+	// verify attestation report
+	isValid, err := verifier.VerifyAttestionReport(verificationPK, attestationReport)
+	if err != nil {
+		jsonResp := "{\"Error\":\" Error while attestation report verification: " + err.Error() + "\"}"
+		t.Errorf(jsonResp)
+	}
+	if !isValid {
+		jsonResp := "{\"Error\":\" Attestation report is not valid \"}"
+		t.Errorf(jsonResp)
+	}
 
-		When("response does not contain return IASReportBody", func() {
-			It("should return an error", func() {
-				ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					_, _ = w.Write([]byte("NOT a IASReportBody"))
-				}))
-				defer ts.Close()
-
-				ias := attestation.NewIASWithMock(ts.URL, ts.Client())
-				_, err := ias.RequestAttestationReport(apiKey, []byte(quote))
-				Expect(err).To(HaveOccurred())
-				Expect(strings.HasPrefix(err.Error(), "cannot unmarshal report body:")).To(BeTrue())
-			})
-		})
-
-		When("IASReportBody does not contain submitted quote", func() {
-			It("should return an error", func() {
-				emptyReport := attestation.IASReportBody{}
-				emptyReportBytes, err := json.Marshal(emptyReport)
-				Expect(err).NotTo(HaveOccurred())
-
-				ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					_, _ = w.Write(emptyReportBytes)
-				}))
-				defer ts.Close()
-
-				ias := attestation.NewIASWithMock(ts.URL, ts.Client())
-				_, err = ias.RequestAttestationReport(apiKey, []byte(quote))
-				Expect(err).To(MatchError("report does not contain submitted quote"))
-			})
-		})
-
-		When("response is OK", func() {
-			It("should return return a non-empty IASAttestationReport", func() {
-				quoteBase64 := base64.StdEncoding.EncodeToString([]byte(quote))
-				report := attestation.IASReportBody{IsvEnclaveQuoteBody: quoteBase64}
-				reportBytes, err := json.Marshal(report)
-				Expect(err).NotTo(HaveOccurred())
-
-				ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.Header().Add("X-IASReport-Signature", "sig")
-					w.Header().Add("X-IASReport-Signing-Certificate", "cert")
-					_, _ = w.Write(reportBytes)
-				}))
-				defer ts.Close()
-
-				ias := attestation.NewIASWithMock(ts.URL, ts.Client())
-				res, err := ias.RequestAttestationReport(apiKey, []byte(quote))
-				Expect(err).NotTo(HaveOccurred())
-				Expect(res.IASReportBody).To(MatchJSON(reportBytes))
-				Expect(res.IASReportSignature).To(Equal("sig"))
-				Expect(res.IASReportSigningCertificate).To(Equal("cert"))
-			})
-		})
-
-	})
-
-})
+}

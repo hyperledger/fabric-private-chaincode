@@ -6,16 +6,12 @@
 
 # set -eux
 
-if [[ -z "${NANOPB_PATH}"  ]]; then
-    echo "Error: NANOPB_PATH not set"
-    exit 1
-else
-    NANOPB_PATH=${NANOPB_PATH}
-fi
+FABRIC_PATH=${FABRIC_PATH-../../../hyperledger/fabric}
+NANOPB_PATH=${NANOPB_PATH-~/nanopb}
 
 PROTOC_OPTS="--plugin=protoc-gen-nanopb=$NANOPB_PATH/generator/protoc-gen-nanopb"
 
-FABRIC_PROTOS=${FABRIC_PATH}/protos
+FABRIC_PROTOS=$FABRIC_PATH/protos
 
 if [ "$1" != "" ]; then
     BUILD_DIR=$1
