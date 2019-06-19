@@ -15,7 +15,6 @@
  */
 
 #include "crypto.h"
-#include "logging.h"
 
 #include <assert.h>
 #include <string.h>  // for memcpy etc
@@ -36,7 +35,6 @@ int check_cmac(const char *key, uint8_t *nonce, sgx_sha256_hash_t *state_hash,
     sgx_cmac128_close(cmac_handle);
 
     if (memcmp(&tmp_cmac, cmac, sizeof(sgx_cmac_128bit_tag_t)) != 0) {
-        LOG_ERROR("VIOLATION Oh oh! cmac does not match!");
         return -1;
     }
     return 0;

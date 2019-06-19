@@ -1,43 +1,26 @@
 /*
-* Copyright IBM Corp. 2018 All Rights Reserved.
+* Copyright IBM Corp. All Rights Reserved.
 *
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* SPDX-License-Identifier: Apache-2.0
  */
 
 package attestation
 
-#ifdef USE_SGX_HARDWARE_MODE
-
 import (
+	"bytes"
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
+	"encoding/base64"
+	"encoding/binary"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
 	"net/url"
 	"reflect"
-)
-
-#endif // USE_SGX_HARDWARE_MODE
-
-import (
-	"bytes"
-	"encoding/base64"
-	"encoding/binary"
-	"encoding/json"
 )
 
 // IASRequestBody sent to IAS (Intel attestation service)
@@ -90,9 +73,12 @@ func QuoteFromBase64(quoteBase64 string) (EnclaveQuote, error) {
 	return QuoteFromBytes(quoteAsBytes)
 }
 
-func QuoteFromAttestionReport(report IASAttestationReport) (EnclaveQuote, error) {
+func QuoteFromAttestationReport(report IASAttestationReport) (EnclaveQuote, error) {
 	reportBody := IASReportBody{}
-	json.Unmarshal(report.IASReportBody, &reportBody)
+	err := json.Unmarshal(report.IASReportBody, &reportBody)
+	if err != nil {
+		return EnclaveQuote{}, err
+	}
 
 	quote, err := QuoteFromBase64(reportBody.IsvEnclaveQuoteBody)
 	if err != nil {
@@ -117,27 +103,29 @@ func QuoteFromAttestionReport(report IASAttestationReport) (EnclaveQuote, error)
 // 	ReportData [64]byte
 // }
 
-// EnclaveVerifier interface
+// Verifier interface
 type Verifier interface {
-	VerifyAttestionReport(verificationPubKey interface{}, report IASAttestationReport) (bool, error)
+	VerifyAttestationReport(verificationPubKey interface{}, report IASAttestationReport) (bool, error)
 	CheckMrEnclave(mrEnclaveBase64 string, report IASAttestationReport) (bool, error)
 	CheckEnclavePkHash(pkBytes []byte, report IASAttestationReport) (bool, error)
 }
 
-// EnclaveVerifierImpl implements EnclaveVerifier interface!
+// VerifierImpl implements Verifier interface!
 type VerifierImpl struct {
 }
 
-// VerifyAttestionReport verifies IASAttestationReport signature; also checks with intel provided key
-func (v *VerifierImpl) VerifyAttestionReport(verificationPubKey interface{}, report IASAttestationReport) (bool, error) {
-
-#ifdef USE_SGX_HARDWARE_MODE
+// VerifyAttestationReport verifies IASAttestationReport signature using provided verification key
+func (v *VerifierImpl) VerifyAttestationReport(verificationPubKey interface{}, report IASAttestationReport) (bool, error) {
 
 	// decode certs
 	certs, _ := url.QueryUnescape(report.IASReportSigningCertificate)
 
 	// read signing cert first
 	block, rest := pem.Decode([]byte(certs))
+	if block == nil {
+		return false, errors.New("provided cert not PEM formatted")
+	}
+
 	signCert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
 		return false, errors.New("failed to parse signing certificate:" + err.Error())
@@ -173,17 +161,13 @@ func (v *VerifierImpl) VerifyAttestionReport(verificationPubKey interface{}, rep
 		return false, errors.New("Signature verification failed: " + err.Error())
 	}
 
-#endif // USE_SGX_HARDWARE_MODE
-
 	return true, nil
 }
 
-// CheckMrEnclave returs true if mrenclave in attestation report matches the expected value. Expected value input as base64.
+// CheckMrEnclave returns true if mrenclave in attestation report matches the expected value. Expected value input as base64.
 func (v *VerifierImpl) CheckMrEnclave(mrEnclaveBase64 string, report IASAttestationReport) (bool, error) {
 
-#ifdef USE_SGX_HARDWARE_MODE
-
-    quote, err := QuoteFromAttestionReport(report)
+	quote, err := QuoteFromAttestationReport(report)
 	if err != nil {
 		return false, err
 	}
@@ -194,20 +178,12 @@ func (v *VerifierImpl) CheckMrEnclave(mrEnclaveBase64 string, report IASAttestat
 	}
 
 	return reflect.DeepEqual(mrenclave[:32], quote.MrEnclave[:32]), nil
-
-#else // USE_SGX_HARDWARE_MODE
-
-    return true, nil
-
-#endif
 }
 
 // CheckEnclavePkHash returns true if hash of enclave pk in quote matches the expected value.
 func (v *VerifierImpl) CheckEnclavePkHash(pkBytes []byte, report IASAttestationReport) (bool, error) {
 
-#ifdef USE_SGX_HARDWARE_MODE
-
-	quote, err := QuoteFromAttestionReport(report)
+	quote, err := QuoteFromAttestationReport(report)
 	if err != nil {
 		return false, err
 	}
@@ -228,11 +204,4 @@ func (v *VerifierImpl) CheckEnclavePkHash(pkBytes []byte, report IASAttestationR
 	enclavePkHash := h.Sum(nil)
 
 	return reflect.DeepEqual(enclavePkHash[:32], quote.ReportData[:32]), nil
-
-#else // USE_SGX_HARDWARE_MODE
-
-    return true, nil
-
-#endif
-
 }

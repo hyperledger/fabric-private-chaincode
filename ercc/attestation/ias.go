@@ -1,41 +1,24 @@
 /*
+* Copyright IBM Corp. All Rights Reserved.
 * Copyright Intel Corp. 2019 All Rights Reserved.
-* Copyright IBM Corp. 2018 All Rights Reserved.
 *
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* SPDX-License-Identifier: Apache-2.0
  */
 
 package attestation
 
-#ifdef USE_SGX_HARDWARE_MODE
-
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
+	"encoding/pem"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
-)
 
-#endif
-
-import (
-	"crypto/x509"
-	"encoding/pem"
-	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
@@ -84,21 +67,27 @@ type IntelAttestationService interface {
 	GetIntelVerificationKey() (interface{}, error)
 }
 
-type intelAttestationServiceImpl struct {
-	url string
-}
-
 // NewIAS is a great help to build an IntelAttestationService object
 func NewIAS() IntelAttestationService {
-	return &intelAttestationServiceImpl{url: iasURL}
+	return &intelAttestationServiceImpl{
+		url:    iasURL,
+		client: setupClient(),
+	}
 }
 
-// RequestAttestationReport sends a quote to Intel for verification and in return receives an IASAttestationReport
-// Calling Intel qualifies ercc as a system chaincode since in the future chaincodes might be restricted and can not make call outside their docker container
-func (ias *intelAttestationServiceImpl) RequestAttestationReport(apiKey string, quoteAsBytes []byte) (IASAttestationReport, error) {
+func NewIASWithMock(mockURL string, mockClient *http.Client) IntelAttestationService {
+	return &intelAttestationServiceImpl{
+		url:    mockURL,
+		client: mockClient,
+	}
+}
 
-#ifdef USE_SGX_HARDWARE_MODE
+type intelAttestationServiceImpl struct {
+	url    string
+	client *http.Client
+}
 
+func setupClient() *http.Client {
 	// Setup HTTPS client
 	tlsConfig := &tls.Config{
 		// RootCAs:            caCertPool,
@@ -109,7 +98,12 @@ func (ias *intelAttestationServiceImpl) RequestAttestationReport(apiKey string, 
 		Proxy:           http.ProxyFromEnvironment,
 		TLSClientConfig: tlsConfig,
 	}
-	client := &http.Client{Transport: transport}
+	return &http.Client{Transport: transport}
+}
+
+// RequestAttestationReport sends a quote to Intel for verification and in return receives an IASAttestationReport
+// Calling Intel qualifies ercc as a system chaincode since in the future chaincodes might be restricted and can not make call outside their docker container
+func (ias *intelAttestationServiceImpl) RequestAttestationReport(apiKey string, quoteAsBytes []byte) (IASAttestationReport, error) {
 
 	// transform quote bytes to base64 and build request body
 	quoteAsBase64 := base64.StdEncoding.EncodeToString(quoteAsBytes)
@@ -125,7 +119,7 @@ func (ias *intelAttestationServiceImpl) RequestAttestationReport(apiKey string, 
 	logger.Debugf("Sending IAS request %s", req)
 
 	// submit quote for verification
-	resp, err := client.Do(req)
+	resp, err := ias.client.Do(req)
 	if err != nil {
 		return IASAttestationReport{}, fmt.Errorf("IAS connection error: %s", err)
 	}
@@ -138,15 +132,18 @@ func (ias *intelAttestationServiceImpl) RequestAttestationReport(apiKey string, 
 
 	bodyData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return IASAttestationReport{}, fmt.Errorf("Can not read response body: %s", err)
+		return IASAttestationReport{}, fmt.Errorf("cannot read response body: %s", err)
 	}
 
 	reportBody := IASReportBody{}
-	json.Unmarshal(bodyData, &reportBody)
+	err = json.Unmarshal(bodyData, &reportBody)
+	if err != nil {
+		return IASAttestationReport{}, fmt.Errorf("cannot unmarshal report body: %s", err)
+	}
 
 	// check response contains submitted quote
-	if !strings.HasPrefix(quoteAsBase64, reportBody.IsvEnclaveQuoteBody) {
-		return IASAttestationReport{}, errors.New("Report does not contain submitted quote")
+	if !strings.HasPrefix(reportBody.IsvEnclaveQuoteBody, quoteAsBase64) {
+		return IASAttestationReport{}, fmt.Errorf("report does not contain submitted quote")
 	}
 
 	report := IASAttestationReport{
@@ -156,14 +153,6 @@ func (ias *intelAttestationServiceImpl) RequestAttestationReport(apiKey string, 
 	}
 
 	return report, nil
-
-#else // USE_SGX_HARDWARE_MODE
-
-    logger.Debugf("Returning empty IAS attestation report (simulation mode)")
-    return IASAttestationReport{}, nil
-
-#endif
-
 }
 
 func (ias *intelAttestationServiceImpl) GetIntelVerificationKey() (interface{}, error) {

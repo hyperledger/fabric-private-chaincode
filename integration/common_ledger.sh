@@ -100,7 +100,7 @@ ledger_init() {
 
     # 5. ercc
     # - install, once per peer
-    try ${PEER_CMD} chaincode install -n ${ERCC_ID} -v ${ERCC_VERSION} -p github.com/hyperledger-labs/fabric-private-chaincode/ercc
+    try ${PEER_CMD} chaincode install -n ${ERCC_ID} -v ${ERCC_VERSION} -p github.com/hyperledger-labs/fabric-private-chaincode/ercc/cmd
     sleep 1
     # - instantiate, once per channel, by single peer/admin
     try ${PEER_CMD} chaincode instantiate -n ${ERCC_ID} -v ${ERCC_VERSION} -c '{"args":["init"]}' -C ${CHAN_ID} -V ercc-vscc
