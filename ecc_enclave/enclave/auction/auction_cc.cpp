@@ -1,17 +1,17 @@
 /*
-* Copyright IBM Corp. 2018 All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+ * Copyright IBM Corp. 2018 All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "auction_cc.h"
@@ -35,8 +35,11 @@ static std::string SEP = ".";
 static std::string PREFIX = SEP + "somePrefix" + SEP;
 
 // implements chaincode logic for invoke
-int invoke(const char* args, uint8_t* response, uint32_t max_response_len,
-    uint32_t* actual_response_len, void* ctx)
+int invoke(const char* args,
+    uint8_t* response,
+    uint32_t max_response_len,
+    uint32_t* actual_response_len,
+    void* ctx)
 {
     LOG_DEBUG("AuctionCC: +++ Executing auction chaincode invocation +++");
     LOG_DEBUG("AuctionCC: \tArgs: %s", args);
@@ -49,24 +52,34 @@ int invoke(const char* args, uint8_t* response, uint32_t max_response_len,
     std::string auction_name = argss[1];
     std::string result;
 
-    if (function_name == "create") {
+    if (function_name == "create")
+    {
         result = auction_create(auction_name, ctx);
-    } else if (function_name == "submit") {
+    }
+    else if (function_name == "submit")
+    {
         std::string bidder_name = argss[2];
         int value = std::stoi(argss[3]);
         result = auction_submit(auction_name, bidder_name, value, ctx);
-    } else if (function_name == "close") {
+    }
+    else if (function_name == "close")
+    {
         result = auction_close(auction_name, ctx);
-    } else if (function_name == "eval") {
+    }
+    else if (function_name == "eval")
+    {
         result = auction_eval(auction_name, ctx);
-    } else {
+    }
+    else
+    {
         // unknown function
         LOG_DEBUG("AuctionCC: RECEIVED UNKOWN transaction");
     }
 
     // check that result fits into response
     int neededSize = result.size();
-    if (max_response_len < neededSize) {
+    if (max_response_len < neededSize)
+    {
         // ouch error
         LOG_DEBUG("AuctionCC: Response buffer too small");
         *actual_response_len = 0;
@@ -89,7 +102,8 @@ std::string auction_create(std::string auction_name, void* ctx)
     uint8_t auction_bytes[MAX_VALUE_SIZE];
     get_state(auction_name.c_str(), auction_bytes, sizeof(auction_bytes), &auction_bytes_len, ctx);
 
-    if (auction_bytes_len > 0) {
+    if (auction_bytes_len > 0)
+    {
         // auction already exists
         LOG_DEBUG("AuctionCC: Auction already exists");
         return AUCTION_ALREADY_EXISTING;
@@ -114,7 +128,8 @@ std::string auction_submit(std::string auction_name, std::string bidder_name, in
     uint8_t auction_bytes[MAX_VALUE_SIZE];
     get_state(auction_name.c_str(), auction_bytes, sizeof(auction_bytes), &auction_bytes_len, ctx);
 
-    if (auction_bytes_len == 0) {
+    if (auction_bytes_len == 0)
+    {
         LOG_DEBUG("AuctionCC: Auction does not exist");
         return AUCTION_NOT_EXISTING;
     }
@@ -123,7 +138,8 @@ std::string auction_submit(std::string auction_name, std::string bidder_name, in
     auction_t the_auction;
     unmarshal_auction(&the_auction, (const char*)auction_bytes, auction_bytes_len);
 
-    if (!the_auction.is_open) {
+    if (!the_auction.is_open)
+    {
         LOG_DEBUG("AuctionCC: Auction is already closed");
         return AUCTION_ALREADY_CLOSED;
     }
@@ -150,7 +166,8 @@ std::string auction_close(std::string auction_name, void* ctx)
     uint8_t auction_bytes[MAX_VALUE_SIZE];
     get_state(auction_name.c_str(), auction_bytes, sizeof(auction_bytes), &auction_bytes_len, ctx);
 
-    if (auction_bytes_len == 0) {
+    if (auction_bytes_len == 0)
+    {
         LOG_DEBUG("AuctionCC: Auction does not exist");
         return AUCTION_NOT_EXISTING;
     }
@@ -159,7 +176,8 @@ std::string auction_close(std::string auction_name, void* ctx)
     auction_t the_auction;
     unmarshal_auction(&the_auction, (const char*)auction_bytes, auction_bytes_len);
 
-    if (!the_auction.is_open) {
+    if (!the_auction.is_open)
+    {
         LOG_DEBUG("AuctionCC: Auction is already closed");
         return AUCTION_ALREADY_CLOSED;
     }
@@ -181,7 +199,8 @@ std::string auction_eval(std::string auction_name, void* ctx)
     uint8_t auction_bytes[MAX_VALUE_SIZE];
     get_state(auction_name.c_str(), auction_bytes, sizeof(auction_bytes), &auction_bytes_len, ctx);
 
-    if (auction_bytes_len == 0) {
+    if (auction_bytes_len == 0)
+    {
         LOG_DEBUG("AuctionCC: Auction does not exist");
         return AUCTION_NOT_EXISTING;
     }
@@ -191,7 +210,8 @@ std::string auction_eval(std::string auction_name, void* ctx)
     unmarshal_auction(&the_auction, (const char*)auction_bytes, auction_bytes_len);
 
     // check if auction is closed
-    if (the_auction.is_open) {
+    if (the_auction.is_open)
+    {
         LOG_DEBUG("AuctionCC: Auction is still open");
         return AUCTION_STILL_OPEN;
     }
@@ -201,7 +221,8 @@ std::string auction_eval(std::string auction_name, void* ctx)
     std::map<std::string, std::string> values;
     get_state_by_partial_composite_key(bid_composite_key.c_str(), values, ctx);
 
-    if (values.empty()) {
+    if (values.empty())
+    {
         LOG_DEBUG("AuctionCC: No bids");
         return AUCTION_NO_BIDS;
     }
@@ -212,24 +233,31 @@ std::string auction_eval(std::string auction_name, void* ctx)
     int draw = 0;
 
     LOG_DEBUG("AuctionCC: All concidered bids:");
-    for (auto u : values) {
+    for (auto u : values)
+    {
         bid_t b;
         unmarshal_bid(&b, u.second.c_str(), u.second.size());
 
         LOG_DEBUG("AuctionCC: \t%s value %d", b.bidder_name.c_str(), b.value);
-        if (b.value > high) {
+        if (b.value > high)
+        {
             draw = 0;
             high = b.value;
             winner = b;
-        } else if (b.value == high) {
+        }
+        else if (b.value == high)
+        {
             draw = 1;
         }
     }
 
-    if (draw != 1) {
+    if (draw != 1)
+    {
         LOG_DEBUG("AuctionCC: Winner is: %s with %d", winner.bidder_name.c_str(), winner.value);
         return marshal_bid(&winner);
-    } else {
+    }
+    else
+    {
         LOG_DEBUG("AuctionCC: DRAW");
         return AUCTION_DRAW;
     }

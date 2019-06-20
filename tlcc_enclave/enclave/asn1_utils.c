@@ -1,17 +1,17 @@
 /*
-* Copyright IBM Corp. 2018 All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+ * Copyright IBM Corp. 2018 All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "asn1_utils.h"
@@ -32,7 +32,8 @@ ASN1_SEQUENCE(ASN1BlockHeader) = {ASN1_SIMPLE(ASN1BlockHeader, number, ASN1_INTE
     // NOTE for genesis block prev_hash is empty and does not need to be set;
     // however, if we would do it anyway
     // the asn1 block header would contain 32 zeros and would be incorrect
-    if (header->number > 0) {
+    if (header->number > 0)
+    {
         // prev hash
         ASN1_STRING_set(asn1BlockHeader->prev_hash, &header->previous_hash, 32);
     }

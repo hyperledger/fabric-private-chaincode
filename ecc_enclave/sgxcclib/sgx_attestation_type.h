@@ -21,10 +21,8 @@
 
 #endif
 
-
 #ifdef USE_EPID_UNLINKABLE
 
 #define SGX_QUOTE_SIGN_TYPE SGX_UNLINKABLE_SIGNATURE
 
 #endif
-

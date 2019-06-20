@@ -1,17 +1,17 @@
 /*
-* Copyright IBM Corp. 2018 All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+ * Copyright IBM Corp. 2018 All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "ledger.h"
@@ -36,9 +36,9 @@
 #include "asn1_utils.h"
 #include "base64.h"
 #include "crypto.h"
-#include "logging.h"
 #include "ecc_json.h"
 #include "ias.h"
+#include "logging.h"
 #include "utils.h"
 
 // root cert store for orderer org
@@ -56,13 +56,15 @@ int init_ledger()
     LOG_DEBUG("Ledger: ########## init ledger  ##########");
 
     root_certs_orderer = X509_STORE_new();
-    if (root_certs_orderer == NULL) {
+    if (root_certs_orderer == NULL)
+    {
         LOG_ERROR("Ledger: Can not create root cert store for orderer");
         return LEDGER_ERROR_CRYPTO;
     }
 
     root_certs_apps = X509_STORE_new();
-    if (root_certs_apps == NULL) {
+    if (root_certs_apps == NULL)
+    {
         LOG_ERROR("Ledger: Can not create root cert store for apps");
         return LEDGER_ERROR_CRYPTO;
     }
@@ -85,7 +87,8 @@ int parse_block(uint8_t* block_data, uint32_t block_data_len)
     uint8_t* header_DER;
     uint32_t header_DER_len = block_header2DER(&block.header, &header_DER);
 
-    if (block_sequence_number != sequence_number + 1) {
+    if (block_sequence_number != sequence_number + 1)
+    {
         LOG_ERROR("Ledger: Last known seqNo = %d but receiving block no %d", sequence_number,
             block.header.number);
         pb_release(common_Block_fields, &block);
@@ -102,13 +105,15 @@ int parse_block(uint8_t* block_data, uint32_t block_data_len)
     decode_pb(metadata, common_Metadata_fields, metadata_bytes->bytes, metadata_bytes->size);
     {
         // metadata value ... seems to be empty all the time ???
-        if (metadata.value == NULL) {
+        if (metadata.value == NULL)
+        {
             metadata.value = (pb_bytes_array_t*)malloc(PB_BYTES_ARRAY_T_ALLOCSIZE(0));
             metadata.value->size = 0;
         }
 
         // go through all block signatues
-        for (int i = 0; i < metadata.signatures_count; i++) {
+        for (int i = 0; i < metadata.signatures_count; i++)
+        {
             LOG_DEBUG("Ledger: Verify block signature[%d/%d]", i + 1, metadata.signatures_count);
             common_MetadataSignature* metadata_signature = &metadata.signatures[i];
 
@@ -136,9 +141,12 @@ int parse_block(uint8_t* block_data, uint32_t block_data_len)
 
             const unsigned char* ptr = metadata_signature->signature->bytes;
             if (verify_signature(&ptr, metadata_signature->signature->size, sig_hash, HASH_SIZE,
-                    identity.id_bytes->bytes, identity.id_bytes->size, root_certs_orderer) != 1) {
+                    identity.id_bytes->bytes, identity.id_bytes->size, root_certs_orderer) != 1)
+            {
                 LOG_ERROR("Ledger: Block signature valudation failed");
-            } else {
+            }
+            else
+            {
                 LOG_DEBUG("Ledger: \t\\-> Valid block cert");
             }
 
@@ -153,7 +161,8 @@ int parse_block(uint8_t* block_data, uint32_t block_data_len)
     pb_bytes_array_t* tx_filter_pb =
         block.metadata.metadata[common_BlockMetadataIndex_TRANSACTIONS_FILTER];
     uint8_t tx_filter[block.data.data_count] = {0};
-    for (int i = 0; i < tx_filter_pb->size; i++) {
+    for (int i = 0; i < tx_filter_pb->size; i++)
+    {
         tx_filter[i] = tx_filter_pb->bytes[i];
     }
 
@@ -161,11 +170,13 @@ int parse_block(uint8_t* block_data, uint32_t block_data_len)
     kvs_t updates;
 
     // go through all envelopes/transactions (block.data)
-    for (uint64_t i = 0; i < block.data.data_count; i++) {
+    for (uint64_t i = 0; i < block.data.data_count; i++)
+    {
         LOG_DEBUG("Ledger: Process Envelope[%d/%d]", i + 1, block.data.data_count);
 
         // check if tx was invalided in pre consensus; in that case skip tx
-        if (tx_filter[i] == 1) {
+        if (tx_filter[i] == 1)
+        {
             LOG_DEBUG("Ledger: Transaction [%d] marked as invalid. Continue", i);
             continue;
         }
@@ -205,15 +216,21 @@ int parse_block(uint8_t* block_data, uint32_t block_data_len)
 
         // verify validate cert. note that if this is a gensis block, we skip
         // the validation
-        if (block.header.number > 0) {
+        if (block.header.number > 0)
+        {
             const unsigned char* ptr = envelope.signature->bytes;
             if (verify_signature(&ptr, envelope.signature->size, sig_hash, HASH_SIZE,
-                    identity.id_bytes->bytes, identity.id_bytes->size, root_certs_apps) != 1) {
+                    identity.id_bytes->bytes, identity.id_bytes->size, root_certs_apps) != 1)
+            {
                 LOG_ERROR("Ledger: Envelope signature validation failed");
-            } else {
+            }
+            else
+            {
                 LOG_DEBUG("Ledger: \t\t\\-> Valid envelope signature");
             }
-        } else {
+        }
+        else
+        {
             LOG_DEBUG("Ledger: Skip signature validation; genesis block");
         }
 
@@ -223,7 +240,8 @@ int parse_block(uint8_t* block_data, uint32_t block_data_len)
             payload.header.channel_header->size);
 
         // the following checks are not needed for genesis block
-        if (block.header.number > 0) {
+        if (block.header.number > 0)
+        {
             // create tx_id from nonce and creator
             unsigned char tx_id_bytes[HASH_SIZE];
             SHA256_CTX sha256;
@@ -236,7 +254,8 @@ int parse_block(uint8_t* block_data, uint32_t block_data_len)
             // tx ID)
             char* tx_id = bytes_to_hexstring(tx_id_bytes, HASH_SIZE);
             if (strlen(tx_id) == strlen(chdr.tx_id) &&
-                memcmp(tx_id, chdr.tx_id, strlen(tx_id)) != 0) {
+                memcmp(tx_id, chdr.tx_id, strlen(tx_id)) != 0)
+            {
                 LOG_ERROR("Ledger: Incorrect TxID");
                 // TODO abord
             }
@@ -245,9 +264,11 @@ int parse_block(uint8_t* block_data, uint32_t block_data_len)
         }
 
         spin_lock(&lock);
-        switch (chdr.type) {
+        switch (chdr.type)
+        {
             case common_HeaderType_CONFIG:
-                if (block.header.number == 0) {
+                if (block.header.number == 0)
+                {
                     // note that we currently do not support config updates
                     // (genesis only)
                     parse_config(payload.data->bytes, payload.data->size);
@@ -284,7 +305,8 @@ int commit_state_updates(kvs_t* updates, const uint32_t block_sequence_number)
     spin_lock(&lock);
     assert(block_sequence_number == sequence_number + 1);
     sequence_number = block_sequence_number;
-    for (auto pair : *updates) {
+    for (auto pair : *updates)
+    {
         LOG_DEBUG("Ledger: \\-> Key: \"%s\" => version: (%d,%d)", pair.first.c_str(),
             pair.second.second.block_num, pair.second.second.tx_num);
         state[pair.first] = pair.second;
@@ -301,27 +323,35 @@ int parse_config(uint8_t* config_data, uint32_t config_data_len)
     decode_pb(config_envelope, common_ConfigEnvelope_fields, config_data, config_data_len);
 
     LOG_DEBUG("Ledger: ConfigEnv.config.ChannelGroup.Groups:");
-    for (int i = 0; i < config_envelope.config.channel_group.groups_count; i++) {
+    for (int i = 0; i < config_envelope.config.channel_group.groups_count; i++)
+    {
         char* group = config_envelope.config.channel_group.groups[i].key;
         common_ConfigGroup* groups = &config_envelope.config.channel_group.groups[i].value;
         LOG_DEBUG("Ledger: \tGroup: %s", group);
 
         // select correct root cert store
         X509_STORE* root_certs = NULL;
-        if (strcmp(group, "Orderer") == 0) {
+        if (strcmp(group, "Orderer") == 0)
+        {
             root_certs = root_certs_orderer;
-        } else if (strcmp(group, "Application") == 0) {
+        }
+        else if (strcmp(group, "Application") == 0)
+        {
             root_certs = root_certs_apps;
-        } else {
+        }
+        else
+        {
             LOG_ERROR("Ledger: Unknown channel group: %s", group);
         }
 
         // go through
-        for (int j = 0; j < groups->groups_count; j++) {
+        for (int j = 0; j < groups->groups_count; j++)
+        {
             common_ConfigGroup* orgs = &groups->groups[j].value;
             LOG_DEBUG("Ledger: \t\tOrg: %s", groups->groups[j].key);
 
-            for (int h = 0; h < orgs->values_count; h++) {
+            for (int h = 0; h < orgs->values_count; h++)
+            {
                 common_ConfigValue* msp = &orgs->values[h].value;
                 msp_MSPConfig msp_config = msp_MSPConfig_init_zero;
                 decode_pb(msp_config, msp_MSPConfig_fields, msp->value->bytes, msp->value->size);
@@ -333,17 +363,21 @@ int parse_config(uint8_t* config_data, uint32_t config_data_len)
                 LOG_DEBUG("Ledger: \t\t\tMSP Config: %s", fabric_msp_config.name);
 
                 LOG_DEBUG("Ledger: \t\t\t\\-> Root certs: %d", fabric_msp_config.root_certs_count);
-                for (int r = 0; r < fabric_msp_config.root_certs_count; r++) {
+                for (int r = 0; r < fabric_msp_config.root_certs_count; r++)
+                {
                     if (store_root_cert(fabric_msp_config.root_certs[r]->bytes,
-                            fabric_msp_config.root_certs[r]->size, root_certs) != 1) {
+                            fabric_msp_config.root_certs[r]->size, root_certs) != 1)
+                    {
                         LOG_ERROR("Ledger: Can not store root cert");
                     }
                 }
 
                 LOG_DEBUG("Ledger: \t\t\t\\-> Admin certs: %d", fabric_msp_config.admins_count);
-                for (int r = 0; r < fabric_msp_config.admins_count; r++) {
+                for (int r = 0; r < fabric_msp_config.admins_count; r++)
+                {
                     if (validate_cert(fabric_msp_config.admins[r]->bytes,
-                            fabric_msp_config.admins[r]->size, root_certs) != 1) {
+                            fabric_msp_config.admins[r]->size, root_certs) != 1)
+                    {
                         LOG_ERROR("Ledger: Invalid admin cert");
                     }
                 }
@@ -367,7 +401,8 @@ int parse_endorser_transaction(
     decode_pb(transaction, protos_Transaction_fields, tx_data, tx_data_len);
 
     // go through all actions in transaction
-    for (int i = 0; i < transaction.actions_count; i++) {
+    for (int i = 0; i < transaction.actions_count; i++)
+    {
         /* LOG_DEBUG("### Action[%d] ###", i); */
 
         // get action payload
@@ -395,7 +430,8 @@ int parse_endorser_transaction(
 
         // get function
         std::string function = "";
-        if (cis.chaincode_spec.input.args_count > 0) {
+        if (cis.chaincode_spec.input.args_count > 0)
+        {
             function.append((const char*)cis.chaincode_spec.input.args[0]->bytes,
                 cis.chaincode_spec.input.args[0]->size);
         }
@@ -418,11 +454,13 @@ int parse_endorser_transaction(
         decode_pb(cc_action, protos_ChaincodeAction_fields, p_response_payload.extension->bytes,
             p_response_payload.extension->size);
 
-        LOG_DEBUG("Ledger: \t \\-> ChaincodeAction.ChaincodeId.Name: %s", cc_action.chaincode_id.name);
+        LOG_DEBUG(
+            "Ledger: \t \\-> ChaincodeAction.ChaincodeId.Name: %s", cc_action.chaincode_id.name);
         LOG_DEBUG("Ledger: \t \\-> ChaincodeAction.Response:");
 
         // if there are any results let's parse them
-        if (cc_action.results != NULL) {
+        if (cc_action.results != NULL)
+        {
             LOG_DEBUG("Ledger: \t\t \\-> ChaincodeAction.Result:");
 
             rwset_TxReadWriteSet tx_rw_set = rwset_TxReadWriteSet_init_zero;
@@ -435,20 +473,24 @@ int parse_endorser_transaction(
             // read set
             read_set_t ecc_read_set;
             LOG_DEBUG("Ledger: \t\t \\-> Reads:");
-            for (int i = 0; i < tx_rw_set.ns_rwset_count; i++) {
+            for (int i = 0; i < tx_rw_set.ns_rwset_count; i++)
+            {
                 kvrwset_KVRWSet kvrwset = kvrwset_KVRWSet_init_zero;
                 decode_pb(kvrwset, kvrwset_KVRWSet_fields, tx_rw_set.ns_rwset[i].rwset->bytes,
                     tx_rw_set.ns_rwset[i].rwset->size);
                 std::string ns(tx_rw_set.ns_rwset[i].ns);
                 // check range queries
-                for (int i = 0; i < kvrwset.range_queries_info_count; i++) {
+                for (int i = 0; i < kvrwset.range_queries_info_count; i++)
+                {
                     kvrwset_RangeQueryInfo query_info = kvrwset.range_queries_info[i];
                     kvrwset_QueryReads raw_reads = query_info.reads_info.raw_reads;
-                    for (int j = 0; j < raw_reads.kv_reads_count; j++) {
+                    for (int j = 0; j < raw_reads.kv_reads_count; j++)
+                    {
                         std::string key = ns + ".";
                         // we replace 0x00 with "."
                         char* idx = raw_reads.kv_reads[j].key + 1;
-                        while (*idx) {
+                        while (*idx)
+                        {
                             key.append(idx);
                             key.append(".");
                             idx += strlen(idx) + 1;
@@ -457,7 +499,8 @@ int parse_endorser_transaction(
                         version_t v = {_v.block_num, _v.tx_num};
 
                         // add to ecc read_set
-                        if (ns.compare("ecc") == 0) {
+                        if (ns.compare("ecc") == 0)
+                        {
                             std::string kkey(key, 3, std::string::npos);
                             ecc_read_set.insert(kkey);
                         }
@@ -466,7 +509,8 @@ int parse_endorser_transaction(
                         // state
                         // next check in update/writeset for this block
                         if (has_version_conflict(key, &state, &v) == 1 ||
-                            has_version_conflict(key, updates, &v) == 1) {
+                            has_version_conflict(key, updates, &v) == 1)
+                        {
                             valid_tx = false;
                             continue;
                         }
@@ -476,19 +520,22 @@ int parse_endorser_transaction(
                             key.c_str(), v.block_num, v.tx_num);
                     }
 
-                    if (!valid_tx) {
+                    if (!valid_tx)
+                    {
                         continue;
                     }
                 }
 
                 // normal reads
-                for (int i = 0; i < kvrwset.reads_count; i++) {
+                for (int i = 0; i < kvrwset.reads_count; i++)
+                {
                     std::string key = ns + "." + kvrwset.reads[i].key;
                     kvrwset_Version _v = kvrwset.reads[i].version;
                     version_t v = {_v.block_num, _v.tx_num};
 
                     // add to read_set
-                    if (ns.compare("ecc") == 0) {
+                    if (ns.compare("ecc") == 0)
+                    {
                         std::string kkey(key, 4, std::string::npos);
                         ecc_read_set.insert(kkey);
                     }
@@ -497,7 +544,8 @@ int parse_endorser_transaction(
                     // state
                     // next check in update/writeset for this block
                     if (has_version_conflict(key, &state, &v) == 1 ||
-                        has_version_conflict(key, updates, &v) == 1) {
+                        has_version_conflict(key, updates, &v) == 1)
+                    {
                         valid_tx = false;
                         continue;
                     }
@@ -507,13 +555,15 @@ int parse_endorser_transaction(
                         key, v.block_num, v.tx_num);
                 }
                 pb_release(kvrwset_KVRWSet_fields, &kvrwset);
-                if (!valid_tx) {
+                if (!valid_tx)
+                {
                     continue;
                 }
             }  // reads
 
             // abort if tx is invalid
-            if (!valid_tx) {
+            if (!valid_tx)
+            {
                 LOG_DEBUG("Ledger: >> Invalid tx through readset");
                 pb_release(rwset_TxReadWriteSet_fields, &tx_rw_set);
                 pb_release(protos_ChaincodeAction_fields, &cc_action);
@@ -525,7 +575,8 @@ int parse_endorser_transaction(
             // write set
             write_set_t ecc_write_set;
             LOG_DEBUG("Ledger: \t\t \\-> Writes:");
-            for (int i = 0; i < tx_rw_set.ns_rwset_count; i++) {
+            for (int i = 0; i < tx_rw_set.ns_rwset_count; i++)
+            {
                 kvrwset_KVRWSet kvrwset = kvrwset_KVRWSet_init_zero;
                 decode_pb(kvrwset, kvrwset_KVRWSet_fields, tx_rw_set.ns_rwset[i].rwset->bytes,
                     tx_rw_set.ns_rwset[i].rwset->size);
@@ -534,8 +585,10 @@ int parse_endorser_transaction(
                 // this is a hack; normally we should ask lscc to get
                 // corresponding vscc for chaincode
                 // however, for the prototype this is OK!!!
-                if (ns.compare("lscc") == 0) {
-                    for (int i = 0; i < kvrwset.writes_count; i++) {
+                if (ns.compare("lscc") == 0)
+                {
+                    for (int i = 0; i < kvrwset.writes_count; i++)
+                    {
                         std::string key = ns + "." + kvrwset.writes[i].key;
                         LOG_DEBUG("Ledger: \t\t\t \\-> key = %s", key.c_str());
                         // note prototype does not support deletes
@@ -544,9 +597,12 @@ int parse_endorser_transaction(
                         version_t version = {tx_version->block_num, tx_version->tx_num};
                         updates->insert(kvs_item_t(key, kvs_value_t(val, version)));
                     }
-                } else if (ns.compare("ercc") == 0) {
+                }
+                else if (ns.compare("ercc") == 0)
+                {
                     // ercc does only a single write
-                    if (kvrwset.writes_count != 1) {
+                    if (kvrwset.writes_count != 1)
+                    {
                         LOG_ERROR("Ledger: ercc expects only a single write ");
                         valid_tx = false;
                     }
@@ -556,10 +612,12 @@ int parse_endorser_transaction(
 
                     // get mrenclave from updates
                     kvs_iterator_t it = updates->find(mrenclave_key);
-                    if (it == updates->end()) {
+                    if (it == updates->end())
+                    {
                         // if not in updates get it from kvs
                         it = state.find(mrenclave_key);
-                        if (it == state.end()) {
+                        if (it == state.end())
+                        {
                             // if there is no mrenclave at all we are in trouble
                             LOG_ERROR("Ledger: >>> NO MRENCLAVE found for: %s", mrenclave_key);
                             valid_tx = false;
@@ -582,23 +640,30 @@ int parse_endorser_transaction(
                         (const char*)kvrwset.writes[0].value->bytes, kvrwset.writes[0].value->size);
                     version_t version = {tx_version->block_num, tx_version->tx_num};
                     updates->insert(kvs_item_t(key, kvs_value_t(val, version)));
-                } else if (ns.compare("ecc") == 0) {
-                    for (int i = 0; i < kvrwset.writes_count; i++) {
+                }
+                else if (ns.compare("ecc") == 0)
+                {
+                    for (int i = 0; i < kvrwset.writes_count; i++)
+                    {
                         std::string kkey;
                         // check for composite keys
                         // note that they start with 0x00 and also use 0x00 as
                         // separator
                         std::string key = ns + ".";
-                        if (kvrwset.writes[i].key[0] == 0x00) {
+                        if (kvrwset.writes[i].key[0] == 0x00)
+                        {
                             // we replace 0x00 with "."
                             char* idx = kvrwset.writes[i].key + 1;
-                            while (*idx) {
+                            while (*idx)
+                            {
                                 key.append(idx);
                                 key.append(".");
                                 idx += strlen(idx) + 1;
                             }
                             kkey.append(std::string(key, 3, std::string::npos));
-                        } else {
+                        }
+                        else
+                        {
                             // if this is a normal key
                             key.append(kvrwset.writes[i].key);
                             kkey.append(kvrwset.writes[i].key);
@@ -613,21 +678,26 @@ int parse_endorser_transaction(
                         // add to ecc write set
                         ecc_write_set.insert({kkey, val});
                     }
-                } else {
+                }
+                else
+                {
                     LOG_ERROR("Ledger: Only SGX chaincodes supported currently!");
                 }
                 pb_release(kvrwset_KVRWSet_fields, &kvrwset);
 
-                if (!valid_tx) {
+                if (!valid_tx)
+                {
                     LOG_DEBUG("Ledger: >> Invalid tx through readset");
                     continue;
                 }
             }  // writes
 
             std::string chaincode_name(cc_action.chaincode_id.name);
-            if (chaincode_name.compare("ecc") == 0) {
+            if (chaincode_name.compare("ecc") == 0)
+            {
                 // skip setup transaction
-                if (function.compare("setup") != 0) {
+                if (function.compare("setup") != 0)
+                {
                     LOG_DEBUG("Ledger: Validate ECC tx");
                     uint8_t response_data[96];
                     uint32_t response_len = 0;
@@ -649,12 +719,14 @@ int parse_endorser_transaction(
 
                     // hash read and write set
                     /* LOG_DEBUG("Ledger: read_set:"); */
-                    for (auto& it : ecc_read_set) {
+                    for (auto& it : ecc_read_set)
+                    {
                         SHA256_Update(&sha256, (const uint8_t*)it.c_str(), it.size());
                     }
 
                     /* LOG_DEBUG("Ledger: write_set:"); */
-                    for (auto& it : ecc_write_set) {
+                    for (auto& it : ecc_write_set)
+                    {
                         SHA256_Update(&sha256, (const uint8_t*)it.first.c_str(), it.first.size());
                         SHA256_Update(&sha256, (const uint8_t*)it.second.c_str(), it.second.size());
                     }
@@ -676,10 +748,13 @@ int parse_endorser_transaction(
                     const unsigned char* sig_ptr = signature;
                     const unsigned char* pk_ptr = pk;
                     if (verify_enclave_signature(
-                            &sig_ptr, signature_len, hash2, 32, &pk_ptr, pk_len) != 1) {
+                            &sig_ptr, signature_len, hash2, 32, &pk_ptr, pk_len) != 1)
+                    {
                         LOG_ERROR("Ledger: ecc signature validaion failed: %d");
                         // TODO mark as invalid
-                    } else {
+                    }
+                    else
+                    {
                         LOG_DEBUG("Ledger: ecc signature is valid :)");
                     }
 
@@ -690,7 +765,8 @@ int parse_endorser_transaction(
         }
 
         // if there are any events let's parse them
-        if (cc_action.events != NULL) {
+        if (cc_action.events != NULL)
+        {
             LOG_DEBUG("Ledger: \t\t \\-> ChaincodeAction.Events:");
         }
 
@@ -708,10 +784,12 @@ int parse_endorser_transaction(
 int has_version_conflict(const std::string& key, kvs_t* state, version_t* v)
 {
     kvs_iterator_t it = state->find(key);
-    if (it != state->end()) {
+    if (it != state->end())
+    {
         version_t version = it->second.second;
         // check if read.version is less than the state
-        if (cmp_version(v, &version) == -1) {
+        if (cmp_version(v, &version) == -1)
+        {
             return 1;
         }
     }
@@ -721,7 +799,8 @@ int has_version_conflict(const std::string& key, kvs_t* state, version_t* v)
 int print_state()
 {
     LOG_DEBUG("Ledger: ### Print state ###");
-    for (auto& pair : state) {
+    for (auto& pair : state)
+    {
         LOG_DEBUG("Ledger: \\-> Key: \"%s\" => version: (%d,%d)", pair.first.c_str(),
             pair.second.second.block_num, pair.second.second.tx_num);
     }
@@ -735,7 +814,8 @@ int ledger_get_state_hash(const char* key, uint8_t* out_hash)
 
     spin_lock(&lock);
     auto iter = state.find(key);
-    if (iter != state.end()) {
+    if (iter != state.end())
+    {
         const kvs_value_t& value = iter->second;
         LOG_DEBUG("Ledger: \\-> Found Key: \"%s\" => version: (%d,%d)", iter->first.c_str(),
             value.second.block_num, value.second.tx_num);
@@ -764,18 +844,21 @@ int ledger_get_multi_state_hash(const char* comp_key, uint8_t* out_hash)
 
     spin_lock(&lock);
     auto p = state.lower_bound(k);
-    for (auto iter = p; iter != state.end(); ++iter) {
+    for (auto iter = p; iter != state.end(); ++iter)
+    {
         std::string key = iter->first;
         const kvs_value_t& value = iter->second;
 
         // if has no prefix anymore abort
-        if (key.compare(0, k.size(), k) != 0) {
+        if (key.compare(0, k.size(), k) != 0)
+        {
             break;
         }
 
         // remove channel name prefix from key if exists
         size_t found = key.find_first_of(".");
-        if (found != std::string::npos) {
+        if (found != std::string::npos)
+        {
             key.erase(0, found);
         }
 

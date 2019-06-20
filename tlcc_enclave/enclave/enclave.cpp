@@ -1,17 +1,17 @@
 /*
-* Copyright IBM Corp. 2018 All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+ * Copyright IBM Corp. 2018 All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "enclave_t.h"
@@ -33,14 +33,15 @@ static sgx_cmac_128bit_key_t session_key = {
     0x3F, 0xE2, 0x59, 0xDF, 0x62, 0x7F, 0xEF, 0x99, 0x5B, 0x4B, 0x00, 0xDE, 0x44, 0xC1, 0x26, 0x33};
 
 // creates new identity if not exists
-int ecall_join_channel(uint8_t *genesis, uint32_t gen_len)
+int ecall_join_channel(uint8_t* genesis, uint32_t gen_len)
 {
     // init ledger
     init_ledger();
 
     // parse genesis block
     int sgx_ret = parse_block(genesis, gen_len);
-    if (sgx_ret != SGX_SUCCESS) {
+    if (sgx_ret != SGX_SUCCESS)
+    {
         LOG_ERROR("Parsing genesis block failed: %d\n", sgx_ret);
         return sgx_ret;
     }
@@ -48,27 +49,28 @@ int ecall_join_channel(uint8_t *genesis, uint32_t gen_len)
     return SGX_SUCCESS;
 }
 
-int ecall_next_block(uint8_t *block_bytes, uint32_t block_size)
+int ecall_next_block(uint8_t* block_bytes, uint32_t block_size)
 {
     return parse_block(block_bytes, block_size);
 }
 
-int ecall_get_state_metadata(const char *key, uint8_t *nonce, sgx_cmac_128bit_tag_t *cmac)
+int ecall_get_state_metadata(const char* key, uint8_t* nonce, sgx_cmac_128bit_tag_t* cmac)
 {
     sgx_sha256_hash_t state_hash = {0};
-    ledger_get_state_hash(key, (uint8_t *)&state_hash);
+    ledger_get_state_hash(key, (uint8_t*)&state_hash);
 
     // remove channel name prefix from key if exists
     std::string kkey(key);
     size_t found = kkey.find_first_of(".");
-    if (found != std::string::npos) {
+    if (found != std::string::npos)
+    {
         kkey.erase(0, found + 1);
     }
 
     // hash( key || nonce || target_hash || result )
     sgx_cmac_state_handle_t cmac_handle;
     sgx_cmac128_init(&session_key, &cmac_handle);
-    sgx_cmac128_update((const uint8_t *)kkey.c_str(), kkey.size(), cmac_handle);
+    sgx_cmac128_update((const uint8_t*)kkey.c_str(), kkey.size(), cmac_handle);
     // TODO use the nonce
     /* sgx_cmac128_update(nonce, 32, cmac_handle); */
     sgx_cmac128_update(state_hash, sizeof(sgx_sha256_hash_t), cmac_handle);
@@ -79,23 +81,24 @@ int ecall_get_state_metadata(const char *key, uint8_t *nonce, sgx_cmac_128bit_ta
 }
 
 int ecall_get_multi_state_metadata(
-    const char *comp_key, uint8_t *nonce, sgx_cmac_128bit_tag_t *cmac)
+    const char* comp_key, uint8_t* nonce, sgx_cmac_128bit_tag_t* cmac)
 {
     // create state hash
     sgx_sha256_hash_t state_hash = {0};
-    ledger_get_multi_state_hash(comp_key, (uint8_t *)&state_hash);
+    ledger_get_multi_state_hash(comp_key, (uint8_t*)&state_hash);
 
     // remove prefix
     std::string k(comp_key);
     size_t found = k.find_first_of(".");
-    if (found != std::string::npos) {
+    if (found != std::string::npos)
+    {
         k.erase(0, found);
     }
 
     // hash( key || nonce || target_hash || result )
     sgx_cmac_state_handle_t cmac_handle;
     sgx_cmac128_init(&session_key, &cmac_handle);
-    sgx_cmac128_update((const uint8_t *)k.c_str(), k.size(), cmac_handle);
+    sgx_cmac128_update((const uint8_t*)k.c_str(), k.size(), cmac_handle);
     // TODO use the nonce
     /* sgx_cmac128_update(nonce, 32, cmac_handle); */
     sgx_cmac128_update(state_hash, sizeof(sgx_sha256_hash_t), cmac_handle);
