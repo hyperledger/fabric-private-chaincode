@@ -1,17 +1,17 @@
 /*
-* Copyright IBM Corp. 2018 All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+ * Copyright IBM Corp. 2018 All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "enclave_t.h"
@@ -45,15 +45,18 @@ void get_state(const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* va
 
     // create state hash
     sgx_sha256_hash_t state_hash = {0};
-    if (*val_len > 0) {
+    if (*val_len > 0)
+    {
         sgx_sha256_msg(val, *val_len, &state_hash);
     }
 
-    if (check_cmac(key, NULL, &state_hash, &session_key, &cmac) == 0) {
+    if (check_cmac(key, NULL, &state_hash, &session_key, &cmac) == 0)
+    {
         LOG_DEBUG("Enclave: State verification: cmac correct!! :D");
     }
     // if nothing read, no need for decryption
-    if (*val_len == 0) {
+    if (*val_len == 0)
+    {
         return;
     }
 
@@ -65,12 +68,14 @@ void get_state(const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* va
     uint8_t plain[plain_len];
     int ret = decrypt_state(
         &state_encryption_key, (uint8_t*)cipher.c_str(), cipher.size(), plain, plain_len);
-    if (ret != SGX_SUCCESS) {
+    if (ret != SGX_SUCCESS)
+    {
         LOG_ERROR("Enclave: Error decrypting state: %d", ret);
     }
 
     memcpy(val, plain, plain_len);
-    if (*val_len - plain_len > 0) {
+    if (*val_len - plain_len > 0)
+    {
         // just fill val with zeros
         memset(val + plain_len, 0, *val_len - plain_len);
     }
@@ -83,7 +88,8 @@ void put_state(const char* key, uint8_t* val, uint32_t val_len, void* ctx)
     uint32_t cipher_len = val_len + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE;
     uint8_t cipher[cipher_len];
     int ret = encrypt_state(&state_encryption_key, val, val_len, cipher, cipher_len);
-    if (ret != SGX_SUCCESS) {
+    if (ret != SGX_SUCCESS)
+    {
         LOG_ERROR("Enclave: Error encrypting state");
     }
 
@@ -115,7 +121,8 @@ void get_state_by_partial_composite_key(
     sgx_sha_state_handle_t sha_handle;
     sgx_sha256_init(&sha_handle);
 
-    for (auto& u : values) {
+    for (auto& u : values)
+    {
         read_set->insert(u.first);
 
         // but also compute hash
@@ -130,7 +137,8 @@ void get_state_by_partial_composite_key(
         uint8_t plain[plain_len];
         int ret = decrypt_state(
             &state_encryption_key, (uint8_t*)cipher.c_str(), cipher.size(), plain, plain_len);
-        if (ret != SGX_SUCCESS) {
+        if (ret != SGX_SUCCESS)
+        {
             LOG_ERROR("Enclave: Error decrypting state: %d", ret);
         }
 
@@ -141,9 +149,12 @@ void get_state_by_partial_composite_key(
     sgx_sha256_get_hash(sha_handle, &state_hash);
     sgx_sha256_close(sha_handle);
 
-    if (check_cmac(comp_key, NULL, &state_hash, &session_key, &cmac) != 0) {
+    if (check_cmac(comp_key, NULL, &state_hash, &session_key, &cmac) != 0)
+    {
         LOG_ERROR("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
-    } else {
+    }
+    else
+    {
         LOG_DEBUG("Enclave: State verification: cmac correct!! :D");
     }
 }
@@ -167,9 +178,12 @@ read_set_t* get_read_set(context_t* context, void* ctx)
     sgx_thread_mutex_lock(&global_mutex);
     auto search = context->find(ctx);
     sgx_thread_mutex_unlock(&global_mutex);
-    if (search != context->end()) {
+    if (search != context->end())
+    {
         return search->second.first;
-    } else {
+    }
+    else
+    {
         LOG_ERROR("Enclave: NO read_set for ctx %p", ctx);
         return NULL;
     }
@@ -180,9 +194,12 @@ write_set_t* get_write_set(context_t* context, void* ctx)
     sgx_thread_mutex_lock(&global_mutex);
     auto search = context->find(ctx);
     sgx_thread_mutex_unlock(&global_mutex);
-    if (search != context->end()) {
+    if (search != context->end())
+    {
         return search->second.second;
-    } else {
+    }
+    else
+    {
         LOG_ERROR("Enclave: NO write_set for ctx %p", ctx);
         return NULL;
     }
@@ -192,13 +209,15 @@ int unmarshal_values(
     std::map<std::string, std::string>& values, const char* json_bytes, uint32_t json_len)
 {
     JSON_Value* root = json_parse_string(json_bytes);
-    if (json_value_get_type(root) != JSONArray) {
+    if (json_value_get_type(root) != JSONArray)
+    {
         LOG_ERROR("Shim: Cannot parse values");
         return -1;
     }
 
     JSON_Array* pairs = json_value_get_array(root);
-    for (int i = 0; i < json_array_get_count(pairs); i++) {
+    for (int i = 0; i < json_array_get_count(pairs); i++)
+    {
         JSON_Object* pair = json_array_get_object(pairs, i);
         const char* key = json_object_get_string(pair, "key");
         const char* value = json_object_get_string(pair, "value");
@@ -211,13 +230,15 @@ int unmarshal_values(
 int unmarshal_args(std::vector<std::string>& argss, const char* json_string)
 {
     JSON_Value* root = json_parse_string(json_string);
-    if (json_value_get_type(root) != JSONArray) {
+    if (json_value_get_type(root) != JSONArray)
+    {
         LOG_ERROR("Shim: Cannot parse args");
         return -1;
     }
 
     JSON_Array* args = json_value_get_array(root);
-    for (int i = 0; i < json_array_get_count(args); i++) {
+    for (int i = 0; i < json_array_get_count(args); i++)
+    {
         argss.push_back(json_array_get_string(args, i));
     }
     json_value_free(root);

@@ -1,17 +1,17 @@
 /*
-* Copyright IBM Corp. 2018 All Rights Reserved.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+ * Copyright IBM Corp. 2018 All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include "ias.h"
@@ -56,7 +56,8 @@ sgx_quote_t* quote_from_attestation_report_body(const char* report_body)
 // check that certain mrenclave and hash(enclave_pk) is in report body
 int verify_mrenclave_in_quote(sgx_quote_t* quote, mrenclave_t* mrenclave)
 {
-    if (quote == NULL || mrenclave == NULL) {
+    if (quote == NULL || mrenclave == NULL)
+    {
         return -1;
     }
     return memcmp(quote->report_body.mr_enclave.m, mrenclave->m, 32);
@@ -65,7 +66,8 @@ int verify_mrenclave_in_quote(sgx_quote_t* quote, mrenclave_t* mrenclave)
 int verify_enclave_pk_in_quote(
     sgx_quote_t* quote, const unsigned char* enclave_pk_der, int enclave_pk_len)
 {
-    if (quote == NULL || enclave_pk_der == NULL) {
+    if (quote == NULL || enclave_pk_der == NULL)
+    {
         return -1;
     }
 
@@ -74,7 +76,8 @@ int verify_enclave_pk_in_quote(
     // get ECDSA pk from DER
     EC_KEY* pubkey = NULL;
     d2i_EC_PUBKEY(&pubkey, &tmp, enclave_pk_len);
-    if (pubkey == NULL) {
+    if (pubkey == NULL)
+    {
         LOG_ERROR("IAS: Pubkey error: %s", ERR_error_string(ERR_get_error(), NULL));
         return -1;
     }
@@ -115,21 +118,25 @@ int verify_attestation_report(uint8_t* json_bytes, size_t json_len, mrenclave_t*
 
     // first get intel pub key for verification
     BIO* mem = BIO_new(BIO_s_mem());
-    if (BIO_puts(mem, INTEL_PUB_PEM) < 1) {
+    if (BIO_puts(mem, INTEL_PUB_PEM) < 1)
+    {
         LOG_ERROR("IAS: Mem NULL, error: %s", ERR_error_string(ERR_get_error(), NULL));
         return IAS_ERROR;
     }
 
     EVP_PKEY* intel_pkey = NULL;
-    if (!PEM_read_bio_PUBKEY(mem, &intel_pkey, 0, 0)) {
-        LOG_ERROR("IAS: Can not parse Intel PK from pem: %s", ERR_error_string(ERR_get_error(), NULL));
+    if (!PEM_read_bio_PUBKEY(mem, &intel_pkey, 0, 0))
+    {
+        LOG_ERROR(
+            "IAS: Can not parse Intel PK from pem: %s", ERR_error_string(ERR_get_error(), NULL));
         return IAS_ERROR;
     }
 
     RSA* intel_pubkey_rsa = EVP_PKEY_get1_RSA(intel_pkey);
 
     JSON_Value* root = json_parse_string(json.c_str());
-    if (root == NULL) {
+    if (root == NULL)
+    {
         LOG_ERROR("IAS: Failed to parse JSON");
         return IAS_ERROR;
     }
@@ -156,13 +163,18 @@ int verify_attestation_report(uint8_t* json_bytes, size_t json_len, mrenclave_t*
     // next: verify
     int ret = RSA_verify(NID_sha256, sig_hash, 32, (const unsigned char*)signature.c_str(),
         signature.size(), intel_pubkey_rsa);
-    if (ret == 0) {
+    if (ret == 0)
+    {
         LOG_ERROR("IAS: Invalid IASReport signature");
         return IAS_ERROR;
-    } else if (ret == -1) {
+    }
+    else if (ret == -1)
+    {
         LOG_ERROR("IAS: IASReport signature validation  error");
         return IAS_ERROR;
-    } else {
+    }
+    else
+    {
         LOG_DEBUG("IAS: Valid IASReport");
     }
 
@@ -171,13 +183,15 @@ int verify_attestation_report(uint8_t* json_bytes, size_t json_len, mrenclave_t*
 
     // check that IASReport includes enclave PK
     if (verify_enclave_pk_in_quote(
-            quote, (const unsigned char*)enclave_pk.c_str(), enclave_pk.size()) != 0) {
+            quote, (const unsigned char*)enclave_pk.c_str(), enclave_pk.size()) != 0)
+    {
         LOG_ERROR("IAS: Enclave PK does not match attestation report");
         return IAS_ERROR;
     }
 
     // check that correct MRENCLAVE is present in quote
-    if (verify_mrenclave_in_quote(quote, mrenclave) != 0) {
+    if (verify_mrenclave_in_quote(quote, mrenclave) != 0)
+    {
         LOG_ERROR("IAS: Chaincode MRENCLAVE does not match attestation report");
         return IAS_ERROR;
     }
