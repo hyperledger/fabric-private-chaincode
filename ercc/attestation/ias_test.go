@@ -77,7 +77,8 @@ var _ = Describe("Ias", func() {
 
 				ias := attestation.NewIASWithMock(ts.URL, ts.Client())
 				_, err = ias.RequestAttestationReport(apiKey, []byte(quote))
-				Expect(err).To(MatchError("report does not contain submitted quote"))
+				Expect(err).To(HaveOccurred())
+				Expect(strings.HasPrefix(err.Error(), "report does not contain submitted quote")).To(BeTrue())
 			})
 		})
 

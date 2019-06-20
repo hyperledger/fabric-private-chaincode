@@ -125,6 +125,8 @@ func (ias *intelAttestationServiceImpl) RequestAttestationReport(apiKey string, 
 	}
 	defer resp.Body.Close()
 
+	logger.Debugf("Received IAS response %s", resp)
+
 	// check response
 	if resp.StatusCode != 200 {
 		return IASAttestationReport{}, fmt.Errorf("IAS returned error: Code %s", resp.Status)
@@ -141,9 +143,16 @@ func (ias *intelAttestationServiceImpl) RequestAttestationReport(apiKey string, 
 		return IASAttestationReport{}, fmt.Errorf("cannot unmarshal report body: %s", err)
 	}
 
-	// check response contains submitted quote
-	if !strings.HasPrefix(reportBody.IsvEnclaveQuoteBody, quoteAsBase64) {
-		return IASAttestationReport{}, fmt.Errorf("report does not contain submitted quote")
+	// check response contains submitted quote.
+	// That way, we can be sure (once signature check later works out) that it is
+	// a response to our request, even if there is some TLS issue (note we are using the
+	// general TLS trust-store, so a multitude of CAs would be trusted and could compromise
+	// security)
+	// Note: ias does not return the complete quotebody but skips EPID signature and signature length,
+	//   we have to do prefix rather than equality match (better would even be to decode base64
+	//   and check that first 432 bytes match ...)
+	if len(reportBody.IsvEnclaveQuoteBody) == 0 || !strings.HasPrefix(quoteAsBase64, reportBody.IsvEnclaveQuoteBody) {
+		return IASAttestationReport{}, fmt.Errorf("report does not contain submitted quote (%s not properly prefixed by %s)", quoteAsBase64, reportBody.IsvEnclaveQuoteBody)
 	}
 
 	report := IASAttestationReport{
