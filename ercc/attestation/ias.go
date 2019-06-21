@@ -1,9 +1,9 @@
 /*
-* Copyright IBM Corp. All Rights Reserved.
-* Copyright Intel Corp. 2019 All Rights Reserved.
-*
-* SPDX-License-Identifier: Apache-2.0
- */
+Copyright IBM Corp. All Rights Reserved.
+Copyright Intel Corp. 2019 All Rights Reserved.
+
+SPDX-License-Identifier: Apache-2.0
+*/
 
 package attestation
 

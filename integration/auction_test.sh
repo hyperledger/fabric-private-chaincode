@@ -1,7 +1,9 @@
 #!/bin/bash
+
 # Copyright Intel Corp. All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
+
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
 FPC_TOP_DIR="${SCRIPTDIR}/.."
 CONFIG_HOME="${SCRIPTDIR}/config"

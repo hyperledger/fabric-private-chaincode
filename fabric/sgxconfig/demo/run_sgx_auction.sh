@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Copyright IBM Corp. All Rights Reserved.
 # Copyright Intel Corp. All Rights Reserved.
 #
