@@ -7,9 +7,10 @@
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
 FPC_TOP_DIR="${SCRIPTDIR}/.."
 CONFIG_HOME="${SCRIPTDIR}/config"
+FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 
-. ${SCRIPTDIR}/common_utils.sh
-. ${SCRIPTDIR}/common_ledger.sh
+. ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
+. ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 CC_ID=ecc
 # TODO: once issue #86 is fixed, change above to ecc_auction_test
@@ -21,24 +22,11 @@ auction_test() {
     expect_switcheroo_fail=$1
 
     # install, init, and register (auction) chaincode
-    # install some dummy chaincode (we manually need to create the image)
-    try ${PEER_CMD} chaincode install -n ${CC_ID} -v ${CC_VERS} -p github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd
+    try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p github.com/hyperledger-labs/fabric-private-chaincode/ecc/
     sleep 3
 
     # init is special case as it might expectedly fail if switcheroo wasn't done yet ..
-    stdinerr=$(${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":["init"]}' -V ecc-vscc 2>&1)
-    rc=$?
-    echo "${stdinerr}"
-    if [ ${rc} != 0 ]; then
-	if ( [ "${expect_switcheroo_fail}" -eq 1 ] &&
-	     $(echo ${stdinerr} | grep -q 'Incorrect number of arguments. Expecting 4')); then
-	    say "INFO: switcheroo-related failure happened but was expected";
-	    return
-	else
-	    die "ABORT: Unexpected failure (rc=${rc})"
-	fi
-    fi
-
+    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":["init"]}' -V ecc-vscc
     sleep 3
 
     try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["setup", "ercc"]}'
@@ -83,32 +71,13 @@ trap ledger_shutdown EXIT
 
 # 2. First run, this should fail due to docker-switcheroo
 para
-say "FIRST RUN: this should fail due to docker-switcheroo ..."
+say "Run auction test"
 
 say "- setup ledger"
 ledger_init
 
 say "- auction test"
-auction_test 1
-#   should fail with
-#    Error: could not assemble transaction, err proposal response was not successful, error code 500, msg transaction returned with failure: Incorrect number of arguments. Expecting 4
-
-say "- shutdown ledger"
-ledger_shutdown
-
-say "- do switcheroo"
-(cd ${FPC_TOP_DIR}/ecc; CC_NAME=${CC_ID} make docker) || die "ERROR: cannot perform switcheroo"
-
-
-# 3. Second run, this should work ..
-para
-say "SECOND RUN: this should (hopefully :-) succeed ..."
-
-say "- setup ledger"
-ledger_init
-
-say "- run auction test"
-auction_test 0
+auction_test 
 
 say "- shutdown ledger"
 ledger_shutdown

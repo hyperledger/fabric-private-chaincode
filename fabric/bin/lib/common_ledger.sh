@@ -7,19 +7,23 @@
 # - CONFIG_HOME is defined
 # - common_utils.sh is loaded
 # optional config overrides
+# - FABRIC_PATH
 # - FABRIC_BIN_DIR
 # - FABRIC_STATE_DIR
 
-: ${FABRIC_BIN_DIR:="${FPC_TOP_DIR}/../../hyperledger/fabric/.build/bin"}
+: ${FABRIC_PATH:="${FPC_TOP_DIR}/../../hyperledger/fabric/"}
+: ${FABRIC_BIN_DIR:="${FABRIC_PATH}/.build/bin"}
 : ${FABRIC_STATE_DIR:="/tmp/hyperledger/test/"}
 
-PEER_CMD=${FABRIC_BIN_DIR}/peer
-ORDERER_CMD=${FABRIC_BIN_DIR}/orderer
-CONFIGTXGEN_CMD=${FABRIC_BIN_DIR}/configtxgen
+FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 
-ORDERER_ADDR=localhost:7050
-CHAN_ID=mychannel
-ERCC_ID=ercc
+PEER_CMD="${FABRIC_SCRIPTDIR}/peer.sh" # use our wrapper!
+ORDERER_CMD="${FABRIC_BIN_DIR}/orderer"
+CONFIGTXGEN_CMD="${FABRIC_BIN_DIR}/configtxgen"
+
+ORDERER_ADDR="localhost:7050"
+CHAN_ID="mychannel"
+ERCC_ID="ercc"
 ERCC_VERSION=0
 
 ORDERER_LOG_OUT="${FABRIC_STATE_DIR}/orderer.out"
@@ -32,7 +36,7 @@ CHANNEL_BLOCK="${FABRIC_STATE_DIR}/${CHAN_ID}.block"
 
 docker_clean() {
     cc_name=$1
-    docker_image=$(docker images | grep -- -${cc_name}- | awk '{print $1;}')
+    docker_image=$(docker images | grep -- ${NET_ID}-${PEER_ID}-${cc_name}- | awk '{print $1;}')
     if [ ! -z "${docker_image}" ]; then
 	docker rmi -f "${docker_image}";
     fi
@@ -44,13 +48,9 @@ ledger_precond_check() {
 	[ -x "${PEER_CMD}" ] || die "peer command does not exist in '${FABRIC_BIN_DIR}'"
 	[ -x "${ORDERER_CMD}" ] || die "orderer command does not exist in '${FABRIC_BIN_DIR}'"
 	[ -x "${CONFIGTXGEN_CMD}" ] || die "configtxgen command does not exist in '${FABRIC_BIN_DIR}'"
-
-	[ -d "${CONFIG_HOME}" ] || die "CONFIG_HOME not properly defined as '${CONFIG_HOME}'"
-	[ -e "${CONFIG_HOME}/core.yaml" ] || die "no core.yaml in CONFIG_HOME '${CONFIG_HOME}'"
-	spid_file=$(perl -0777 -n -e 'm/spid:\s*file:\s*(\S+)/i && print "$1"' ${CONFIG_HOME}/core.yaml)
-	(cd ${CONFIG_HOME} && [ -e ${spid_file} ]) || die "spid not properly configured in ${CONFIG_HOME}/core.yaml or file '${spid_file}' does not exist"
-	api_key_file=$(perl -0777 -n -e 'm/apiKey:\s*file:\s*(\S+)/i && print "$1"' ${CONFIG_HOME}/core.yaml)
-	(cd ${CONFIG_HOME} && [ -e ${api_key_file} ]) || die "apiKey not properly configured in ${CONFIG_HOME}/core.yaml or apiKey file '${api_key_file}' does not exist"
+	parse_fabric_config "${CONFIG_HOME}"
+	(cd "${CONFIG_HOME}" && [ -e "${SPID_FILE}" ]) || die "spid not properly configured in ${CONFIG_HOME}/core.yaml or file '${SPID_FILE}' does not exist"
+	(cd "${CONFIG_HOME}" && [ -e "${API_KEY_FILE}" ]) || die "apiKey not properly configured in ${CONFIG_HOME}/core.yaml or apiKey file '${API_KEY_FILE}' does not exist"
 
         [ ! -z "${FABRIC_STATE_DIR}" ] || die "FABRIC_STATE_DIR not defined"
 }
@@ -80,7 +80,7 @@ ledger_init() {
 
     # 3. start peer
     LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"$LD_LIBRARY_PATH:"}${FPC_TOP_DIR}/tlcc/enclave/lib \
-		   ${FABRIC_BIN_DIR}/peer node start 1>${PEER_LOG_OUT} 2>${PEER_LOG_ERR} &
+		   ${PEER_CMD} node start 1>${PEER_LOG_OUT} 2>${PEER_LOG_ERR} &
     export PEER_PID=$!
     sleep 1
     kill -0 ${PEER_PID} || die "Peer quit too quickly: (for log see ${PEER_LOG_OUT} & ${PEER_LOG_ERR})"
