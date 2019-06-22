@@ -7,12 +7,14 @@ include $(TOP)/build.mk
 
 LD_LIBRARY_PATH := LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$$(pwd)/enclave/lib
 CC_NAME ?= ecc
+NET_ID ?=dev
+PEER_ID ?=jdoe
 
 VSCC_SRC = vscc/ecc_validation_plugin.go vscc/ecc_validation_logic.go
 VSCC_OUT = ecc-vscc.so
 
-DOCKER_IMAGE ?= $$(docker images | grep -- -$(CC_NAME)- | awk '{print $$1;}')
-DOCKER_CONTAINER_ID?=$$(docker ps | grep -- -$(CC_NAME)- | awk '{print $$1;}')
+DOCKER_IMAGE ?= $$(docker images | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
+DOCKER_CONTAINER_ID?=$$(docker ps | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
 
 
 all: build test
