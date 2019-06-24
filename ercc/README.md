@@ -1,3 +1,7 @@
+<!---
+Licensed under Creative Commons Attribution 4.0 International License
+https://creativecommons.org/licenses/by/4.0/
+--->
 # Enclave Registry (ercc)
 
 The enclave registry is a chaincode that runs outside SGX and maintains a list

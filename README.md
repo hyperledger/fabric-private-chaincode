@@ -1,3 +1,7 @@
+<!---
+Licensed under Creative Commons Attribution 4.0 International License
+https://creativecommons.org/licenses/by/4.0/
+--->
 # Hyperledger Fabric Private Chaincode
 
 Hyperledger Fabric Private Chaincode (FPC) enables the execution of chaincodes
@@ -107,6 +111,13 @@ deploying and running an example chaincode.
 * (for hardware-mode SGX build) credentials for IAS, read [here](#intel-attestation-service-ias)
 * Docker 18.x
 * Nanopb 0.3.9.2 (see [below](#get-nanopb))
+
+To build documentation, you also need
+* [PlantUML](http://plantuml.com/). You will have to install `java` and download `plantuml.jar`.
+  Either put `plantuml.jar` into in your `CLASSPATH` environment variable or override
+  `PLANTUML_JAR` or `PLANTUML_CMD` in ``config.override.mk` (see `config.mk` for default
+  definition of the two variables).
+
 
 ### SGX SDK and SSL
 

@@ -14,7 +14,6 @@ ${GO_CMDS}:
 	$(GO) build $@.go
 
 test: build
-#	$(GO) test -v
 
 clean: 
 	$(GO) $@

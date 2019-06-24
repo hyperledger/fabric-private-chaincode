@@ -6,13 +6,15 @@
 #RUN=echo # uncomment to dry-run peer call
 
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
-. ${SCRIPTDIR}/lib/common_utils.sh
-
 FPC_TOP_DIR="${SCRIPTDIR}/../../"
+CONFIG_HOME="$(pwd)"
+
+. ${SCRIPTDIR}/lib/common_ledger.sh
+
 FPC_DOCKER_NAME_CMD="${FPC_TOP_DIR}/utils/fabric/get-fabric-container-name"
 
-: ${FABRIC_PATH:="${FPC_TOP_DIR}/../../hyperledger/fabric/"}
-: ${FABRIC_BIN_DIR:="${FABRIC_PATH}/.build/bin"}
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/tlcc/enclave/lib 
+
 
 handle_chaincode_install() {
     OTHER_ARGS=()
@@ -63,15 +65,69 @@ handle_chaincode_install() {
 }
 
 handle_channel_create() {
-    # TODO: remember that we are "channel creation" peer
-    # for now just fall through ...
+    # - get channel name
+    while [[ $# > 0 ]]; do
+	case "$1" in
+	    -c|--channelID)
+		CHAN_ID=$2;
+		shift; shift
+		;;
+	    *)
+		shift
+		;;
+	    esac
+    done
+    # - remember that we are "channel creation" peer
+    try touch "${CONFIG_HOME}/${CHAN_ID}.creator"
+    # fall through to "real" peer ...
+    # (Note: we didn't modify args, so we can use original ones already storeed in ARGS_EXEC)
     return
 }
 
 handle_channel_join() {
-    # TODO: install and (if "channel creation" peer) instantiate ercc
-    # for now just fall through ...
-    return
+    # - get channel name
+    #   (we rely here on convention that block is named ${CHAN_ID}.block
+    #   as channel id is not explicitly passed as argument!)
+    while [[ $# > 0 ]]; do
+	case "$1" in
+	    -b|--blockpath)
+		CHAN_BLOCK=$2;
+		shift; shift
+		;;
+	    *)
+		shift
+		;;
+	    esac
+    done
+    CHAN_ID=$(basename -s .block ${CHAN_BLOCK}) || die "Cannot derive channel id from block param '$CHAN_BLOCK}'"
+    yell "Deriving channel id '${CHAN_ID}' from channel block file '${CHAN_BLOCK}', relying on naming convention '..../<chan_id>.block' for that file!"
+
+    # - call real peer so channel is joined
+    try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
+
+    # - handle ercc
+    say "Installing & Instantiating ercc on channel '${CHAN_ID}' ..."
+    #   - install ercc
+    try $RUN ${FABRIC_BIN_DIR}/peer chaincode install -n ${ERCC_ID} -v ${ERCC_VERSION} -p github.com/hyperledger-labs/fabric-private-chaincode/ercc/cmd
+    sleep 1
+    #   - instantiate ercc iff "channel creation" peer
+    if [ -e "${CONFIG_HOME}/${CHAN_ID}.creator" ]; then
+	try $RUN ${FABRIC_BIN_DIR}/peer chaincode instantiate -n ${ERCC_ID} -v ${ERCC_VERSION} -c '{"args":["init"]}' -C ${CHAN_ID} -V ercc-vscc
+	sleep 3
+	try rm "${CONFIG_HOME}/${CHAN_ID}.creator"
+    fi
+    #   - get SPID (mostly as debug output)
+    try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -n ${ERCC_ID} -c '{"args":["getSPID"]}' -C ${CHAN_ID}
+    sleep 3
+
+    # - ask tlcc to join channel
+    #   IMPORTANT: right now a join is _not_ persistant, so on restart of peer,
+    #   it will re-join old channels but tlcc will not!
+    say "Attaching TLCC to channel '${CHAN_ID}' ..."
+    try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -n tlcc -c '{"Args": ["JOIN_CHANNEL"]}' -C ${CHAN_ID}
+
+    # - exit
+    exit 0
 }
 
 # - check whether it is a command which we have to intercept
@@ -90,13 +146,28 @@ case "$1" in
 	    *)
 		# fall through, nothing to do
 	esac
-
 	;;
+
+    channel)
+	shift
+	case "$1" in
+	    create)
+		shift
+		handle_channel_create "$@"
+		;;
+	    join)
+		shift
+		handle_channel_join "$@"
+		;;
+	    *)
+		# fall through, nothing to do
+	esac
+	;;
+
     *) 
 	# fall through, nothing to do
 	;;
 esac
 
 # Call real peer
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/tlcc/enclave/lib 
 try $RUN exec ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"

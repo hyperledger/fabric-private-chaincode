@@ -1,3 +1,7 @@
+<!---
+Licensed under Creative Commons Attribution 4.0 International License
+https://creativecommons.org/licenses/by/4.0/
+--->
 # Trusted ledger enclave (tlcc_enclave)
 
 The ledger enclave maintains the ledger in an enclave in the form of
