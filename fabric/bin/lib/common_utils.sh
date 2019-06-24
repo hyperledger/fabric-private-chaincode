@@ -48,22 +48,3 @@ function para() {
 try() {
     "$@" || die "test failed: $*"
 }
-
-# Fabric config parsing
-#----------------------------
-# input parameter is CONFIG_HOME directory
-# when succesfull, will have defined following variables
-# - SPID_FILE
-# - API_KEY_FILE
-# - NET_ID
-# - PEER_ID
-parse_fabric_config() {
-    CONFIG_HOME=$1
-
-    [ -d "${CONFIG_HOME}" ] || die "CONFIG_HOME not properly defined as '${CONFIG_HOME}'"
-    [ -e "${CONFIG_HOME}/core.yaml" ] || die "no core.yaml in CONFIG_HOME '${CONFIG_HOME}'"
-    SPID_FILE=$(perl -0777 -n -e 'm/spid:\s*file:\s*(\S+)/i && print "$1"' ${CONFIG_HOME}/core.yaml)
-    API_KEY_FILE=$(perl -0777 -n -e 'm/apiKey:\s*file:\s*(\S+)/i && print "$1"' ${CONFIG_HOME}/core.yaml)
-    PEER_ID=$(perl -0777 -n -e 'm/id:\s*(\S+)/i && print "$1"' ${CONFIG_HOME}/core.yaml)
-    NET_ID=$(perl -0777 -n -e 'm/networkId:\s*(\S+)/i && print "$1"' ${CONFIG_HOME}/core.yaml)
-}

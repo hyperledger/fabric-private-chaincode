@@ -5,7 +5,7 @@
 TOP = .
 include $(TOP)/build.mk
 
-SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc integration
+SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc integration # docs
 
 all build test clean :
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)

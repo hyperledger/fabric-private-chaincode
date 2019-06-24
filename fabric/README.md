@@ -1,3 +1,7 @@
+<!---
+Licensed under Creative Commons Attribution 4.0 International License
+https://creativecommons.org/licenses/by/4.0/
+--->
 # SGX support for a Fabric peer
 
 To enable SGX support for a Fabric peer start with a fresh copy of Fabric and
