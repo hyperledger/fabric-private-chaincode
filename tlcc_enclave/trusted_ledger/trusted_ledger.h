@@ -1,3 +1,9 @@
+/*
+ * Copyright IBM Corp. All Rights Reserved.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #ifndef _TRUSTED_LEDGER_H_
 #define _TRUSTED_LEDGER_H_
 
