@@ -16,6 +16,8 @@ EXCLUDED_PATTERNS="\
     ecc_enclave/_build \
     tlcc_enclave/nanopb \
     tlcc_enclave/_build \
+    examples/auction/_build \
+    examples/echo/_build \
     common/protobuf \
     common/base64 \
     common/json \

@@ -1,3 +1,4 @@
+# Copyright 2019 Intel Corporation
 # Copyright IBM Corp. All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -5,7 +6,7 @@
 TOP = .
 include $(TOP)/build.mk
 
-SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc integration # docs
+SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc examples integration
 
 build test clean :
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)

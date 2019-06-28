@@ -13,7 +13,8 @@ RUN mkdir -p ${CC_LIB_PATH}
 ENV SGX_SDK=/opt/intel/sgxsdk
 ENV LD_LIBRARY_PATH=${SGX_SDK}/sdk_libs:${CC_LIB_PATH}
 
-copy ecc/${CC_NAME} ${CC_PATH}/chaincode
-copy ecc_enclave/_build/lib/*.so ${CC_LIB_PATH}/
+# TODO: the boiler plate should include the compiled ecc
+#copy ecc/${CC_NAME} ${CC_PATH}/chaincode
+copy ecc_enclave/_build/lib/libsgxcc.so ${CC_LIB_PATH}/
 
 WORKDIR ${CC_PATH}

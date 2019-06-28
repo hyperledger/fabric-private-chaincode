@@ -1,0 +1,14 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+FROM fabric-private-chaincode/boilerplate-ecc
+
+ARG enclave_so_path
+ARG CC_PATH="/usr/local/bin"
+ARG CC_LIB_PATH=${CC_PATH}"/enclave/lib"
+
+RUN test -n "$enclave_so_path" 
+
+copy ${enclave_so_path}/enclave.signed.so ${CC_LIB_PATH}/
+copy ecc/ecc ${CC_PATH}/chaincode

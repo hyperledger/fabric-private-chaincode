@@ -15,14 +15,13 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 CC_ID=ecc
 
 #this is the path that will be used for the docker build of the chaincode enclave
-ENCLAVE_SO_PATH=examples/auction/_build/lib/
+ENCLAVE_SO_PATH=examples/echo/_build/lib/
 
-# TODO: once issue #86 is fixed, change above to ecc_auction_test
+# TODO: once issue #86 is fixed, change above to ecc_echo_test
 CC_VERS=0
-num_rounds=3
-num_clients=10
+num_rounds=10
 
-auction_test() {
+echo_test() {
     expect_switcheroo_fail=$1
 
     # install, init, and register (auction) chaincode
@@ -37,30 +36,17 @@ auction_test() {
 
     try ${PEER_CMD} chaincode query -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["getEnclavePk"]}'
 
-    # create auction
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"create\",\"MyAuction\"]", ""]}' --waitForEvent
-
-    say "invoke submit"
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"submit\",\"MyAuction\", \"JohnnyCash0\", \"0\"]", ""]}' --waitForEvent
-
+    say "do echos"
     for (( i=1; i<=$num_rounds; i++ ))
     do
-        b="$(($i%$num_clients))"
-        try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"submit\",\"MyAuction\", \"JohnnyCash'$b'\", \"'$b'\"]", ""]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
-    done
-
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"close\",\"MyAuction\"]",""]}' --waitForEvent
-
-    say "invoke eval"
-    for (( i=1; i<=1; i++ ))
-    do
-        try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"eval\",\"MyAuction\"]", ""]}'  # Don't do --waitForEvent, so potentially there is some parallelism here ..
+        # echos
+        try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"echo-$i\"]", ""]}' --waitForEvent
     done
 }
 
 # 1. prepare
 para
-say "Preparing Auction Test ..."
+say "Preparing Echo Test ..."
 # - clean up relevant docker images
 docker_clean ${ERCC_ID}
 docker_clean ${CC_ID}
@@ -68,20 +54,19 @@ docker_clean ${CC_ID}
 trap ledger_shutdown EXIT
 
 
-# 2. First run, this should fail due to docker-switcheroo
 para
-say "Run auction test"
+say "Run echo test"
 
 say "- setup ledger"
 ledger_init
 
-say "- auction test"
-auction_test 
+say "- echo test"
+echo_test
 
 say "- shutdown ledger"
 ledger_shutdown
 
 para
-yell "Auction test PASSED"
+yell "Echo test PASSED"
 
 exit 0

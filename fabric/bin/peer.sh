@@ -36,6 +36,10 @@ handle_chaincode_install() {
 		CC_LANG=$2
 		shift;shift
 		;;
+        -e|--enclavesopath)
+        CC_ENCLAVESOPATH=$2
+        shift;shift
+        ;;
 	    *)
 		OTHER_ARGS+=( "$1" )
 		shift
@@ -43,8 +47,8 @@ handle_chaincode_install() {
 	    esac
     done
     if [ "${CC_LANG}" = "fpc-c" ]; then
-	if [ -z ${CC_NAME+x} ] || [ -z ${CC_VERSION+x} ] || [ -z ${CC_PATH+x} ]; then
-	    # missing params, don't do anything and let real peer report errrors
+	if [ -z ${CC_NAME+x} ] || [ -z ${CC_VERSION+x} ] || [ -z ${CC_PATH+x} ] || [ -z ${CC_ENCLAVESOPATH+x} ] ]; then
+	    # missing params, don't do anything and let real peer report errors
 	    return
 	fi
 	yell "Found valid FPC Chaincode Install!"
@@ -56,7 +60,7 @@ handle_chaincode_install() {
 
 	# install docker
 	# TODO: eventually use path to select actual chaincode once Bruno's SDKization is in ...
-	try make DOCKER_IMAGE=${DOCKER_IMAGE_NAME} -C ${FPC_TOP_DIR}/ecc docker
+	try make ENCLAVE_SO_PATH=${CC_ENCLAVESOPATH} DOCKER_IMAGE=${DOCKER_IMAGE_NAME} -C ${FPC_TOP_DIR}/ecc docker-fpc-app
 
 	# eplace path and lang arg with dummy go chaincode
 	ARGS_EXEC=( 'chaincode' 'install' '-n' "${CC_NAME}" '-v' "${CC_VERSION}" '-p' 'github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd' "${OTHER_ARGS[@]}" )	
