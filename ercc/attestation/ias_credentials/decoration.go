@@ -7,8 +7,10 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"github.com/hyperledger/fabric/core/config"
 	"github.com/hyperledger/fabric/core/handlers/decoration"
@@ -67,7 +69,22 @@ func readSPIDFromFile(spidFile string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return bytes, nil
+
+	return hexSPID2bytes(string(bytes))
+}
+
+func hexSPID2bytes(input string) ([]byte, error) {
+	spidString := strings.TrimSpace(input)
+	spid, err := hex.DecodeString(spidString)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(spid) != 16 {
+		return nil, fmt.Errorf("Cannot parse SPID: wrong size")
+	}
+
+	return spid, nil
 }
 
 func readFile(file string) ([]byte, error) {
