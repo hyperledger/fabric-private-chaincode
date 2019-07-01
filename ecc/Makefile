@@ -13,9 +13,11 @@ PEER_ID ?=jdoe
 VSCC_SRC = vscc/ecc_validation_plugin.go vscc/ecc_validation_logic.go
 VSCC_OUT = ecc-vscc.so
 
-DOCKER_IMAGE ?= $$(docker images | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
 DOCKER_CONTAINER_ID?=$$(docker ps | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
+# the following are the required docker build parameters
+DOCKER_IMAGE ?= $$(docker images | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
 DOCKER_BOILERPLATE_ECC_IMAGE ?= $(PROJECT_NAME)/boilerplate-ecc
+DOCKER_ENCLAVE_SO_PATH ?= $(ENCLAVE_SO_PATH)
 
 all: build
 # test target disable because it requires revision
@@ -33,7 +35,8 @@ sym-links:
 	# these symbolic links are necessary now to build ecc with the generated mrenclave.go
 	# once this is ready from the application build. Later, when the go file will be separated
 	# from the MRENCLAVE value, the relative symbolic links can (will) be removed.
-	ln -sfn ../../${ENCLAVE_SO_PATH}/../ enclave/app-lib
+	if [ -z "$(DOCKER_ENCLAVE_SO_PATH)" ]; then echo "\033[0;31mERROR: ENCLAVE_SO_PATH not defined\033[0m"; exit 1; fi
+	ln -sfn ../../${DOCKER_ENCLAVE_SO_PATH}/../ enclave/app-lib
 	[ -f enclave/app-lib/lib/mrenclave.go ] || exit 1
 	ln -sfn app-lib/lib/mrenclave.go enclave/mrenclave.go
 	ln -sfn ../../ecc_enclave/_build/lib enclave/ecc-enclave-lib
@@ -74,7 +77,7 @@ docker-fpc-app: ecc
 		exit 1;\
 	fi
 	echo "\033[1;33mWARNING: overriding $(DOCKER_IMAGE) docker image\033[0m"
-	$(DOCKER) build -t $(DOCKER_IMAGE) -f Dockerfile.fpc-app --build-arg enclave_so_path=$(ENCLAVE_SO_PATH) ..
+	$(DOCKER) build -t $(DOCKER_IMAGE) -f Dockerfile.fpc-app --build-arg enclave_so_path=$(DOCKER_ENCLAVE_SO_PATH) ..
 
 docker-run:
 	$(DOCKER) run \
