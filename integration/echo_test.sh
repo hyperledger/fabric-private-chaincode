@@ -25,7 +25,7 @@ echo_test() {
     expect_switcheroo_fail=$1
 
     # install, init, and register (auction) chaincode
-    try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p github.com/hyperledger-labs/fabric-private-chaincode/ecc/ -e ${ENCLAVE_SO_PATH}
+    try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p ${ENCLAVE_SO_PATH}
     sleep 3
 
     # init is special case as it might expectedly fail if switcheroo wasn't done yet ..
