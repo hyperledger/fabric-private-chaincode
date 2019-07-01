@@ -34,7 +34,7 @@ add_custom_command(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
-add_library(${ENCLAVE_BASE_LIB_NAME} STATIC ${SOURCE_FILES})
+add_library(${SHIM_LIB_NAME} STATIC ${SOURCE_FILES})
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -51,8 +51,8 @@ include_directories(
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -nostdinc -fno-builtin -fvisibility=hidden -fpie -fstack-protector -std=c11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SGX_COMMON_CFLAGS} -nostdinc -fno-builtin -fvisibility=hidden -fpie -fstack-protector -std=c++11")
 
-add_custom_command(TARGET ${ENCLAVE_BASE_LIB_NAME}
+add_custom_command(TARGET ${SHIM_LIB_NAME}
     POST_BUILD
     COMMAND mkdir -p ${CMAKE_BINARY_DIR}/lib
-    COMMAND cp lib${ENCLAVE_BASE_LIB_NAME}.a ${CMAKE_BINARY_DIR}/lib/
+    COMMAND cp lib${SHIM_LIB_NAME}.a ${CMAKE_BINARY_DIR}/lib/
     )

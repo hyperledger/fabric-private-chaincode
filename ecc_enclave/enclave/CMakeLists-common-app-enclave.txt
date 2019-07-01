@@ -39,7 +39,7 @@ set_target_properties(enclave PROPERTIES PREFIX "")
 
 target_link_libraries(enclave "${SGX_COMMON_CFLAGS} -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles \
 -L${ECC_ENCLAVE_DIR}/_build/lib \
--l${ENCLAVE_BASE_LIB_NAME} \
+-l${SHIM_LIB_NAME} \
 -L${SGX_SSL_LIBRARY_PATH} \
 -Wl,--whole-archive -lsgx_tsgxssl -Wl,--no-whole-archive -lsgx_tsgxssl_crypto \
 -L${SGX_LIBRARY_PATH} \

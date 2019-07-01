@@ -3,5 +3,5 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-set(ENCLAVE_BASE_LIB_NAME enclave-base)
+set(SHIM_LIB_NAME shim)
 
