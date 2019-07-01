@@ -13,11 +13,11 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 CC_ID=ecc
+# TODO: once issue #86 is fixed, change above to ecc_echo_test
 
 #this is the path that will be used for the docker build of the chaincode enclave
 ENCLAVE_SO_PATH=examples/echo/_build/lib/
 
-# TODO: once issue #86 is fixed, change above to ecc_echo_test
 CC_VERS=0
 num_rounds=10
 
