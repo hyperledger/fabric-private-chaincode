@@ -30,6 +30,9 @@ ecc_enclave: sym-links
 	@if [ ! -d $(ECC_ENCLAVE_BUILD)/include ]; then echo $(ERR_MSG); exit 1; fi
 
 sym-links:
+	# these symbolic links are necessary now to build ecc with the generated mrenclave.go
+	# once this is ready from the application build. Later, when the go file will be separated
+	# from the MRENCLAVE value, the relative symbolic links can (will) be removed.
 	ln -sfn ../../${ENCLAVE_SO_PATH}/../ enclave/app-lib
 	[ -f enclave/app-lib/lib/mrenclave.go ] || exit 1
 	ln -sfn app-lib/lib/mrenclave.go enclave/mrenclave.go
