@@ -6,8 +6,6 @@
 TOP = ..
 include $(TOP)/build.mk
 
-LD_LIBRARY_PATH := LD_LIBRARY_PATH=${LD_LIBRARY_PATH}
-
 CC_NAME ?= ecc
 NET_ID ?=dev
 PEER_ID ?=jdoe
@@ -44,10 +42,10 @@ ecc: ecc_enclave enclave/app-lib/lib/mrenclave.go
 	$(GO) get github.com/golang/protobuf/proto
 	$(GO) get github.com/onsi/ginkgo
 	$(GO) get github.com/onsi/gomega
-	$(LD_LIBRARY_PATH) $(GO) build
+	$(GO) build
 
 vscc-plugin: $(VSCC_SRC)
-	$(LD_LIBRARY_PATH) $(GO) build -o $(VSCC_OUT) -buildmode=plugin $^
+	$(GO) build -o $(VSCC_OUT) -buildmode=plugin $^
 
 #test:
 #	$(LD_LIBRARY_PATH) $(GO) $@ -test.v ./...
