@@ -11,4 +11,7 @@ ARG CC_LIB_PATH=${CC_PATH}"/enclave/lib"
 RUN test -n "$enclave_so_path" 
 
 copy ${enclave_so_path}/enclave.signed.so ${CC_LIB_PATH}/
+#the line below will be moved to the boilerplate docker file
+#once it will be possible to build ecc alone.
+#Currently, ecc requires mrenclave.go with hardcoded MRENCLAVE
 copy ecc/ecc ${CC_PATH}/chaincode
