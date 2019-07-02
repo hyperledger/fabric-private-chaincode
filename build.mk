@@ -8,14 +8,13 @@ include $(TOP)/config.mk
 -include $(TOP)/config.override.mk
 
 .PHONY: all
-#all: build checks test integration
 all: build test checks # keep checks last as license test is brittle ...
+
+.PHONY: test
 test: build
 
 .PHONY: build
 .PHONY: checks
-.PHONY: test
-#.PHONY: integration
 .PHONY: clean
 
 .PHONY: docker
