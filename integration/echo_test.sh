@@ -40,7 +40,7 @@ echo_test() {
     for (( i=1; i<=$num_rounds; i++ ))
     do
         # echos
-        try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"echo-$i\"]", ""]}' --waitForEvent
+        try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"echo-'$i'\"]", ""]}' --waitForEvent
     done
 }
 
