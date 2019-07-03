@@ -45,8 +45,12 @@ func NewEcc() *EnclaveChaincode {
 
 // Init sets the chaincode state to "init"
 func (t *EnclaveChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
-	logger.Debugf("Init: chaincode [%s]", t.enclave.MrEnclave())
-	if err := stub.PutState(utils.MrEnclaveStateKey, []byte(t.enclave.MrEnclave())); err != nil {
+	mrenclave, err := t.enclave.MrEnclave()
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	logger.Debugf("Init: chaincode [mrenclave=%s]", mrenclave)
+	if err := stub.PutState(utils.MrEnclaveStateKey, []byte(mrenclave)); err != nil {
 		return shim.Error(err.Error())
 	}
 	return shim.Success(nil)
