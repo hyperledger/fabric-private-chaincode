@@ -1,4 +1,5 @@
 /*
+Copyright 2019 Intel Corporation
 Copyright IBM Corp. All Rights Reserved.
 
 SPDX-License-Identifier: Apache-2.0
@@ -11,6 +12,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"sync"
 	"unsafe"
 
@@ -208,7 +210,7 @@ type Stub interface {
 	// Destroys enclave
 	Destroy() error
 	// Returns expected MRENCLAVE
-	MrEnclave() string
+	MrEnclave() (string, error)
 }
 
 // StubImpl implements the interface
@@ -389,6 +391,15 @@ func (e *StubImpl) Destroy() error {
 	return nil
 }
 
-func (e *StubImpl) MrEnclave() string {
-	return MrEnclave
+func (e *StubImpl) MrEnclave() (string, error) {
+	binMrEnclave, err := ioutil.ReadFile("mrenclave")
+	if err != nil {
+		return "", fmt.Errorf("Error reading MrEnclave from file: Reason %s", err.Error())
+	}
+
+	if len(binMrEnclave) == 0 {
+		return "", fmt.Errorf("Error reading MrEnclave from file: Reason mrenclave is empty")
+	}
+
+	return string(binMrEnclave), nil
 }
