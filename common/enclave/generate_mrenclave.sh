@@ -27,16 +27,16 @@ echo "Enclave hash extracted."
 cat $base64_out_name
 
 echo "Create go file"
-touch $go_name
-echo "/*" >> $go_name
-echo " * Copyright 2019 Intel Corporation" >> $go_name
-echo " * Copyright IBM Corp. All Rights Reserved." >> $go_name
-echo "" >> $go_name
-echo " * SPDX-License-Identifier: Apache-2.0" >> $go_name
-echo " */" >> $go_name
-echo "" >> $go_name
-echo "package enclave" >> $go_name
-echo "" >> $go_name
-echo "// MrEnclave contains hash of enclave code" >> $go_name
-echo "const MrEnclave = \"$(cat $base64_out_name)\"" >> $go_name
+cat > $go_name << EOF
+/*
+ * Copyright 2019 Intel Corporation
+ * Copyright IBM Corp. All Rights Reserved.
+
+ */
+
+package enclave
+
+// MrEnclave contains hash of enclave code
+const MrEnclave = "$(cat $base64_out_name)"
+EOF
 
