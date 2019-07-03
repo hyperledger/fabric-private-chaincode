@@ -13,4 +13,3 @@ typedef struct echo
 {
     std::string echo_string;
 } echo_t;
-
