@@ -1,1 +1,1 @@
-../../ecc_enclave/_build/mrenclave.go
+app-lib/lib/mrenclave.go

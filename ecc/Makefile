@@ -1,3 +1,4 @@
+# Copyright 2019 Intel Corporation
 # Copyright IBM Corp. All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -5,7 +6,6 @@
 TOP = ..
 include $(TOP)/build.mk
 
-LD_LIBRARY_PATH := LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$$(pwd)/enclave/lib
 CC_NAME ?= ecc
 NET_ID ?=dev
 PEER_ID ?=jdoe
@@ -13,56 +13,71 @@ PEER_ID ?=jdoe
 VSCC_SRC = vscc/ecc_validation_plugin.go vscc/ecc_validation_logic.go
 VSCC_OUT = ecc-vscc.so
 
-DOCKER_IMAGE ?= $$(docker images | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
 DOCKER_CONTAINER_ID?=$$(docker ps | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
+# the following are the required docker build parameters
+DOCKER_IMAGE ?= $$(docker images | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
+DOCKER_BOILERPLATE_ECC_IMAGE ?= $(PROJECT_NAME)/boilerplate-ecc
+DOCKER_ENCLAVE_SO_PATH ?= $(ENCLAVE_SO_PATH)
 
-
-all: build test
-build: ecc vscc-plugin
+all: build
+# test target disable because it requires revision
+#all: build test
+build: docker-boilerplate-ecc vscc-plugin
 
 ECC_ENCLAVE_BUILD = ../ecc_enclave/_build
 ERR_MSG = "ecc_enclave build does not exist!"
 
-ecc_enclave:
+ecc_enclave: sym-links
 	@if [ ! -d $(ECC_ENCLAVE_BUILD)/lib ]; then echo $(ERR_MSG); exit 1; fi
 	@if [ ! -d $(ECC_ENCLAVE_BUILD)/include ]; then echo $(ERR_MSG); exit 1; fi
 
-ecc: ecc_enclave
+sym-links:
+	# these symbolic links are necessary now to build ecc with the generated mrenclave.go
+	# once this is ready from the application build. Later, when the go file will be separated
+	# from the MRENCLAVE value, the relative symbolic links can (will) be removed.
+	if [ -z "$(DOCKER_ENCLAVE_SO_PATH)" ]; then echo "\033[0;31mERROR: ENCLAVE_SO_PATH not defined\033[0m"; exit 1; fi
+	ln -sfn ../../${DOCKER_ENCLAVE_SO_PATH}/../ enclave/app-lib
+	[ -f enclave/app-lib/lib/mrenclave.go ] || exit 1
+	ln -sfn app-lib/lib/mrenclave.go enclave/mrenclave.go
+	ln -sfn ../../ecc_enclave/_build/lib enclave/ecc-enclave-lib
+	ln -sfn ../../ecc_enclave/_build/include enclave/ecc-enclave-include
+
+ecc: ecc_enclave enclave/app-lib/lib/mrenclave.go
 	$(GO) get golang.org/x/sync/semaphore
 	$(GO) get github.com/pkg/errors
 	$(GO) get github.com/golang/protobuf/proto
 	$(GO) get github.com/onsi/ginkgo
 	$(GO) get github.com/onsi/gomega
-	$(LD_LIBRARY_PATH) $(GO) build
+	$(GO) build
 
 vscc-plugin: $(VSCC_SRC)
-	$(LD_LIBRARY_PATH) $(GO) build -o $(VSCC_OUT) -buildmode=plugin $^
+	$(GO) build -o $(VSCC_OUT) -buildmode=plugin $^
 
-test:
-	$(LD_LIBRARY_PATH) $(GO) $@ -test.v ./...
+#test:
+#	$(LD_LIBRARY_PATH) $(GO) $@ -test.v ./...
 
-.PHONY: stress
-stress:
-	$(LD_LIBRARY_PATH) $(GO) test -v -run TestEnclaveChaincode_Invoke_Auction
+#.PHONY: stress
+#stress:
+#	$(LD_LIBRARY_PATH) $(GO) test -v -run TestEnclaveChaincode_Invoke_Auction
 
-.PHONY: debug
-debug:
-	$(LD_LIBRARY_PATH) $(GO) test -c
-	$(LD_LIBRARY_PATH) sgx-gdb ecc.test -d $(GOROOT)
+#.PHONY: debug
+#debug:
+#	$(LD_LIBRARY_PATH) $(GO) test -c
+#	$(LD_LIBRARY_PATH) sgx-gdb ecc.test -d $(GOROOT)
 
 clean: docker-clean
 	$(GO) clean
-#	rm enclave/include/*
-#	rm enclave/lib/*
-#	rm enclave/mrenclave.go
 
-docker:
-	@if [ -z "${DOCKER_IMAGE}" ]; then\
+docker-boilerplate-ecc:
+	$(DOCKER) build -t $(DOCKER_BOILERPLATE_ECC_IMAGE) -f Dockerfile.boilerplate-ecc ..
+
+docker-fpc-app: ecc
+	if [ -z "$(DOCKER_IMAGE)" ]; then\
 		echo "\033[0;31mERROR: cannot override $(CC_NAME) docker image - not found\033[0m";\
 		exit 1;\
 	fi
-	echo "\033[1;33mWARNING: overriding $(CC_NAME) docker image\033[0m"
-	$(DOCKER) build -t $(DOCKER_IMAGE) -f Dockerfile ..
+	echo "\033[1;33mWARNING: overriding $(DOCKER_IMAGE) docker image\033[0m"
+	$(DOCKER) build -t $(DOCKER_IMAGE) -f Dockerfile.fpc-app --build-arg enclave_so_path=$(DOCKER_ENCLAVE_SO_PATH) ..
 
 docker-run:
 	$(DOCKER) run \
@@ -83,4 +98,3 @@ docker-stop:
 
 docker-clean: docker-stop
 	-if [ ! -z "$(DOCKER_IMAGE)" ]; then docker rmi -f $(DOCKER_IMAGE); fi
-

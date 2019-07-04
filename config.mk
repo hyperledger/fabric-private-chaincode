@@ -8,6 +8,8 @@ GO := go $(GOFLAGS)
 DOCKERFLAGS :=
 DOCKER := docker $(DOCKERFLAGS)
 
+PROJECT_NAME=fabric-private-chaincode
+
 export SGX_MODE ?= HW
 export SGX_BUILD ?= PRERELEASE
 

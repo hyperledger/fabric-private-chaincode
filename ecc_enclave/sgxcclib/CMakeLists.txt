@@ -42,15 +42,14 @@ set_target_properties(libsgxcc PROPERTIES PREFIX "")
 target_link_libraries(libsgxcc
     -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} -L${SGX_SSL_LIBRARY_PATH} -lsgx_usgxssl)
 
-add_dependencies(libsgxcc enclave)
-
 add_custom_command(TARGET libsgxcc
     POST_BUILD
     COMMAND mkdir -p ${CMAKE_BINARY_DIR}/include
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/sgxcclib.h ${CMAKE_BINARY_DIR}/include
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/sgx_attestation_type.h ${CMAKE_BINARY_DIR}/include
     COMMAND cp ${COMMON_SOURCE_DIR}/types.h ${CMAKE_BINARY_DIR}/include
-    COMMAND cp ${CMAKE_BINARY_DIR}/libsgxcc.so ${CMAKE_BINARY_DIR}/lib
+    COMMAND mkdir -p ${CMAKE_BINARY_DIR}/lib/
+    COMMAND cp ${CMAKE_BINARY_DIR}/libsgxcc.so ${CMAKE_BINARY_DIR}/lib/
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Add include to build")
 

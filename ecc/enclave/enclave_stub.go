@@ -22,9 +22,9 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
-// #cgo CFLAGS: -I${SRCDIR}/include
-// #cgo LDFLAGS: -L${SRCDIR}/lib -lsgxcc
-// #include <sgxcclib.h>
+// #cgo CFLAGS: -I${SRCDIR}/ecc-enclave-include
+// #cgo LDFLAGS: -L${SRCDIR}/ecc-enclave-lib -lsgxcc
+// #include "sgxcclib.h"
 // #include <string.h>
 // static inline void _cpy_bytes(uint8_t* target, uint8_t* val, uint32_t size)
 // {
@@ -335,7 +335,7 @@ func (e *StubImpl) Create(enclaveLibFile string) error {
 	// todo read error
 	e.sem.Acquire(context.Background(), 1)
 	if ret := C.sgxcc_create_enclave(&eid, C.CString(enclaveLibFile)); ret != 0 {
-		return fmt.Errorf("Can not create enclave: Reason: %d", ret)
+		return fmt.Errorf("Can not create enclave (lib %s): Reason: %d", enclaveLibFile, ret)
 	}
 	e.eid = eid
 	e.sem.Release(1)
