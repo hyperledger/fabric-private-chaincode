@@ -7,10 +7,13 @@ include $(TOP)/build.mk
 
 all: test
 
-test: auction_test echo_test
+test: auction_test echo_test deployment_test
 
 auction_test:
 	./auction_test.sh
 
 echo_test:
 	./echo_test.sh
+
+deployment_test:
+	./deployment_test.sh

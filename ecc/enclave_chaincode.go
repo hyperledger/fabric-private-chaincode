@@ -106,6 +106,12 @@ func (t *EnclaveChaincode) setup(stub shim.ChaincodeStubInterface) pb.Response {
 	enclavePkBase64 := base64.StdEncoding.EncodeToString(enclavePk)
 	quoteBase64 := base64.StdEncoding.EncodeToString(quoteAsBytes)
 
+	// we just add mrenclave to the proposal readset
+	_, err = stub.GetState(utils.MrEnclaveStateKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
 	// register enclave at ercc
 	if err = t.erccStub.RegisterEnclave(stub, erccName, channelName, []byte(enclavePkBase64), []byte(quoteBase64)); err != nil {
 		return shim.Error(err.Error())

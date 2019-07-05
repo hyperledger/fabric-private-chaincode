@@ -460,6 +460,16 @@ int parse_endorser_transaction(
             // validity marker for this tx
             bool valid_tx = true;
 
+            // we need that during writeset validation
+            std::string ecc_namespace;
+            std::string cc_name(cc_action.chaincode_id.name);
+
+            // currently private chaincodes need to have ecc prefix
+            if (cc_name.compare(0, 3, "ecc") == 0)
+            {
+                ecc_namespace = cc_name;
+            }
+
             // read set
             read_set_t ecc_read_set;
             LOG_DEBUG("Ledger: \t\t \\-> Reads:");
@@ -469,6 +479,7 @@ int parse_endorser_transaction(
                 decode_pb(kvrwset, kvrwset_KVRWSet_fields, tx_rw_set.ns_rwset[i].rwset->bytes,
                     tx_rw_set.ns_rwset[i].rwset->size);
                 std::string ns(tx_rw_set.ns_rwset[i].ns);
+
                 // check range queries
                 for (int i = 0; i < kvrwset.range_queries_info_count; i++)
                 {
@@ -489,9 +500,9 @@ int parse_endorser_transaction(
                         version_t v = {_v.block_num, _v.tx_num};
 
                         // add to ecc read_set
-                        if (ns.compare("ecc") == 0)
+                        if (ns.compare(ecc_namespace) == 0)
                         {
-                            std::string kkey(key, 3, std::string::npos);
+                            std::string kkey(key, ns.length() + 1, std::string::npos);
                             ecc_read_set.insert(kkey);
                         }
 
@@ -524,9 +535,9 @@ int parse_endorser_transaction(
                     version_t v = {_v.block_num, _v.tx_num};
 
                     // add to read_set
-                    if (ns.compare("ecc") == 0)
+                    if (ns.compare(ecc_namespace) == 0)
                     {
-                        std::string kkey(key, 4, std::string::npos);
+                        std::string kkey(kvrwset.reads[i].key);
                         ecc_read_set.insert(kkey);
                     }
 
@@ -539,10 +550,8 @@ int parse_endorser_transaction(
                         valid_tx = false;
                         continue;
                     }
-                    LOG_DEBUG(
-                        "Ledger: \t\t\t \\-> key = %s version = blockNum: %d; "
-                        "txNum: %d",
-                        key, v.block_num, v.tx_num);
+                    LOG_DEBUG("Ledger: \t\t\t \\-> key = %s version = blockNum: %d; txNum: %d",
+                        key.c_str(), v.block_num, v.tx_num);
                 }
                 pb_release(kvrwset_KVRWSet_fields, &kvrwset);
                 if (!valid_tx)
@@ -596,9 +605,7 @@ int parse_endorser_transaction(
                         LOG_ERROR("Ledger: ercc expects only a single write ");
                         valid_tx = false;
                     }
-                    std::string key = ns + "." + kvrwset.writes[0].key;
-                    // TODO Remove hardcoded ecc.
-                    std::string mrenclave_key("ecc.MRENCLAVE");
+                    std::string mrenclave_key = ecc_namespace + ".MRENCLAVE";
 
                     // get mrenclave from updates
                     kvs_iterator_t it = updates->find(mrenclave_key);
@@ -618,6 +625,7 @@ int parse_endorser_transaction(
                     std::string _mrenclave = base64_decode(it->second.first);
                     memcpy(&mrenclave, _mrenclave.c_str(), _mrenclave.size());
 
+                    // TODO enable verification here!!!!
                     /* if
                      * (verify_attestation_report(kvrwset.writes[0].value->bytes,
                      * kvrwset.writes[0].value->size, &mrenclave) != 0) { */
@@ -625,13 +633,14 @@ int parse_endorser_transaction(
                     /*     valid_tx = false; */
                     /* } */
 
+                    std::string key = ns + "." + kvrwset.writes[0].key;
                     LOG_DEBUG("Ledger: \t\t\t \\-> key = %s", key.c_str());
                     std::string val(
                         (const char*)kvrwset.writes[0].value->bytes, kvrwset.writes[0].value->size);
                     version_t version = {tx_version->block_num, tx_version->tx_num};
                     updates->insert(kvs_item_t(key, kvs_value_t(val, version)));
                 }
-                else if (ns.compare("ecc") == 0)
+                else if (ns.compare(0, 3, "ecc") == 0)
                 {
                     for (int i = 0; i < kvrwset.writes_count; i++)
                     {
@@ -650,7 +659,7 @@ int parse_endorser_transaction(
                                 key.append(".");
                                 idx += strlen(idx) + 1;
                             }
-                            kkey.append(std::string(key, 3, std::string::npos));
+                            kkey.append(std::string(key, ns.length(), std::string::npos));
                         }
                         else
                         {
@@ -669,10 +678,6 @@ int parse_endorser_transaction(
                         ecc_write_set.insert({kkey, val});
                     }
                 }
-                else
-                {
-                    LOG_ERROR("Ledger: Only SGX chaincodes supported currently!");
-                }
                 pb_release(kvrwset_KVRWSet_fields, &kvrwset);
 
                 if (!valid_tx)
@@ -682,8 +687,8 @@ int parse_endorser_transaction(
                 }
             }  // writes
 
-            std::string chaincode_name(cc_action.chaincode_id.name);
-            if (chaincode_name.compare("ecc") == 0)
+            // only do if ecc transaction
+            if (ecc_namespace != "")
             {
                 // skip setup transaction
                 if (function.compare("setup") != 0)
@@ -740,7 +745,7 @@ int parse_endorser_transaction(
                     if (verify_enclave_signature(
                             &sig_ptr, signature_len, hash2, 32, &pk_ptr, pk_len) != 1)
                     {
-                        LOG_ERROR("Ledger: ecc signature validaion failed: %d");
+                        LOG_ERROR("Ledger: ecc signature validaion failed");
                         // TODO mark as invalid
                     }
                     else

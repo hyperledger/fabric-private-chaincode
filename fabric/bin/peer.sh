@@ -51,15 +51,33 @@ handle_chaincode_install() {
 	# get net-id and peer-id from core.yaml, for now just use defaults ...
 	parse_fabric_config .
 
+	# add private chaincode name prefix
+	FPC_NAME="ecc_"${CC_NAME}
+
 	# get docker name for this chaincode
-	DOCKER_IMAGE_NAME=$(${FPC_DOCKER_NAME_CMD} --cc-name ${CC_NAME} --cc-version ${CC_VERSION} --net-id ${NET_ID} --peer-id ${PEER_ID}) || die "could not get docker image name"
+	DOCKER_IMAGE_NAME=$(${FPC_DOCKER_NAME_CMD} --cc-name ${FPC_NAME} --cc-version ${CC_VERSION} --net-id ${NET_ID} --peer-id ${PEER_ID}) || die "could not get docker image name"
 
 	# install docker
 	try make ENCLAVE_SO_PATH=${CC_ENCLAVESOPATH} DOCKER_IMAGE=${DOCKER_IMAGE_NAME} -C ${FPC_TOP_DIR}/ecc docker-fpc-app
 
 	# eplace path and lang arg with dummy go chaincode
-	ARGS_EXEC=( 'chaincode' 'install' '-n' "${CC_NAME}" '-v' "${CC_VERSION}" '-p' 'github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd' "${OTHER_ARGS[@]}" )	
+	ARGS_EXEC=( 'chaincode' 'install' '-n' "${FPC_NAME}" '-v' "${CC_VERSION}" '-p' 'github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd' "${OTHER_ARGS[@]}" )
     fi
+    return
+}
+
+handle_chaincode_instantiate() {
+    handle_chaincode_call "instantiate" "$@"
+    return
+}
+
+handle_chaincode_invoke() {
+    handle_chaincode_call "invoke" "$@"
+    return
+}
+
+handle_chaincode_query() {
+    handle_chaincode_call "query" "$@"
     return
 }
 
@@ -129,6 +147,38 @@ handle_channel_join() {
     exit 0
 }
 
+handle_chaincode_call() {
+    CMD=$1
+
+    OTHER_ARGS=()
+    while [[ $# > 0 ]]; do
+	case "$2" in
+	    -n|--name)
+		CC_NAME=$3;
+		shift; shift
+		;;
+	    *)
+		OTHER_ARGS+=( "$2" )
+		shift
+		;;
+	    esac
+    done
+
+    CC_NAME=$(translate_fpc_name ${CC_NAME})
+    ARGS_EXEC=( 'chaincode' "${CMD}" '-n' "${CC_NAME}" "${OTHER_ARGS[@]}" )
+}
+
+translate_fpc_name() {
+    CC_NAME=$1
+    FPC_NAME="ecc_"${CC_NAME}
+
+    if [[ ! -z "$(docker images | grep ${FPC_NAME} | awk '{print $1;}')" ]] ; then
+        echo "${FPC_NAME}"
+    else
+        echo "${CC_NAME}"
+    fi
+}
+
 # - check whether it is a command which we have to intercept
 #   - chaincode install
 #   - channel create
@@ -141,6 +191,18 @@ case "$1" in
 	    install)
 		shift
 		handle_chaincode_install "$@"
+		;;
+	    instantiate)
+		shift
+		handle_chaincode_instantiate "$@"
+		;;
+	    invoke)
+		shift
+		handle_chaincode_invoke "$@"
+		;;
+	    query)
+		shift
+		handle_chaincode_query "$@"
 		;;
 	    *)
 		# fall through, nothing to do
