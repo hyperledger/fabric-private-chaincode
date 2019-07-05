@@ -13,11 +13,7 @@ FILES_TO_PARSE=`find $SCRIPTDIR/.. -iname *.cpp -o -iname *.h -o -iname *.c`
 RET=0
 
 EXCLUDED_PATTERNS="\
-    ecc_enclave/_build \
     tlcc_enclave/nanopb \
-    tlcc_enclave/_build \
-    examples/auction/_build \
-    examples/echo/_build \
     common/protobuf \
     common/base64 \
     common/json \
@@ -25,6 +21,7 @@ EXCLUDED_PATTERNS="\
     enclave_u.h \
     enclave_t.c \
     enclave_t.h \
+    /_build \
     .pb. \
     "
 for FILE in $FILES_TO_PARSE; do
