@@ -3,3 +3,4 @@ config.override.mk
 make.log
 cscope.out
 *~
+**/_build/*
