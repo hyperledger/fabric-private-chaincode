@@ -32,17 +32,10 @@ ecc_enclave: sym-links
 	@if [ ! -d $(ECC_ENCLAVE_BUILD)/include ]; then echo $(ERR_MSG); exit 1; fi
 
 sym-links:
-	# these symbolic links are necessary now to build ecc with the generated mrenclave.go
-	# once this is ready from the application build. Later, when the go file will be separated
-	# from the MRENCLAVE value, the relative symbolic links can (will) be removed.
-	if [ -z "$(DOCKER_ENCLAVE_SO_PATH)" ]; then echo "\033[0;31mERROR: ENCLAVE_SO_PATH not defined\033[0m"; exit 1; fi
-	ln -sfn ../../${DOCKER_ENCLAVE_SO_PATH}/../ enclave/app-lib
-	[ -f enclave/app-lib/lib/mrenclave.go ] || exit 1
-	ln -sfn app-lib/lib/mrenclave.go enclave/mrenclave.go
 	ln -sfn ../../ecc_enclave/_build/lib enclave/ecc-enclave-lib
 	ln -sfn ../../ecc_enclave/_build/include enclave/ecc-enclave-include
 
-ecc: ecc_enclave enclave/app-lib/lib/mrenclave.go
+ecc: ecc_enclave
 	$(GO) get golang.org/x/sync/semaphore
 	$(GO) get github.com/pkg/errors
 	$(GO) get github.com/golang/protobuf/proto
@@ -68,10 +61,10 @@ vscc-plugin: $(VSCC_SRC)
 clean: docker-clean
 	$(GO) clean
 
-docker-boilerplate-ecc:
+docker-boilerplate-ecc: ecc
 	$(DOCKER) build -t $(DOCKER_BOILERPLATE_ECC_IMAGE) -f Dockerfile.boilerplate-ecc ..
 
-docker-fpc-app: ecc
+docker-fpc-app:
 	if [ -z "$(DOCKER_IMAGE)" ]; then\
 		echo "\033[0;31mERROR: cannot override $(CC_NAME) docker image - not found\033[0m";\
 		exit 1;\

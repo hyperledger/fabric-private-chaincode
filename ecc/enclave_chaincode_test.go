@@ -38,7 +38,7 @@ func TestEnclaveChaincode_Init(t *testing.T) {
 	stub := shim.NewMockStub("ecc", ecc)
 
 	th.CheckInit(t, stub, nil)
-	th.CheckState(t, stub, th.MrEnclaveStateKey, enc.MrEnclave)
+	// th.CheckState(t, stub, th.MrEnclaveStateKey, enc.MrEnclave)
 }
 
 func TestEnclaveChaincode_Setup(t *testing.T) {
