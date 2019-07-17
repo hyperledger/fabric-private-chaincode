@@ -10,10 +10,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	pb_utils "github.com/hyperledger/fabric/protos/utils"
 )
 
 var logger = flogging.MustGetLogger("enclave_stub")
@@ -63,8 +65,11 @@ func (t *TLCCStubImpl) GetReport(stub shim.ChaincodeStubInterface, chaincodeName
 }
 
 func (t *TLCCStubImpl) VerifyState(stub shim.ChaincodeStubInterface, chaincodeName, channel, key string, nonce []byte, isRangeQuery bool) ([]byte, error) {
-	// TODO state prefix currently hardcoded
-	prefix := "ecc"
+	prefix, err := getChaincodeName(stub)
+	if err != nil {
+		return nil, err
+	}
+
 	nonceBase64 := base64.StdEncoding.EncodeToString(nonce)
 
 	var k string
@@ -86,4 +91,25 @@ func (t *TLCCStubImpl) VerifyState(stub shim.ChaincodeStubInterface, chaincodeNa
 	}
 
 	return cmacBytes, nil
+}
+
+func getChaincodeName(stub shim.ChaincodeStubInterface) (string, error) {
+	signedProp, err := stub.GetSignedProposal()
+	if err != nil {
+		return "", fmt.Errorf("error while getting signed proposal: %s", err.Error())
+	}
+
+	prop, err := pb_utils.GetProposal(signedProp.ProposalBytes)
+	if err != nil {
+		return "", fmt.Errorf("error while unrwapping signed proposal: %s", err.Error())
+	}
+
+	hdr, err := pb_utils.GetHeader(prop.Header)
+
+	chaincodeHdrExt, err := pb_utils.GetChaincodeHeaderExtension(hdr)
+	if err != nil {
+		return "", errors.New("invalid header extension for type CHAINCODE")
+	}
+
+	return chaincodeHdrExt.ChaincodeId.Name, nil
 }

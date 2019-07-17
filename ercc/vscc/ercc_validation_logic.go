@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"strings"
 
 	"github.com/golang/protobuf/proto"
 	commonerrors "github.com/hyperledger/fabric/common/errors"
@@ -109,6 +110,13 @@ func (t *VSCCERCC) checkAttestation(respPayload *peer.ChaincodeAction) error {
 		return err
 	}
 
+	// ensure that mrenclave is read from ecc namespace
+	eccNamespace, err := getEccNamespace(txRWSet)
+	if err != nil {
+		return err
+	}
+	logger.Debugf("eccNamespace found: %s", eccNamespace)
+
 	for _, ns := range txRWSet.NsRwSets {
 		logger.Debugf("Namespace %s", ns.NameSpace)
 
@@ -175,15 +183,14 @@ func (t *VSCCERCC) checkAttestation(respPayload *peer.ChaincodeAction) error {
 
 		state := &state{channelState}
 		// get mrenclave from ledger
-		// FIXME: remove hardcoding of those strings
-		mrenclave, err := state.GetState("ecc", sgxutil.MrEnclaveStateKey)
+		mrenclave, err := state.GetState(eccNamespace, sgxutil.MrEnclaveStateKey)
 		if err != nil {
 			return errors.New("mrenclave does not exist")
 		}
 		if mrenclave == nil {
 			return errors.New("mrenclave is empty")
 		}
-		logger.Debugf("mrenclave from ecc: %s", mrenclave)
+		logger.Debugf("mrenclave for %s: %s", eccNamespace, mrenclave)
 
 		// check mrenclave
 		matches, err := t.ra.CheckMrEnclave(string(mrenclave), attestationReport)
@@ -220,4 +227,23 @@ func policyErr(err error) *commonerrors.VSCCEndorsementPolicyError {
 	return &commonerrors.VSCCEndorsementPolicyError{
 		Err: err,
 	}
+}
+
+func getEccNamespace(txRWSet *rwsetutil.TxRwSet) (string, error) {
+	// Readsets must contain only one ecc_*.MRENCLAVE
+	eccNamespace := ""
+	for _, ns := range txRWSet.NsRwSets {
+		for _, read := range ns.KvRwSet.Reads {
+			if read.Key == sgxutil.MrEnclaveStateKey && strings.HasPrefix(ns.NameSpace, "ecc_") {
+				if eccNamespace != "" {
+					return "", fmt.Errorf("mutiple namespaces for ecc found")
+				}
+				eccNamespace = ns.NameSpace
+			}
+		}
+	}
+	if eccNamespace == "" {
+		return "", fmt.Errorf("no ecc namespace found")
+	}
+	return eccNamespace, nil
 }

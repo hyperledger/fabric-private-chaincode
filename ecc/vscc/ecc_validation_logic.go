@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
@@ -124,7 +125,7 @@ func (vscc *VSCCECC) checkEnclaveEndorsement(cis *peer.ChaincodeInvocationSpec, 
 		logger.Debugf("Namespace %s", ns.NameSpace)
 
 		// TODO make this more flexible
-		if ns.NameSpace != "ecc" {
+		if !strings.HasPrefix(ns.NameSpace, "ecc") {
 			continue
 		}
 
@@ -132,6 +133,10 @@ func (vscc *VSCCECC) checkEnclaveEndorsement(cis *peer.ChaincodeInvocationSpec, 
 		// carefull we need only args[0] (function) as it includes all arguments
 		args := cis.ChaincodeSpec.Input.Args[0]
 		logger.Debugf("args: %s\n", string(args))
+
+		if string(args) == "setup" {
+			continue
+		}
 
 		// get the enclave response
 		response := &sgx_utils.Response{}
