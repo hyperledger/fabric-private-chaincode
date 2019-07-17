@@ -1,0 +1,43 @@
+@startuml
+
+'- define 'note <<issues>>' and related conditionals
+!$showIssue=1
+!$showLongIssue=1
+' stereo type doesn't seem to work on notes on classes, so just redefine all notes here ..
+skinparam NoteBackgroundColor orange
+!function $issue($title, $desc, $p="bottom")
+  !if ($showIssue == "1")
+    note $p
+      Issue: $title
+      !if ($showLongIssue == "1")
+        $desc
+      !endif
+    end note
+
+  !endif
+!endfunction
+'
+'- force wrapping of longer text
+skinparam wrapWidth 400
+
+
+title Fabric Private Chaincode Programming Model
+
+class FCC {
+	int invoke(*args, *response, max_response_len, actual_response_len, ctx)
+}
+
+class FCC_Shim {
+	get_state()
+	put_state()
+        get_state_by_partial_composite_key()
+	unmarshal_args()
+	unmarshal_values()
+}
+$issue("logging", "logging are currently separate but will move here")
+$issue("unencrypted state", "for truly public long-term state it would seem preferable to have a 'put_unencrypted_state()' function rather than requiring a separate transaction/query to extract it")
+$issue("commit-before-release", "releasing safely confidentials information is tricky, might be worth to add a function which implements the safe commit-before-release functionality in the shim.")
+$issue("marshall", "if we have unmarshal functions for request, shouldn't we also ahve marshall functions for response?")
+
+
+@enduml

@@ -5,8 +5,8 @@
 TOP = ..
 include $(TOP)/build.mk
 
-PLANTUML_SRCS = fpc-lifecycle.txt
-PLANTUML_IMGS = $(PLANTUML_SRCS:.txt=.$(PLANTUML_IMG_FORMAT))
+PLANTUML_SRCS = $(wildcard *.puml)
+PLANTUML_IMGS = $(PLANTUML_SRCS:.puml=.$(PLANTUML_IMG_FORMAT))
 
 all: build
 
@@ -15,7 +15,7 @@ build : $(PLANTUML_IMGS)
 clean :
 	-rm $(PLANTUML_IMGS)
 
-%.$(PLANTUML_IMG_FORMAT): %.txt
+%.$(PLANTUML_IMG_FORMAT): %.puml
 	$(PLANTUML_CMD) -t$(PLANTUML_IMG_FORMAT) $<
 
 
