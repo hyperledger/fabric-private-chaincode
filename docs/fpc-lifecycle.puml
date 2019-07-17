@@ -1,0 +1,146 @@
+@startuml
+
+'- define 'note <<issues>>' and related conditionals
+!$showIssue=1
+!$showLongIssue=1
+skinparam NoteBackgroundColor<<issue>> orange
+!function $issue($title, $desc, $p="over Peer1")
+  !if ($showIssue == "1")
+    note <<issue>> $p
+      Issue: $title
+      !if ($showLongIssue == "1")
+        $desc
+      !endif
+    end note
+
+  !endif
+!endfunction
+'
+'- force wrapping of longer text
+skinparam wrapWidth 400
+
+
+title Fabric Private Chaincode Lifecyle Steps
+
+actor	Client1
+entity	Peer1
+entity	Peer2
+database tlcc1
+entity	Orderer
+'database Ledger
+
+group System setup
+
+   Client1 -> Peer1 : start
+   Client1 -> Peer2 : start
+
+   Client1 -> Peer1 : channel create
+
+   Client1 -> Peer1 : channel join
+   note over Peer1
+ercc cc installed & instantiated (as channel creator),
+tlcc attached to channel
+(all transparent to clients)
+   end note
+   $issue("fabric integration", "Currently integration is relatively brittle via peer wrapper and embedding of FPC chaincodes into a go chaincode. Ideally FPC would be a 'proper' chaincode type integrated into core Fabric core. However, unclear where Fabric is moving right now with new deployment model.")
+   $issue("multi-channel & persistance", "Tlcc currenty does not remember after restarts which channels it should monitor nor does it handle multiple channels correctly.")
+
+   Client1 -> Peer2 : channel join
+
+   note over Peer2
+ercc cc installed (but not instantiated)
+tlcc attached to channel
+(all transparent to clients)
+   end note
+
+end
+
+
+group Per FPC chaincode FCC
+
+   Client1 -> Peer1 : chaincode install FCC
+   note right:	create (override) run-container w. enclave.so (path argument for fpc-c lang)
+   $issue("proper cc-type", "the container switcheroo is now hidden but clearly not a long term solution (related to above integration issue")
+   $issue("publically verifiable attestation", "ideally artificat is source and we add reproducible building container for chaincode. (ecc shim & tlcc also will have to be built reproducible).")
+
+   Client1 -> Peer2 : chaincode install FCC
+
+   Client1 -> Peer1 : chaincode instantiate FCC
+   $issue("lifecycle v2", "new 'package' (once) and 'approve' (per peer) steps, commit replaces instantiate")
+   $issue("upgrade", "While we probably do not want to support upgrades of code, policies and alike, are we sure we are safe.")
+
+   Client1 -> Peer1 : chaincode invoke FCC "setup"
+   note right: create, attest & register FCC enclave
+   $issue("enclave registration", "Currently we force a single-peer endoresment policy and require a custom (endorsement) validation. Additionally, enclave creation ideally shouldn't be visible as an end-user transaction. (And we probably should also test whether multi-peer works at all :-)")
+   $issue("attestation abstraction", "We should abstract attestation to handle also DCAP (and hopefully enable later also other TEEs such as TZ).")
+   $issue("deterministic encryption", "To support endoresement policies requiring more than one enclave signature (e.g., two SGX enclaves running at diffeernt orgs or one by SGX and one by TZ) we will require a deterministic but still semantically secure encryption.")
+
+   loop
+     alt query
+        $issue("secure channel to FCC enclave", "currently we do not encrypt transaction requests and responses", "over Client1")
+!if ($showIssue == "1") && ($showLongIssue == "1")
+
+   Client1 -> Peer1 : chaincode query FPC-GET-ECC-PK
+   note <<issues>> left
+The client has to get the PKs of the FCC enclave. Could be normal query or (maybe better?) separate command.
+Validation depends on the trust setup (but unchanged from what
+is also necessary in standard fabric):
+- if client is in same Org than peer1, "normal" peer channel 
+  security is sufficient
+- if client does not share trust-domain with any peer, then
+  Client has to contact multiple peers until sufficient confirmations 
+  are found or might have to act as its own peer and participate 
+  actively in the channel.
+   end note
+!endif
+        $issue("client authentication support", "should we authenticate requests and expose client identities to the FCC.")
+
+        Client1 -> Peer1 : chaincode query FCC
+!if ($showIssue == "1") && ($showLongIssue == "1")
+        note <<issues>> left
+  	  Client1 will encrypt private inputs with ECC encryption PK
+          and authenticated response of queries using FCC enclaves's signature PK.
+        end note
+!endif
+        Peer1 -> tlcc1: inspect ledger state
+        $issue("deep & invariant attestation", "Client has to be able to reason on tlcc configuration (code and channel identity) with which an FCC enclave engages with, and this has to hold not only for the clients own transaction but for any transaction (i.e., client cannot only rely on attestation post-facto of its own transaction but must be able to project forward invariants on FCC enclave behaviour from the chaincode gensis blocks on the ledger!)")
+        $issue("secure channel ecc<->tlcc", "Currently we hard code a shared key...")
+        $issue("tlcc validation replication", "No support for custom validation plugins; issue of completeness of re-implementation of all system validation steps (e.g., no endorsement policy verification? Upgrades silently ignored?)")
+        $issue("tlcc ledger concurrency", "TLCC's ledger interception might be vulnerable to some concurrency iess")
+
+        Client1 <- Peer1 : result
+     else transactions
+        Client1 -> Peer1 : chaincode invoke FCC
+        note over Peer1
+  	  Execute FCC function
+        end note
+        Peer1 -> tlcc1: inspect ledger state
+        note over Peer1
+  	  Compute encrypted rw-set
+        end note
+        $issue("FCC state encryption key", "Currently state encryption key is hardcoded, need key distribution, probably mediated by ERCC...")
+        $issue("CC2CC", "Chaincode-to-chaincode invocations? Just unsupported (prevented?) right now?")
+        Peer1 -> Peer1 : Endorsement (generation) plugin
+        note right
+  	  Get enclave signature
+        end note
+        Client1 <- Peer1 : endorsement Peer1 & result
+        Client1 -> Peer2 : chaincode [query | invoke ] FCC
+        Peer2 -> Peer2 : Endorsement (generation) plugin
+        Client1 <- Peer2 : endorsement Peer2 & result
+        Client1 -> Peer2 : chaincode [query | invoke ] FCC
+        Client1 -> Orderer : {endorsement Peer1, endorsement Peer2}
+        Peer1 <- Orderer : ordered {endorsement Peer1, endorsement Peer2}
+        Peer1 -> Peer1 : (Endorsement) Validation plugin
+        $issue("endorsement policies", "What endorsement policies do we need? Can we do without custom validation? Can we map to existing MSP? Or can/should we extend MSP?")
+        note right
+  	  Validate enclave signature & param consistency
+        end note
+        Peer2 <- Orderer : ordered {endorsement Peer1, endorsement Peer2}
+        Peer2 -> Peer2 : (Endorsement) Validation plugin
+     end
+   end
+
+end
+
+@enduml
