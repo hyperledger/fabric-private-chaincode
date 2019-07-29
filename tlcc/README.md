@@ -4,11 +4,11 @@ https://creativecommons.org/licenses/by/4.0/
 --->
 # Trusted Ledger Chaincode (tlcc)
 
-Before your continue here make sure you have build ``tlcc_enclave`` before.
+Before your continue here make sure you have built ``tlcc_enclave``.
 We refer to [tlcc_enclave/README.md](../tlcc_enclave).
 
-First we build tlcc as system chaincode plugin. What is that? See
-https://hyperledger-fabric.readthedocs.io/en/latest/systemchaincode.html
+First we build tlcc as system chaincode plugin. What is that?
+See [here](https://hyperledger-fabric.readthedocs.io/en/release-1.4/systemchaincode.html).
 
     $ make
 
