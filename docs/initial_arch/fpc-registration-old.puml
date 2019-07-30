@@ -1,0 +1,83 @@
+@startuml
+
+'- force wrapping of longer text
+'skinparam wrapWidth 400
+
+!pragma teoz true
+
+
+title Fabric Private Chaincode - Enclave registry - Current approach
+
+actor	Admin order 10
+participant ECC order 20
+participant ERCC order 40
+entity IAS order 50
+collections Orderer order 70
+collections Peers order 80
+
+note right of Peers
+  **Drawbacks**
+  - Single-endorser policy only + Custom validation at __every__ peer
+  - ERCC must contact IAS (Internet connection and IAS credentials needed)
+  - Current impl: No way to securely pass credentials to ERCC only
+  - for EPID attestation SPID is needed when quote is created (ECC must provide this)
+end note
+
+group instantiation
+   Admin -> ECC : install
+   Admin -> ECC : instantiate (expected_mrenclave)
+   ECC -> ECC : putState(ecc.MRENCLAVE, expected_mrenclave)
+   ECC --> Admin : success / error
+end
+
+Admin -> Orderer : submit instantiate transaction
+...when next block ready...
+Orderer -> Peers : broadcast block
+Peers -> Peers : Validation
+
+group register new enclave
+
+  Admin -> ECC : setup
+
+  create participant ECC_Enclave order 30 #99FF99 
+  ECC -> ECC_Enclave : create
+   
+  ECC -> ECC_Enclave : getQuote(SPID)
+  return quote, ECC_s_pk
+
+  
+  ECC -> ERCC : register(quote, ECC_s_pk)
+
+  
+  ERCC -> IAS : send quote
+  return  Attestation
+
+  ERCC -> ERCC : putState(ercc.ECC_s_pk, Attestation)
+  ERCC --> ECC : success / error
+
+  ECC --> Admin : success / error
+
+end
+
+Admin -> Orderer : submit setup transaction
+
+...when next block ready...
+
+   
+
+group register validation
+    
+    Orderer -> Peers : broadcast block
+    Peers -> Peers : Normal validation
+
+    create participant ERCC_VSCC order 100 
+    Peers -> ERCC_VSCC : Custom ERCC validation 
+    ERCC_VSCC -> ERCC_VSCC : expected_mrenclave = getState(ecc.MRENCLAVE)
+    ERCC_VSCC -> ERCC_VSCC : check attestation signature
+    ERCC_VSCC -> ERCC_VSCC : check attestation ECC_s_pk and mrenclave
+
+end
+
+
+
+@enduml
