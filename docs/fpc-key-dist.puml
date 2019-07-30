@@ -1,0 +1,97 @@
+
+
+
+@startuml
+
+'- force wrapping of longer text
+'skinparam wrapWidth 400
+
+!pragma teoz true
+
+hide footbox
+title Foot Box removed
+
+title Fabric Private Chaincode - Key generation and distribution - TBD ...
+
+
+actor	"Admin_Org1" as Admin order 10
+
+participant "ECC_Manager (syscc) Peer1_Org1" as ECC_Manager1 order 20
+participant "ECC Peer1_Org1" as ECC1 order 21
+participant "ECC_Enclave Peer1_Org1" as Enclave1 order 22 #99FF99
+
+
+participant "ERCC Peer1_Org2" as ERCC2 order 30
+
+
+participant "ERCC Peer1_Org3" as ERCC3 order 40
+
+
+
+participant "TLCC_Enclave Peer1_Org1" as TLCC_Enclave order 40 #99FF99
+entity IAS order 50
+
+
+database "Local storage Peer1_Org1" as storage1 order 31
+
+group key generation
+
+  Admin -> ECC_Manager1 ++: generate key (CC_name, CC_ver, CH_id)
+
+  ECC_Manager1 -> ECC1 ++: generate key
+
+  ECC1 -> Enclave1 ++: generate key
+
+  Enclave1 -> Enclave1 : S_State, CC_{PK,SK} <- keyGen
+  note right
+    - S_State denotes state secret key.
+    - CC_{PK,SK} denotes chain code pub/priv key pair
+  end note
+
+  Enclave1 -> Enclave1 : m <- encrypt {{S_State, CC_SK}} with ECC_E_PK
+  note right
+    enclave encryptes state secret key and chaincode privkey.
+    - m denotes encrypted message
+  end note
+
+  Enclave1 -> Enclave1 : SIG_ECC <- sign {{m, CC_PK}} with ECC_S_SK
+  note right
+    enclave signs the encrypted message and the chaincode pubkey.
+    - SIG_ECC denotes the signature
+
+  end note
+
+  return ECC_S_PK, SIG_ECC, m, CC_PK
+  return ECC_S_PK, SIG_ECC, m, CC_PK
+  return ECC_S_PK, SIG_ECC, m, CC_PK
+
+end group
+
+note right Admin #ff0000
+Discussion needed ... see below
+end note
+
+note right Admin
+- Where do we store ECC_S_PK, SIG_ECC, m, CC_PK??? At ECC or ERCC?
+- Do we treat key-mgnt as FPC lifcycle or is this application specific?
+- If FPC lifecycle => ERCC ; otherwise ECC
+end note
+
+note right Admin
+**ERCC**
++ aligned with FPC lifcycle policy
++ central place where also FPC chaincodes store keys
+- how can ECC_Enclave access? m is stored in ERCC namespace
+- ERCC namspace can be accessed through cc2cc call
+    but not protected through TLCC
+TBD ...
+end note
+
+note right Admin
+**ECC**
++ easy to securely access m protected through TLCC
+- difficult with application policy
+TBD ...
+end note
+
+@enduml
