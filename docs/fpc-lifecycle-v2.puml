@@ -1,0 +1,129 @@
+@startuml
+
+'- force wrapping of longer text
+'skinparam wrapWidth 400
+
+!pragma teoz true
+
+hide footbox
+title Foot Box removed
+
+title Fabric Private Chaincode - Lifecycle v2
+
+box "Org1"
+actor	Admin_Org1
+participant Peer1_Org1
+participant Peer2_Org1
+end box
+
+box "Org2"
+actor	Admin_Org2
+participant Peer1_Org2
+participant Peer2_Org2
+end box
+
+box "Org3"
+actor	Admin_Org3
+participant Peer1_Org3
+participant Peer2_Org3
+end box
+
+entity Orderer
+
+
+Admin_Org1 -> Admin_Org1 : package
+note left
+	**Chaincode package**
+	as tar.gz with
+	with label mycc-1
+	//ECC_MR: mrenc_1//
+end note
+
+Admin_Org1 -> Peer1_Org1 : install package
+return packageID: mycc_1:hash
+Admin_Org1 -> Peer2_Org1 : install package
+return packageID
+note right
+	chaincode package identifier
+	is mycc-1:hash
+end note
+
+Admin_Org2 -> Admin_Org2 : package
+note left
+	**Chaincode package**
+	as tar.gz with
+	with label mycc-1
+	//ECC_MR: mrenc_1//
+end note
+
+Admin_Org2 -> Peer1_Org2 : install package
+return packageID: mycc_1:hash
+Admin_Org2 -> Peer2_Org2 : install package
+return packageID
+
+Admin_Org3 -> Admin_Org3 : package
+note left #FFAAAA
+	**Chaincode package**
+	as tar.gz with
+	with label mycc-1
+	//ECC_MR: mrenc_XXX//
+end note
+
+Admin_Org3 -> Peer1_Org3 : install package
+return packageID: mycc_1:hash
+Admin_Org3 -> Peer2_Org3 : install package
+return packageID
+
+
+Admin_Org1 -> Orderer : Approve
+note left
+	**Chaincode definition**
+	Name: mycc, Version: 1
+	End Policy: (2of3), Seq 1,
+	Package ID: mycc_1:hash, <-???
+	//<color #00FF00>ECC_MR: mrenc_1</color>//
+end note
+
+Admin_Org2 -> Orderer : Approve
+note left
+	**Chaincode definition**
+	Name: mycc, Version: 1
+	End Policy: (2of3), Seq 1,
+	Package ID: mycc_1:hash, <-???
+	//<color #00FF00>ECC_MR: mrenc_1</color>//
+end note
+
+Admin_Org3 -> Orderer : Approve
+note left #FFAAAA
+	**Chaincode definition**
+	Name: mycc, Version: 1
+	End Policy: (2of3), Seq 1,
+	Package ID: mycc_1:hash, <-???
+	<color #FF0000>ECC_MR: mrenc_XXX</color>
+end note
+
+loop until enough approvals
+	Admin_Org1 -> Peer1_Org1 : checkcommitreadiness
+end
+
+
+Admin_Org1 -> Peer1_Org1 : Commit proposal
+Admin_Org1 -> Peer1_Org2 : Commit proposal
+Admin_Org1 -> Peer1_Org3 : Commit proposal
+
+Peer1_Org1 --> Admin_Org1: proposal response
+Peer1_Org2 --> Admin_Org1: proposal response
+Peer1_Org3 --> Admin_Org1: proposal response
+
+Admin_Org1 -> Admin_Org1 : create transaction
+Admin_Org1 -> Orderer : submit commit transaction
+note left
+	**Chaincode definition**
+	Name: mycc, Version: 1
+	End Policy: (2of3), Seq 1,
+	Package ID: mycc_1:hash, <-???
+	//<color #00FF00>ECC_MR: mrenc_1</color>//
+end note
+
+
+@enduml
