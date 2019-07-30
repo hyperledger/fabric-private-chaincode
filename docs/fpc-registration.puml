@@ -1,0 +1,265 @@
+@startuml
+
+'- force wrapping of longer text
+'skinparam wrapWidth 400
+
+!pragma teoz true
+
+hide footbox
+title Foot Box removed
+
+title Fabric Private Chaincode - Enclave registry - New approach
+
+actor "User Org1" as User1 order 9
+actor "Admin Org1" as Admin order 10
+participant "ECC_Manager (syscc) Peer1_Org1" as Manager1 order 20
+
+database "Local storage Peer1_Org1" as storage1 order 24
+participant "TLCC_Enclave Peer1_Org1" as TLCC1 order 25 #99FF99
+
+participant "ECC Peer1_Org1" as ECC1 order 30
+
+participant "ERCC Peer1_Org1" as ERCC1 order 50
+
+participant "ECC Peer1_Org2" as ECC2 order 60
+participant "ERCC Peer1_Org2" as ERCC2 order 62
+
+participant "ECC Peer1_Org3" as ECC3 order 70
+participant "ERCC Peer1_Org3" as ERCC3 order 72
+
+entity Orderer order 100
+
+note left ERCC1
+  ERCC can be **integrated** in ECC or as **seperate** chaincode
+  Integrated:
+  - ERCC and ECC share endorsement policy (but need different "type": org-based vs. attestation-based)
+  - attestations stored ECC namespace
+  Separate: <- we use this one
+  - flexible endorsement policies (ERCC and ECC can have different)
+  - attestations stored in ERCC namespace
+end note
+
+note left ERCC1
+  FPC chaincode has three different associated endorsement policies (EP):
+  - lifecycle transactions ("normal fabric": approve chaincode definition (define application transaction EP), upgrade, etc ...)
+  - application transactions
+  - FPC-lifecycle transactions (register, key-gen, key-dist, ...)
+
+  Decision: We use a **separate** ERCC.
+  We realized FPC-liflecycle as application transaction EP of ERCC chaincode;
+  should ideally match lifecycle EP which is 'Channel/Application/LifecycleEndorsement' and by default majority of organizations)
+  Note that with the **integrated** approach we have deal with a mix of applications transactions EP and FPC-lifecycle EP.
+end note
+
+ref over User1, ERCC1
+  Create channel; each peer joins channel; each peer launches TLCC, which will  "imprint" itself with CH_id (content-addressable channel identifier, hash of gensis block)
+end ref
+|||
+
+ref over User1, ERCC1
+  Install and approve ERCC chaincode. ERCC defines TLCC_MR and IAS_PK in chaincode definition.
+  (alternatively, TLCC_MR and IAS_PK could be in channel configuration; crucial is that they are approved by humans (admins) on sufficiently many organizations)
+  ERCC also reads CH_id from ledger or, if that does not work, also embeds it into chaincode
+
+  see fpc-lifecycle-v2.puml
+end ref
+|||
+
+
+group enclave creation and attestation generation
+  
+  activate Admin
+
+  Admin -> Manager1 ++: create (CC_NAME, CC_VER, CH_name)
+  note right
+    CC_NAME: chaincode name
+    CC_VER: chaincode version
+    CH_NAME: channel name (needed by the ECC_Manager to cc2cc ECC
+  end note
+  note over Manager1 #FFaa00
+    **MST**: we might want to replace (here and elsewhere) CC_VER with the sequence
+    number from chain code definition as versions can be re-used in downgrades yet we
+    might or might not want to re-use enclaves?
+  end note
+
+  Manager1 -> Manager1 : get SPID and IAS credentials
+  note right: from local peer config
+
+  Manager1 -> ECC1 ++: create (SPID)
+  note left: this is a cc2cc call
+
+
+  ECC1 -> TLCC1 ++: getInfo
+  note over TLCC1
+    This information could also be retrieved elsewhere if easier. At this point in time
+    it does not have to be authenticated (and is anyway passed through untrusted ECC),
+    consistency will be verified later in registration (Remember that TLCC_MR is defined
+    and agreed by human consensus in the ERCC chaincode definition)
+  end note
+  return TLCC_MR, CH_id
+
+
+  |||
+
+  create participant "ECC_Enclave" as Enclave1 order 30 #99FF99
+  ECC1 -> Enclave1 ++: create (SPID, CC_NAME, CC_VER, Org_1, TLCC_MR, CH_id)
+  note left
+    this is a cgo call
+    Org_1 denotes the peer's MSP_ID
+  end note
+
+  Enclave1 -> Enclave1 : keyGen
+  note left
+    keyGen produces the following keys:
+    ECC_S_PK : Sig pub key
+    ECC_S_SK : Sig priv key
+    ECC_E_PK : Enc pub key
+    ECC_E_SK : Enc priv key
+  end note
+
+  note left Enclave1
+    ECC_ID is //short// unique identifier
+    ECC_ID = Hash(ECC_S_PK)
+  end note
+
+  Enclave1  -> ECC1 ++: binding (ECC_S_PK, ECC_E_PK)
+  ECC1 -> ECC1 : SIG_Org_1 <- create signature
+  note left
+    Org_1 takes "ownership" of this enclave
+    sign <CC_NAME, CC_VER, Org_1, ECC_S_PK, ECC_E_PK> with Org_1_S_SK
+  end note
+  return SIG_Org_1
+  |||
+
+  Enclave1 -> Enclave1 : generate quote
+  note left
+    quote is defined with reportbody =
+    Hash(<CC_NAME, CC_VER, Org_1, SIG_Org_1, ECC_S_PK, ECC_E_PK, TLCC_MR, CH_id>)
+  end note
+
+  Enclave1 -> Enclave1 : seal state
+  note left
+    sealed state includes ...
+    CC_NAME, CC_VER,
+    Org_1, SIG_Org_1,
+    ECC_S_PK, ECC_S_SK,
+    ECC_E_PK, ECC_E_SK,
+    TLCC_MR, CH_id
+  end note
+
+  return ECC_S_PK, ECC_E_PK, sealed state, quote
+
+  return ECC_S_PK, ECC_E_PK, sealed state, quote, SIG_Org_1
+
+  |||
+
+  Manager1 -> storage1 ++ : store sealed state
+  note right
+    sealed state is stored under a
+    unique identifier consisting of
+    CC_NAME, CC_VER, CC_ID, ECC_S_PK, ECC_E_PK
+  end note
+  return
+
+  create entity IAS order 22
+  Manager1 -> IAS ++: send quote
+  note right
+    use IAS credentials and url provided by config
+  end note
+  note over Manager1 #FFaa00
+    **MST**: From an attestation generalization perspective i think there should be just a single
+    call ""GetAttestationProof"" or alike rather than a separate place where you get quote
+    and another where you get the registration report which requires some re-organization of calls.
+    A few observations on this:
+    - we do not strictly have to call the enclave via ECC. ECCManager could also directly call
+      enclave.so. this would make this creation and key-management potentially easier?
+    - the quote generation is not driven from within the enclave as currently shown above but from
+      the outside!
+    I think from a high-level there should be following three high-level calls either in
+    ECC or ECCMAnager depending on above:
+    - EnclaveCreate (key-gen & imprint of context, i.e., current create/binding flows
+    - EnclaveProof: gets org endorsement-sig, creates report, then quote
+      and, if epid, gets IAS report. 
+    - EnclavePersist: returns sealed state (important for security that this is called only after
+      EnclaveProof [which we might want to enforce using some state-machine?] )
+  end note
+  return ATTESTATION
+
+  |||
+
+  Manager1 -> Manager1 : mark ECC_ID as installed
+  note right
+    Manager1 maintains a list of
+    locally "installed/created" enclaves
+  end note
+  return ATTESTATION, ECC_S_PK / error
+
+  deactivate Admin
+  |||
+
+end
+
+group register attestation
+
+  activate Admin
+
+  Admin -> ERCC1 ++: register (CC_NAME, CC_VER, MSP_ID_ORG_1, SIG_Org_1, ECC_S_PK, ECC_E_PK, ATTESTATION)
+  group verify and store
+
+    ERCC1 -> ERCC1 : check attestation signature & status
+    note left
+      - IAS verification key defined in ERCC definition
+      - status denotes the attestation result
+    end note
+
+    ERCC1 -> ERCC1 : Retrieve ECC definition for <CC_NAME, CC_VER>
+
+    ERCC1 -> ERCC1 : Verify SIG_Org_1
+
+    ERCC1 -> ERCC1 : check consistency of quote (report-body)
+    note left
+      ECC_MR (mrenclave of ecc) is defined in ECC definition;
+      TLCC_MR (mrenclave of tlcc) is defined in ERCC definition
+      CH_Id is read from ledger or defined in ERCC definition
+    end note
+
+    ERCC1 -> ERCC1 : validate FPC deployment (restriction) policy
+    note left #FFaa00
+      related risk management (v2.0 feature TBD)
+    end note
+    ERCC1 -> ERCC1 : putState
+    note left #FFaa00
+      key: CC_NAME + (CC_VER???) + ECC_ID
+      Note that this key construction allows efficient lookup (details TBD)
+
+      value: <CC_NAME, CC_VER, MSP_ID_ORG_1, SIG_Org_1, ECC_S_PK, ECC_E_PK, ATTESTATION>
+    end note
+
+  end
+
+  return register endorsement
+
+  Admin -> ERCC2 ++: register (CC_NAME, CC_VER, MSP_ID_ORG_1, SIG_Org_1, ECC_S_PK, ECC_E_PK, ATTESTATION)
+  ref over ERCC2
+    verify and store
+  end ref
+  return register endorsement
+
+  Admin -> ERCC3 ++: register (CC_NAME, CC_VER, MSP_ID_ORG_1, SIG_Org_1, ECC_S_PK, ECC_E_PK, ATTESTATION)
+  ref over ERCC3
+    verify and store
+  end ref
+  return register endorsement
+
+  Admin -> Admin : create register transaction
+
+  Admin -> Orderer : submit register transaction
+
+  deactivate Admin
+  |||
+
+end
+
+
+
+@enduml

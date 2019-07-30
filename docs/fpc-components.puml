@@ -1,0 +1,109 @@
+@startuml
+
+class ERCC_Entry {
+    CC_name string
+    CC_ver string
+    Org_i MSP-ID ECDSA_Pubkey
+    ECC_S_PK ECDSA_Pubkey
+    ECC_E_PK ECDSA_Pubkey
+    ATTESTATION bytes
+}
+
+interface ERCC {
+    register(RegisterEntry) error
+    getAttestationByChaincode(CC_name) (List<RegisterEntry>, error)
+    getAttestationByECCId(ECC_S_PK) (RegisterEntry, error)
+}
+
+package Fabric {
+
+    interface Shim {
+        put_state
+        get_state
+        get_state_by_partial_composite_key
+        getLogger
+    }
+
+    interface Chaincode {
+        + init
+        + invoke
+    }
+}
+
+class ECC {
+    - enclave Ecc_Enclave
+    - tlcc TLCC
+    + invoke()
+    - callback_log()
+    - callback_getState()
+    - callback_putState()
+}
+
+interface ECC_Enclave {
+    - ECC_E_{SK,PK}
+    - ECC_S_{SK,PK}
+    + int create(...)
+    + int invoke(*args, *response, max_response_len, actual_response_len, ctx)
+}
+
+interface FPCShim {
+	+ get_state(key string, ctx CTX) bytes
+	+ put_state(key string, value bytes, ctx CTX) error
+    + get_state_by_partial_composite_key(compKey string, ctx CTX) (List<bytes>, error)
+    + log_debug(msg string)
+    + log_info(msg string)
+    + log_warn(msg string)
+    + log_error(msg string)
+	- unmarshal_args()
+	- unmarshal_values()
+}
+
+interface FPCChaincode {
+    + int invoke(*args, *response, max_response_len, actual_response_len, ctx)
+}
+
+interface TLCC {
+    + getMetadata(key string) Metadata
+}
+
+class TLCC_Enclave {
+    map[string]Metadata
+}
+
+
+class Metadata {
+    hash bytes
+    key string
+    signature ECDSA_Sig
+}
+
+class AuctionExample {
+}
+
+
+TLCC_Enclave -- Metadata : stores
+
+
+ECC ..|> Chaincode : implements
+TLCC ..|> Chaincode : implements
+ERCC ..|> Chaincode : implements
+
+AuctionExample ..|> FPCChaincode: implements
+
+ECC --> ECC_Enclave : invoke
+ECC -- Shim : uses
+ECC --> TLCC : getMetadata
+
+ERCC -- Shim : uses
+
+TLCC -- TLCC_Enclave : uses >
+
+AuctionExample -- FPCShim : uses >
+
+ERCC -- ERCC_Entry: stores
+
+ECC_Enclave --> AuctionExample : invokes
+
+FPCShim --> ECC : callBack
+
+@enduml
