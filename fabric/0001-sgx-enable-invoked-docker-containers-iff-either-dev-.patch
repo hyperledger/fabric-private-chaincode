@@ -15,8 +15,8 @@ index 2a709ed0b..53717139c 100644
 @@ -16,6 +16,7 @@ import (
  	"fmt"
  	"io"
- 	"regexp"
 +	"os"
+ 	"regexp"
  	"strconv"
  	"strings"
  	"time"
@@ -28,13 +28,13 @@ index 2a709ed0b..53717139c 100644
 +	// Check whether sgx driver (and which version) exists
 +	hasSGX := false
 +	sgxDeviceName := ""
-+	for _, name := range []string{ "/dev/sgx", "/dev/isgx" } {
++	for _, name := range []string{"/dev/sgx", "/dev/isgx"} {
 +		if _, err := os.Stat(name); err == nil {
 +			hasSGX = true
-+			sgxDeviceName=name
++			sgxDeviceName = name
 +			break
 +		}
-+        }
++	}
 +
 +	config := &docker.HostConfig{
  		CapAdd:  viper.GetStringSlice(dockerKey("CapAdd")),

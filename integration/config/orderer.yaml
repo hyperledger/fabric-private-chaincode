@@ -2,6 +2,7 @@
 # Copyright IBM Corp. All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
+#
 
 ---
 ################################################################################
@@ -52,32 +53,30 @@ General:
     # Cluster settings for ordering service nodes that communicate with other ordering service nodes
     # such as Raft based ordering service.
     Cluster:
+        # SendBufferSize is the maximum number of messages in the egress buffer.
+        # Consensus messages are dropped if the buffer is full, and transaction
+        # messages are waiting for space to be freed.
+        SendBufferSize: 10
         # ClientCertificate governs the file location of the client TLS certificate
         # used to establish mutual TLS connections with other ordering service nodes.
         ClientCertificate:
         # ClientPrivateKey governs the file location of the private key of the client TLS certificate.
         ClientPrivateKey:
-        # DialTimeout governs the maximum duration of time after which connection
-        # attempts are considered as failed.
-        DialTimeout: 5s
-        # RPCTimeout governs the maximum duration of time after which RPC
-        # attempts are considered as failed.
-        RPCTimeout: 7s
-        # RootCAs governs the file locations of certificates of the Certificate Authorities
-        # which authorize connections to remote ordering service nodes.
-        RootCAs:
-          - tls/ca.crt
-        # ReplicationBuffersSize is the maximum number of bytes that can be allocated
-        # for each in-memory buffer used for block replication from other cluster nodes.
-        # Each channel has its own memory buffer.
-        ReplicationBufferSize: 20971520 # 20MB
-        # PullTimeout is the maximum duration the ordering node will wait for a block
-        # to be received before it aborts.
-        ReplicationPullTimeout: 5s
-        # ReplicationRetryTimeout is the maximum duration the ordering node will wait
-        # between 2 consecutive attempts.
-        ReplicationRetryTimeout: 5s
+        # The below 4 properties should be either set together, or be unset together.
+        # If they are set, then the orderer node uses a separate listener for intra-cluster
+        # communication. If they are unset, then the general orderer listener is used.
+        # This is useful if you want to use a different TLS server certificates on the
+        # client-facing and the intra-cluster listeners.
 
+        # ListenPort defines the port on which the cluster listens to connections.
+        ListenPort:
+        # ListenAddress defines the IP on which to listen to intra-cluster communication.
+        ListenAddress:
+        # ServerCertificate defines the file location of the server TLS certificate used for intra-cluster
+        # communication.
+        ServerCertificate:
+        # ServerPrivateKey defines the file location of the private key of the TLS certificate.
+        ServerPrivateKey:
     # Genesis method: The method by which the genesis block for the orderer
     # system channel is specified. Available options are "provisional", "file":
     #  - provisional: Utilizes a genesis profile, specified by GenesisProfile,
@@ -328,7 +327,7 @@ Operations:
         ClientAuthRequired: false
 
         # Paths to PEM encoded ca certificates to trust for client authentication
-        RootCAs: []
+        ClientRootCAs: []
 
 ################################################################################
 #

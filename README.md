@@ -100,7 +100,7 @@ deploying and running an example chaincode.
 
 * CMake 3.5.1 or higher
 * Go 1.11.x or higher
-* Hyperledger Fabric v1.4.1 https://github.com/hyperledger/fabric
+* Hyperledger Fabric v1.4.2 https://github.com/hyperledger/fabric
 
     If you are new to Fabric, we recommend the Fabric documentation as your starting point. You should start with
     [installing](https://hyperledger-fabric.readthedocs.io/en/release-1.4/prereqs.html) Fabric dependencies and setting
