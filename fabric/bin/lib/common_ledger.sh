@@ -27,7 +27,7 @@ ledger_precond_check() {
 	[ -x "${FABRIC_BIN_DIR}/peer" ] || die "peer command does not exist in '${FABRIC_BIN_DIR}'"
 	[ -x "${FABRIC_BIN_DIR}/orderer" ] || die "orderer command does not exist in '${FABRIC_BIN_DIR}'"
 	[ -x "${FABRIC_BIN_DIR}/configtxgen" ] || die "configtxgen command does not exist in '${FABRIC_BIN_DIR}'"
-	[ -d "${FABRIC_STATE_DIR}" ] || die "Could not find fabric ledger state directory '${FABRIC_STATE_DIR}'"
+	[ ! -z "${FABRIC_STATE_DIR}" ] || die "Undefined fabric ledger state directory '${FABRIC_STATE_DIR}'"
 	(cd "${CONFIG_HOME}" && [ -e "${SPID_FILE}" ]) || die "spid not properly configured in ${CONFIG_HOME}/core.yaml or file '${SPID_FILE}' does not exist"
 	(cd "${CONFIG_HOME}" && [ -e "${API_KEY_FILE}" ]) || die "apiKey not properly configured in ${CONFIG_HOME}/core.yaml or apiKey file '${API_KEY_FILE}' does not exist"
 }
@@ -46,8 +46,10 @@ define_common_vars() {
     ERCC_ID="ercc"
     ERCC_VERSION=0
 
+    ORDERER_PID_FILE="${FABRIC_STATE_DIR}/orderer.pid"
     ORDERER_LOG_OUT="${FABRIC_STATE_DIR}/orderer.out"
     ORDERER_LOG_ERR="${FABRIC_STATE_DIR}/orderer.err"
+    PEER_PID_FILE="${FABRIC_STATE_DIR}/peer.pid"
     PEER_LOG_OUT="${FABRIC_STATE_DIR}/peer.out"
     PEER_LOG_ERR="${FABRIC_STATE_DIR}/peer.err"
 
@@ -108,6 +110,7 @@ ledger_init() {
     # 2. start orderer
     ORDERER_GENERAL_GENESISPROFILE=SampleDevModeSolo ${ORDERER_CMD} 1>${ORDERER_LOG_OUT} 2>${ORDERER_LOG_ERR} &
     export ORDERER_PID=$!
+    echo "${ORDERER_PID}" > ${ORDERER_PID_FILE}
     sleep 1
     kill -0 ${ORDERER_PID} || die "Orderer quit too quickly: (for log see ${ORDERER_LOG_OUT} & ${ORDERER_LOG_ERR})"
 
@@ -115,6 +118,7 @@ ledger_init() {
     LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"$LD_LIBRARY_PATH:"}${FPC_TOP_DIR}/tlcc/enclave/lib \
 		   ${PEER_CMD} node start 1>${PEER_LOG_OUT} 2>${PEER_LOG_ERR} &
     export PEER_PID=$!
+    echo "${PEER_PID}" > ${PEER_PID_FILE}
     sleep 1
     kill -0 ${PEER_PID} || die "Peer quit too quickly: (for log see ${PEER_LOG_OUT} & ${PEER_LOG_ERR})"
 
@@ -131,13 +135,24 @@ ledger_init() {
 # Shutdown ledger (i.e., orderer & peer)
 #-----------------------------------------
 ledger_shutdown() {
+    if [ -z "${PEER_PID}" ]; then
+	# maybe we have it in pidfile ..
+	PEER_PID=$(cat ${PEER_PID_FILE} 2> /dev/null)
+    fi
     if [ ! -z "${PEER_PID}" ]; then
 	kill  ${PEER_PID}
 	unset PEER_PID
+	rm ${PEER_PID_FILE}
+    fi
+
+    if [ -z "${ORDERER_PID}" ]; then
+	# maybe we have it in pidfile ..
+	ORDERER_PID=$(cat ${ORDERER_PID_FILE} 2> /dev/null)
     fi
     if [ ! -z "${ORDERER_PID}" ]; then
 	kill ${ORDERER_PID}
 	unset ORDERER_PID
+	rm ${ORDERER_PID_FILE}
     fi
 }
 

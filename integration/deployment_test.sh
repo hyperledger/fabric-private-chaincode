@@ -17,8 +17,6 @@ num_rounds=3
 num_clients=10
 
 run_test() {
-    expect_switcheroo_fail=$1
-
     # install, init, and register (auction) chaincode
     try ${PEER_CMD} chaincode install -l fpc-c -n auction_test -v ${CC_VERS} -p examples/auction/_build/lib
     sleep 3
@@ -29,7 +27,6 @@ run_test() {
     try ${PEER_CMD} chaincode install -l golang -n example02 -v ${CC_VERS} -p github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd
     sleep 3
 
-    # init is special case as it might expectedly fail if switcheroo wasn't done yet ..
     try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -v ${CC_VERS} -c '{"args":["init"]}' -V ecc-vscc
     sleep 3
 
@@ -61,7 +58,6 @@ docker_clean echo_test
 trap ledger_shutdown EXIT
 
 
-# 2. First run, this should fail due to docker-switcheroo
 para
 say "Run test"
 
