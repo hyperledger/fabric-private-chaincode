@@ -16,6 +16,14 @@ FPC_DOCKER_NAME_CMD="${FPC_TOP_DIR}/utils/fabric/get-fabric-container-name"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/tlcc/enclave/lib 
 
 
+get_fpc_name() {
+    echo "ecc_${1}"
+}
+
+
+# Chaincode command wrappers
+#----------------------------
+
 handle_chaincode_install() {
     OTHER_ARGS=()
     while [[ $# > 0 ]]; do
@@ -52,7 +60,7 @@ handle_chaincode_install() {
 	parse_fabric_config .
 
 	# add private chaincode name prefix
-	FPC_NAME="ecc_"${CC_NAME}
+	FPC_NAME=$(get_fpc_name ${CC_NAME})
 
 	# get docker name for this chaincode
 	DOCKER_IMAGE_NAME=$(${FPC_DOCKER_NAME_CMD} --cc-name ${FPC_NAME} --cc-version ${CC_VERSION} --net-id ${NET_ID} --peer-id ${PEER_ID}) || die "could not get docker image name"
@@ -66,20 +74,156 @@ handle_chaincode_install() {
     return
 }
 
+handle_chaincode_upgrade() {
+    OTHER_ARGS=()
+    while [[ $# > 0 ]]; do
+        case "$1" in
+            -n|--name)
+                CC_NAME=$2;
+                shift; shift
+                ;;
+            -v|--version)
+                CC_VERSION=$2
+                shift; shift
+                ;;
+            -p|--path)
+                CC_ENCLAVESOPATH=$2
+                shift; shift
+                ;;
+            -l|--lang)                                                                                                                            CC_LANG=$2
+                shift;shift
+                ;;
+            *)
+                OTHER_ARGS+=( "$1" )
+                shift
+                ;;
+            esac
+    done
+    # accept only if original install is of same "type" (fpc vs vanilla)
+    $(is_fpc_cc ${CC_NAME} ${CC_VERSION})
+    FPC_INSTALLED=$?
+    [ "${CC_LANG}" = "fpc-c" ];
+    FPC_UPGRADE=$?
+    if [ ${FPC_INSTALLED} != ${FPC_UPGRADE} ]; then
+	die "cannot change frpm FPC to non-FPC or vice-versa in chaincode upgrade"
+    fi
+
+    # if fpc, do same switcheroo and docker-build as done by install
+    if [ "${CC_LANG}" = "fpc-c" ]; then                                                                                                   if [ -z ${CC_NAME+x} ] || [ -z ${CC_VERSION+x} ] || [ -z ${CC_ENCLAVESOPATH+x} ] ; then
+            # missing params, don't do anything and let real peer report errors
+            return
+        fi
+        yell "Found valid FPC Chaincode Install!"
+        # get net-id and peer-id from core.yaml, for now just use defaults ...
+        parse_fabric_config .
+
+        # add private chaincode name prefix
+        FPC_NAME=$(get_fpc_name ${CC_NAME})
+
+        # get docker name for this chaincode
+        DOCKER_IMAGE_NAME=$(${FPC_DOCKER_NAME_CMD} --cc-name ${FPC_NAME} --cc-version ${CC_VERSION} --net-id ${NET_ID} --peer-id ${PEER_ID}) || die "could not get docker image name"
+
+        # install docker
+        try make ENCLAVE_SO_PATH=${CC_ENCLAVESOPATH} DOCKER_IMAGE=${DOCKER_IMAGE_NAME} -C ${FPC_TOP_DIR}/ecc docker-fpc-app
+
+        # eplace path and lang arg with dummy go chaincode
+        ARGS_EXEC=( 'chaincode' 'upgrade' '-n' "${FPC_NAME}" '-v' "${CC_VERSION}" '-p' 'github.com/hyperledger/fabric/examples/cha
+incode/go/example02/cmd' "${OTHER_ARGS[@]}" )
+    fi
+    return
+}
+
+
 handle_chaincode_instantiate() {
-    handle_chaincode_call "instantiate" "$@"
+    handle_chaincode_call_with_mapped_name "instantiate" "$@"
     return
 }
 
 handle_chaincode_invoke() {
-    handle_chaincode_call "invoke" "$@"
+    handle_chaincode_call_with_mapped_name "invoke" "$@"
     return
 }
 
 handle_chaincode_query() {
-    handle_chaincode_call "query" "$@"
+    handle_chaincode_call_with_mapped_name "query" "$@"
     return
 }
+
+handle_chaincode_list() {
+    OUT=$(${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}")
+    rc=$?
+    if [ $rc = 0 ]; then
+	echo "${OUT}" | sed 's/Name: ecc_/Name: /g';
+    fi
+    exit $rc
+}
+
+
+# chaincode cmd utility functions
+
+handle_chaincode_call_with_mapped_name() {
+    CMD=$1; shift
+
+    OTHER_ARGS=()
+    while [[ $# > 0 ]]; do
+	case "$1" in
+	    -n|--name)
+		CC_NAME=$2;
+		shift; shift
+		;;
+	    -v|--version)
+		# Note: this exists only for instantiate, not invoke or query;
+		# will handle the case of undefined CC_VERSION inside
+		# translate_fpc_name, though  ..
+		CC_VERSION=$2
+		OTHER_ARGS+=( "$1" "$2" )
+		shift; shift
+		;;
+	    *)
+		OTHER_ARGS+=( "$1" )
+		shift
+		;;
+	    esac
+    done
+
+    CC_NAME=$(translate_fpc_name ${CC_NAME}  ${CC_VERSION})
+    ARGS_EXEC=( 'chaincode' "${CMD}" '-n' "${CC_NAME}" "${OTHER_ARGS[@]}" )
+}
+
+translate_fpc_name() {
+    CC_NAME=$1
+    CC_VERSION=$2
+
+    if $(is_fpc_cc ${CC_NAME} ${CC_VERSION}); then
+        get_fpc_name ${CC_NAME}
+    else
+        echo "${CC_NAME}"
+    fi
+}
+
+is_fpc_cc() {
+    CC_NAME=$1
+    CC_VERSION=$2
+    FPC_NAME=$(get_fpc_name ${CC_NAME})
+
+    # if we don't have a version in our invocation ...
+    if [ -z ${CC_VERSION} ]; then
+	# it must be an instantiated version, so let's
+	# check whether a FPC-named one exists
+	FPC_VERSION=$(${FABRIC_BIN_DIR}/peer chaincode list -C ${CHAN_ID} --instantiated | awk "/Name: ${FPC_NAME}/ "'{ print $4 }')
+	[ ! -z "${FPC_VERSION}" ];
+	return $?
+    else
+	# otherwise, there should be at least a corresponding docker image
+	DOCKER_IMAGE_NAME=$(${FPC_DOCKER_NAME_CMD} --cc-name ${FPC_NAME} --cc-version ${CC_VERSION} --net-id ${NET_ID} --peer-id ${PEER_ID}) || die "could not get docker image name"
+
+	[ ! -z "$(docker images | grep "${DOCKER_IMAGE_NAME}")" ];
+	return $?
+    fi
+}
+
+# Channel command wrappers
+#--------------------------
 
 handle_channel_create() {
     # - get channel name
@@ -130,7 +274,7 @@ handle_channel_join() {
     #   - instantiate ercc iff "channel creation" peer
     if [ -e "${CONFIG_HOME}/${CHAN_ID}.creator" ]; then
 	try $RUN ${FABRIC_BIN_DIR}/peer chaincode instantiate -n ${ERCC_ID} -v ${ERCC_VERSION} -c '{"args":["init"]}' -C ${CHAN_ID} -V ercc-vscc
-	sleep 3
+	sleep 4
 	try rm "${CONFIG_HOME}/${CHAN_ID}.creator"
     fi
     #   - get SPID (mostly as debug output)
@@ -147,37 +291,6 @@ handle_channel_join() {
     exit 0
 }
 
-handle_chaincode_call() {
-    CMD=$1
-
-    OTHER_ARGS=()
-    while [[ $# > 0 ]]; do
-	case "$2" in
-	    -n|--name)
-		CC_NAME=$3;
-		shift; shift
-		;;
-	    *)
-		OTHER_ARGS+=( "$2" )
-		shift
-		;;
-	    esac
-    done
-
-    CC_NAME=$(translate_fpc_name ${CC_NAME})
-    ARGS_EXEC=( 'chaincode' "${CMD}" '-n' "${CC_NAME}" "${OTHER_ARGS[@]}" )
-}
-
-translate_fpc_name() {
-    CC_NAME=$1
-    FPC_NAME="ecc_"${CC_NAME}
-
-    if [[ ! -z "$(docker images | grep ${FPC_NAME} | awk '{print $1;}')" ]] ; then
-        echo "${FPC_NAME}"
-    else
-        echo "${CC_NAME}"
-    fi
-}
 
 # - check whether it is a command which we have to intercept
 #   - chaincode install
@@ -192,6 +305,10 @@ case "$1" in
 		shift
 		handle_chaincode_install "$@"
 		;;
+	    upgrade)
+		shift
+		handle_chaincode_upgrade "$@"
+		;;
 	    instantiate)
 		shift
 		handle_chaincode_instantiate "$@"
@@ -204,8 +321,13 @@ case "$1" in
 		shift
 		handle_chaincode_query "$@"
 		;;
+	    list)
+		shift
+		handle_chaincode_list "$@"
+		;;
 	    *)
 		# fall through, nothing to do
+		# TODO: is this really safe? should we do anything with 'package' and/or 'signpackage'?
 	esac
 	;;
 

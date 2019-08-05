@@ -21,13 +21,10 @@ CC_VERS=0
 num_rounds=10
 
 echo_test() {
-    expect_switcheroo_fail=$1
-
     # install, init, and register (auction) chaincode
     try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p ${ENCLAVE_SO_PATH}
     sleep 3
 
-    # init is special case as it might expectedly fail if switcheroo wasn't done yet ..
     try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":["init"]}' -V ecc-vscc
     sleep 3
 
