@@ -76,9 +76,9 @@ func NewRegistry() *Registry {
 
 func (r *Registry) Register(stubs *Stubs) int {
 	r.Lock()
+	defer r.Unlock()
 	r.index++
 	r.internal[r.index] = stubs
-	r.Unlock()
 	return r.index
 }
 
