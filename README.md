@@ -116,7 +116,8 @@ To build documentation, you also need
 * [PlantUML](http://plantuml.com/). You will have to install `java` and download `plantuml.jar`.
   Either put `plantuml.jar` into in your `CLASSPATH` environment variable or override
   `PLANTUML_JAR` or `PLANTUML_CMD` in ``config.override.mk` (see `config.mk` for default
-  definition of the two variables).
+  definition of the two variables). Additionally, you will need the `dot` program from the
+  graphviz package (e.g., via `apt-get install graphviz` on ubuntu).
 
 
 ### SGX SDK and SSL
