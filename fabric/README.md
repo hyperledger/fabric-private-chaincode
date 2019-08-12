@@ -18,9 +18,9 @@ your [development environment](https://hyperledger-fabric.readthedocs.io/en/rele
 
 ## Patch and Build
 
-Clone fabric and checkout the 1.4.1 release.
+Clone fabric and checkout the 1.4.2 release.
 
-    $ git clone --branch v1.4.1 https://github.com/hyperledger/fabric.git $GOPATH/src/github.com/hyperledger/fabric
+    $ git clone --branch v1.4.2 https://github.com/hyperledger/fabric.git $GOPATH/src/github.com/hyperledger/fabric
     $ cd $GOPATH/src/github.com/hyperledger/fabric
     $ git am ../../hyperledger-labs/fabric-private-chaincode/fabric/*.patch
 
