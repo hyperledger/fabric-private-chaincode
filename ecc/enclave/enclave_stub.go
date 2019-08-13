@@ -22,12 +22,27 @@ import (
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"golang.org/x/sync/semaphore"
+
+	"crypto/x509"
+	"encoding/pem"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric/protos/msp"
 )
 
 // #cgo CFLAGS: -I${SRCDIR}/ecc-enclave-include
 // #cgo LDFLAGS: -L${SRCDIR}/ecc-enclave-lib -lsgxcc
 // #include "sgxcclib.h"
+// #include <stdio.h>
 // #include <string.h>
+//
+// /*
+//    Below extern definitions should really be done by cgo but without we get following warning:
+//       warning: implicit declaration of function ▒▒▒_GoStringPtr_▒▒▒ [-Wimplicit-function-declaration]
+// */
+// extern const char *_GoStringPtr(_GoString_ s);
+// extern size_t _GoStringLen(_GoString_ s);
+//
 // static inline void _cpy_bytes(uint8_t* target, uint8_t* val, uint32_t size)
 // {
 //   memcpy(target, val, size);
@@ -36,6 +51,15 @@ import (
 // static inline void _set_int(uint32_t* target, uint32_t val)
 // {
 //   *target = val;
+// }
+//
+// static inline void _cpy_str(char* target, _GoString_ val, uint32_t max_size)
+// {
+//   #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+//   // Note: have to do MIN as _GoStringPtr() might not be NULL terminated.
+//   // Also _GoStringLen returns the length without \0 ...
+//   size_t goStrLen = _GoStringLen(val)+1;
+//   snprintf(target, MIN(max_size, goStrLen), "%s", _GoStringPtr(val));
 // }
 //
 import "C"
@@ -98,13 +122,48 @@ func (r *Registry) Get(i int) *Stubs {
 	return stubs
 }
 
+// TODO: everywhere below
+// - we should check the max_*_len parameters!!!
+// - we should do more meaningful error handling than panic ..
+
 //export golog
 func golog(str *C.char) {
 	logger.Infof("%s", C.GoString(str))
 }
 
+// TODO: this seems dead-code? remove?
 var _logger = func(in string) {
 	logger.Info(in)
+}
+
+//export get_creator_name
+func get_creator_name(msp_id *C.char, max_msp_id_len C.uint32_t, dn *C.char, max_dn_len C.uint32_t, ctx unsafe.Pointer) {
+	stubs := registry.Get(*(*int)(ctx))
+
+	serializedID, err := stubs.shimStub.GetCreator()
+	if err != nil {
+		panic("error while getting creator")
+	}
+	sId := &msp.SerializedIdentity{}
+	err = proto.Unmarshal(serializedID, sId)
+	if err != nil {
+		panic("Could not deserialize a SerializedIdentity")
+	}
+
+	bl, _ := pem.Decode(sId.IdBytes)
+	if bl == nil {
+		panic("Failed to decode PEM structure")
+	}
+	cert, err := x509.ParseCertificate(bl.Bytes)
+	if err != nil {
+		panic("Unable to parse certificate %s")
+	}
+
+	var goMspId = sId.Mspid
+	C._cpy_str(msp_id, goMspId, max_msp_id_len)
+
+	var goDn = cert.Subject.String()
+	C._cpy_str(dn, goDn, max_dn_len)
 }
 
 //export get_state

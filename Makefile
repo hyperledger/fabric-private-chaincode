@@ -13,7 +13,7 @@ build : godeps
 build test clean :
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)
 
-checks: license linter
+checks: linter license
 
 license:
 	@echo "License: Running licence checks.."

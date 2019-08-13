@@ -6,7 +6,6 @@
 
 #include "enclave_t.h"
 
-#include "chaincode.h"
 #include "logging.h"
 #include "shim.h"
 #include "shim_internals.h"

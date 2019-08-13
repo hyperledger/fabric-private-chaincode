@@ -48,8 +48,18 @@ int invoke(const char* args,
     }
     else if (function_name == "submit")
     {
-        std::string bidder_name = argss[2];
         int value = std::stoi(argss[3]);
+        std::string bidder_name = argss[2];
+        // TODO: eventually replace bidder_name with get_creator_name but for now
+        //  in our tests we have only one client, so leave passed bidder_name to
+        //  allow for different bidders ...
+        char real_bidder_name_msp_id[1024];
+        char real_bidder_name_dn[1024];
+        get_creator_name(real_bidder_name_msp_id, sizeof(real_bidder_name_msp_id),
+            real_bidder_name_dn, sizeof(real_bidder_name_dn), ctx);
+        LOG_INFO("AuctionCC: real bidder '(msp_id: %s, dn: %s)' masquerading as '%s'",
+            real_bidder_name_msp_id, real_bidder_name_dn, bidder_name.c_str());
+
         result = auction_submit(auction_name, bidder_name, value, ctx);
     }
     else if (function_name == "close")

@@ -11,7 +11,6 @@
 #include <set>
 #include <string>
 
-
 // read/writeset
 typedef std::map<std::string, std::string> write_set_t;
 typedef std::set<std::string> read_set_t;

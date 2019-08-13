@@ -24,6 +24,20 @@ extern sgx_ec256_public_t tlcc_pk;
 extern sgx_cmac_128bit_key_t session_key;
 extern sgx_aes_gcm_128bit_key_t state_encryption_key;
 
+void get_creator_name(
+    char* msp_id, uint32_t max_msp_id_len, char* dn, uint32_t max_dn_len, void* ctx)
+{
+    // TODO: right now the implementation is not secure yet as below function is unvalidated
+    // from the (untrusted) peer.
+    // To securely implement it, we will require the signed proposal to be passed
+    // from the stub (see, e.g., ChaincodeStub in go shim core/chaincode/shim/stub.go)
+    // and then verified. This in turn will require verification of certificates based
+    // on the MSP info channel.  As TLCC already has to do keep track of MSP and do related
+    // verification , we can off-load some of that to TLCC (as we anyway have to talk to it
+    // to get channel MSP info)
+    ocall_get_creator_name(msp_id, max_msp_id_len, dn, max_dn_len, ctx);
+}
+
 void get_state(const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* val_len, void* ctx)
 {
     // read state

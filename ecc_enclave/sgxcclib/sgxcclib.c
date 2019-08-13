@@ -26,20 +26,26 @@
 
 #define LOG_ERROR(fmt, ...) golog(CYN "ERROR" RED fmt NRM "\n", ##__VA_ARGS__)
 
-// extern go printf
+// Prototypes of CGo functions implemented in ecc/enclave/enclave_stub.go
+
+// - logging
 extern void golog(const char* format, ...);
 
-// for accessing ledger kvs
-extern void get_state_by_partial_composite_key(const char* comp_key,
-    uint8_t* values,
-    uint32_t max_len,
-    uint32_t* values_len,
-    cmac_t* cmac,
-    void* ctx);
+// - creator access
+extern void get_creator_name(
+    const char* msp_id, uint32_t max_msp_id_len, const char* dn, uint32_t max_dn_len, void* ctx);
+
+// - for accessing ledger kvs
 extern void get_state(const char* key,
     uint8_t* val,
     uint32_t max_val_len,
     uint32_t* val_len,
+    cmac_t* cmac,
+    void* ctx);
+extern void get_state_by_partial_composite_key(const char* comp_key,
+    uint8_t* values,
+    uint32_t max_len,
+    uint32_t* values_len,
     cmac_t* cmac,
     void* ctx);
 extern void put_state(const char* key, uint8_t* val, uint32_t val_len, void* ctx);
@@ -214,6 +220,12 @@ int sgxcc_invoke(enclave_id_t eid,
 }
 
 /* OCall functions */
+void ocall_get_creator_name(
+    char* msp_id, uint32_t max_msp_id_len, char* dn, uint32_t max_dn_len, void* ctx)
+{
+    get_creator_name(msp_id, max_msp_id_len, dn, max_dn_len, ctx);
+}
+
 void ocall_get_state(const char* key,
     uint8_t* val,
     uint32_t max_val_len,

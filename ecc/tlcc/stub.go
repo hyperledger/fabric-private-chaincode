@@ -20,6 +20,7 @@ import (
 
 var logger = flogging.MustGetLogger("enclave_stub")
 
+// TODO: this seems dead-code? remove?
 var _logger = func(in string) {
 	logger.Info(in)
 }
