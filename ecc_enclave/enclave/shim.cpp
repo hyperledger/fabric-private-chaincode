@@ -8,6 +8,7 @@
 
 #include "logging.h"
 #include "shim.h"
+#include "shim_internals.h"
 
 #include "crypto.h"
 
