@@ -36,11 +36,6 @@ sym-links:
 	ln -sfn ../../ecc_enclave/_build/include enclave/ecc-enclave-include
 
 ecc: ecc_enclave
-	$(GO) get golang.org/x/sync/semaphore
-	$(GO) get github.com/pkg/errors
-	$(GO) get github.com/golang/protobuf/proto
-	$(GO) get github.com/onsi/ginkgo
-	$(GO) get github.com/onsi/gomega
 	$(GO) build
 
 vscc-plugin: $(VSCC_SRC)

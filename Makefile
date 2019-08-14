@@ -8,6 +8,8 @@ include $(TOP)/build.mk
 
 SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc examples integration # docs
 
+build : godeps
+
 build test clean :
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)
 
@@ -27,3 +29,11 @@ linter: gotools build
 gotools:
 	# install goimports if not present
 	$(GO) get golang.org/x/tools/cmd/goimports
+
+godeps:
+	$(GO) get github.com/spf13/viper
+	$(GO) get golang.org/x/sync/semaphore
+	$(GO) get github.com/pkg/errors
+	$(GO) get github.com/golang/protobuf/proto
+	$(GO) get github.com/onsi/ginkgo
+	$(GO) get github.com/onsi/gomega
