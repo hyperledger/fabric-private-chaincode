@@ -10,7 +10,6 @@ SRC := tlcc.go
 OUTPUT := tlcc.so
 
 $(OUTPUT): $(SRC)
-	$(GO) get github.com/spf13/viper
 	$(LD_LIBRARY_PATH) $(GO) build -o $@ -buildmode=plugin $<
 
 build: $(OUTPUT)
