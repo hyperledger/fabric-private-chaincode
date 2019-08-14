@@ -344,6 +344,24 @@ appears even after installing it via `apt-get install clang-format`. See [here](
 for how to fix this.  
 
 
+##### ERCC setup failurs
+
+If, e.g., running the integration tests executed when you run `make`,
+you get errors of following form:
+
+```
+Error: endorsement failure during invoke. response: status:500 message:"Setup failed: Can not register enclave at ercc: Error while retrieving attestation report: IAS returned error: Code 401 Access Denied"
+```
+
+In case you run in SGX HW mode, check that your files in `config/ias`
+are set properly as explained in [Section Intel Attestation Service
+(IAS)](#intel-attestation-service-ias).  Note that if you run
+initially in simulation mode and these files do not exist, the build
+will create dummy files. In case you switch later to HW mode without
+configuring these files correctly for HW mode, this will result in
+above error.
+
+
 ## Your first private chaincode
 
 Hello world example tutorial comming soon here ...
@@ -365,6 +383,7 @@ By running the following command you can generate the documentation.
 
     $ cd docs
     $ make
+
 
 
 # Getting Help
