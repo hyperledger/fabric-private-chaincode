@@ -6,8 +6,9 @@
 
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
 FPC_TOP_DIR="${SCRIPTDIR}/.."
-CONFIG_HOME="${SCRIPTDIR}/config"
 FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
+
+: ${FABRIC_CFG_PATH:="${SCRIPTDIR}/config"}
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
@@ -26,12 +27,8 @@ auction_test() {
     try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p ${ENCLAVE_SO_PATH}
     sleep 3
 
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":["init"]}' -V ecc-vscc
+    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":["My Auction"]}' -V ecc-vscc
     sleep 3
-
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["setup", "ercc"]}' --waitForEvent
-
-    try ${PEER_CMD} chaincode query -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["getEnclavePk"]}'
 
     # create auction
     try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"create\",\"MyAuction\"]", ""]}' --waitForEvent

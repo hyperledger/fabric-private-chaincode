@@ -6,8 +6,9 @@
 
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
 FPC_TOP_DIR="${SCRIPTDIR}/../.."
-CONFIG_HOME="${CONFIG_HOME:-.}"
 FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
+
+: ${FABRIC_CFG_PATH:=$(pwd)}
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh

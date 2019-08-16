@@ -6,8 +6,9 @@
 
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
 FPC_TOP_DIR="${SCRIPTDIR}/.."
-CONFIG_HOME="${SCRIPTDIR}/config"
 FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
+
+: ${FABRIC_CFG_PATH:="${SCRIPTDIR}/config"}
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
@@ -27,19 +28,16 @@ run_test() {
     try ${PEER_CMD} chaincode install -l golang -n example02 -v ${CC_VERS} -p github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd
     sleep 3
 
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -v ${CC_VERS} -c '{"args":["init"]}' -V ecc-vscc
+    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -v ${CC_VERS} -c '{"args":["My Auction"]}' -V ecc-vscc
     sleep 3
 
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -v ${CC_VERS} -c '{"args":["init"]}' -V ecc-vscc
+    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -v ${CC_VERS} -c '{"args":[]}' -V ecc-vscc
     sleep 3
 
     try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n example02 -v ${CC_VERS} -c '{"args":["init", "bob", "100", "alice", "200"]}'
     sleep 3
 
     try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n example02 -c '{"args": ["invoke", "bob", "alice", "99"]}' --waitForEvent
-
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["setup", "ercc"]}' --waitForEvent
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -c '{"Args":["setup", "ercc"]}' --waitForEvent
 
     # create auction
     try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args": ["[\"create\",\"MyAuction\"]", ""]}' --waitForEvent
