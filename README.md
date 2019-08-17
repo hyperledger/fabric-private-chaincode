@@ -346,13 +346,7 @@ for how to fix this.
 
 ## Your first private chaincode
 
-Hello world example tutorial comming soon here ...
-
-Let's start a looking in `examples/` ...
-
-Explain how to use integration test framework to run our own chaincode ...
-
-`fabric/bin/peer` should be used with FPC ... explain ...
+Create, build and test your first private chaincode with this [tutorial](examples/README.md).
 
 ## Documentation
 
