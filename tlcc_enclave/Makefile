@@ -27,8 +27,10 @@ build: $(BUILD_DIR) protos
 	$(MAKE) all --directory=$<
 
 test:
-	# TODO: re-enable once issue #139 and #143 are fixed
-	# $(MAKE) $@ --directory=$(BUILD_DIR)
+	$(MAKE) $@ --directory=$(BUILD_DIR)
+
+gen_testcases:
+	../integration/deployment_test.sh $(PWD)/test/getLedgerBlocks -o $(PWD)/test/test_blocks
 
 .PHONY: enclave-clean
 enclave-clean:

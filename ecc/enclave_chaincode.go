@@ -71,7 +71,7 @@ func (t *EnclaveChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response 
 		return t.getEnclavePk(stub)
 	}
 
-	// Remaining functions are user functions, so pass them on the enclave and 
+	// Remaining functions are user functions, so pass them on the enclave and
 	return t.invoke(stub)
 }
 
