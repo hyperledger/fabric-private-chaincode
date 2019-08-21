@@ -22,6 +22,10 @@ function becho () {
     echo "${cbld}${cblu}" $@ "${crst}" >&2
 }
 
+function gecho () {
+    echo "${cbld}${cgrn}" $@ "${crst}" >&2
+}
+
 # Common reporting functions: say, yell & die
 #-----------------------------------------
 # say is stdout, yell is stderr
