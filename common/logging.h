@@ -45,7 +45,6 @@ int printf(const char* format, ...);
 #define DO_ERROR true
 #endif
 
-
 #define LOG_DEBUG(fmt, ...) \
     if (DO_DEBUG)           \
     printf(CYN "DEBUG " LOC_FMT TAG YEL fmt NRM "\n", __FILE__, __LINE__, ##__VA_ARGS__)

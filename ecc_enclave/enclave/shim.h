@@ -18,21 +18,17 @@ typedef void* fpc_ctx_t;
 
 // Function which FPC chaincode has to implement
 // ==================================================
-int invoke(const char* args,
-    uint8_t* response,
-    uint32_t max_response_len,
-    uint32_t* actual_response_len,
-    fpc_ctx_t ctx);
-
-/*
-  TODO: compatibility with fabric programming model, we might want to add also 
-
 int init(const char* args,
     uint8_t* response,
     uint32_t max_response_len,
     uint32_t* actual_response_len,
     fpc_ctx_t ctx);
-*/
+
+int invoke(const char* args,
+    uint8_t* response,
+    uint32_t max_response_len,
+    uint32_t* actual_response_len,
+    fpc_ctx_t ctx);
 
 // Shim Function which FPC chaincode can use
 // ==================================================
@@ -80,7 +76,8 @@ void get_state_by_partial_composite_key(
 // - '*_semi_public_state*' variant of '*_super_private_state*' where data is
 //   stored unencrypted in a private data collection
 //
-// - for composite-key function, the current shim also have additional utility functions such as createCompositeKey, splitCompositeKey: worth supporting? (Seems though primarily syntactic sugar?
+// - for composite-key function, the current shim also have additional utility functions such as
+// createCompositeKey, splitCompositeKey: worth supporting? (Seems though primarily syntactic sugar?
 //
 // - other functions: {get,set}StateValidationParameter, getHistoryForKey. Can/should we ignore?
 
@@ -97,7 +94,6 @@ int unmarshal_values(
 //    provide arguments as an array of strings. This would be fairly easy and
 //    more consistent with the other CC apis (e.g., node sdk also handles only
 //    string args) and presumably also the client cli ..).
-
 
 // transaction APIs
 //-------------------------------------------------
@@ -138,7 +134,6 @@ int unmarshal_values(
 // // - getTransient: if we encrypt everything, then everything is essentially Transient?
 // // - getSignedProposal: should be easy to support but probably not worth?
 
-
 // - creator
 // return the distinguished name of the creator as well as the msp_id of the corresponding
 // organization.
@@ -155,22 +150,19 @@ void get_creator_name(char* msp_id,  // MSP id of organization to which transact
 // also to expose the certificate itself.  However, for most current use-cases the DN should
 // be sufficient and makes CC-programming easier.
 
-
 // Chaincode to Chaincode
 //---------------------------
 // invokeChaincode
 // TODO: Currently not supported (but eventually should)
 
-
-
 // logging
 //-------------------------------------------------
-void log_critical(const char* format, ...);
-void log_error(const char* format, ...);
-void log_warning(const char* format, ...);
-void log_notice(const char* format, ...);
-void log_info(const char* format, ...);
-void log_debug(const char* format, ...);
+void log_critical(const char* name, const char* format, ...);
+void log_error(const char* name, const char* format, ...);
+void log_warning(const char* name, const char* format, ...);
+void log_notice(const char* name, const char* format, ...);
+void log_info(const char* name, const char* format, ...);
+void log_debug(const char* name, const char* format, ...);
 // TODO
 // - API design questions
 //   - macro vs function?

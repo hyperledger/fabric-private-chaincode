@@ -58,7 +58,7 @@ func (t *EnclaveChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 
 // Invoke receives transactions and forwards to op handlers
 func (t *EnclaveChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	function, _ := stub.GetFunctionAndParameters()
+	function, params := stub.GetFunctionAndParameters()
 	logger.Debugf("Invoke is running [%s]", function)
 
 	// Look first if there are system functions (and handle them)
@@ -67,6 +67,8 @@ func (t *EnclaveChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response 
 		// so if you change here you also will have to change there ...
 		// If/when we refactor we should define such stuff somewhere as constants..
 		return t.setup(stub)
+	} else if function == "__init" { // pass CC init to chaincode
+		return t.init(stub, []byte(params[0]))
 	} else if function == "__getEnclavePk" { //get Enclave PK
 		return t.getEnclavePk(stub)
 	}
@@ -141,6 +143,36 @@ func (t *EnclaveChaincode) setup(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 
 	return shim.Success([]byte(enclavePkBase64))
+}
+
+// ============================================================
+// init -
+// ============================================================
+func (t *EnclaveChaincode) init(stub shim.ChaincodeStubInterface, args []byte) pb.Response {
+	// check if we have an enclave already
+	if t.enclave == nil {
+		return shim.Error("ecc: Enclave not initialized! Run setup first!")
+	}
+
+	// call enclave
+	responseData, signature, err := t.enclave.Init(args, stub, t.tlccStub)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("ecc: Error while calling CC init enclave: %s", err))
+	}
+
+	enclavePk, err := t.enclave.GetPublicKey()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("ecc: Error retrieving enclave pk: %s", err))
+	}
+
+	response := &utils.Response{
+		ResponseData: responseData,
+		Signature:    signature,
+		PublicKey:    enclavePk,
+	}
+	responseBytes, _ := json.Marshal(response)
+
+	return shim.Success(responseBytes)
 }
 
 // ============================================================

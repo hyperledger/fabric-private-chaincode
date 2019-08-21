@@ -24,6 +24,35 @@
 static std::string SEP = ".";
 static std::string PREFIX = SEP + "somePrefix" + SEP;
 
+static bool _initialized = false;
+static std::string _auction_name = "(uninitialized)";
+
+// implements chaincode logic for invoke
+int init(const char* args,
+    uint8_t* response,
+    uint32_t max_response_len,
+    uint32_t* actual_response_len,
+    void* ctx)
+{
+    // Note: we could have got here not only during instatiation but also due to an upgrade.
+    // we do allow this, so don't check status of _initialized here
+
+    LOG_DEBUG("AuctionCC: +++ Executing auction chaincode init+++");
+    LOG_DEBUG("AuctionCC: \tArgs: %s", args);
+
+    std::vector<std::string> argss;
+    // parse json args
+    unmarshal_args(argss, args);
+
+    _auction_name = argss[0];
+
+    _initialized = true;
+
+    *actual_response_len = 0;
+    LOG_DEBUG("AuctionCC: +++ Initialization done +++");
+    return 0;
+}
+
 // implements chaincode logic for invoke
 int invoke(const char* args,
     uint8_t* response,
@@ -31,8 +60,16 @@ int invoke(const char* args,
     uint32_t* actual_response_len,
     void* ctx)
 {
-    LOG_DEBUG("AuctionCC: +++ Executing auction chaincode invocation +++");
+    LOG_DEBUG(
+        "AuctionCC: +++ Executing '%s' auction chaincode invocation +++", _auction_name.c_str());
     LOG_DEBUG("AuctionCC: \tArgs: %s", args);
+
+    if (!_initialized)
+    {
+        LOG_ERROR("AuctionCC: Invoke called before initialization");
+        *actual_response_len = 0;
+        return -1;
+    }
 
     std::vector<std::string> argss;
     // parse json args
@@ -73,7 +110,9 @@ int invoke(const char* args,
     else
     {
         // unknown function
-        LOG_DEBUG("AuctionCC: RECEIVED UNKOWN transaction");
+        LOG_ERROR("AuctionCC: RECEIVED UNKOWN transaction");
+        *actual_response_len = 0;
+        return -1;
     }
 
     // check that result fits into response
@@ -81,7 +120,7 @@ int invoke(const char* args,
     if (max_response_len < neededSize)
     {
         // ouch error
-        LOG_DEBUG("AuctionCC: Response buffer too small");
+        LOG_ERROR("AuctionCC: Response buffer too small");
         *actual_response_len = 0;
         return -1;
     }

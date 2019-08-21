@@ -237,7 +237,7 @@ int unmarshal_args(std::vector<std::string>& argss, const char* json_string)
     JSON_Value* root = json_parse_string(json_string);
     if (json_value_get_type(root) != JSONArray)
     {
-        LOG_ERROR("Shim: Cannot parse args");
+        LOG_ERROR("Shim: Cannot parse args '%s'", json_string);
         return -1;
     }
 

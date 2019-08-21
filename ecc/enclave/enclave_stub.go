@@ -256,6 +256,8 @@ type Stub interface {
 	GetRemoteAttestationReport(spid []byte) ([]byte, []byte, error)
 	// Return report and enclave PK in DER-encoded PKIX format
 	GetLocalAttestationReport(targetInfo []byte) ([]byte, []byte, error)
+	// Init chaincode
+	Init(args []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error)
 	// Invoke chaincode
 	Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error)
 	// Returns enclave PK in DER-encoded PKIX formatk
@@ -321,6 +323,52 @@ func (e *StubImpl) GetRemoteAttestationReport(spid []byte) ([]byte, []byte, erro
 func (e *StubImpl) GetLocalAttestationReport(spid []byte) ([]byte, []byte, error) {
 	// NOT IMPLEMENTED YET
 	return nil, nil, nil
+}
+
+// invoke calls the enclave for processing of (cc) init , takes arguments
+// and the current chaincode state as input and returns a new chaincode state
+func (e *StubImpl) Init(args []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error) {
+	if shimStub == nil {
+		return nil, nil, errors.New("Need shim")
+	}
+
+	// index := Register(Stubs{shimStub, tlccStub})
+	index := registry.Register(&Stubs{shimStub, tlccStub})
+	defer registry.Release(index)
+	// defer Release(index)
+	ctx := unsafe.Pointer(&index)
+
+	// args
+	argsPtr := C.CString(string(args))
+	defer C.free(unsafe.Pointer(argsPtr))
+
+	// response
+	responseLenOut := C.uint32_t(MAX_RESPONSET_SIZE)
+	responsePtr := C.malloc(MAX_RESPONSET_SIZE)
+	defer C.free(responsePtr)
+
+	// signature
+	signaturePtr := C.malloc(SIGNATURE_SIZE)
+	defer C.free(signaturePtr)
+
+	e.sem.Acquire(context.Background(), 1)
+	// invoke enclave
+	// TODO read error
+	ret := C.sgxcc_init(e.eid,
+		argsPtr,
+		(*C.uint8_t)(responsePtr), C.uint32_t(MAX_RESPONSET_SIZE), &responseLenOut,
+		(*C.ec256_signature_t)(signaturePtr),
+		ctx)
+	e.sem.Release(1)
+	if ret != 0 {
+		return nil, nil, fmt.Errorf("Invoke failed. Reason: %d", int(ret))
+	}
+
+	sig, err := crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
+	if err != nil {
+		return nil, nil, err
+	}
+	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, nil
 }
 
 // invoke calls the enclave for transaction processing, takes arguments

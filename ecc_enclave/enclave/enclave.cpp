@@ -67,6 +67,115 @@ int ecall_bind_tlcc(const sgx_report_t* report, const uint8_t* pubkey)
     return SGX_SUCCESS;
 }
 
+int gen_response(const char* type,
+    const char* args,
+    read_set_t& readset,
+    write_set_t& writeset,
+    uint8_t* response,
+    uint32_t* response_len_out,
+    sgx_ec256_signature_t* signature,
+    void* ctx)
+{
+    int ret;
+
+    // create Hash <- H(type || args || result || read-write set)
+    // TODO: somewhere there should be matching verification code which originally
+    //    did not have 'type' in hash. However, i couldn't find it (and it also does not fail)
+    //    => do we every verify this signature?!
+    sgx_sha256_hash_t hash;
+    sgx_sha_state_handle_t sha_handle;
+    sgx_sha256_init(&sha_handle);
+    // TODO: we should encode the hash below in an unambiguous fashion:
+    //    Probably easiest by prefixing each field by length ...
+    sgx_sha256_update((const uint8_t*)type, strlen(type), sha_handle);
+    sgx_sha256_update((const uint8_t*)args, strlen(args), sha_handle);
+    sgx_sha256_update(response, *response_len_out, sha_handle);
+
+    // hash read and write set
+    LOG_DEBUG("read_set:");
+    for (auto& it : readset)
+    {
+        LOG_DEBUG("\\-> %s", it.c_str());
+        sgx_sha256_update((const uint8_t*)it.c_str(), it.size(), sha_handle);
+    }
+
+    LOG_DEBUG("write_set:");
+    for (auto& it : writeset)
+    {
+        LOG_DEBUG("\\-> %s - %s", it.first.c_str(), it.second.c_str());
+        sgx_sha256_update((const uint8_t*)it.first.c_str(), it.first.size(), sha_handle);
+        sgx_sha256_update((const uint8_t*)it.second.c_str(), it.second.size(), sha_handle);
+    }
+
+    sgx_sha256_get_hash(sha_handle, &hash);
+    sgx_sha256_close(sha_handle);
+
+    // sig <- sign (hash,sk)
+    uint8_t sig[sizeof(sgx_ec256_signature_t)];
+    sgx_ecc_state_handle_t ecc_handle = NULL;
+    sgx_ecc256_open_context(&ecc_handle);
+    ret = sgx_ecdsa_sign((uint8_t*)&hash, SGX_SHA256_HASH_SIZE, &enclave_sk,
+        (sgx_ec256_signature_t*)sig, ecc_handle);
+    sgx_ecc256_close_context(ecc_handle);
+    if (ret != SGX_SUCCESS)
+    {
+        LOG_ERROR("Signing failed!! Reason: %#08x\n", ret);
+        return ret;
+    }
+    LOG_DEBUG("Response signature created!");
+    // convert signature to big endian and copy out
+    bytes_swap(sig, 32);
+    bytes_swap(sig + 32, 32);
+    memcpy(signature, sig, sizeof(sgx_ec256_signature_t));
+
+    std::string base64_hash = base64_encode((const unsigned char*)hash, 32);
+    LOG_DEBUG("ecc sig hash: %s", base64_hash.c_str());
+
+    std::string base64_sig =
+        base64_encode((const unsigned char*)sig, sizeof(sgx_ec256_signature_t));
+    LOG_DEBUG("ecc sig sig: %s", base64_sig.c_str());
+
+    std::string base64_pk =
+        base64_encode((const unsigned char*)&enclave_pk, sizeof(sgx_ec256_public_t));
+    LOG_DEBUG("ecc sig pk: %s", base64_pk.c_str());
+
+    return ret;
+}
+
+// chaincode initialization
+// output, response <- F(args, input)
+// signature <- sign (hash,sk)
+int ecall_cc_init(const char* args,
+    uint8_t* response,
+    uint32_t response_len_in,
+    uint32_t* response_len_out,
+    sgx_ec256_signature_t* signature,
+    void* ctx)
+{
+    // register ctx
+    read_set_t readset;
+    write_set_t writeset;
+
+    register_rwset(ctx, &readset, &writeset);
+
+    // call chaincode invoke logic: creates output and response
+    // output, response <- F(args, input)
+    int ret;
+    ret = init(args, response, response_len_in, response_len_out, ctx);
+    if (ret != 0)
+    {
+        return SGX_ERROR_UNEXPECTED;
+    }
+
+    ret = gen_response("init", args, readset, writeset, response, response_len_out, signature, ctx);
+
+    // clean context
+    free_rwset(ctx);
+
+    return ret;
+}
+
+// chaincode call processing when we have secure channel ..
 int invoke_enc(const char* args,
     const char* pk,
     uint8_t* response,
@@ -132,7 +241,7 @@ int invoke_enc(const char* args,
 // chaincode call
 // output, response <- F(args, input)
 // signature <- sign (hash,sk)
-int ecall_invoke(const char* args,
+int ecall_cc_invoke(const char* args,
     const char* pk,
     uint8_t* response,
     uint32_t response_len_in,
@@ -165,63 +274,11 @@ int ecall_invoke(const char* args,
         return SGX_ERROR_UNEXPECTED;
     }
 
-    // create Hash <- H(args || result || read-write set)
-    sgx_sha256_hash_t hash;
-    sgx_sha_state_handle_t sha_handle;
-    sgx_sha256_init(&sha_handle);
-    sgx_sha256_update((const uint8_t*)args, strlen(args), sha_handle);
-    sgx_sha256_update(response, *response_len_out, sha_handle);
-
-    // hash read and write set
-    LOG_DEBUG("read_set:");
-    for (auto& it : readset)
-    {
-        LOG_DEBUG("\\-> %s", it.c_str());
-        sgx_sha256_update((const uint8_t*)it.c_str(), it.size(), sha_handle);
-    }
-
-    LOG_DEBUG("write_set:");
-    for (auto& it : writeset)
-    {
-        LOG_DEBUG("\\-> %s - %s", it.first.c_str(), it.second.c_str());
-        sgx_sha256_update((const uint8_t*)it.first.c_str(), it.first.size(), sha_handle);
-        sgx_sha256_update((const uint8_t*)it.second.c_str(), it.second.size(), sha_handle);
-    }
-
-    sgx_sha256_get_hash(sha_handle, &hash);
-    sgx_sha256_close(sha_handle);
+    ret =
+        gen_response("invoke", args, readset, writeset, response, response_len_out, signature, ctx);
 
     // clean context
     free_rwset(ctx);
-
-    // sig <- sign (hash,sk)
-    uint8_t sig[sizeof(sgx_ec256_signature_t)];
-    sgx_ecc_state_handle_t ecc_handle = NULL;
-    sgx_ecc256_open_context(&ecc_handle);
-    ret = sgx_ecdsa_sign((uint8_t*)&hash, SGX_SHA256_HASH_SIZE, &enclave_sk,
-        (sgx_ec256_signature_t*)sig, ecc_handle);
-    sgx_ecc256_close_context(ecc_handle);
-    if (ret != SGX_SUCCESS)
-    {
-        LOG_ERROR("Signing failed!! Reason: %#08x\n", ret);
-        return ret;
-    }
-    LOG_DEBUG("Response signature created!");
-    // convert signature to big endian and copy out
-    bytes_swap(sig, 32);
-    bytes_swap(sig + 32, 32);
-    memcpy(signature, sig, sizeof(sgx_ec256_signature_t));
-
-    std::string base64_hash = base64_encode((const unsigned char*)hash, 32);
-    LOG_DEBUG("ecc sig hash: %s", base64_hash.c_str());
-
-    std::string base64_sig =
-        base64_encode((const unsigned char*)sig, sizeof(sgx_ec256_signature_t));
-    LOG_DEBUG("ecc sig sig: %s", base64_sig.c_str());
-
-    std::string base64_pk =
-        base64_encode((const unsigned char*)&enclave_pk, sizeof(sgx_ec256_public_t));
-    LOG_DEBUG("ecc sig pk: %s", base64_pk.c_str());
 
     return ret;
 }

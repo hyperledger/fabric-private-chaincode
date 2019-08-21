@@ -12,6 +12,20 @@
 
 #define MAX_VALUE_SIZE 1024
 
+int init(const char* args,
+    uint8_t* response,
+    uint32_t max_response_len,
+    uint32_t* actual_response_len,
+    void* ctx)
+{
+    LOG_DEBUG("EchoCC: +++ Executing chaincode init +++");
+    LOG_DEBUG("EchoCC: \tArgs (ignored): %s", args);
+
+    *actual_response_len = 0;
+    LOG_DEBUG("EchoCC: +++ Initialization done +++");
+    return 0;
+}
+
 // implements chaincode logic for invoke
 int invoke(const char* args,
     uint8_t* response,
