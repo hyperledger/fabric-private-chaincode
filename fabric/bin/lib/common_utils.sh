@@ -52,3 +52,25 @@ function para() {
 try() {
     "$@" || die "test failed: $*"
 }
+
+# Try function which returns the response string
+try_r() {
+    echo "$@"
+    result=$("$@" 2>&1) || die "test failed: $*"
+    echo $result
+    export RESPONSE=$(echo $result | awk -F "\"" '{print $5}' | awk -F "\\" '{print $1}' | base64 -d)
+    say $RESPONSE
+}
+
+# Check the Response returned to validate expected Response
+check_result() {
+    if [[ "$1" == "$2" ]]; then
+        export RESULT=PASSED
+	gecho $RESULT
+    else
+        export RESULT=FAILED
+	recho $RESULT
+        export FAILURES=$(($FAILURES+1))
+    fi
+}
+

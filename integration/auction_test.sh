@@ -16,7 +16,7 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 
 CC_ID=auction_test
 RESULT=PASSED
-failures=0
+FAILURES=0
 
 #this is the path that will be used for the docker build of the chaincode enclave
 ENCLAVE_SO_PATH=examples/auction/_build/lib/
@@ -24,28 +24,6 @@ ENCLAVE_SO_PATH=examples/auction/_build/lib/
 CC_VERS=0
 num_rounds=3
 num_clients=10
-
-# Try function which returns the response string
-try_r() {
-    echo "$@" 
-    export RESPONSE=""
-    "$@" 2>&1 | tee -a /tmp/response.txt || die "test failed: $*"
-    export RESPONSE=$(cat /tmp/response.txt | awk -F "\"" '{print $5}' | awk -F "\\" '{print $1}' | base64 -d)
-    say $RESPONSE
-    rm /tmp/response.txt
-}
-
-# Check the Response returned to validate expected Response
-check_result() {
-    if [[ "$1" == "$2" ]]; then
-        export RESULT=PASSED
-	gecho $RESULT
-    else
-        export RESULT=FAILED
-	recho $RESULT
-        export failures=$((failures+1))
-    fi
-}
 
 auction_test() {
 
@@ -72,7 +50,8 @@ auction_test() {
     # Scenario 2
     becho ">>>> Create an auction. Response should be OK"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"create\",\"MyAuction1\"]", ""]}' --waitForEvent
-    check_result $RESPONSE "OK" 
+    # check_result $RESPONSE "OK" 
+    check_result $RESPONSE "TEST" 
     becho ">>>> Create two equivalent bids. Response should be OK"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"submit\",\"MyAuction1\", \"JohnnyCash0\", \"2\"]", ""]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
     check_result $RESPONSE "OK" 
@@ -104,6 +83,7 @@ auction_test() {
     check_result $RESPONSE "OK"
     becho ">>>> Evaluate auction. Auction Result should be printed out"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"eval\",\"MyAuction2\"]", ""]}'  # Don't do --waitForEvent, so potentially there is some parallelism here ..
+    check_result $RESPONSE '{"bidder":"JohnnyCash3","value":3}'
 
     # Scenario 4
     becho ">>>> Create a new auction. Response should be OK"
@@ -121,6 +101,9 @@ auction_test() {
     becho ">>>> Evaluate auction. Response should be NO_BIDS"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"eval\",\"MyAuction3\"]", ""]}'  # Don't do --waitForEvent, so potentially there is some parallelism here ..
     check_result $RESPONSE "NO_BIDS"
+    becho ">>>> Create a new auction. Response should be OK"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"create\",\"MyAuction4\"]", ""]}' --waitForEvent
+    check_result $RESPONSE "OK"
 }
 
 # 1. prepare
@@ -145,10 +128,10 @@ say "- shutdown ledger"
 ledger_shutdown
 
 para
-if [[ "$failures" == 0 ]]; then
+if [[ "$FAILURES" == 0 ]]; then
     yell "Auction test PASSED"
 else
-    yell "Auction test had ${failures} failures"
+    yell "Auction test had ${FAILURES} failures"
 fi
 exit 0
 
