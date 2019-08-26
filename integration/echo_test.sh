@@ -33,7 +33,8 @@ echo_test() {
     for (( i=1; i<=$num_rounds; i++ ))
     do
         # echos
-        try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"echo-'$i'\"]", ""]}' --waitForEvent
+        try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"echo-'$i'\"]", ""]}' --waitForEvent
+ 	check_result $RESPONSE "echo-$i"
     done
 }
 
@@ -60,6 +61,10 @@ say "- shutdown ledger"
 ledger_shutdown
 
 para
-yell "Echo test PASSED"
+if [[ "$FAILURES" == 0 ]]; then
+    yell "Echo test PASSED"
+else
+    yell "Echo test had ${FAILURES} failures"
+fi
 
 exit 0
