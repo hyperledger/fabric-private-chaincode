@@ -7,9 +7,12 @@
 
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
 FPC_TOP_DIR="${SCRIPTDIR}/../../"
-CONFIG_HOME="$(pwd)"
+FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 
-. ${SCRIPTDIR}/lib/common_ledger.sh
+: ${FABRIC_CFG_PATH:=$(pwd)}
+
+. ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
+. ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 ARGS_EXEC=( "$@" ) # params to eventually pass to real orderer /default: just pass all original args ..
 

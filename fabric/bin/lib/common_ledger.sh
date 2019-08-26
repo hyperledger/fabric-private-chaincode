@@ -4,7 +4,7 @@
 
 # assume
 # - FPC_TOP_DIR is defined
-# - CONFIG_HOME is defined
+# - FABRIC_CFG_PATH is defined
 # optional config overrides
 # - FABRIC_PATH
 # - FABRIC_BIN_DIR
@@ -28,8 +28,8 @@ ledger_precond_check() {
 	[ -x "${FABRIC_BIN_DIR}/orderer" ] || die "orderer command does not exist in '${FABRIC_BIN_DIR}'"
 	[ -x "${FABRIC_BIN_DIR}/configtxgen" ] || die "configtxgen command does not exist in '${FABRIC_BIN_DIR}'"
 	[ ! -z "${FABRIC_STATE_DIR}" ] || die "Undefined fabric ledger state directory '${FABRIC_STATE_DIR}'"
-	(cd "${CONFIG_HOME}" && [ -e "${SPID_FILE}" ]) || die "spid not properly configured in ${CONFIG_HOME}/core.yaml or file '${SPID_FILE}' does not exist"
-	(cd "${CONFIG_HOME}" && [ -e "${API_KEY_FILE}" ]) || die "apiKey not properly configured in ${CONFIG_HOME}/core.yaml or apiKey file '${API_KEY_FILE}' does not exist"
+	(cd "${FABRIC_CFG_PATH}" && [ -e "${SPID_FILE}" ]) || die "spid not properly configured in ${FABRIC_CFG_PATH}/core.yaml or file '${SPID_FILE}' does not exist"
+	(cd "${FABRIC_CFG_PATH}" && [ -e "${API_KEY_FILE}" ]) || die "apiKey not properly configured in ${FABRIC_CFG_PATH}/core.yaml or apiKey file '${API_KEY_FILE}' does not exist"
 }
 
 
@@ -37,14 +37,17 @@ ledger_precond_check() {
 #----------------------------------
 # must be called _after_ parse_fabric_config
 define_common_vars() {
-    PEER_CMD="${FABRIC_SCRIPTDIR}/peer.sh" # use our wrapper!
-    ORDERER_CMD="${FABRIC_SCRIPTDIR}/orderer.sh" # use our wrapper!
-    CONFIGTXGEN_CMD="${FABRIC_SCRIPTDIR}/configtxgen.sh" # use our wrapper!
+    # use our wrapper for commands, so provide convience functions ..
+    # note: as we might have defined FABRIC_CFG_PATH in this script, we have the pass it along!
+    PEER_CMD="env FABRIC_CFG_PATH=${FABRIC_CFG_PATH} ${FABRIC_SCRIPTDIR}/peer.sh"
+    ORDERER_CMD="env FABRIC_CFG_PATH=${FABRIC_CFG_PATH} ${FABRIC_SCRIPTDIR}/orderer.sh"
+    CONFIGTXGEN_CMD="env FABRIC_CFG_PATH=${FABRIC_CFG_PATH} ${FABRIC_SCRIPTDIR}/configtxgen.sh"
 
-    ORDERER_ADDR="localhost:7050"
-    CHAN_ID="mychannel"
-    ERCC_ID="ercc"
-    ERCC_VERSION=0
+    # NOTE: following variables can be overriden by defining them _before_ sourcing common_ledger.sh ..
+    : ${ORDERER_ADDR:="localhost:7050"}
+    : ${CHAN_ID:="mychannel"}
+    : ${ERCC_ID:="ercc"}
+    : ${ERCC_VERSION:="0"}
 
     ORDERER_PID_FILE="${FABRIC_STATE_DIR}/orderer.pid"
     ORDERER_LOG_OUT="${FABRIC_STATE_DIR}/orderer.out"
@@ -60,24 +63,25 @@ define_common_vars() {
 
 # Fabric config parsing
 #----------------------------
-# input parameter is CONFIG_HOME directory
+# input parameter is FABRIC_CFG_PATH directory
 # when succesfull, will have defined following variables
 # - SPID_FILE
 # - API_KEY_FILE
 # - NET_ID
 # - PEER_ID
+# - FABRIC_STATE_DIR
 parse_fabric_config() {
-    CONFIG_HOME=$1
+    CONFIG_DIR=$1
 
-    [ -d "${CONFIG_HOME}" ] || die "CONFIG_HOME not properly defined as '${CONFIG_HOME}'"
-    [ -e "${CONFIG_HOME}/core.yaml" ] || die "no core.yaml in CONFIG_HOME '${CONFIG_HOME}'"
+    [ -d "${CONFIG_DIR}" ] || die "provided fabric config dir '${CONFIG_DIR}' does not exist"
+    [ -e "${CONFIG_DIR}/core.yaml" ] || die "no 'core.yaml' in provided fabric config dir '${CONFIG_DIR}'"
 
-    FABRIC_STATE_DIR=$(perl -0777 -n -e 'm/fileSystemPath:\s*(\S+)/i && print "$1"' ${CONFIG_HOME}/core.yaml)
+    FABRIC_STATE_DIR=$(perl -0777 -n -e 'm/fileSystemPath:\s*(\S+)/i && print "$1"' ${CONFIG_DIR}/core.yaml)
 
-    SPID_FILE=$(perl -0777 -n -e 'm/spid:\s*file:\s*(\S+)/i && print "$1"' ${CONFIG_HOME}/core.yaml)
-    API_KEY_FILE=$(perl -0777 -n -e 'm/apiKey:\s*file:\s*(\S+)/i && print "$1"' ${CONFIG_HOME}/core.yaml)
-    PEER_ID=$(perl -0777 -n -e 'm/id:\s*(\S+)/i && print "$1"' ${CONFIG_HOME}/core.yaml)
-    NET_ID=$(perl -0777 -n -e 'm/networkId:\s*(\S+)/i && print "$1"' ${CONFIG_HOME}/core.yaml)
+    SPID_FILE=$(perl -0777 -n -e 'm/spid:\s*file:\s*(\S+)/i && print "$1"' ${CONFIG_DIR}/core.yaml)
+    API_KEY_FILE=$(perl -0777 -n -e 'm/apiKey:\s*file:\s*(\S+)/i && print "$1"' ${CONFIG_DIR}/core.yaml)
+    PEER_ID=$(perl -0777 -n -e 'm/id:\s*(\S+)/i && print "$1"' ${CONFIG_DIR}/core.yaml)
+    NET_ID=$(perl -0777 -n -e 'm/networkId:\s*(\S+)/i && print "$1"' ${CONFIG_DIR}/core.yaml)
 }
 
 # Clean-up docker images
@@ -100,7 +104,7 @@ docker_clean() {
 #   really good scenarios where we currently care ...
 ledger_init() {
 
-    cd ${CONFIG_HOME}
+    pushd ${FABRIC_CFG_PATH}
 
     # 1. clean up any prior state
     [ ! -z "${FABRIC_STATE_DIR}" ] || die "FABRIC_STATE_DIR not defined" # just in case ..
@@ -130,6 +134,8 @@ ledger_init() {
     # - every peer will have to join (after having received mychannel.block out-of-band)
     try ${PEER_CMD} channel join -b ${CHANNEL_BLOCK}
     sleep 3
+
+    popd # ${FABRIC_CFG_PATH}
 }
 
 # Shutdown ledger (i.e., orderer & peer)
@@ -157,7 +163,7 @@ ledger_shutdown() {
 }
 
 # "Main"
-parse_fabric_config "${CONFIG_HOME}"
+parse_fabric_config "${FABRIC_CFG_PATH}"
 ledger_precond_check
 define_common_vars
 

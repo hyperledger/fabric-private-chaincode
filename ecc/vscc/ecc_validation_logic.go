@@ -134,7 +134,7 @@ func (vscc *VSCCECC) checkEnclaveEndorsement(cis *peer.ChaincodeInvocationSpec, 
 		args := cis.ChaincodeSpec.Input.Args[0]
 		logger.Debugf("args: %s\n", string(args))
 
-		if string(args) == "setup" {
+		if string(args) == "__setup" {
 			continue
 		}
 

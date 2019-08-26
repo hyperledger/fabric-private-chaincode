@@ -691,7 +691,7 @@ int parse_endorser_transaction(
             if (ecc_namespace != "")
             {
                 // skip setup transaction
-                if (function.compare("setup") != 0)
+                if (function.compare("__setup") != 0)
                 {
                     LOG_DEBUG("Ledger: Validate ECC tx");
                     uint8_t response_data[96];

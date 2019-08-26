@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <glob.h>
+
 #include "error.h"
 #include "logging.h"
 
@@ -134,15 +136,11 @@ int main(int argc, char** argv)
     }
 
     // test blocks
-    char* test_files[7] = {
-        "test/test_blocks/mychannel-block1",
-        "test/test_blocks/mychannel-block2",
-        "test/test_blocks/mychannel-block3",
-        "test/test_blocks/mychannel-block4",
-        "test/test_blocks/mychannel-block5",
-        "test/test_blocks/mychannel-block6",
-        "test/test_blocks/mychannel-block7",
-    };
+    glob_t globbed_test_files = {0, NULL, 0};
+    glob("test/test_blocks/*-block[1-9]", GLOB_DOOFFS, NULL, &globbed_test_files);
+    glob(
+        "test/test_blocks/*-block[1-9][0-9]", GLOB_DOOFFS | GLOB_APPEND, NULL, &globbed_test_files);
+    LOG_INFO("Test: Found %ld non-genesis blocks", globbed_test_files.gl_pathc);
 
     // init enclave with genesis block
     char* genesis_block_name = "test/test_blocks/mychannel-block0";
@@ -157,11 +155,11 @@ int main(int argc, char** argv)
         tlcc_init_with_genesis(eid, genesis, genesis_size);
 
         // send blocks
-        for (int j = 0; j < 7; j++)
+        for (int j = 0; j < globbed_test_files.gl_pathc; j++)
         {
             uint8_t* block = NULL;
-            int block_size = read_block(test_files[j], &block);
-            LOG_INFO("Test: Send block: \"%s\"", test_files[j]);
+            int block_size = read_block(globbed_test_files.gl_pathv[j], &block);
+            LOG_INFO("Test: Send block: \"%s\"", globbed_test_files.gl_pathv[j]);
             tlcc_send_block(eid, block, block_size);
             free(block);
         }
@@ -172,6 +170,7 @@ int main(int argc, char** argv)
     test_get_and_verify_cmac(eid);
     tlcc_destroy_enclave(eid);
     free(genesis);
+    globfree(&globbed_test_files);
 
     return 0;
 }
