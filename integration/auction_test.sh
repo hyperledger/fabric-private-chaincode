@@ -15,8 +15,6 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 CC_ID=auction_test
-# RESULT=PASSED
-# FAILURES=0
 
 #this is the path that will be used for the docker build of the chaincode enclave
 ENCLAVE_SO_PATH=examples/auction/_build/lib/

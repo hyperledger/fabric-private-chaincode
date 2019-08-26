@@ -62,6 +62,9 @@ try_r() {
     say $RESPONSE
 }
 
+RESULT=PASSED
+FAILURES=0
+
 # Check the Response returned to validate expected Response
 check_result() {
     if [[ "$1" == "$2" ]]; then
