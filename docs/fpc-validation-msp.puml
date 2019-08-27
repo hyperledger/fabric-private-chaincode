@@ -1,0 +1,147 @@
+@startuml
+
+'- force wrapping of longer text
+'skinparam wrapWidth 400
+
+!pragma teoz true
+
+hide footbox
+title Foot Box removed
+
+title Fabric Private Chaincode - Transaction validation with MSP
+
+actor "User Org1" as User1 order 9
+
+participant "Peer Org1" as ECC1 order 30
+participant "Peer Org2" as ECC2 order 60
+participant "Peer Org3" as ECC3 order 70
+
+entity Orderer order 100
+
+ref over User1, Orderer
+    install, approve, commit chaincode definition (ECC_MR)
+    Example endorsement policies:
+        - ( 2 of 3 enclaves of different Orgs )
+
+    see fpc-lifecycle-v2.puml
+end ref
+
+note right ECC3 #FFaa00
+    How can we express that we need an enclave here?
+    In particular, an enclave that has ECC_MR and also has a valid attestation?!
+end note
+
+ref over User1, Orderer
+    register enclaves and key-dist
+    see fpc-registration.puml and fpc-key-dist.puml
+end ref
+
+note right Orderer #FFaa00
+    After discussion with Angelo with have two options:
+
+    1) MSP integration via explicit chaincode endorsement policies
+        where we first register all enclaves and then update
+        the chaincode policy and state explicitly which enclaves
+        can endorse.
+
+    2) We create a new MPS principle which, when presents,
+        triggers the peer to check the attestation report attached
+        to an enclave x509 cert.
+
+    Detailed evaluation of those two approaches is needed.
+
+    MORE DETAILS later here ...
+end note
+
+group endorsement
+    activate User1
+
+    User1 -> ECC1 ++: send proposal
+    ref over ECC1
+        invoke chaincode enclave
+        see fpc-cc-invocation.puml
+    end ref
+    return proposal response
+
+    User1 -> ECC2 ++: send proposal
+    ref over ECC2
+        invoke chaincode enclave
+        see fpc-cc-invocation.puml
+    end ref
+    return
+
+    User1 -> User1 : form transaction
+
+    User1 -> Orderer++ : send transaction
+    deactivate User1
+
+end group
+
+    group collect transactions
+        ...
+        Orderer -> Orderer : form block
+    end group
+
+    Orderer -> ECC1+ : broadcast
+    & Orderer -> ECC2+ : broadcast
+    & Orderer -> ECC3+ : broadcast
+    deactivate Orderer
+
+    group validation & commit
+        ECC1 -> ECC1 : validate block signature
+        loop for each tx in block
+            ECC1 -> ECC1 : validate tx (client) signature
+
+            ref over ECC1
+                **Validate endorsement policy**
+                TODO: more details
+                Using EnclaveMSP will transparently verify
+                the following steps:
+                    - is endorsing enclave part of Org_i?
+                    - has enclave a proper attestation?
+                    - is this enclave also registered to
+                      perform execution of this chaincode?
+            end ref
+
+            ECC1 -> ECC1 : read-write check
+
+            ECC1 -> ECC1 : mark tx as valid/invalid
+        end loop
+
+        loop for each tx in block
+           ECC1 -> ECC1 : apply valid tx writeset
+        end loop
+
+        ECC1 -> ECC1 : append block to ledger
+
+        create "TLCC Peer Org1" as TLCC1 order 31 #99FF99
+
+        ECC1 -> TLCC1 ++ : new block
+        deactivate ECC1
+        |||
+        ref over TLCC1
+            validation & commit
+        end ref
+        |||
+        deactivate TLCC1
+        |||
+
+    end group
+    |||
+
+
+
+    ref over ECC2
+        validation & commit
+    end ref
+    |||
+    deactivate ECC2
+
+    ref over ECC3
+        validation & commit
+    end ref
+    |||
+    deactivate ECC3
+
+
+@enduml
