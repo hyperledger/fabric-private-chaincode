@@ -20,6 +20,7 @@ ENCLAVE_SO_PATH=examples/echo/_build/lib/
 
 CC_VERS=0
 num_rounds=10
+FAILURES=0
 
 echo_test() {
     # install, init, and register (auction) chaincode
@@ -34,8 +35,8 @@ echo_test() {
     do
         # echos
         try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"echo-'$i'\"]", ""]}' --waitForEvent
- 	check_result $RESPONSE "echo-$i"
-    done
+        check_result "echo-$i"
+     done
 }
 
 # 1. prepare
@@ -66,5 +67,5 @@ if [[ "$FAILURES" == 0 ]]; then
 else
     yell "Echo test had ${FAILURES} failures"
 fi
-
 exit 0
+

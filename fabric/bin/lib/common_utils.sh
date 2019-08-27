@@ -33,7 +33,6 @@ function say () {
     echo "$(basename $0): $*"
 }
 
-
 function yell () {
     becho "$(basename $0): $*" >&2;
 }
@@ -53,26 +52,27 @@ try() {
     "$@" || die "test failed: $*"
 }
 
-# Try function which returns the response string
+# Try function which returns stores response string
 try_r() {
     echo "$@"
-    result=$("$@" 2>&1) || die "test failed: $*"
-    echo $result
-    export RESPONSE=$(echo $result | awk -F "\"" '{print $5}' | awk -F "\\" '{print $1}' | base64 -d)
-    say $RESPONSE
+    export RESPONSE=$("$@" 2>&1) || die "test failed: $*"
+    echo $RESPONSE
 }
 
-RESULT=PASSED
-FAILURES=0
 
-# Check the Response returned to validate expected Response
+# Check the Response returned to validate expected result
 check_result() {
-    if [[ "$1" == "$2" ]]; then
-        export RESULT=PASSED
-	gecho $RESULT
+    # Parse out the Response Data from the payload
+    RESPONSE=${RESPONSE##*ResponseData\\\":\\\"}
+    RESPONSE=${RESPONSE%%\\*}
+    # Convert and de-encrypt it
+    RESPONSE=$(echo $RESPONSE | base64 -d)
+    say $RESPONSE
+    # Test response to expected result
+    if [[ $RESPONSE == "$1" ]]; then
+	gecho "PASSED"
     else
-        export RESULT=FAILED
-	recho $RESULT
+	recho "FAILED"
         export FAILURES=$(($FAILURES+1))
     fi
 }

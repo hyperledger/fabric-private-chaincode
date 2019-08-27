@@ -4,7 +4,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-#set -x
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
 FPC_TOP_DIR="${SCRIPTDIR}/.."
 FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
@@ -22,9 +21,9 @@ ENCLAVE_SO_PATH=examples/auction/_build/lib/
 CC_VERS=0
 num_rounds=3
 num_clients=10
+FAILURES=0
 
 auction_test() {
-
     # install, init, and register (auction) chaincode
     try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p ${ENCLAVE_SO_PATH}
     sleep 3
@@ -32,78 +31,71 @@ auction_test() {
     try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":["My Auction"]}' -V ecc-vscc
     sleep 3
 
-    # create auction
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"create\",\"MyAuction\"]", ""]}' --waitForEvent
-
-    say "invoke submit"
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"submit\",\"MyAuction\", \"JohnnyCash0\", \"0\"]", ""]}' --waitForEvent
-
     # Scenario 1
     becho ">>>> Close and evaluate non existing auction. Response should be AUCTION_NOT_EXISTING"
-    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"close\",\"MyAuction\"]",""]}' --waitForEvent
-    check_result $RESPONSE "AUCTION_NOT_EXISTING"
-    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"eval\",\"MyAuction\"]", ""]}'  # Don't do --waitForEvent, so potentially there is some parallelism here ..
-    check_result $RESPONSE "AUCTION_NOT_EXISTING"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"close\",\"MyAuction0\"]",""]}' --waitForEvent
+    check_result "AUCTION_NOT_EXISTING"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"eval\",\"MyAuction0\"]", ""]}'  # Don't do --waitForEvent, so potentially there is some parallelism here ..
+    check_result "AUCTION_NOT_EXISTING"
 
     # Scenario 2
     becho ">>>> Create an auction. Response should be OK"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"create\",\"MyAuction1\"]", ""]}' --waitForEvent
-    # check_result $RESPONSE "OK" 
-    check_result $RESPONSE "OK" 
+    check_result "OK" 
     becho ">>>> Create two equivalent bids. Response should be OK"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"submit\",\"MyAuction1\", \"JohnnyCash0\", \"2\"]", ""]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
-    check_result $RESPONSE "OK" 
+    check_result "OK" 
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"submit\",\"MyAuction1\", \"JohnnyCash1\", \"2\"]", ""]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
-    check_result $RESPONSE "OK" 
+    check_result "OK" 
     becho ">>>> Close auction. Response should be OK"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"close\",\"MyAuction1\"]",""]}' --waitForEvent
-    check_result $RESPONSE "OK" 
+    check_result "OK" 
     becho ">>>> Submit a bid on a closed auction. Response should be AUCTION_ALREADY_CLOSED"
-    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"close\",\"MyAuction1\"]",""]}' --waitForEvent
-    check_result $RESPONSE "AUCTION_ALREADY_CLOSED"; 
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"submit\",\"MyAuction1\", \"JohnnyCash2\", \"2\"]", ""]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
+    check_result "AUCTION_ALREADY_CLOSED"; 
     becho ">>>> Evaluate auction. Response should be DRAW"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"eval\",\"MyAuction1\"]", ""]}'  # Don't do --waitForEvent, so potentially there is some parallelism here ..
-    check_result $RESPONSE "DRAW" 
+    check_result "DRAW" 
 
     # Scenario 3
     becho ">>>> Create an auction. Response should be OK"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"create\",\"MyAuction2\"]", ""]}' --waitForEvent
-    check_result $RESPONSE "OK" 
+    check_result "OK" 
     for (( i=0; i<=$num_rounds; i++ ))
     do
         becho ">>>> Submit unique bid. Response should be OK"
         b="$(($i%$num_clients))"
         try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"submit\",\"MyAuction2\", \"JohnnyCash'$b'\", \"'$b'\"]", ""]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
-        check_result $RESPONSE "OK" 
+        check_result "OK" 
     done
     becho ">>>> Close auction. Response should be OK"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"close\",\"MyAuction2\"]",""]}' --waitForEvent
-    check_result $RESPONSE "OK"
+    check_result "OK"
     becho ">>>> Evaluate auction. Auction Result should be printed out"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"eval\",\"MyAuction2\"]", ""]}'  # Don't do --waitForEvent, so potentially there is some parallelism here ..
-    check_result $RESPONSE '{"bidder":"JohnnyCash3","value":3}'
+    check_result '{"bidder":"JohnnyCash3","value":3}'
 
     # Scenario 4
     becho ">>>> Create a new auction. Response should be OK"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"create\",\"MyAuction3\"]", ""]}' --waitForEvent
-    check_result $RESPONSE "OK"
+    check_result "OK"
     becho  ">>>> Create a duplicate auction. Response should be AUCTION_ALREADY_EXISTING"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"create\",\"MyAuction3\"]", ""]}' --waitForEvent
-    check_result $RESPONSE "AUCTION_ALREADY_EXISTING"
+    check_result "AUCTION_ALREADY_EXISTING"
     becho ">>>> Close auction and evaluate. Response should be OK"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"close\",\"MyAuction3\"]",""]}' --waitForEvent
-    check_result $RESPONSE "OK"
+    check_result "OK"
     becho ">>>> Close an already closed auction. Response should be AUCTION_ALREADY_CLOSED"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"close\",\"MyAuction3\"]",""]}' --waitForEvent
-    check_result $RESPONSE "AUCTION_ALREADY_CLOSED"
+    check_result "AUCTION_ALREADY_CLOSED"
     becho ">>>> Evaluate auction. Response should be NO_BIDS"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"eval\",\"MyAuction3\"]", ""]}'  # Don't do --waitForEvent, so potentially there is some parallelism here ..
-    check_result $RESPONSE "NO_BIDS"
+    check_result "NO_BIDS"
 
     # Code below is used to test bug in issue #42
     #becho ">>>> Create a new auction. Response should be OK"
     #try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"create\",\"MyAuction4\"]", ""]}' --waitForEvent
-    #check_result $RESPONSE "OK"
+    #check_result "OK"
 }
 
 # 1. prepare
