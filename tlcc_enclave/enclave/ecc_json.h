@@ -7,6 +7,11 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
+#include <vector>
+
+int marshal_ecc_args(std::vector<std::string>& argss,
+    std::string& encoded_string);  // assumed to be initialized but empty
 
 int unmarshal_ecc_response(const uint8_t* json_bytes,
     uint32_t json_len,

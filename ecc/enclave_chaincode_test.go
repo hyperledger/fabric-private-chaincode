@@ -173,6 +173,7 @@ func TestEnclaveChaincode_Invoke_Auction(t *testing.T) {
 		t.FailNow()
 	}
 
+	txType := []byte("invoke")
 	string_args := []byte("[\"eval\",\"MyAuction123\"]")
 
 	var writeset [][]byte
@@ -184,7 +185,7 @@ func TestEnclaveChaincode_Invoke_Auction(t *testing.T) {
 	}
 
 	// verify signature
-	isValid, err := ecc.verifier.Verify(string_args, r.ResponseData, readset, writeset, r.Signature, r.PublicKey)
+	isValid, err := ecc.verifier.Verify(txType, string_args, r.ResponseData, readset, writeset, r.Signature, r.PublicKey)
 	if !isValid {
 		t.FailNow()
 	}

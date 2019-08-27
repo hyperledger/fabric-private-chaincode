@@ -8,18 +8,26 @@
 #include "logging.h"
 #include "shim.h"
 
+#include <numeric>
 #include <vector>
 
 #define MAX_VALUE_SIZE 1024
 
-int init(const char* args,
-    uint8_t* response,
-    uint32_t max_response_len,
-    uint32_t* actual_response_len,
-    void* ctx)
+int init(
+    uint8_t* response, uint32_t max_response_len, uint32_t* actual_response_len, shim_ctx_ptr_t ctx)
 {
     LOG_DEBUG("EchoCC: +++ Executing chaincode init +++");
-    LOG_DEBUG("EchoCC: \tArgs (ignored): %s", args);
+
+    std::vector<std::string> argss;
+    // parse json args
+    get_string_args(argss, ctx);
+
+    LOG_DEBUG("EchoCC: Args: %s",
+        (argss.size() < 1
+                ? "(none)"
+                : std::accumulate(std::next(argss.begin()), argss.end(), argss[0],
+                      [](std::string a, std::string b) { return (a + std::string(", ") + b); })
+                      .c_str()));
 
     *actual_response_len = 0;
     LOG_DEBUG("EchoCC: +++ Initialization done +++");
@@ -27,18 +35,21 @@ int init(const char* args,
 }
 
 // implements chaincode logic for invoke
-int invoke(const char* args,
-    uint8_t* response,
-    uint32_t max_response_len,
-    uint32_t* actual_response_len,
-    void* ctx)
+int invoke(
+    uint8_t* response, uint32_t max_response_len, uint32_t* actual_response_len, shim_ctx_ptr_t ctx)
 {
     LOG_DEBUG("EchoCC: +++ Executing chaincode invocation +++");
-    LOG_DEBUG("Args: %s", args);
 
     std::vector<std::string> argss;
     // parse json args
-    unmarshal_args(argss, args);
+    get_string_args(argss, ctx);
+
+    LOG_DEBUG("EchoCC: Args: %s",
+        (argss.size() < 1
+                ? "(none)"
+                : std::accumulate(std::next(argss.begin()), argss.end(), argss[0],
+                      [](std::string a, std::string b) { return (a + std::string(", ") + b); })
+                      .c_str()));
 
     echo_t echo;
     echo.echo_string = argss[0];

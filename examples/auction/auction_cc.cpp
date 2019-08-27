@@ -9,6 +9,7 @@
 #include "logging.h"
 #include "shim.h"
 
+#include <numeric>
 #include <vector>
 
 #define MAX_VALUE_SIZE 1024
@@ -21,32 +22,37 @@
 #define AUCTION_ALREADY_CLOSED "AUCTION_ALREADY_CLOSED"
 #define AUCTION_STILL_OPEN "AUCTION_STILL_OPEN"
 
-static std::string SEP = ".";
-static std::string PREFIX = SEP + "somePrefix" + SEP;
+#define INITALIZED_KEY "__initialized"
+#define AUCTION_HOUSE_NAME_KEY "__auction_house_name"
 
-static bool _initialized = false;
-static std::string _auction_name = "(uninitialized)";
+const std::string SEP = ".";
+const std::string PREFIX = SEP + "somePrefix" + SEP;
 
 // implements chaincode logic for invoke
-int init(const char* args,
-    uint8_t* response,
-    uint32_t max_response_len,
-    uint32_t* actual_response_len,
-    void* ctx)
+int init(
+    uint8_t* response, uint32_t max_response_len, uint32_t* actual_response_len, shim_ctx_ptr_t ctx)
 {
     // Note: we could have got here not only during instatiation but also due to an upgrade.
     // we do allow this, so don't check status of _initialized here
 
     LOG_DEBUG("AuctionCC: +++ Executing auction chaincode init+++");
-    LOG_DEBUG("AuctionCC: \tArgs: %s", args);
-
     std::vector<std::string> argss;
     // parse json args
-    unmarshal_args(argss, args);
+    get_string_args(argss, ctx);
 
-    _auction_name = argss[0];
+    LOG_DEBUG("AuctionCC: Args: %s",
+        (argss.size() < 1
+                ? "(none)"
+                : std::accumulate(std::next(argss.begin()), argss.end(), argss[0],
+                      [](std::string a, std::string b) { return (a + std::string(", ") + b); })
+                      .c_str()));
 
-    _initialized = true;
+    const char* _auction_house_name = argss[0].c_str();
+    put_state(
+        AUCTION_HOUSE_NAME_KEY, (uint8_t*)_auction_house_name, strlen(_auction_house_name), ctx);
+
+    bool _initialized = true;
+    put_state(INITALIZED_KEY, (uint8_t*)&_initialized, sizeof(_initialized), ctx);
 
     *actual_response_len = 0;
     LOG_DEBUG("AuctionCC: +++ Initialization done +++");
@@ -54,15 +60,38 @@ int init(const char* args,
 }
 
 // implements chaincode logic for invoke
-int invoke(const char* args,
-    uint8_t* response,
-    uint32_t max_response_len,
-    uint32_t* actual_response_len,
-    void* ctx)
+int invoke(
+    uint8_t* response, uint32_t max_response_len, uint32_t* actual_response_len, shim_ctx_ptr_t ctx)
 {
+    bool _initialized;
+    const char* _auction_house_name;
+    char _auction_house_name_buf[128];
+
+    uint32_t init_len = -1;
+    get_state(INITALIZED_KEY, (uint8_t*)&_initialized, sizeof(_initialized), &init_len, ctx);
+    if ((init_len == 0) || !_initialized)
+    {
+        _initialized = false;
+        _auction_house_name = "(uninitialized)";
+    }
+    else
+    {
+        uint32_t ahn_len = -1;
+        get_state(AUCTION_HOUSE_NAME_KEY, (uint8_t*)_auction_house_name_buf,
+            sizeof(_auction_house_name_buf) - 1, &ahn_len, ctx);
+        if (ahn_len == 0)
+        {
+            _auction_house_name = "(uninitialized)";
+        }
+        else
+        {
+            _auction_house_name_buf[ahn_len + 1] = '\0';
+            _auction_house_name = _auction_house_name_buf;
+        }
+    }
+
     LOG_DEBUG(
-        "AuctionCC: +++ Executing '%s' auction chaincode invocation +++", _auction_name.c_str());
-    LOG_DEBUG("AuctionCC: \tArgs: %s", args);
+        "AuctionCC: +++ Executing '%s' auction chaincode invocation +++", _auction_house_name);
 
     if (!_initialized)
     {
@@ -71,12 +100,18 @@ int invoke(const char* args,
         return -1;
     }
 
-    std::vector<std::string> argss;
-    // parse json args
-    unmarshal_args(argss, args);
+    std::string function_name;
+    std::vector<std::string> params;
+    get_func_and_params(function_name, params, ctx);
 
-    std::string function_name = argss[0];
-    std::string auction_name = argss[1];
+    LOG_DEBUG("AuctionCC: Function: %s, Params: %s", function_name.c_str(),
+        (params.size() < 1
+                ? "(none)"
+                : std::accumulate(std::next(params.begin()), params.end(), params[0],
+                      [](std::string a, std::string b) { return (a + std::string(", ") + b); })
+                      .c_str()));
+
+    std::string auction_name = params[0];
     std::string result;
 
     if (function_name == "create")
@@ -85,8 +120,8 @@ int invoke(const char* args,
     }
     else if (function_name == "submit")
     {
-        int value = std::stoi(argss[3]);
-        std::string bidder_name = argss[2];
+        int value = std::stoi(params[2]);
+        std::string bidder_name = params[1];
         // TODO: eventually replace bidder_name with get_creator_name but for now
         //  in our tests we have only one client, so leave passed bidder_name to
         //  allow for different bidders ...
@@ -134,7 +169,7 @@ int invoke(const char* args,
     return 0;
 }
 
-std::string auction_create(std::string auction_name, void* ctx)
+std::string auction_create(std::string auction_name, shim_ctx_ptr_t ctx)
 {
     // check if auction already exists
     uint32_t auction_bytes_len = 0;
@@ -160,7 +195,8 @@ std::string auction_create(std::string auction_name, void* ctx)
     return OK;
 }
 
-std::string auction_submit(std::string auction_name, std::string bidder_name, int value, void* ctx)
+std::string auction_submit(
+    std::string auction_name, std::string bidder_name, int value, shim_ctx_ptr_t ctx)
 {
     // check if auction already exists
     uint32_t auction_bytes_len = 0;
@@ -198,7 +234,7 @@ std::string auction_submit(std::string auction_name, std::string bidder_name, in
     return OK;
 }
 
-std::string auction_close(std::string auction_name, void* ctx)
+std::string auction_close(std::string auction_name, shim_ctx_ptr_t ctx)
 {
     // check if auction already exists
     uint32_t auction_bytes_len = 0;
@@ -231,7 +267,7 @@ std::string auction_close(std::string auction_name, void* ctx)
     return OK;
 }
 
-std::string auction_eval(std::string auction_name, void* ctx)
+std::string auction_eval(std::string auction_name, shim_ctx_ptr_t ctx)
 {
     // check if auction already exists
     uint32_t auction_bytes_len = 0;

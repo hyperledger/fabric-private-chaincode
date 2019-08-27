@@ -32,7 +32,7 @@ int ecall_join_channel(uint8_t* genesis, uint32_t gen_len)
     int sgx_ret = parse_block(genesis, gen_len);
     if (sgx_ret != SGX_SUCCESS)
     {
-        LOG_ERROR("Parsing genesis block failed: %d\n", sgx_ret);
+        LOG_ERROR("Parsing genesis block failed: %d", sgx_ret);
         return sgx_ret;
     }
 

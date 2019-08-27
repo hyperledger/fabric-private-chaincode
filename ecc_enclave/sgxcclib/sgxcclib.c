@@ -195,7 +195,7 @@ int sgxcc_get_pk(enclave_id_t eid, ec256_public_t* pubkey)
 }
 
 int sgxcc_init(enclave_id_t eid,
-    const char* args,
+    const char* encoded_args,
     uint8_t* response,
     uint32_t response_len_in,
     uint32_t* response_len_out,
@@ -204,7 +204,7 @@ int sgxcc_init(enclave_id_t eid,
 {
     int enclave_ret;
     int ret = ecall_cc_init(eid, &enclave_ret,
-        args,                                         // args
+        encoded_args,                                 // args (encoded and potentially encrypted)
         response, response_len_in, response_len_out,  // response
         (sgx_ec256_signature_t*)signature,            // signature
         ctx);                                         // context for callback
@@ -218,7 +218,7 @@ int sgxcc_init(enclave_id_t eid,
 }
 
 int sgxcc_invoke(enclave_id_t eid,
-    const char* args,
+    const char* encoded_args,
     const char* pk,
     uint8_t* response,
     uint32_t response_len_in,
@@ -228,8 +228,8 @@ int sgxcc_invoke(enclave_id_t eid,
 {
     int enclave_ret;
     int ret = ecall_cc_invoke(eid, &enclave_ret,
-        args,  // args
-        pk,    // client pk used for args encryption, if null no encryption used
+        encoded_args,  // args  (encoded and potentially encrypted)
+        pk,            // client pk used for args encryption, if null no encryption used
         response, response_len_in, response_len_out,  // response
         (sgx_ec256_signature_t*)signature,            // signature
         ctx);                                         // context for callback

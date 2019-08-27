@@ -129,14 +129,36 @@ func (vscc *VSCCECC) checkEnclaveEndorsement(cis *peer.ChaincodeInvocationSpec, 
 			continue
 		}
 
-		// get the args of the ecc invocation
-		// carefull we need only args[0] (function) as it includes all arguments
-		args := cis.ChaincodeSpec.Input.Args[0]
-		logger.Debugf("args: %s\n", string(args))
+		function := cis.ChaincodeSpec.Input.Args[0]
+		logger.Debugf("function: %s\n", string(function))
 
-		if string(args) == "__setup" {
+		if string(function) == "__setup" {
 			continue
 		}
+
+		// Note: we encode all args before sending to enclave (and this is also what is
+		// ultimately signed), see enclave_chaincode.go::{init,invoke} for encoding.
+		var txType []byte
+		var argss []string
+		if string(function) == "__init" {
+			txType = []byte("init")
+			argss = make([]string, len(cis.ChaincodeSpec.Input.Args[1:]))
+			for i, v := range cis.ChaincodeSpec.Input.Args[1:] { // drop "__init"
+				argss[i] = string(v)
+			}
+		} else {
+			txType = []byte("invoke")
+			argss = make([]string, len(cis.ChaincodeSpec.Input.Args))
+			for i, v := range cis.ChaincodeSpec.Input.Args {
+				argss[i] = string(v)
+			}
+		}
+		var encoded_args []byte
+		encoded_args, err = json.Marshal(argss)
+		if err != nil {
+			return fmt.Errorf("Couldn't json encode arguments, err %s", err)
+		}
+		logger.Debugf("txType: %s / encoded_args: %s\n", string(txType), string(encoded_args))
 
 		// get the enclave response
 		response := &sgx_utils.Response{}
@@ -200,7 +222,7 @@ func (vscc *VSCCECC) checkEnclaveEndorsement(cis *peer.ChaincodeInvocationSpec, 
 			writeset = append(writeset, writesetMap[k])
 		}
 
-		isValid, err := vscc.verifier.Verify(args, response.ResponseData, readset, writeset, response.Signature, response.PublicKey)
+		isValid, err := vscc.verifier.Verify(txType, encoded_args, response.ResponseData, readset, writeset, response.Signature, response.PublicKey)
 		if err != nil {
 			return fmt.Errorf("Response invalid! Signature verification failed! Error: %s", err)
 		}

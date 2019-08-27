@@ -11,38 +11,33 @@
 #include <string>
 #include <vector>
 
-typedef void* fpc_ctx_t;
-
-// TODO: Some Meta-questions
-// - should we prefix functions with fpc_ or alike to make them more distinct?
+typedef struct t_shim_ctx* shim_ctx_ptr_t;
 
 // Function which FPC chaincode has to implement
 // ==================================================
-int init(const char* args,
-    uint8_t* response,
+int init(uint8_t* response,
     uint32_t max_response_len,
     uint32_t* actual_response_len,
-    fpc_ctx_t ctx);
+    shim_ctx_ptr_t ctx);
 
-int invoke(const char* args,
-    uint8_t* response,
+int invoke(uint8_t* response,
     uint32_t max_response_len,
     uint32_t* actual_response_len,
-    fpc_ctx_t ctx);
+    shim_ctx_ptr_t ctx);
 
 // Shim Function which FPC chaincode can use
 // ==================================================
 
 // put/get state
 //-------------------------------------------------
-// TODO: documention, e.g., how are error handled?
+// TODO (eventually): documention, e.g., how are error handled?
 void get_state(
-    const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* val_len, fpc_ctx_t ctx);
-void put_state(const char* key, uint8_t* val, uint32_t val_len, fpc_ctx_t ctx);
+    const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* val_len, shim_ctx_ptr_t ctx);
+void put_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t ctx);
 void get_state_by_partial_composite_key(
-    const char* comp_key, std::map<std::string, std::string>& values, fpc_ctx_t ctx);
+    const char* comp_key, std::map<std::string, std::string>& values, shim_ctx_ptr_t ctx);
 
-// TODO: possible extension of above
+// TODO (possible extensions): possible extension of above
 // - '*_public_state*' variant of above which does _not_ encrypt
 //   This could potentially allow for broadcasting decisions to the public
 //   (such as auction results) and provide long-term evidence of outcomes even
@@ -81,54 +76,52 @@ void get_state_by_partial_composite_key(
 //
 // - other functions: {get,set}StateValidationParameter, getHistoryForKey. Can/should we ignore?
 
-// (un)marshalling
+// retrieval for arguments
 //-------------------------------------------------
-int unmarshal_args(std::vector<std::string>& argss, const char* json_string);
-int unmarshal_values(
-    std::map<std::string, std::string>& values, const char* json_bytes, uint32_t json_len);
-
-// TODO (maybe): also corresponding marshall functions for return values?
-//    Seems currently we are not using unmarshall_values at all and in auction_test
-//    do some marshalling/unmarshalling on our own? Can't we unify this?
-//    Or, maybe, even better, do not any marshalling/unmarshalling at all but
-//    provide arguments as an array of strings. This would be fairly easy and
-//    more consistent with the other CC apis (e.g., node sdk also handles only
-//    string args) and presumably also the client cli ..).
+int get_string_args(std::vector<std::string>& argss, shim_ctx_ptr_t ctx);
+int get_func_and_params(
+    std::string& func_name, std::vector<std::string>& params, shim_ctx_ptr_t ctx);
+// returns -1 if not called with at least function name ..
 
 // transaction APIs
 //-------------------------------------------------
 
-// -getChannelID
-// // TOD0: might be useful to support and should be easy?
+// - getChannelID
+// // TOD0 (possible extensions): might be useful to support and should be easy?
+// //     If this is just the name, would it be useful also to have a variant which
+// //     has the unique id ("content-addressable"/genesis-block-hash)?
 // void get_channel_id(char* channel_id,
 //     uint32_t max_channel_id_len,
-//     void* ctx);
+//     shim_ctx_ptr_t ctx);
 
 // - TxID
-// // TODO: at least coming from a Sawtooth/PDO perspective, i would think access
-// //   to this info might be important for cross-cc transactions?
+// // TODO (possible extensions): at least coming from a Sawtooth/PDO perspective,
+// //   i would think access to this info might be important for cross-cc transactions?
 // //   - Is it commonly used in fabric?
-// //   - Is this something we can easily support?
+// //   - Is this something we can easily support (insecurely short-term / securely long-term)?
 // void get_tx_id(char* tx_id,
 //     uint32_t max_tx_id_len,
-//     void* ctx);
+//     shim_ctx_ptr_t ctx);
 
 // - getTxTimestamp
-// // TODO: enclave has no access to trusted time.  Time from client is apriori
-// //   not trusted either. However, at least client has to commit and in some
-// //   cases might be trusted
-// //   - do endorsers do any cross-check of this value?
+// // TODO (possible extensions): enclave has no access to trusted time.  Time
+// //   from client is apriori not trusted either. However, at least client has
+// //   to commit and in some cases might be trusted
+// //   - do endorsers do any cross-check of this value? (Probably makes sense
+// //     only in supporting it if there is some plausibility test the endorsing
+// //     peers agree)
 // //   - Is it commonly used in fabric?
 // #include <time.h>
 // void get_tx_timestamp(struct timespec* ts,
-//     void* ctx);
+//     shim_ctx_ptr_t ctx);
 //
 // - getBinding
-// // TODO: from description it seems this is used for replay protection, though,
-// //   from https://fabric-shim.github.io/release-1.4/fabric-shim.ChaincodeStub.html#getBinding
+// // TODO (possible extensions): from description it seems this is used for replay protection,
+// //   though, from
+// //     https://fabric-shim.github.io/release-1.4/fabric-shim.ChaincodeStub.html#getBinding
 // //   it seems relevant only for some delegation/third-party signature verification
 // //   - Is it commonly used in fabric? If not then we should ignore it
-// //   - Is this something we can easily support?
+// //   - Is this something we can easily support (insecurely short-term / securely long-term)?
 //
 // // TODO: other tx-related apis which exist but probably doesn't make sense to support
 // // - getTransient: if we encrypt everything, then everything is essentially Transient?
@@ -141,7 +134,7 @@ void get_creator_name(char* msp_id,  // MSP id of organization to which transact
     uint32_t max_msp_id_len,         // size of allocated buffer for msp_id
     char* dn,                        // distinguished name of transaction creator
     uint32_t max_dn_len,             // size of allocated buffer for dn
-    void* ctx);
+    shim_ctx_ptr_t ctx);
 // Note: The name might be truncated (but guaranteed to be null-terminated)
 // if the provided buffer is too small.
 //
@@ -153,16 +146,16 @@ void get_creator_name(char* msp_id,  // MSP id of organization to which transact
 // Chaincode to Chaincode
 //---------------------------
 // invokeChaincode
-// TODO: Currently not supported (but eventually should)
+// TODO (possible extensions): Currently not supported (but eventually should)
 
 // logging
 //-------------------------------------------------
-void log_critical(const char* name, const char* format, ...);
-void log_error(const char* name, const char* format, ...);
-void log_warning(const char* name, const char* format, ...);
-void log_notice(const char* name, const char* format, ...);
-void log_info(const char* name, const char* format, ...);
-void log_debug(const char* name, const char* format, ...);
+void log_critical(const char* format, ...);
+void log_error(const char* format, ...);
+void log_warning(const char* format, ...);
+void log_notice(const char* format, ...);
+void log_info(const char* format, ...);
+void log_debug(const char* format, ...);
 // TODO
 // - API design questions
 //   - macro vs function?

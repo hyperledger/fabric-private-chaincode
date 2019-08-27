@@ -150,7 +150,11 @@ handle_chaincode_instantiate() {
 
     # - call enclave init function iff FPC
     if [ ${IS_FPC_CC} -eq 1 ]; then
-        init_args=$(echo ${CC_MSG} | sed 's/\(:\s*\[\s*\)/\1"__init", /') # TODO (maybe): get rid of ',' iff only one arg?
+	# Note: we count that for init client is _not_ using "function", but 'trust but verify' ...
+	if echo ${CC_MSG} | egrep -i '.*\"function\":.*'; then
+	    die "'function' not supported for init arguments, put all arguments in the 'Args' list instead .."
+	fi
+        init_args=$(echo ${CC_MSG} | sed 's/^\s*{\s*\("Args"\s*:.*\)$/{"Function":"__init", \1/i')
         try $RUN  ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c "${init_args}" --waitForEvent
     fi
 

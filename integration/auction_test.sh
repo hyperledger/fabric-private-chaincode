@@ -27,27 +27,27 @@ auction_test() {
     try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p ${ENCLAVE_SO_PATH}
     sleep 3
 
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"Args":["[\"My Auction\"]"]}' -V ecc-vscc
+    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"Args":["My Auction"]}' -V ecc-vscc
     sleep 3
 
     # create auction
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"create\",\"MyAuction\"]", ""]}' --waitForEvent
+    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"create", "Args": ["MyAuction"]}' --waitForEvent
 
     say "invoke submit"
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"submit\",\"MyAuction\", \"JohnnyCash0\", \"0\"]", ""]}' --waitForEvent
+    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"submit", "Args":["MyAuction", "JohnnyCash0", "0"]}' --waitForEvent
 
     for (( i=1; i<=$num_rounds; i++ ))
     do
         b="$(($i%$num_clients))"
-        try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"submit\",\"MyAuction\", \"JohnnyCash'$b'\", \"'$b'\"]", ""]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
+        try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"submit", "Args":["MyAuction", "JohnnyCash'$b'", "'$b'"]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
     done
 
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"close\",\"MyAuction\"]",""]}' --waitForEvent
+    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"close", "Args":["MyAuction"]}' --waitForEvent
 
     say "invoke eval"
     for (( i=1; i<=1; i++ ))
     do
-        try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"eval\",\"MyAuction\"]", ""]}'  # Don't do --waitForEvent, so potentially there is some parallelism here ..
+        try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"eval", "Args":["MyAuction"]}'  # Don't do --waitForEvent, so potentially there is some parallelism here ..
     done
 }
 
