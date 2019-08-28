@@ -389,6 +389,7 @@ peer:
           -
             name: DefaultDecorator
           -
+          # FPC Addition:1
             name: ERCCDecorator
             library: ../../ercc/ercc-decorator.so
         endorsers:
@@ -399,9 +400,11 @@ peer:
           vscc:
             name: DefaultValidation
             library:
+          # FPC Addition:2
           ercc-vscc:
             name: ercc-vscc
             library: ../../ercc/ercc-vscc.so
+          # FPC Addition:3 
           ecc-vscc:
             name: ecc-vscc
             library: ../../ecc/ecc-vscc.so
@@ -561,7 +564,7 @@ chaincode:
         escc: enable
         vscc: enable
         qscc: enable
-        tlcc: enable
+        tlcc: enable  # FPC Addition:4
 
     # System chaincode plugins:
     # System chaincodes can be loaded as shared objects compiled as Go plugins.
@@ -574,6 +577,8 @@ chaincode:
       #   path: /opt/lib/myscc.so
       #   invokableExternal: true
       #   invokableCC2CC: true
+      #
+      # FPC Addition:5  
       - enabled: true
         name: tlcc
         path: ../../tlcc/tlcc.so
@@ -710,6 +715,7 @@ metrics:
 ###############################################################################
 #
 #    SGX section - includes configuration for the Intel Attestation service
+#    FPC Addition:6
 #
 ###############################################################################
 sgx:

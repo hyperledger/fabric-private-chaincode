@@ -1,8 +1,8 @@
-### Tutorial 
+### Hello World Tutorial 
 This tutorial shows how to create, build, install and test  chaincode using the Fabric-Private-chaincode(FPC) framework.  This assumes familiarity with the [concepts](https://hyperledger-fabric.readthedocs.io/en/release-1.4/whatis.html#) and [the programming model](https://hyperledger-fabric.readthedocs.io/en/release-1.4/chaincode.html) in Hyperledger Fabric v1.4.
 
 
-Refer to [package shim](https://godoc.org/github.com/hyperledger/fabric/core/chaincode/shim) for the GoDoc for shim interface provided by Fabric.  The FPC programming model for chaincode provides a simpler version of the _shim_ SDK provided by Hyperledger Fabric in Go and node.js.  FPC provides a C++ interface  to access its state variables and transaction context through [shim.h](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/ecc_enclave/enclave/shim.h).  The standard commands are similar to ones in Fabric.  To ensure confidentiality of the arguments passed to the chaincode, the arguments are encrypted while using FPC SDK.    
+Refer to [package shim](https://godoc.org/github.com/hyperledger/fabric/core/chaincode/shim) for the GoDoc for shim interface provided by Fabric.  The FPC programming model for chaincode provides a simpler version of the _shim_ SDK provided by Hyperledger Fabric in Go and node.js.  FPC provides a C++ interface  to access its state variables and transaction context through [shim.h](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/ecc_enclave/enclave/shim.h).  The standard commands are similar to the ones in Fabric.  To ensure confidentiality of the arguments passed to the chaincode, the arguments are encrypted while using FPC SDK.    
 
 This example illustrates a simple usecase where the chaincode is used to store a single asset, `asset1` in the ledger and then retrieve the latest value of `asset1`.  Here are the steps to accomplish this: 
 * Develop chaincode
@@ -22,6 +22,7 @@ This tutorial presumes that the repository in https://github.com/hyperledger-lab
 ```
 cd $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/examples
 mkdir helloworld
+cd helloworld
 touch helloworld_cc.cpp
 ```
 
@@ -59,7 +60,7 @@ std::string storeAsset(std::string asset_name, int value, void*ctx)
 ```
 
 
-Similarly, let us add the next transaction, `retrieveAsset` which reads the value of an asset. 
+Similarly, let us add the next transaction, `retrieveAsset` which reads the value of an asset by calling `get_state` method defined in shim.h.
 
 
 ```
@@ -151,7 +152,6 @@ int invoke(const char* args,
 
 Here is the complete file, `helloworld_cc.cpp`:
 ```
-//  File:  helloworld_cc.cpp
 #include "shim.h"
 #include "logging.h"
 
@@ -221,6 +221,7 @@ int invoke(const char* args,
     {
         // unknown function
         LOG_DEBUG("HelloworldCC: RECEIVED UNKOWN transaction");
+        return -1; 
     }
     
     // check that result fits into response
@@ -259,7 +260,7 @@ set(SOURCE_FILES
 include(../../ecc_enclave/enclave/CMakeLists-common-app-enclave.txt)
 ```
 
-Create `Makefile` with the following content.  For your convenience, you can copy the `Makefile` from FPC-INSTALL-DIR/examples/auction folder.
+Create `Makefile` with the following content.  For your convenience, you can copy the `Makefile` from `FPC-INSTALL-DIR/examples/auction` folder.
 File: examples/helloworld/Makefile 
 ```
 TOP = ../..
@@ -298,19 +299,19 @@ make[1]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger-labs/fa
 ```
 
 
-#### Time to test !
-  Next step is to test the chaincode by invoking the transactions, for which you need a basic Fabric network with a channel and Enclave Registry setup. You will use the FPC test framework to bring up a Fabric network in which the helloworld code can be executed as a chaincode _in an SGX enclave_.  
-  
-  Create a file `test.sh` in examples/helloworld folder as follows.  Note that the initial lines in the script points to files and folders in FPC framework.  
+#### Time to test!
+    Next step is to test the chaincode by invoking the transactions, for which you need a basic Fabric network with a channel and Enclave Registry setup. You will use the FPC test framework to bring up a Fabric network in which the helloworld code can be executed as a chaincode _in an SGX enclave_.  The Fabric network used in this tutorial is defined and configured using `integration/config/core.yaml`.  Specifically, please note the additions to the standard Fabric configurations.  These are marked as `FPC Addition`;  these enable the integration points with Fabric.
+ 
+Create a file `test.sh` in examples/helloworld folder as follows.  Note that the initial lines in the script points to files and folders in FPC framework.  
 -`FPC_TOP_DIR` points to FPC-INSTALL-DIR
--`CONFIG_HOME` points to the FPC-INSTALL-DIR/integration/config, which contains yaml files that define the Fabric network
--`FABRIC_SCRIPTDIR` points to scripts with custom FPC wrappers and utility scripts.  For example, ledger_init and and ledger_shutdown are used to bring up and shut down the network
+-`FABRIC_CFG_PATH` points to the FPC-INSTALL-DIR/integration/config, which contains yaml files that define the Fabric network
+-`FABRIC_SCRIPTDIR` points to scripts with custom FPC wrappers and utility scripts.  For example, ledger_init.sh and ledger_shutdown.sh are used to bring up and shut down the network
 
 File:  test.sh
 ```
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
 FPC_TOP_DIR="${SCRIPTDIR}/../.."
-CONFIG_HOME="${SCRIPTDIR}/config"
+FABRIC_CFG_PATH="${SCRIPTDIR}/config"
 FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
@@ -344,18 +345,24 @@ helloworld_test    #  yet to be created
 
 say "- shutdown ledger"
 ledger_shutdown
-
 ```
 
 #### Install and instantiate chaincode on the peer
-Like in the case of Fabric, you install, instantiate the chaincode and then invoke transactions.   Add `helloworld_test()` to test.sh.  Note that the commands are similar to `peer chaincode invoke` command in Fabric, except that we want ${PEER_CMD} to invoke the FPC peer wrapper.   Please note the inline comments for each of the commands.  `setup` and `getEnclavePK` transactions are prebuilt for you. 
-  
-  ```
-  helloworld_test() {
-    say "- do hello world"
-    # install, init, and register helloworld  chaincode
+Like in the case of Fabric, you install, instantiate the chaincode and then invoke transactions.  To install a chaincode, you need to use `FPC-INSTALL-DIR/fabric/bin/peer.sh`.  This is a custom FPC wrapper to be used _instead_ of the `peer` cli command from Fabric.  `${PEER_CMD}` is set in `FPC-INSTALL-DIR/fabric/bin/lib/common_ledger.sh` and conveniently points to the required script file.  
+With the variables set and `common_ledger.sh` executed, usage of `peer.sh` is as follows:    
+```
+try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p ${ENCLAVE_SO_PATH} 
+```
 
-    # builds the docker image and creates the docker container 
+Add the following content to the function, `helloworld_test()` in test.sh.  Please note the inline comments for each of the commands.   
+  
+```
+helloworld_test() {
+    say "- do hello world"
+    # install and instantiate helloworld  chaincode
+
+    # builds the docker image; creates the docker container and enclave; 
+    # Registers enclave with ercc;
     # input:  CC_ID:chaincode name; CC_VERS:chaincode version;
     #         ENCLAVE_SO_PATH:path to build artifacts
     say "- install helloworld chaincode"
@@ -366,15 +373,7 @@ Like in the case of Fabric, you install, instantiate the chaincode and then invo
     say "- instantiate helloworld chaincode"
     try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":["init"]}' -V ecc-vscc
     sleep 3
-
-    # invoke "setup" transaction to register itself with Enclave Registry, ercc
-    say "- register helloworld chaincode with ercc"
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["setup", "ercc"]}' --waitForEvent
-
-    # invoke "getEnclavePk" to get the public key of the enclave in which the chaincode is running
-    say "- get public key of  helloworld enclave"
-    try ${PEER_CMD} chaincode query -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["getEnclavePk"]}'
-
+  
     # store the value of 100 in asset1  
     say "- invoke storeAsset transaction to store value 100 in asset1"
     try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"storeAsset\",\"asset1\",\"100\"]", ""]}' --waitForEvent
@@ -382,17 +381,20 @@ Like in the case of Fabric, you install, instantiate the chaincode and then invo
     # retrieve current value for "asset1";  should be 100;
     say "- invoke retrieveAsset transaction to retrieve current value of asset1"
     try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"retrieveAsset\",\"asset1\"]", ""]}' --waitForEvent
+
+    say "- invoke query with retrieveAsset transaction to retrieve current value of asset1"
+    try ${PEER_CMD} chaincode query  -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"retrieveAsset\",\"asset1\"]", ""]}'
+
 }
 ```
 
 Putting all these code snippets together, here is the complete `test.sh` file.
 ```
-# test.sh
 #!/bin/bash
 
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
 FPC_TOP_DIR="${SCRIPTDIR}/../.."
-CONFIG_HOME="${SCRIPTDIR}/../../integration/config"
+FABRIC_CFG_PATH="${SCRIPTDIR}/../../integration/config"
 FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
@@ -407,11 +409,13 @@ CC_VERS=0
 
 helloworld_test() {
     say "- do hello world"
-    # install, init, and register helloworld  chaincode
+    # install and instantiate helloworld  chaincode
 
-    # builds the docker image and creates the docker container 
+    # builds the docker image; creates the docker container and enclave; 
+    # Registers enclave with ercc;
     # input:  CC_ID:chaincode name; CC_VERS:chaincode version;
     #         ENCLAVE_SO_PATH:path to build artifacts
+
     say "- install helloworld chaincode"
     try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p ${ENCLAVE_SO_PATH}
     sleep 3
@@ -420,15 +424,7 @@ helloworld_test() {
     say "- instantiate helloworld chaincode"
     try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":["init"]}' -V ecc-vscc
     sleep 3
-
-    # invoke "setup" transaction in helloworld chaincode to register itself with Enclave Registry, ercc
-    say "- register helloworld chaincode with ercc"
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["setup", "ercc"]}' --waitForEvent
-
-    # invoke "getEnclavePk" to get the public key of the enclave in which the chaincode is running
-    say "- get public key of  helloworld enclave"
-    try ${PEER_CMD} chaincode query -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["getEnclavePk"]}'
-
+  
     # store the value of 100 in asset1  
     say "- invoke storeAsset transaction to store value 100 in asset1"
     try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"storeAsset\",\"asset1\",\"100\"]", ""]}' --waitForEvent
@@ -437,11 +433,10 @@ helloworld_test() {
     say "- invoke retrieveAsset transaction to retrieve current value of asset1"
     try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"retrieveAsset\",\"asset1\"]", ""]}' --waitForEvent
 
-    # query current value for "asset1"
     say "- invoke query with retrieveAsset transaction to retrieve current value of asset1"
     try ${PEER_CMD} chaincode query  -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["[\"retrieveAsset\",\"asset1\"]", ""]}'
-}
 
+}
 
 # 1. prepare
 para
@@ -451,7 +446,6 @@ docker_clean ${ERCC_ID}
 docker_clean ${CC_ID}
 
 trap ledger_shutdown EXIT
-
 
 para
 say "Run helloworld  test"
@@ -472,14 +466,13 @@ exit 0
 ```
 
 
-Assuming we are still in $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/examples
-, execute the test script:  
+Assuming we are still in $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/examples, execute the test script:
 ```
 cd $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/examples/helloworld
 ./test.sh
 ```
 
-If you see the message, `helloworld_test.sh: Helloworld test PASSED`, then the transactions have been successfully executed.  Let us see the responses from the individual trasactions. 
+If you see the message, `test.sh: Helloworld test PASSED`, then the transactions have been successfully executed.  Now, let us look the responses from the individual trasactions. 
 
 
 Output from test.sh for `storeAsset` transaction invocation will look like: 
@@ -498,12 +491,16 @@ Response from the transaction is:
 }
 ```
 
-Response from the transactions is marked by `Response Data` and it is base64 encoded.  In this case, "ResponseData" is _Base64 encoded string_ of "OK".  In addition, the response also contains the signature of the peer and the public key of the enclave in which the chaincode was executed.
+Response from the transactions is marked by `ResponseData`.  In this case, "ResponseData" is _Base64 encoded string_ of "OK".  In addition, the response also contains the signature of the peer and the public key of the enclave in which the chaincode was executed.
 
-
-Output of `retrieveAsset` transaction invocation will look like: 
+Use `base64` to decode "ResponseData" i.e. `T0s=`: 
+```
+$ echo "T0s=" | base64 -D
+OK 
 ```
 
+Let us look at the output of `retrieveAsset` transaction.
+```
 test.sh: - invoke retrieveAsset transaction to retrieve current value of asset1
 2019-08-25 22:47:09.292 UTC [chaincodeCmd] ClientWait -> INFO 001 txid [530658f431d04511e2eecee7b7582bb3c6b449f99e9845c6d1327e773f756f13] committed with status (VALID) at 
 2019-08-25 22:47:09.293 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002 Chaincode invoke successful. result: status:200 payload:"{\"ResponseData\":\"YXNzZXQxOjEwMA==\",\"Signature\":\"MEQCIEiEdmV5jGW9kd2+a4QEeoEIlNFYB3NCvA+xtXKEkzK9AiAxIVPo0ca0s39KyY9N7tdd5ZfWXN5eSf+KeBSQPMaHKA==\",\"PublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExQZkgJymGfDZC7JcgjbacJdpX6Bbb8YvBUjX7Su3T1SJRALbJ2fSppIbHrXjmG1y6MQN41OYGKV/FhNA8FPWdQ==\"}" 
@@ -517,7 +514,12 @@ Response from the transaction is:
 	"PublicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExQZkgJymGfDZC7JcgjbacJdpX6Bbb8YvBUjX7Su3T1SJRALbJ2fSppIbHrXjmG1y6MQN41OYGKV/FhNA8FPWdQ=="
 }
 ```
-In this case, "ResponseData" is _Base64 encoded string_ of "asset1:100".
+
+Use `base64` to decode "ResponseData" i.e. `YXNzZXQxOjEwMA==` which is _Base64 encoded string_ of "asset1:100".  
+```
+$ echo "YXNzZXQxOjEwMA==" | base64 -D
+asset1:100 
+```
 
 
 Output of `retrieveAsset` query will look like: 
@@ -526,19 +528,20 @@ test.sh: - invoke query with retrieveAsset transaction to retrieve current value
 {"ResponseData":"YXNzZXQxOjEwMA==","Signature":"MEQCIHViPWLKQvd2RezK8oKk4E9nY1WrAR1F5J0wFptX4erVAiAZgTmug8QBqZaFWLPBCfRFWste66H7QN5a3BOA+G5aCg==","PublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEkx5nDA1TjDA5j4b8cmQcU0JpjALu6UFZKNOpttRJCNlaAighZi8ftnjJTeMuyHgEQHeHz/m/p/noJcxilrtMxQ=="}
 ```
 
+
 Response from the query is:
 ```
 {
     "ResponseData":"YXNzZXQxOjEwMA==",
-    
     "Signature":"MEQCIHViPWLKQvd2RezK8oKk4E9nY1WrAR1F5J0wFptX4erVAiAZgTmug8QBqZaFWLPBCfRFWste66H7QN5a3BOA+G5aCg==",
-    
-    "PublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEkx5nDA1TjDA5j4b8cmQcU0JpjALu6UFZKNOpttRJCNlaAighZi8ftnjJTeMuyHgEQHeHz/m/p/noJcxilrtMxQ=="
+    "PublicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEkx5nDA1TjDA5j4b8cmQcU0JpjALu6UFZKNOpttRJCNlaAighZi8ftnjJTeMuyHgEQHeHz/m/p/noJcxilrtMxQ=="
 }
 ```
+
 The response from the query is the same as the corresponding transaction.  "ResponseData" is _Base64 encoded string_ of "asset1:100".
 
 Yay !  You did it ! 
+
 
 
 
