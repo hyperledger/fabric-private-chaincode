@@ -11,7 +11,7 @@ VSCC_OUT = ercc-vscc.so
 DECO_SRC = attestation/ias_credentials/decoration.go
 DECO_OUT = ercc-decorator.so
 
-build: provider ercc vscc-plugin decorator-plugin
+build: ias-keys provider ercc vscc-plugin decorator-plugin
 
 .PHONY: .sgx_mode
 
@@ -30,6 +30,16 @@ ifneq "$(SGX_MODE)" "$(shell cat .sgx_mode 2>/dev/null)"
 SGX_MODE_DEPENDENCY=.sgx_mode
 else
 SGX_MODE_DEPENDENCY=
+endif
+
+ias-keys:
+ifeq (${SGX_MODE}, SIM)
+	if [ ! -f ../config/ias/api_key.txt ]; then\
+            touch ../config/ias/api_key.txt;\
+	fi;
+	if [ ! -f ../config/ias/spid.txt ]; then\
+            echo "DEADBEEF00000000DEADBEEF00000000" > ../config/ias/spid.txt;\
+	fi;
 endif
 
 provider: $(SGX_MODE_DEPENDENCY) $(GO_TARGETS)

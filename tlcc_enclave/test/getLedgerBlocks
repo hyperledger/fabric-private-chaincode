@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# Copyright Intel Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# exit on errors
+set -e
+
+SCRIPTDIR="${SCRIPTDIR:-$(dirname $(readlink --canonicalize ${BASH_SOURCE}))}"
+FPC_TOP_DIR="${FPC_TOP_DIR:-${SCRIPTDIR}/../..}"
+FABRIC_SCRIPTDIR="${FABRIC_SCRIPTDIR:-${FPC_TOP_DIR}/fabric/bin/}"
+
+CONFIG_HOME="${CONFIG_HOME:-${FPC_TOP_DIR}/integration/config}"
+CHAN_ID="${CHAN_ID:-}" # keep empty so default from common_ledger.sh is taken ..
+ORDERER_ADDR="${ORDERER_ADDR:-}" # keep empty so default from common_ledger.sh is taken ..
+DEST_DIR="${DEST_DIR:-$(pwd)}"
+
+usage() {
+	cat <<EOT
+$(basename ${0}): [-c|--config <fabric-config-directory>] [-C|--channel <channel-name>] [-o|--output <output-directory>] [-?|--help]
+	export all blocks from ledger"
+EOT
+}
+while [ "$1" != "" ]; do
+    case "$1" in
+        -c | --config )
+            shift
+            CONFIG_HOME=$1
+            ;;
+        -C | --channel )
+            shift
+            CHAN_ID=$1
+            ;;
+        -o | --output )
+            shift
+            DEST_DIR=$1
+            ;;
+        -\? | --help )
+            usage
+            exit
+            ;;
+        * )
+	    echo "illegal option '$1'" 2>&1
+            usage
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+. ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
+. ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
+
+pushd ${CONFIG_HOME}
+
+QSCC_QUERY_CMD="${FABRIC_SCRIPTDIR}/peer.sh chaincode query --hex -n qscc -C ${CHAN_ID}"
+
+NUM_OF_BLOCKS=$(${QSCC_QUERY_CMD} -c '{"Args": ["GetChainInfo","'${CHAN_ID}'"]}' | xxd -r -p | protoc --decode_raw | awk '/1:/ {print $2}')
+# Note: we could also use actual scheme with 'protoc -I $(FABRIC_HOME}/protos/common/ ${FABRIC_HOME}/protos/common/ledger.proto --decode=common.BlockchainInfo'
+say "retrieving ${NUM_OF_BLOCKS} blocks from channel ${CHAN_ID}"
+for (( i=0; i<$NUM_OF_BLOCKS; i++ ))
+do
+	${QSCC_QUERY_CMD} -c '{"Args": ["GetBlockByNumber","'${CHAN_ID}'","'$i'"]}' | xxd -r -p > ${DEST_DIR}/${CHAN_ID}-block$i
+done
+
+popd

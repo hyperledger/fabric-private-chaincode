@@ -61,13 +61,18 @@ func (t *EnclaveChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response 
 	function, _ := stub.GetFunctionAndParameters()
 	logger.Debugf("Invoke is running [%s]", function)
 
-	if function == "setup" { // create enclave and register at ercc
+	// Look first if there are system functions (and handle them)
+	if function == "__setup" { // create enclave and register at ercc
+		// Note: above string is also used in ecc_valdation_logic.go,
+		// so if you change here you also will have to change there ...
+		// If/when we refactor we should define such stuff somewhere as constants..
 		return t.setup(stub)
-	} else if function == "getEnclavePk" { //get Enclave PK
+	} else if function == "__getEnclavePk" { //get Enclave PK
 		return t.getEnclavePk(stub)
-	} else {
-		return t.invoke(stub)
 	}
+
+	// Remaining functions are user functions, so pass them on the enclave and
+	return t.invoke(stub)
 }
 
 // ============================================================

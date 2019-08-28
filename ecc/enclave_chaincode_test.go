@@ -46,7 +46,7 @@ func TestEnclaveChaincode_Setup(t *testing.T) {
 	stub := shim.NewMockStub("ecc", ecc)
 
 	th.CheckInit(t, stub, nil)
-	th.CheckInvoke(t, stub, [][]byte{[]byte("setup"), []byte("ercc"), []byte("mychannel"), []byte("tlcc")})
+	th.CheckInvoke(t, stub, [][]byte{[]byte("__setup"), []byte("ercc"), []byte("mychannel"), []byte("tlcc")})
 }
 
 func TestEnclaveChaincode_Invoke(t *testing.T) {
@@ -54,7 +54,7 @@ func TestEnclaveChaincode_Invoke(t *testing.T) {
 	stub := shim.NewMockStub("ecc", ecc)
 
 	th.CheckInit(t, stub, nil)
-	th.CheckInvoke(t, stub, [][]byte{[]byte("setup"), []byte("ercc"), []byte("mychannel"), []byte("tlcc")})
+	th.CheckInvoke(t, stub, [][]byte{[]byte("__setup"), []byte("ercc"), []byte("mychannel"), []byte("tlcc")})
 
 	stub.State["TestKey"] = []byte("Moin moin")
 
@@ -95,7 +95,7 @@ func TestEnclaveChaincode_Invoke_Auction(t *testing.T) {
 	pk := ""
 
 	th.CheckInit(t, stub, nil)
-	th.CheckInvoke(t, stub, [][]byte{[]byte("setup"), []byte("ercc"), []byte("mychannel"), []byte("tlcc")})
+	th.CheckInvoke(t, stub, [][]byte{[]byte("__setup"), []byte("ercc"), []byte("mychannel"), []byte("tlcc")})
 
 	create_args := createArgs([]string{"create", "MyAuction123"}, pk)
 
@@ -195,9 +195,9 @@ func TestEnclaveChaincode_EncryptedInvoke(t *testing.T) {
 	stub := shim.NewMockStub("ecc", ecc)
 
 	th.CheckInit(t, stub, nil)
-	th.CheckInvoke(t, stub, [][]byte{[]byte("setup"), []byte("ercc"), []byte("mychannel"), []byte("tlcc")})
+	th.CheckInvoke(t, stub, [][]byte{[]byte("__setup"), []byte("ercc"), []byte("mychannel"), []byte("tlcc")})
 
-	res := stub.MockInvoke("1", [][]byte{[]byte("getEnclavePk")})
+	res := stub.MockInvoke("1", [][]byte{[]byte("__getEnclavePk")})
 	if res.Status != shim.OK {
 		fmt.Println("Invoke getPK failed", string(res.Message))
 		t.FailNow()

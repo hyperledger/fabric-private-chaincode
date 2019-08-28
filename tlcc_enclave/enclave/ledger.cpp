@@ -317,7 +317,8 @@ int parse_config(uint8_t* config_data, uint32_t config_data_len)
     {
         char* group = config_envelope.config.channel_group.groups[i].key;
         common_ConfigGroup* groups = &config_envelope.config.channel_group.groups[i].value;
-        LOG_DEBUG("Ledger: \tGroup: %s", group);
+        LOG_DEBUG("Ledger: \tGroup [%d/%d]: %s", i + 1,
+            config_envelope.config.channel_group.groups_count, group);
 
         // select correct root cert store
         X509_STORE* root_certs = NULL;
@@ -338,10 +339,17 @@ int parse_config(uint8_t* config_data, uint32_t config_data_len)
         for (int j = 0; j < groups->groups_count; j++)
         {
             common_ConfigGroup* orgs = &groups->groups[j].value;
-            LOG_DEBUG("Ledger: \t\tOrg: %s", groups->groups[j].key);
+            LOG_DEBUG(
+                "Ledger: \t\tOrg [%d/%d]: %s", j + 1, groups->groups_count, groups->groups[j].key);
 
             for (int h = 0; h < orgs->values_count; h++)
             {
+                if (strcmp(orgs->values[h].key, "MSP") != 0)
+                {
+                    // skip everything except of MSP config updates
+                    LOG_DEBUG("Ledger: \t\t\t>> Skip %s config update", orgs->values[h].key);
+                    continue;
+                }
                 common_ConfigValue* msp = &orgs->values[h].value;
                 msp_MSPConfig msp_config = msp_MSPConfig_init_zero;
                 decode_pb(msp_config, msp_MSPConfig_fields, msp->value->bytes, msp->value->size);
@@ -691,7 +699,7 @@ int parse_endorser_transaction(
             if (ecc_namespace != "")
             {
                 // skip setup transaction
-                if (function.compare("setup") != 0)
+                if (function.compare("__setup") != 0)
                 {
                     LOG_DEBUG("Ledger: Validate ECC tx");
                     uint8_t response_data[96];

@@ -29,6 +29,9 @@ build: $(BUILD_DIR) protos
 test:
 	$(MAKE) $@ --directory=$(BUILD_DIR)
 
+gen_testcases:
+	../integration/deployment_test.sh $(PWD)/test/getLedgerBlocks -o $(PWD)/test/test_blocks
+
 .PHONY: enclave-clean
 enclave-clean:
 	-rm -rf $(BUILD_DIR)
