@@ -22,13 +22,16 @@ function becho () {
     echo "${cbld}${cblu}" $@ "${crst}" >&2
 }
 
+function gecho () {
+    echo "${cbld}${cgrn}" $@ "${crst}" >&2
+}
+
 # Common reporting functions: say, yell & die
 #-----------------------------------------
 # say is stdout, yell is stderr
 function say () {
     echo "$(basename $0): $*"
 }
-
 
 function yell () {
     becho "$(basename $0): $*" >&2;
@@ -48,3 +51,29 @@ function para() {
 try() {
     "$@" || die "test failed: $*"
 }
+
+# Try function which returns stores response string
+try_r() {
+    echo "$@"
+    export RESPONSE=$("$@" 2>&1) || die "test failed: $*"
+    echo $RESPONSE
+}
+
+
+# Check the Response returned to validate expected result
+check_result() {
+    # Parse out the Response Data from the payload
+    RESPONSE=${RESPONSE##*ResponseData\\\":\\\"}
+    RESPONSE=${RESPONSE%%\\*}
+    # Convert and de-encrypt it
+    RESPONSE=$(echo $RESPONSE | base64 -d)
+    say $RESPONSE
+    # Test response to expected result
+    if [[ $RESPONSE == "$1" ]]; then
+	gecho "PASSED"
+    else
+	recho "FAILED"
+        export FAILURES=$(($FAILURES+1))
+    fi
+}
+
