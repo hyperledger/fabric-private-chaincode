@@ -15,10 +15,10 @@ This example illustrates a simple usecase where the chaincode is used to store a
 Please refer to [Architecture and Components](https://github.com/hyperledger-labs/fabric-private-chaincode#architecture-and-components) for more details on Enclave Registry.
 
 ### Prequisites
-This tutorial presumes that the repository in https://github.com/hyperledger-labs/fabric-private-chaincode has been installed as per [README.md](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/README.md) in FPC-INSTALL-DIR which is in the $GOPATH folder. 
+This tutorial presumes that the repository in https://github.com/hyperledger-labs/fabric-private-chaincode has been installed as per [README.md](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/README.md) in `FPC-INSTALL-DIR` which is in the `$GOPATH` folder. 
 
 ### Develop chaincode
-* Create a folder named `helloworld`  in FPC-INSTALL-DIR/examples.
+* Create a folder named `helloworld`  in `FPC-INSTALL-DIR/examples`.
 ```
 cd $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/examples
 mkdir helloworld
@@ -129,7 +129,8 @@ int invoke(const char* args,
     else
     {
         // unknown function
-        LOG_DEBUG("HelloworldCC: RECEIVED UNKOWN transaction");
+        LOG_DEBUG("HelloworldCC: RECEIVED UNKNOWN transaction");
+        return -1;
     }
      // check that result fits into response
     int neededSize = result.size();
@@ -220,7 +221,7 @@ int invoke(const char* args,
     else
     {
         // unknown function
-        LOG_DEBUG("HelloworldCC: RECEIVED UNKOWN transaction");
+        LOG_DEBUG("HelloworldCC: RECEIVED UNKNOWN transaction");
         return -1; 
     }
     
@@ -283,7 +284,7 @@ clean:
 ```
 
 
-In FPC-INSTALL-DIR/examples/helloworld folder, to build the chaincode, execute: 
+In `FPC-INSTALL-DIR/examples/helloworld` folder, to build the chaincode, execute: 
 ```
 make
 ```
@@ -300,7 +301,7 @@ make[1]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger-labs/fa
 
 
 #### Time to test!
-    Next step is to test the chaincode by invoking the transactions, for which you need a basic Fabric network with a channel and Enclave Registry setup. You will use the FPC test framework to bring up a Fabric network in which the helloworld code can be executed as a chaincode _in an SGX enclave_.  The Fabric network used in this tutorial is defined and configured using `integration/config/core.yaml`.  Specifically, please note the additions to the standard Fabric configurations.  These are marked as `FPC Addition`;  these enable the integration points with Fabric.
+Next step is to test the chaincode by invoking the transactions, for which you need a basic Fabric network with a channel and Enclave Registry setup. You will use the FPC test framework to bring up a Fabric network in which the helloworld code can be executed as a chaincode _in an SGX enclave_.  The Fabric network used in this tutorial is defined and configured using `integration/config/core.yaml`.  Specifically, please note the additions to the standard Fabric configurations.  These are marked as `FPC Addition`;  these enable the integration points with Fabric.
  
 Create a file `test.sh` in examples/helloworld folder as follows.  Note that the initial lines in the script points to files and folders in FPC framework.  
 -`FPC_TOP_DIR` points to FPC-INSTALL-DIR
@@ -466,7 +467,7 @@ exit 0
 ```
 
 
-Assuming we are still in $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/examples, execute the test script:
+Assuming we are still in `$GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/examples`, execute the test script:
 ```
 cd $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/examples/helloworld
 ./test.sh
