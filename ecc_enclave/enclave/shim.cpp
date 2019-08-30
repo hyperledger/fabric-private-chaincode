@@ -45,13 +45,19 @@ void get_state(
 
     sgx_cmac_128bit_tag_t cmac = {0};
 
-    ocall_get_state(key, val, max_val_len, val_len, (sgx_cmac_128bit_tag_t*)cmac, ctx->u_shim_ctx);
+    uint8_t encoded_cipher[(max_val_len + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE + 2) / 3 * 4];
+    uint32_t encoded_cipher_len;
+    ocall_get_state(key, encoded_cipher, sizeof(encoded_cipher), &encoded_cipher_len,
+        (sgx_cmac_128bit_tag_t*)cmac, ctx->u_shim_ctx);
+
+    LOG_DEBUG("Enclave: got enc-cipher for key=%s len=%d val='%s'", key, encoded_cipher_len,
+        (encoded_cipher_len > 0 ? (const char*)encoded_cipher : ""));
 
     // create state hash
     sgx_sha256_hash_t state_hash = {0};
-    if (*val_len > 0)
+    if (encoded_cipher_len > 0)
     {
-        sgx_sha256_msg(val, *val_len, &state_hash);
+        sgx_sha256_msg(encoded_cipher, encoded_cipher_len, &state_hash);
     }
 
     if (check_cmac(key, NULL, &state_hash, &session_key, &cmac) == 0)
@@ -59,31 +65,30 @@ void get_state(
         LOG_DEBUG("Enclave: State verification: cmac correct!! :D");
     }
     // if nothing read, no need for decryption
-    if (*val_len == 0)
+    if (encoded_cipher_len == 0)
     {
+        *val_len = 0;
+        return;
+    }
+    // base64 decode
+    std::string cipher = base64_decode((const char*)encoded_cipher);
+    if (cipher.size() < SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE)
+    {
+        LOG_ERROR(
+            "Enclave: base64 decoding failed/produced too shart a value with %d", cipher.size());
+        *val_len = 0;
         return;
     }
 
-    // base64 decode
-    std::string cipher = base64_decode((const char*)val);
-
     // decrypt
-    uint32_t plain_len = cipher.size() - SGX_AESGCM_IV_SIZE - SGX_AESGCM_MAC_SIZE;
-    uint8_t plain[plain_len];
+    *val_len = cipher.size() - SGX_AESGCM_IV_SIZE - SGX_AESGCM_MAC_SIZE;
     int ret = decrypt_state(
-        &state_encryption_key, (uint8_t*)cipher.c_str(), cipher.size(), plain, plain_len);
+        &state_encryption_key, (uint8_t*)cipher.c_str(), cipher.size(), val, *val_len);
     if (ret != SGX_SUCCESS)
     {
         LOG_ERROR("Enclave: Error decrypting state: %d", ret);
+        *val_len = 0;
     }
-
-    memcpy(val, plain, plain_len);
-    if (*val_len - plain_len > 0)
-    {
-        // just fill val with zeros
-        memset(val + plain_len, 0, *val_len - plain_len);
-    }
-    *val_len = plain_len;
 }
 
 void put_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t ctx)
