@@ -15,25 +15,35 @@ typedef struct t_shim_ctx* shim_ctx_ptr_t;
 
 // Function which FPC chaincode has to implement
 // ==================================================
+// - init, called when the chaincode is instantiated
 int init(uint8_t* response,
     uint32_t max_response_len,
     uint32_t* actual_response_len,
     shim_ctx_ptr_t ctx);
 
+// - invoke, called when a transaction query or invocation is executed
 int invoke(uint8_t* response,
     uint32_t max_response_len,
     uint32_t* actual_response_len,
     shim_ctx_ptr_t ctx);
 
+
 // Shim Function which FPC chaincode can use
 // ==================================================
+// TODO (eventually): more documention, e.g., on how are error handled?
 
 // put/get state
 //-------------------------------------------------
-// TODO (eventually): documention, e.g., how are error handled?
+// - store value located at val of size val_len under key key
+void put_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t ctx);
+// - look for key and, if found, store it in val and return size in val_len.
+//   val must be of size at least max_val_len and the query will fail
+//   if the retrieved value would be larger.
+//   Absence of key is denoted by val_len == 0 when the function returns.
 void get_state(
     const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* val_len, shim_ctx_ptr_t ctx);
-void put_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t ctx);
+// - look for composite keys, i.e., return the set of keys and values which match the
+//   provided composite (prefix) key comp_key
 void get_state_by_partial_composite_key(
     const char* comp_key, std::map<std::string, std::string>& values, shim_ctx_ptr_t ctx);
 
@@ -78,10 +88,17 @@ void get_state_by_partial_composite_key(
 
 // retrieval for arguments
 //-------------------------------------------------
+// - retrieve the list of invocation parameters
 int get_string_args(std::vector<std::string>& argss, shim_ctx_ptr_t ctx);
+// - a different way to retrieve the invocation parameters as function followed by function parameters
+//   returns -1 if not called with at least function name ..
 int get_func_and_params(
     std::string& func_name, std::vector<std::string>& params, shim_ctx_ptr_t ctx);
-// returns -1 if not called with at least function name ..
+// Note: both functions should work interchangely, also regardless whether used
+// the '{ "args": [ ..] }' or the '{ "function": "name", "args": [ ..] }' syntax  with
+// the '--ctor'/'-c' parameter of peer cli command for option 'chaincode [instantiate|invoke|query].
+// Behind the scenes the two variants are always treated as a list of args, with the first
+// one being the function.
 
 // transaction APIs
 //-------------------------------------------------
@@ -128,8 +145,8 @@ int get_func_and_params(
 // // - getSignedProposal: should be easy to support but probably not worth?
 
 // - creator
-// return the distinguished name of the creator as well as the msp_id of the corresponding
-// organization.
+//   return the distinguished name of the creator as well as the msp_id of the corresponding
+//   organization.
 void get_creator_name(char* msp_id,  // MSP id of organization to which transaction creator belongs
     uint32_t max_msp_id_len,         // size of allocated buffer for msp_id
     char* dn,                        // distinguished name of transaction creator

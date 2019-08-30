@@ -37,7 +37,7 @@ int init(
 
     LOG_DEBUG("AuctionCC: +++ Executing auction chaincode init+++");
     std::vector<std::string> argss;
-    // parse json args
+
     get_string_args(argss, ctx);
 
     LOG_DEBUG("AuctionCC: Args: %s",
