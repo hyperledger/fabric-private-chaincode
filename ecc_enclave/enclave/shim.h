@@ -27,7 +27,6 @@ int invoke(uint8_t* response,
     uint32_t* actual_response_len,
     shim_ctx_ptr_t ctx);
 
-
 // Shim Function which FPC chaincode can use
 // ==================================================
 // TODO (eventually): more documention, e.g., on how are error handled?
@@ -90,7 +89,8 @@ void get_state_by_partial_composite_key(
 //-------------------------------------------------
 // - retrieve the list of invocation parameters
 int get_string_args(std::vector<std::string>& argss, shim_ctx_ptr_t ctx);
-// - a different way to retrieve the invocation parameters as function followed by function parameters
+// - a different way to retrieve the invocation parameters as function followed by function
+// parameters
 //   returns -1 if not called with at least function name ..
 int get_func_and_params(
     std::string& func_name, std::vector<std::string>& params, shim_ctx_ptr_t ctx);

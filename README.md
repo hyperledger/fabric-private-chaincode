@@ -402,6 +402,8 @@ details.
 - Data Privacy through Trusted Smart-contract Execution for Hyperledger Fabric.
   WIP Draft: https://docs.google.com/document/d/1u15vjk4jZoeGHHE4abJ1TjY3XFFuCNpHBL6JCg73buo/edit?usp=sharing
 
+- Presentation at the Hyperledger Fabric contributor meeting August 21, 2019.
+  Slides: https://docs.google.com/presentation/d/1ewl7PcY9t27lScv2O2VaeHMsk13oe5B2MqU-qzDiR80 
 
 ## Project Status
 

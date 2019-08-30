@@ -34,7 +34,6 @@ run_test() {
     sleep 3
 
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n example02 -c '{"Args": ["invoke", "bob", "alice", "99"]}' --waitForEvent
-    check_result "OK"
 
     try ${PEER_CMD} chaincode install -l fpc-c -n echo_test -v ${CC_VERS} -p examples/echo/_build/lib
     sleep 3
