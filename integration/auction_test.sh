@@ -21,6 +21,7 @@ ENCLAVE_SO_PATH=examples/auction/_build/lib/
 CC_VERS=0
 num_rounds=3
 num_clients=10
+FAILURES=0
 
 auction_test() {
     # install, init, and register (auction) chaincode
@@ -30,25 +31,71 @@ auction_test() {
     try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"Args":["My Auction"]}' -V ecc-vscc
     sleep 3
 
-    # create auction
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"create", "Args": ["MyAuction"]}' --waitForEvent
+    # Scenario 1
+    becho ">>>> Close and evaluate non existing auction. Response should be AUCTION_NOT_EXISTING"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"close", "Args": ["MyAuction"]}' --waitForEvent
+    check_result "AUCTION_NOT_EXISTING"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"eval", "Args": ["MyAuction0"]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
+    check_result "AUCTION_NOT_EXISTING"
 
-    say "invoke submit"
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"submit", "Args":["MyAuction", "JohnnyCash0", "0"]}' --waitForEvent
+    # Scenario 2
+    becho ">>>> Create an auction. Response should be OK"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"create", "Args": ["MyAuction1"]}' --waitForEvent
+    check_result "OK"
+    becho ">>>> Create two equivalent bids. Response should be OK"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"submit", "Args": ["MyAuction1", "JohnnyCash0", "2"]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
+    check_result "OK"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"submit", "Args": ["MyAuction1", "JohnnyCash1", "2"]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
+    check_result "OK"
+    becho ">>>> Close auction. Response should be OK"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"close", "Args": ["MyAuction1"]}' --waitForEvent
+    check_result "OK"
+    becho ">>>> Submit a bid on a closed auction. Response should be AUCTION_ALREADY_CLOSED"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"submit", "Args": ["MyAuction1", "JohnnyCash2", "2"]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
+    check_result "AUCTION_ALREADY_CLOSED";
+    becho ">>>> Evaluate auction. Response should be DRAW"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"eval", "Args": ["MyAuction1"]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
+    check_result "DRAW"
 
-    for (( i=1; i<=$num_rounds; i++ ))
+    # Scenario 3
+    becho ">>>> Create an auction. Response should be OK"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"create", "Args": ["MyAuction2"]}' --waitForEvent
+    check_result "OK"
+    for (( i=0; i<=$num_rounds; i++ ))
     do
+        becho ">>>> Submit unique bid. Response should be OK"
         b="$(($i%$num_clients))"
-        try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"submit", "Args":["MyAuction", "JohnnyCash'$b'", "'$b'"]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
+        try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"submit", "Args": ["MyAuction2", "JohnnyCash'$b'", "'$b'"]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
+        check_result "OK"
     done
+    becho ">>>> Close auction. Response should be OK"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"close", "Args": ["MyAuction2"]}' --waitForEvent
+    check_result "OK"
+    becho ">>>> Evaluate auction. Auction Result should be printed out"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"eval", "Args": ["MyAuction2"]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
+    check_result '{"bidder":"JohnnyCash3","value":3}'
 
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"close", "Args":["MyAuction"]}' --waitForEvent
+    # Scenario 4
+    becho ">>>> Create a new auction. Response should be OK"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"create", "Args": ["MyAuction3"]}' --waitForEvent
+    check_result "OK"
+    becho  ">>>> Create a duplicate auction. Response should be AUCTION_ALREADY_EXISTING"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"create", "Args": ["MyAuction3"]}' --waitForEvent
+    check_result "AUCTION_ALREADY_EXISTING"
+    becho ">>>> Close auction and evaluate. Response should be OK"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"close", "Args": ["MyAuction3"]}' --waitForEvent
+    check_result "OK"
+    becho ">>>> Close an already closed auction. Response should be AUCTION_ALREADY_CLOSED"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"close", "Args": ["MyAuction3"]}' --waitForEvent
+    check_result "AUCTION_ALREADY_CLOSED"
+    becho ">>>> Evaluate auction. Response should be NO_BIDS"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"eval", "Args": ["MyAuction3"]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
+    check_result "NO_BIDS"
 
-    say "invoke eval"
-    for (( i=1; i<=1; i++ ))
-    do
-        try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"eval", "Args":["MyAuction"]}'  # Don't do --waitForEvent, so potentially there is some parallelism here ..
-    done
+    # Code below is used to test bug in issue #42
+    #becho ">>>> Create a new auction. Response should be OK"
+    #try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"create", "Args": ["MyAuction4"]}' --waitForEvent
+    #check_result "OK"
 }
 
 # 1. prepare
@@ -60,7 +107,6 @@ docker_clean ${CC_ID}
 
 trap ledger_shutdown EXIT
 
-
 para
 say "Run auction test"
 
@@ -68,12 +114,16 @@ say "- setup ledger"
 ledger_init
 
 say "- auction test"
-auction_test 
+auction_test
 
 say "- shutdown ledger"
 ledger_shutdown
 
 para
-yell "Auction test PASSED"
-
+if [[ "$FAILURES" == 0 ]]; then
+    yell "Auction test PASSED"
+else
+    yell "Auction test had ${FAILURES} failures"
+    exit 1
+fi
 exit 0

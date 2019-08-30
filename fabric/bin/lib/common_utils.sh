@@ -22,13 +22,16 @@ function becho () {
     echo "${cbld}${cblu}" $@ "${crst}" >&2
 }
 
+function gecho () {
+    echo "${cbld}${cgrn}" $@ "${crst}" >&2
+}
+
 # Common reporting functions: say, yell & die
 #-----------------------------------------
 # say is stdout, yell is stderr
 function say () {
     echo "$(basename $0): $*"
 }
-
 
 function yell () {
     becho "$(basename $0): $*" >&2;
@@ -48,3 +51,11 @@ function para() {
 try() {
     "$@" || die "test failed: $*"
 }
+
+# Variant of try which stores commands stdout and stderr in variable RESPONSE
+try_r() {
+    echo "$@"
+    export RESPONSE=$("$@" 2>&1) || die "test failed: $*"
+    echo $RESPONSE
+}
+

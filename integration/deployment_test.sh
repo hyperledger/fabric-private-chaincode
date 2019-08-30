@@ -17,9 +17,9 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 CC_VERS=0
+FAILURES=0
 
 run_test() {
-    # install, init, and register (auction) chaincode
     try ${PEER_CMD} chaincode install -l fpc-c -n auction_test -v ${CC_VERS} -p examples/auction/_build/lib
 
     try ${PEER_CMD} chaincode install -l golang -n example02 -v ${CC_VERS} -p github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd
@@ -27,12 +27,14 @@ run_test() {
     try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -v ${CC_VERS} -c '{"Args":["My Auction"]}' -V ecc-vscc
     sleep 3
 
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["create", "MyAuction"]}' --waitForEvent
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["create", "MyAuction"]}' --waitForEvent
+    check_result "OK"
 
     try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n example02 -v ${CC_VERS} -c '{"Args":["init", "bob", "100", "alice", "200"]}'
     sleep 3
 
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n example02 -c '{"Args": ["invoke", "bob", "alice", "99"]}' --waitForEvent
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n example02 -c '{"Args": ["invoke", "bob", "alice", "99"]}' --waitForEvent
+    check_result "OK"
 
     try ${PEER_CMD} chaincode install -l fpc-c -n echo_test -v ${CC_VERS} -p examples/echo/_build/lib
     sleep 3
@@ -40,9 +42,16 @@ run_test() {
     try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -v ${CC_VERS} -c '{"Args":[]}' -V ecc-vscc
     sleep 3
 
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -c '{"Args": ["moin"]}' --waitForEvent
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -c '{"Args": ["moin"]}' --waitForEvent
+    check_result "moin"
 
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["submit", "MyAuction", "JohnnyCash0", "0"]}' --waitForEvent
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["submit", "MyAuction", "JohnnyCash0", "0"]}' --waitForEvent
+    check_result "OK"
+
+    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n example02 -c '{"args": ["query", "bob"]}' --waitForEvent
+
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -c '{"Args": ["bonjour"]}' --waitForEvent
+    check_result "bonjour"
 }
 
 # 1. prepare
@@ -76,6 +85,11 @@ say "- shutdown ledger"
 ledger_shutdown
 
 para
-yell "Test PASSED"
-
+if [[ "$FAILURES" == 0 ]]; then
+    yell "Deployement test PASSED"
+else
+    yell "Deployement test had ${FAILURES} failures"
+    exit 1
+fi
 exit 0
+

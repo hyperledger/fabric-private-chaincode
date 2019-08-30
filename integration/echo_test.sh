@@ -20,6 +20,7 @@ ENCLAVE_SO_PATH=examples/echo/_build/lib/
 
 CC_VERS=0
 num_rounds=10
+FAILURES=0
 
 echo_test() {
     # install, init, and register (auction) chaincode
@@ -33,8 +34,9 @@ echo_test() {
     for (( i=1; i<=$num_rounds; i++ ))
     do
         # echos
-        try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["echo-'$i'"]}' --waitForEvent
-    done
+        try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["echo-'$i'"]}' --waitForEvent
+        check_result "echo-$i"
+     done
 }
 
 # 1. prepare
@@ -60,6 +62,11 @@ say "- shutdown ledger"
 ledger_shutdown
 
 para
-yell "Echo test PASSED"
-
+if [[ "$FAILURES" == 0 ]]; then
+    yell "Echo test PASSED"
+else
+    yell "Echo test had ${FAILURES} failures"
+    exit 1
+fi
 exit 0
+
