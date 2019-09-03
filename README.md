@@ -260,7 +260,7 @@ This will build all required components and run the integration tests.
 #### Building individual components
 
 In [utils/fabric-ccenv-sgx/](utils/fabric-ccenv-sgx) you can find instructions
-to create a custom fabric-ccenv docker image that is required to execute a
+to create a custom fabric-ccenv Docker image that is required to execute a
 chaincode within an enclave.
 
 The chaincode enclave [ecc_enclave](ecc_enclave) and the ledger
@@ -282,9 +282,9 @@ capabilities.
 
 ##### Docker
 
-Building the project requires docker. We do not recommend to run `sudo make`
-to resolve issues with mis-configured docker environments as this also changes your `$GOPATH`. Please see hints on
-[docker](#docker) installation above.
+Building the project requires Docker. We do not recommend to run `sudo make`
+to resolve issues with mis-configured Docker environments as this also changes your `$GOPATH`. Please see hints on
+[Docker](#docker) installation above.
 
 
 ##### Working from behind a proxy
@@ -293,9 +293,9 @@ The current code should work behind a proxy assuming
   * you have defined the corresponding environment variables (i.e.,
   `http_proxy`, `https_proxy` and, potentially, `no_proxy`) properly
   defined, and
-  * docker (daemon & client) is properly set up for proxies as
+  * Docker (daemon & client) is properly set up for proxies as
     outlined in the Docker documentation for [clients](https://docs.docker.com/network/proxy/) and the [daemon](https://docs.docker.com/config/daemon/systemd/#httphttps-proxy).
-If you run Ubuntu 18.04, make sure you run docker 18.09 or later. Otherwise you will run into problems with DNS resolution inside the container.
+If you run Ubuntu 18.04, make sure you run Docker 18.09 or later. Otherwise you will run into problems with DNS resolution inside the container.
 
 Another problem you might encounter when running the integration tests 
 insofar that some '0.0.0.0' in ``integration/config/core.yaml`` used by
