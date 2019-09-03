@@ -136,7 +136,7 @@ Make sure that you have the following required dependencies installed:
 
 ### Docker
 
-We recommend to set privileges to manage docker as a non-root user. See the official docker
+We recommend to set privileges to manage Docker as a non-root user. See the official Docker
 [documentation](https://docs.docker.com/install/linux/linux-postinstall/) for more details.  
 
 
