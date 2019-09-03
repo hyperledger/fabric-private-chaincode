@@ -97,8 +97,7 @@ The system consists of the following components:
 
 # Getting started
 
-The following steps guide you through the build phase and configuration, for
-deploying and running an example private chaincode.
+The following steps guide you through the build phase and configuration, for deploying and running an example private chaincode.
 
 We assume that you are familiar with building Fabric manually; otherwise we highly recommend to spend some time to build
 Fabric and run a simple network with a few peers and a ordering service. We recommend the Fabric documentation as your
@@ -137,7 +136,7 @@ Make sure that you have the following required dependencies installed:
 
 ### Docker
 
-We recommend to set privileges to manage docker as a non-root user. See the official docker
+We recommend to set privileges to manage Docker as a non-root user. See the official Docker
 [documentation](https://docs.docker.com/install/linux/linux-postinstall/) for more details.  
 
 
@@ -232,18 +231,19 @@ Checkout Fabric 1.4.2 release and apply our patch using the following commands:
 Note that this patch does currently not work with the Fabric master branch, therefore make sure you use the Fabric
 v1.4.2 branch.
 
-Make sure Fabric is in your ``$GOPATH`` and you enable the plugin feature using `GO_TAGS=pluginsenabled`. Simply run"
+Make sure Fabric is in your ``$GOPATH`` and you enable the plugin feature using `GO_TAGS=pluginsenabled`. Simply run:
 
     $ cd $FABRIC_PATH
     $ GO_TAGS=pluginsenabled make
 
-Building Fabric may take a while and it's time to get a coffee. Also, be not surprised if unit tests fail. In order to
-just build the peer you can run the following command:
+Building Fabric may take a while and it's a good time to get a coffee or tea. Also, don't be surprised if unit tests fail.
+
+If you want to build just the peer, you can run the following command:
 
     $ GO_TAGS=pluginsenabled make peer
 
 Please make sure that the peer is _always_ built with GO_TAGS, otherwise our custom validation plugins will (silently!)
-ignored by the peer, despite the settings in ``core.yaml``.
+be ignored by the peer, despite the settings in ``core.yaml``.
 
 
 ### Build the project
@@ -260,7 +260,7 @@ This will build all required components and run the integration tests.
 #### Building individual components
 
 In [utils/fabric-ccenv-sgx/](utils/fabric-ccenv-sgx) you can find instructions
-to create a custom fabric-ccenv docker image that is required to execute a
+to create a custom fabric-ccenv Docker image that is required to execute a
 chaincode within an enclave.
 
 The chaincode enclave [ecc_enclave](ecc_enclave) and the ledger
@@ -282,9 +282,9 @@ capabilities.
 
 ##### Docker
 
-Building the project requires docker. We do not recommend to run `sudo make`
-to resolve issues with mis-configured docker environments as this also changes your `$GOPATH`. Please see hints on
-[docker](#docker) installation above.
+Building the project requires Docker. We do not recommend to run `sudo make`
+to resolve issues with mis-configured Docker environments as this also changes your `$GOPATH`. Please see hints on
+[Docker](#docker) installation above.
 
 
 ##### Working from behind a proxy
@@ -293,9 +293,9 @@ The current code should work behind a proxy assuming
   * you have defined the corresponding environment variables (i.e.,
   `http_proxy`, `https_proxy` and, potentially, `no_proxy`) properly
   defined, and
-  * docker (daemon & client) is properly set up for proxies as
+  * Docker (daemon & client) is properly set up for proxies as
     outlined in the Docker documentation for [clients](https://docs.docker.com/network/proxy/) and the [daemon](https://docs.docker.com/config/daemon/systemd/#httphttps-proxy).
-If you run Ubuntu 18.04, make sure you run docker 18.09 or later. Otherwise you will run into problems with DNS resolution inside the container.
+If you run Ubuntu 18.04, make sure you run Docker 18.09 or later. Otherwise you will run into problems with DNS resolution inside the container.
 
 Another problem you might encounter when running the integration tests 
 insofar that some '0.0.0.0' in ``integration/config/core.yaml`` used by
@@ -344,7 +344,7 @@ appears even after installing it via `apt-get install clang-format`. See [here](
 for how to fix this.  
 
 
-##### ERCC setup failurs
+##### ERCC setup failures
 
 If, e.g., running the integration tests executed when you run `make`,
 you get errors of following form:
