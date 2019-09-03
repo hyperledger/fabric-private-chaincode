@@ -97,8 +97,7 @@ The system consists of the following components:
 
 # Getting started
 
-The following steps guide you through the build phase and configuration, for
-deploying and running an example private chaincode.
+The following steps guide you through the build phase and configuration, for deploying and running an example private chaincode.
 
 We assume that you are familiar with building Fabric manually; otherwise we highly recommend to spend some time to build
 Fabric and run a simple network with a few peers and a ordering service. We recommend the Fabric documentation as your
@@ -232,18 +231,19 @@ Checkout Fabric 1.4.2 release and apply our patch using the following commands:
 Note that this patch does currently not work with the Fabric master branch, therefore make sure you use the Fabric
 v1.4.2 branch.
 
-Make sure Fabric is in your ``$GOPATH`` and you enable the plugin feature using `GO_TAGS=pluginsenabled`. Simply run"
+Make sure Fabric is in your ``$GOPATH`` and you enable the plugin feature using `GO_TAGS=pluginsenabled`. Simply run:
 
     $ cd $FABRIC_PATH
     $ GO_TAGS=pluginsenabled make
 
-Building Fabric may take a while and it's time to get a coffee. Also, be not surprised if unit tests fail. In order to
-just build the peer you can run the following command:
+Building Fabric may take a while and it's a good time to get a coffee or tea. Also, don't be surprised if unit tests fail.
+
+If you want to build just the peer, you can run the following command:
 
     $ GO_TAGS=pluginsenabled make peer
 
 Please make sure that the peer is _always_ built with GO_TAGS, otherwise our custom validation plugins will (silently!)
-ignored by the peer, despite the settings in ``core.yaml``.
+be ignored by the peer, despite the settings in ``core.yaml``.
 
 
 ### Build the project
@@ -344,7 +344,7 @@ appears even after installing it via `apt-get install clang-format`. See [here](
 for how to fix this.  
 
 
-##### ERCC setup failurs
+##### ERCC setup failures
 
 If, e.g., running the integration tests executed when you run `make`,
 you get errors of following form:
