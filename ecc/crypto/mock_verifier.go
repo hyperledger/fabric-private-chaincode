@@ -11,6 +11,6 @@ type MockVerifier struct {
 }
 
 // Verify returns true if signature validation of enclave return is correct; other false
-func (v *MockVerifier) Verify(args, responseData []byte, readset, writeset [][]byte, signature, enclavePk []byte) (bool, error) {
+func (v *MockVerifier) Verify(txType, encoded_args, responseData []byte, readset, writeset [][]byte, signature, enclavePk []byte) (bool, error) {
 	return true, nil
 }

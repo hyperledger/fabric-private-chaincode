@@ -52,28 +52,10 @@ try() {
     "$@" || die "test failed: $*"
 }
 
-# Try function which returns stores response string
+# Variant of try which stores commands stdout and stderr in variable RESPONSE
 try_r() {
     echo "$@"
     export RESPONSE=$("$@" 2>&1) || die "test failed: $*"
     echo $RESPONSE
-}
-
-
-# Check the Response returned to validate expected result
-check_result() {
-    # Parse out the Response Data from the payload
-    RESPONSE=${RESPONSE##*ResponseData\\\":\\\"}
-    RESPONSE=${RESPONSE%%\\*}
-    # Convert and de-encrypt it
-    RESPONSE=$(echo $RESPONSE | base64 -d)
-    say $RESPONSE
-    # Test response to expected result
-    if [[ $RESPONSE == "$1" ]]; then
-	gecho "PASSED"
-    else
-	recho "FAILED"
-        export FAILURES=$(($FAILURES+1))
-    fi
 }
 

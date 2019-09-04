@@ -39,7 +39,7 @@ and not meant for production use! The main goal of this lab is to discuss and
 refine the proposed architecture involving the Hyperledger community.
 
 
-# Architecture and components
+## Architecture and components
 
 This lab extends a Fabric peer with the following components: A chaincode
 enclave that executes a particular chaincode and a ledger enclave that enables
@@ -95,7 +95,7 @@ The system consists of the following components:
    the transaction to the ledger.
 
 
-# Getting started
+## Getting started
 
 The following steps guide you through the build phase and configuration, for
 deploying and running an example private chaincode.
@@ -108,7 +108,7 @@ your [development environment](https://hyperledger-fabric.readthedocs.io/en/rele
 
 Moreover, we assume that you are familiar with the Intel SGX SDK.
 
-## Requirements
+### Requirements
 
 Make sure that you have the following required dependencies installed:
 
@@ -135,13 +135,13 @@ Make sure that you have the following required dependencies installed:
 * [PlantUML](http://plantuml.com/) including Graphviz (for building documentation only) 
 
 
-### Docker
+#### Docker
 
 We recommend to set privileges to manage docker as a non-root user. See the official docker
 [documentation](https://docs.docker.com/install/linux/linux-postinstall/) for more details.  
 
 
-### Protocol Buffers
+#### Protocol Buffers
 
 We use *nanopb*, a lightweight implementation of Protocol Buffers, inside the ledger enclave to parse blocks of 
 transactions. Install nanopb by following the instruction below. For this you need a working Google Protocol Buffers
@@ -157,7 +157,7 @@ For more detailed information consult the official nanopb documentation http://g
 Make sure that you set `$NANOPB_PATH` as it is needed to build Fabric Private Chaincode.
 
 
-### Intel SGX SDK and SSL
+#### Intel SGX SDK and SSL
 
 Fabric Private Chaincode requires the Intel [SGX SDK](https://github.com/intel/linux-sgx) and
 [SGX SSL](https://github.com/intel/intel-sgx-ssl) to build the main components of our framework and to develop and build
@@ -181,7 +181,7 @@ location, or for building in simulation-mode SGX, you can create the file `confi
 values by defining the corresponding environment variable.
 
 
-#### Intel Attestation Service (IAS)
+##### Intel Attestation Service (IAS)
 
 We use Intel's Attestation Service to perform attestation with chaincode enclaves. If you run SGX in __simulation mode__
 only, you can skip this section and come back when you want setup with SGX hardware-mode.
@@ -210,7 +210,7 @@ Place your ias api key and your SPID in the ``ias`` folder as follows:
     echo 'YOUR_SPID' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/spid.txt
 
 
-## Fabric Private Chaincode
+### Fabric Private Chaincode
 
 Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in this documentation and default
 configuration that your `$GOPATH` has a _single_ root-directoy!)
@@ -218,7 +218,7 @@ configuration that your `$GOPATH` has a _single_ root-directoy!)
     $ git clone https://github.com/hyperledger-labs/fabric-private-chaincode.git $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
 
 
-### Patch Fabric
+#### Patch Fabric
 
 Next we need to patch the Fabric peer and rebuild it in order to enable Fabric Private Chaincode support. 
 
@@ -246,7 +246,7 @@ Please make sure that the peer is _always_ built with GO_TAGS, otherwise our cus
 ignored by the peer, despite the settings in ``core.yaml``.
 
 
-### Build the project
+#### Build the project
 
 Once you have setup your development environment including Intel SGX SDK and SSL, nanopb, and successfully patched and
 built Fabric we can build the Fabric Private Chaincode framework.  
@@ -257,7 +257,7 @@ built Fabric we can build the Fabric Private Chaincode framework.
 This will build all required components and run the integration tests.
 
 
-#### Building individual components
+##### Building individual components
 
 In [utils/fabric-ccenv-sgx/](utils/fabric-ccenv-sgx) you can find instructions
 to create a custom fabric-ccenv docker image that is required to execute a
@@ -278,16 +278,16 @@ Moreover, we provide a set of integration tests in [integration/](integration) t
 capabilities.
 
 
-#### Trouble shooting
+##### Trouble shooting
 
-##### Docker
+###### Docker
 
 Building the project requires docker. We do not recommend to run `sudo make`
 to resolve issues with mis-configured docker environments as this also changes your `$GOPATH`. Please see hints on
 [docker](#docker) installation above.
 
 
-##### Working from behind a proxy
+###### Working from behind a proxy
 
 The current code should work behind a proxy assuming
   * you have defined the corresponding environment variables (i.e.,
@@ -307,7 +307,7 @@ In that case, you will have to replace the '0.0.0.0' with a concrete
 ip address such as '127.0.0.1'.
 
 
-##### Environment settings
+###### Environment settings
 
 Our build system requires a few variables to be set in your environment. Missing variables may cause `make` to fail. 
 Below you find a summary of all variables which you should carefully check and add to your environment. 
@@ -337,14 +337,14 @@ export ECC_ATTESTATION_TYPE = epid_linkable
 ```
 
 
-##### Clang-format
+###### Clang-format
 
 Some users may experience problems with clang-format. In particular, the error `command not found: clang-format` 
 appears even after installing it via `apt-get install clang-format`. See [here](https://askubuntu.com/questions/1034996/vim-clang-format-clang-format-is-not-found)
 for how to fix this.  
 
 
-##### ERCC setup failurs
+###### ERCC setup failurs
 
 If, e.g., running the integration tests executed when you run `make`,
 you get errors of following form:
@@ -362,11 +362,11 @@ configuring these files correctly for HW mode, this will result in
 above error.
 
 
-## Your first private chaincode
+### Your first private chaincode
 
 Create, build and test your first private chaincode with this [tutorial](examples/README.md).
 
-## Documentation
+### Documentation
 
 To build documentation, you will have to install `java` and download `plantuml.jar`. Either put `plantuml.jar` into
 in your `CLASSPATH` environment variable or override `PLANTUML_JAR` or `PLANTUML_CMD` in `config.override.mk`
@@ -380,7 +380,7 @@ By running the following command you can generate the documentation.
 
 
 
-# Getting Help
+## Getting Help
 
 Found a bug? Need help to fix an issue? You have a great idea for a new feature? Talk to us! You can reach us on
 [RocketChat](https://chat.hyperledger.org/) in #private-data-objects. 
@@ -393,7 +393,7 @@ see the Hyperledger [community calendar](https://wiki.hyperledger.org/display/HY
 details.
 
 
-# References
+## References
 
 - Marcus Brandenburger, Christian Cachin, Rüdiger Kapitza, Alessandro
   Sorniotti: Blockchain and Trusted Computing: Problems, Pitfalls, and a
@@ -405,7 +405,7 @@ details.
 - Presentation at the Hyperledger Fabric contributor meeting August 21, 2019.
   Slides: https://docs.google.com/presentation/d/1ewl7PcY9t27lScv2O2VaeHMsk13oe5B2MqU-qzDiR80 
 
-# Project Status
+## Project Status
 
 Hyperledger Fabric Private Chaincode operates as a Hyperledger Labs project.
 This code is provided solely to demonstrate basic Fabric Private Chaincode
@@ -414,7 +414,7 @@ and define minimum viable product requirements. The code provided in this
 repository is prototype code and not intended for production use.
 
 
-# Initial Committers
+## Initial Committers
 
 - [Marcus Brandenburger](https://github.com/mbrandenburger) (bur@zurich.ibm.com)
 - [Christian Cachin](https://github.com/cca88) (cca@zurich.ibm.com)
@@ -422,12 +422,12 @@ repository is prototype code and not intended for production use.
 - [Alessandro Sorniotti](https://github.com/ale-linux) (aso@zurich.ibm.com)
 
 
-# Sponsor
+## Sponsor
 
 [Gari Singh](https://github.com/mastersingh24) (garis@us.ibm.com)
 
 
-# License
+## License
 
 Hyperledger Fabric Private Chaincode source code files are made
 available under the Apache License, Version 2.0 (Apache-2.0), located in the

@@ -27,7 +27,8 @@ build: $(BUILD_DIR) protos
 	$(MAKE) all --directory=$<
 
 test:
-	$(MAKE) $@ --directory=$(BUILD_DIR)
+	# make test verbose for now as tlcc doesn't abort on many failures just reports them in the logs ...
+	$(MAKE) $@ --directory=$(BUILD_DIR) ARGS="-V"
 
 gen_testcases:
 	../integration/deployment_test.sh $(PWD)/test/getLedgerBlocks -o $(PWD)/test/test_blocks

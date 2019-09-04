@@ -433,9 +433,7 @@ int parse_endorser_transaction(
             function.append((const char*)cis.chaincode_spec.input.args[0]->bytes,
                 cis.chaincode_spec.input.args[0]->size);
         }
-
-        pb_release(protos_ChaincodeInvocationSpec_fields, &cis);
-        pb_release(protos_ChaincodeProposalPayload_fields, &proposal_payload);
+        LOG_DEBUG("Ledger: function='%s'", function.c_str());
 
         // parse proposal repsonse payload
         protos_ProposalResponsePayload p_response_payload =
@@ -713,27 +711,70 @@ int parse_endorser_transaction(
                         cc_action.response.payload->size, (uint8_t*)&response_data, &response_len,
                         signature, &signature_len, pk, &pk_len);
 
+                    const char* txType;
+                    std::vector<std::string> argss;
+                    if (function.compare("__init") == 0)
+                    {
+                        txType = "init";
+                        for (int i = 1; i < cis.chaincode_spec.input.args_count; i++)
+                        {  // Start from 1 as we drop __init
+                            std::string arg = "";
+                            arg.append((const char*)cis.chaincode_spec.input.args[i]->bytes,
+                                cis.chaincode_spec.input.args[i]->size);
+                            argss.push_back(arg);
+                        }
+                    }
+                    else
+                    {
+                        txType = "invoke";
+                        for (int i = 0; i < cis.chaincode_spec.input.args_count; i++)
+                        {
+                            std::string arg = "";
+                            arg.append((const char*)cis.chaincode_spec.input.args[i]->bytes,
+                                cis.chaincode_spec.input.args[i]->size);
+                            argss.push_back(arg);
+                        }
+                    }
+                    std::string encoded_args = "";
+                    marshal_ecc_args(argss, encoded_args);
+
+                    // Note: below signature was created in
+                    // ecc_enclave/enclave/enclave.cpp::gen_response
+                    // see also replicated verification in ecc/crypto/ecdsa.go::Verify (for
+                    // VSCC)
+
+                    // format H(txType in {"init", "invoke"} || encoded_args || result || read
+                    // set || write set)
                     uint8_t hash[HASH_SIZE];
                     SHA256_CTX sha256;
                     SHA256_Init(&sha256);
-
-                    SHA256_Update(&sha256, (const uint8_t*)function.c_str(), function.size());
+                    LOG_DEBUG("Ledger: txType: %s", txType);
+                    SHA256_Update(&sha256, (const uint8_t*)txType, strlen(txType));
+                    LOG_DEBUG("Ledger: encoded_args: %s", encoded_args.c_str());
+                    SHA256_Update(
+                        &sha256, (const uint8_t*)encoded_args.c_str(), encoded_args.size());
+                    LOG_DEBUG("Ledger: response_data len: %d", response_len);
                     SHA256_Update(&sha256, response_data, response_len);
 
                     // hash read and write set
-                    /* LOG_DEBUG("Ledger: read_set:"); */
+                    LOG_DEBUG("Ledger: read_set:");
                     for (auto& it : ecc_read_set)
                     {
+                        LOG_DEBUG("\\-> %s", it.c_str());
                         SHA256_Update(&sha256, (const uint8_t*)it.c_str(), it.size());
                     }
 
-                    /* LOG_DEBUG("Ledger: write_set:"); */
+                    LOG_DEBUG("Ledger: write_set:");
                     for (auto& it : ecc_write_set)
                     {
+                        LOG_DEBUG("\\-> %s - %s", it.first.c_str(), it.second.c_str());
                         SHA256_Update(&sha256, (const uint8_t*)it.first.c_str(), it.first.size());
                         SHA256_Update(&sha256, (const uint8_t*)it.second.c_str(), it.second.size());
                     }
                     SHA256_Final(hash, &sha256);
+
+                    std::string base64_hash = base64_encode((const unsigned char*)hash, 32);
+                    LOG_DEBUG("Ledger: ecc sig hash (base64): %s", base64_hash.c_str());
 
                     // hash again!!!! Note that sgx_ecdsa_sign hashes the data
                     // input
@@ -742,18 +783,19 @@ int parse_endorser_transaction(
                     SHA256_Update(&sha256, hash, HASH_SIZE);
                     SHA256_Final(hash2, &sha256);
 
-                    std::string base64_hash = base64_encode((const unsigned char*)hash, 32);
-                    LOG_DEBUG("Ledger: Sig hash: %s", base64_hash.c_str());
+                    std::string base64_hashhash = base64_encode((const unsigned char*)hash2, 32);
+                    LOG_DEBUG("Ledger: ecc sig hash-hash (base64): %s", base64_hashhash.c_str());
 
                     std::string base64_pk = base64_encode((const unsigned char*)pk, pk_len);
-                    LOG_DEBUG("Ledger: Sig pk: %s", base64_pk.c_str());
+                    LOG_DEBUG("Ledger: ecc sig pk (base64): %s", base64_pk.c_str());
 
                     const unsigned char* sig_ptr = signature;
                     const unsigned char* pk_ptr = pk;
-                    if (verify_enclave_signature(
-                            &sig_ptr, signature_len, hash2, 32, &pk_ptr, pk_len) != 1)
+                    int err = verify_enclave_signature(
+                        &sig_ptr, signature_len, hash2, 32, &pk_ptr, pk_len);
+                    if (err != 1)
                     {
-                        LOG_ERROR("Ledger: ecc signature validaion failed");
+                        LOG_ERROR("Ledger: ecc signature validation failed (err=%d)", err);
                         // TODO mark as invalid
                     }
                     else
@@ -773,6 +815,8 @@ int parse_endorser_transaction(
             LOG_DEBUG("Ledger: \t\t \\-> ChaincodeAction.Events:");
         }
 
+        pb_release(protos_ChaincodeInvocationSpec_fields, &cis);
+        pb_release(protos_ChaincodeProposalPayload_fields, &proposal_payload);
         pb_release(protos_ChaincodeAction_fields, &cc_action);
         pb_release(protos_ProposalResponsePayload_fields, &p_response_payload);
         pb_release(protos_ChaincodeActionPayload_fields, &action_payload);

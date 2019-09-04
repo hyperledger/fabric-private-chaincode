@@ -162,6 +162,33 @@ ledger_shutdown() {
     fi
 }
 
+# Check the chaincode's response (ResponseData) of
+#   peer chaincode invoke/query
+# (executed via 'try_r' macro) against expected result.
+# In case of failures, tries to increment integer variable FAILURES
+check_result() {
+    # Parse out the Response Data from the payload
+    CI_RESPONSE=${RESPONSE}
+    CI_RESPONSE=${CI_RESPONSE##*ResponseData\\\":\\\"}
+    CI_RESPONSE=${CI_RESPONSE%%\\*}
+    # Convert and de-encrypt it
+    CI_RESPONSE=$(echo ${CI_RESPONSE} | base64 -d)
+    say ${CI_RESPONSE}
+    # Test response to expected result
+    if [[ ${CI_RESPONSE} == "$1" ]]; then
+	gecho "PASSED"
+    else
+	if [[ ${CI_RESPONSE} == $RESPONSE ]]; then
+	    CONTEXT=""
+	else
+	    CONTEXT=" context: '${RESPONSE}'"
+	fi
+	recho "FAILED (expected '${1}', got '${CI_RESPONSE}' ${CONTEXT})"
+        export FAILURES=$(($FAILURES+1))
+    fi
+}
+
+
 # "Main"
 parse_fabric_config "${FABRIC_CFG_PATH}"
 ledger_precond_check

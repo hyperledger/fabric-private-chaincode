@@ -6,9 +6,9 @@
 
 #include "enclave_t.h"
 
-#include "chaincode.h"
 #include "logging.h"
 #include "shim.h"
+#include "shim_internals.h"
 #include "utils.h"
 
 #include "base64.h"
@@ -33,11 +33,13 @@ sgx_aes_gcm_128bit_key_t state_encryption_key = {
 
 int ecall_bind_tlcc(const sgx_report_t* report, const uint8_t* pubkey)
 {
+    LOG_DEBUG("ecall_bind_tlcc: \tArgs: &report=%p, &pk=%p", report, pubkey);
+
     // IMPORTANT!!!
-    // here is out testing backdoor for starting ecc without a tlcc instance
+    // here is our testing backdoor for starting ecc without a tlcc instance
     if (report == NULL && pubkey == NULL)
     {
-        LOG_DEBUG("Start without TLCC!!!!");
+        LOG_WARNING("Start without TLCC!!!!");
         return SGX_SUCCESS;
     }
 
@@ -67,14 +69,123 @@ int ecall_bind_tlcc(const sgx_report_t* report, const uint8_t* pubkey)
     return SGX_SUCCESS;
 }
 
-int invoke_enc(const char* args,
-    const char* pk,
+int gen_response(const char* txType,
+    uint8_t* response,
+    uint32_t* response_len_out,
+    sgx_ec256_signature_t* signature,
+    shim_ctx_ptr_t ctx)
+{
+    int ret;
+
+    // Note: below signature is verified in
+    // - ecc/crypto/ecdsa.go::Verify (for VSCC)
+    // - tlcc_enclave/enclave/ledger.cpp::int parse_endorser_transaction (for TLCC)
+
+    // create Hash <- H(txType in {"init", "invoke"} || encoded_args || result || read set || write
+    // set)
+    // TODO: we should encode the hash below in an unambiguous fashion (which is not true with
+    //    simple concatenation as done below!)
+    //    Probably easiest by prefixing each field by length in fixed-size format?
+    sgx_sha256_hash_t hash;
+    sgx_sha_state_handle_t sha_handle;
+    sgx_sha256_init(&sha_handle);
+    LOG_DEBUG("txType: %s", txType);
+    sgx_sha256_update((const uint8_t*)txType, strlen(txType), sha_handle);
+    LOG_DEBUG("encoded_args: %s", ctx->encoded_args);
+    sgx_sha256_update((const uint8_t*)ctx->encoded_args, strlen(ctx->encoded_args), sha_handle);
+    LOG_DEBUG("response_data len: %d", *response_len_out);
+    sgx_sha256_update(response, *response_len_out, sha_handle);
+
+    // hash read and write set
+    LOG_DEBUG("read_set:");
+    for (auto& it : ctx->read_set)
+    {
+        LOG_DEBUG("\\-> %s", it.c_str());
+        sgx_sha256_update((const uint8_t*)it.c_str(), it.size(), sha_handle);
+    }
+
+    LOG_DEBUG("write_set:");
+    for (auto& it : ctx->write_set)
+    {
+        LOG_DEBUG("\\-> %s - %s", it.first.c_str(), it.second.c_str());
+        sgx_sha256_update((const uint8_t*)it.first.c_str(), it.first.size(), sha_handle);
+        sgx_sha256_update((const uint8_t*)it.second.c_str(), it.second.size(), sha_handle);
+    }
+
+    sgx_sha256_get_hash(sha_handle, &hash);
+    sgx_sha256_close(sha_handle);
+
+    // sig <- sign (hash,sk)
+    uint8_t sig[sizeof(sgx_ec256_signature_t)];
+    sgx_ecc_state_handle_t ecc_handle = NULL;
+    sgx_ecc256_open_context(&ecc_handle);
+    ret = sgx_ecdsa_sign((uint8_t*)&hash, SGX_SHA256_HASH_SIZE, &enclave_sk,
+        (sgx_ec256_signature_t*)sig, ecc_handle);
+    sgx_ecc256_close_context(ecc_handle);
+    if (ret != SGX_SUCCESS)
+    {
+        LOG_ERROR("Signing failed!! Reason: %#08x", ret);
+        return ret;
+    }
+    LOG_DEBUG("Response signature created!");
+    // convert signature to big endian and copy out
+    bytes_swap(sig, 32);
+    bytes_swap(sig + 32, 32);
+    memcpy(signature, sig, sizeof(sgx_ec256_signature_t));
+
+    std::string base64_hash = base64_encode((const unsigned char*)hash, 32);
+    LOG_DEBUG("ecc sig hash (base64): %s", base64_hash.c_str());
+
+    std::string base64_sig =
+        base64_encode((const unsigned char*)sig, sizeof(sgx_ec256_signature_t));
+    LOG_DEBUG("ecc sig sig (base64): %s", base64_sig.c_str());
+
+    std::string base64_pk =
+        base64_encode((const unsigned char*)&enclave_pk, sizeof(sgx_ec256_public_t));
+    LOG_DEBUG("ecc sig pk (base64): %s", base64_pk.c_str());
+
+    return ret;
+}
+
+// chaincode initialization
+// output, response <- F(args, input)
+// signature <- sign (hash,sk)
+int ecall_cc_init(const char* encoded_args,
+    uint8_t* response,
+    uint32_t response_len_in,
+    uint32_t* response_len_out,
+    sgx_ec256_signature_t* signature,
+    void* u_shim_ctx)
+{
+    LOG_DEBUG("ecall_cc_init: \tArgs: %s", encoded_args);
+
+    t_shim_ctx_t ctx;
+    ctx.u_shim_ctx = u_shim_ctx;
+    ctx.encoded_args = encoded_args;
+    ctx.json_args = encoded_args;  // no encryption involved, so same as encoded_args ..
+
+    // call chaincode invoke logic: creates output and response
+    // output, response <- F(args, input)
+    int ret;
+    ret = init(response, response_len_in, response_len_out, &ctx);
+    if (ret != 0)
+    {
+        return SGX_ERROR_UNEXPECTED;
+    }
+
+    ret = gen_response("init", response, response_len_out, signature, &ctx);
+
+    return ret;
+}
+
+// chaincode call processing when we have secure channel ..
+int invoke_enc(const char* pk,
     uint8_t* response,
     uint32_t max_response_len,
     uint32_t* actual_response_len,
-    void* ctx)
+    shim_ctx_ptr_t ctx)
 {
-    LOG_DEBUG("Encrypted invcation");
+    LOG_DEBUG("Encrypted invocation");
     sgx_ec256_public_t client_pk = {0};
 
     std::string _pk = base64_decode(pk);
@@ -91,7 +202,7 @@ int invoke_enc(const char* args,
         sgx_ecc256_compute_shared_dhkey(&enclave_sk, &client_pk, &shared_dhkey, ecc_handle);
     if (sgx_ret != SGX_SUCCESS)
     {
-        LOG_ERROR("Compute shared dhkey: %d\n", sgx_ret);
+        LOG_ERROR("Compute shared dhkey: %d", sgx_ret);
         return sgx_ret;
     }
     sgx_ecc256_close_context(ecc_handle);
@@ -104,7 +215,7 @@ int invoke_enc(const char* args,
     sgx_aes_gcm_128bit_key_t key;
     memcpy(key, h, sizeof(sgx_aes_gcm_128bit_key_t));
 
-    std::string _cipher = base64_decode(args);
+    std::string _cipher = base64_decode(ctx->encoded_args);
     uint8_t* cipher = (uint8_t*)_cipher.c_str();
     int cipher_len = _cipher.size();
 
@@ -122,29 +233,31 @@ int invoke_enc(const char* args,
         (sgx_aes_gcm_128bit_tag_t*)(cipher + SGX_AESGCM_IV_SIZE)); /* tag */
     if (sgx_ret != SGX_SUCCESS)
     {
-        LOG_ERROR("Decrypt error: %x\n", sgx_ret);
+        LOG_ERROR("Decrypt error: %x", sgx_ret);
         return sgx_ret;
     }
+    LOG_DEBUG("invoke_enc: \tdecrypted args: %s", plain);
+    ctx->json_args = plain;
 
-    return invoke((const char*)plain, response, max_response_len, actual_response_len, ctx);
+    return invoke(response, max_response_len, actual_response_len, ctx);
 }
 
 // chaincode call
 // output, response <- F(args, input)
 // signature <- sign (hash,sk)
-int ecall_invoke(const char* args,
+int ecall_cc_invoke(const char* encoded_args,
     const char* pk,
     uint8_t* response,
     uint32_t response_len_in,
     uint32_t* response_len_out,
     sgx_ec256_signature_t* signature,
-    void* ctx)
+    void* u_shim_ctx)
 {
-    // register ctx
-    read_set_t readset;
-    write_set_t writeset;
+    LOG_DEBUG("ecall_cc_invoke: \tArgs: %s", encoded_args);
 
-    register_rwset(ctx, &readset, &writeset);
+    t_shim_ctx_t ctx;
+    ctx.u_shim_ctx = u_shim_ctx;
+    ctx.encoded_args = encoded_args;
 
     // call chaincode invoke logic: creates output and response
     // output, response <- F(args, input)
@@ -152,12 +265,13 @@ int ecall_invoke(const char* args,
     if (strlen(pk) == 0)
     {
         // clear input
-        ret = invoke(args, response, response_len_in, response_len_out, ctx);
+        ctx.json_args = ctx.encoded_args;
+        ret = invoke(response, response_len_in, response_len_out, &ctx);
     }
     else
     {
         // encrypted input
-        ret = invoke_enc(args, pk, response, response_len_in, response_len_out, ctx);
+        ret = invoke_enc(pk, response, response_len_in, response_len_out, &ctx);
     }
 
     if (ret != 0)
@@ -165,63 +279,7 @@ int ecall_invoke(const char* args,
         return SGX_ERROR_UNEXPECTED;
     }
 
-    // create Hash <- H(args || result || read-write set)
-    sgx_sha256_hash_t hash;
-    sgx_sha_state_handle_t sha_handle;
-    sgx_sha256_init(&sha_handle);
-    sgx_sha256_update((const uint8_t*)args, strlen(args), sha_handle);
-    sgx_sha256_update(response, *response_len_out, sha_handle);
-
-    // hash read and write set
-    LOG_DEBUG("read_set:");
-    for (auto& it : readset)
-    {
-        LOG_DEBUG("\\-> %s", it.c_str());
-        sgx_sha256_update((const uint8_t*)it.c_str(), it.size(), sha_handle);
-    }
-
-    LOG_DEBUG("write_set:");
-    for (auto& it : writeset)
-    {
-        LOG_DEBUG("\\-> %s - %s", it.first.c_str(), it.second.c_str());
-        sgx_sha256_update((const uint8_t*)it.first.c_str(), it.first.size(), sha_handle);
-        sgx_sha256_update((const uint8_t*)it.second.c_str(), it.second.size(), sha_handle);
-    }
-
-    sgx_sha256_get_hash(sha_handle, &hash);
-    sgx_sha256_close(sha_handle);
-
-    // clean context
-    free_rwset(ctx);
-
-    // sig <- sign (hash,sk)
-    uint8_t sig[sizeof(sgx_ec256_signature_t)];
-    sgx_ecc_state_handle_t ecc_handle = NULL;
-    sgx_ecc256_open_context(&ecc_handle);
-    ret = sgx_ecdsa_sign((uint8_t*)&hash, SGX_SHA256_HASH_SIZE, &enclave_sk,
-        (sgx_ec256_signature_t*)sig, ecc_handle);
-    sgx_ecc256_close_context(ecc_handle);
-    if (ret != SGX_SUCCESS)
-    {
-        LOG_ERROR("Signing failed!! Reason: %#08x\n", ret);
-        return ret;
-    }
-    LOG_DEBUG("Response signature created!");
-    // convert signature to big endian and copy out
-    bytes_swap(sig, 32);
-    bytes_swap(sig + 32, 32);
-    memcpy(signature, sig, sizeof(sgx_ec256_signature_t));
-
-    std::string base64_hash = base64_encode((const unsigned char*)hash, 32);
-    LOG_DEBUG("ecc sig hash: %s", base64_hash.c_str());
-
-    std::string base64_sig =
-        base64_encode((const unsigned char*)sig, sizeof(sgx_ec256_signature_t));
-    LOG_DEBUG("ecc sig sig: %s", base64_sig.c_str());
-
-    std::string base64_pk =
-        base64_encode((const unsigned char*)&enclave_pk, sizeof(sgx_ec256_public_t));
-    LOG_DEBUG("ecc sig pk: %s", base64_pk.c_str());
+    ret = gen_response("invoke", response, response_len_out, signature, &ctx);
 
     return ret;
 }

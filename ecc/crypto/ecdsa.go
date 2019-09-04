@@ -12,10 +12,15 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/asn1"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"math/big"
+
+	"github.com/hyperledger/fabric/common/flogging"
 )
+
+var logger = flogging.MustGetLogger("ecdsa")
 
 type ecdsaSignature struct {
 	R *big.Int
@@ -127,7 +132,7 @@ type ECDSAVerifier struct {
 }
 
 // Verify returns true if signature validation of enclave return is correct; other false
-func (v *ECDSAVerifier) Verify(args, responseData []byte, readset, writeset [][]byte, signature, enclavePk []byte) (bool, error) {
+func (v *ECDSAVerifier) Verify(txType, encoded_args, responseData []byte, readset, writeset [][]byte, signature, enclavePk []byte) (bool, error) {
 	// unmarshall signature
 	r, s, err := UnmarshalECDSASignature(signature)
 	if err != nil {
@@ -144,20 +149,31 @@ func (v *ECDSAVerifier) Verify(args, responseData []byte, readset, writeset [][]
 		return false, fmt.Errorf("Verification key is not of type ECDSA")
 	}
 
-	// H(args || response || readset || writeset)
+	// Note: below signature was created in ecc_enclave/enclave/enclave.cpp::gen_response
+	// see also replicated verification in tlcc_enclave/enclave/ledger.cpp::int parse_endorser_transaction (for TLCC)
+
+	// H(txType in {"init", "invoke"} || encoded_args || response || read set || write set)
 	h := sha256.New()
-	h.Write(args)
+	logger.Debugf("txType: %s\n", string(txType))
+	h.Write(txType)
+	logger.Debugf("encoded_args: %s\n", string(encoded_args))
+	h.Write(encoded_args)
+	logger.Debugf("response data len: %d\n", len(responseData))
 	h.Write(responseData)
+	logger.Debugf("write_set: ")
 	for _, r := range readset {
+		logger.Debugf("\\-> %s\n", string(r))
 		h.Write(r)
 	}
+	logger.Debugf("write_set: ")
 	for _, w := range writeset {
+		logger.Debugf("\\-> %s\n", string(w))
 		h.Write(w)
 	}
 	hash := h.Sum(nil)
 
-	// hashBase64 := base64.StdEncoding.EncodeToString(hash)
-	// fmt.Printf("hash base64 for ecdsa signaature: %s\n", hashBase64)
+	hashBase64 := base64.StdEncoding.EncodeToString(hash)
+	logger.Debugf("ecc sig hash (base64): %s\n", hashBase64)
 
 	// hash again!!! Note that, sgx_sign() takes the hash, as computed above, as input and hashes again
 	hash2 := sha256.Sum256(hash)

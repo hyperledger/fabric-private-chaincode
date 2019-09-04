@@ -26,20 +26,26 @@
 
 #define LOG_ERROR(fmt, ...) golog(CYN "ERROR" RED fmt NRM "\n", ##__VA_ARGS__)
 
-// extern go printf
+// Prototypes of CGo functions implemented in ecc/enclave/enclave_stub.go
+
+// - logging
 extern void golog(const char* format, ...);
 
-// for accessing ledger kvs
-extern void get_state_by_partial_composite_key(const char* comp_key,
-    uint8_t* values,
-    uint32_t max_len,
-    uint32_t* values_len,
-    cmac_t* cmac,
-    void* ctx);
+// - creator access
+extern void get_creator_name(
+    const char* msp_id, uint32_t max_msp_id_len, const char* dn, uint32_t max_dn_len, void* ctx);
+
+// - for accessing ledger kvs
 extern void get_state(const char* key,
     uint8_t* val,
     uint32_t max_val_len,
     uint32_t* val_len,
+    cmac_t* cmac,
+    void* ctx);
+extern void get_state_by_partial_composite_key(const char* comp_key,
+    uint8_t* values,
+    uint32_t max_len,
+    uint32_t* values_len,
     cmac_t* cmac,
     void* ctx);
 extern void put_state(const char* key, uint8_t* val, uint32_t val_len, void* ctx);
@@ -188,8 +194,31 @@ int sgxcc_get_pk(enclave_id_t eid, ec256_public_t* pubkey)
     return enclave_ret;
 }
 
+int sgxcc_init(enclave_id_t eid,
+    const char* encoded_args,
+    uint8_t* response,
+    uint32_t response_len_in,
+    uint32_t* response_len_out,
+    ec256_signature_t* signature,
+    void* ctx)
+{
+    int enclave_ret;
+    int ret = ecall_cc_init(eid, &enclave_ret,
+        encoded_args,                                 // args (encoded and potentially encrypted)
+        response, response_len_in, response_len_out,  // response
+        (sgx_ec256_signature_t*)signature,            // signature
+        ctx);                                         // context for callback
+    if (ret != SGX_SUCCESS)
+    {
+        LOG_ERROR("Lib: ERROR - invoke: %d", ret);
+        return ret;
+    }
+
+    return enclave_ret;
+}
+
 int sgxcc_invoke(enclave_id_t eid,
-    const char* args,
+    const char* encoded_args,
     const char* pk,
     uint8_t* response,
     uint32_t response_len_in,
@@ -198,9 +227,9 @@ int sgxcc_invoke(enclave_id_t eid,
     void* ctx)
 {
     int enclave_ret;
-    int ret = ecall_invoke(eid, &enclave_ret,
-        args,  // args
-        pk,    // client pk used for args encryption, if null no encryption used
+    int ret = ecall_cc_invoke(eid, &enclave_ret,
+        encoded_args,  // args  (encoded and potentially encrypted)
+        pk,            // client pk used for args encryption, if null no encryption used
         response, response_len_in, response_len_out,  // response
         (sgx_ec256_signature_t*)signature,            // signature
         ctx);                                         // context for callback
@@ -214,6 +243,12 @@ int sgxcc_invoke(enclave_id_t eid,
 }
 
 /* OCall functions */
+void ocall_get_creator_name(
+    char* msp_id, uint32_t max_msp_id_len, char* dn, uint32_t max_dn_len, void* ctx)
+{
+    get_creator_name(msp_id, max_msp_id_len, dn, max_dn_len, ctx);
+}
+
 void ocall_get_state(const char* key,
     uint8_t* val,
     uint32_t max_val_len,
