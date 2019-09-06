@@ -149,6 +149,11 @@ int verify_enclave_signature(const unsigned char** sig_bytes,
     }
 
     int ret = ECDSA_do_verify(input, input_len, signature, eckey);
+    if (ret == -1)
+    {
+        // FIXME: all these error messages in this file are not thread-safe!
+        LOG_ERROR("signature verify %s", ERR_error_string(ERR_get_error(), NULL));
+    }
 
     ECDSA_SIG_free(signature);
     EC_KEY_free(eckey);

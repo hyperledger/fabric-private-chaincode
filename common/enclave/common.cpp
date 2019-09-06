@@ -27,7 +27,7 @@ int ecall_init(void)
     sgx_status_t sgx_ret = sgx_ecc256_open_context(&ecc_handle);
     if (sgx_ret != SGX_SUCCESS)
     {
-        LOG_DEBUG("Enclave: sgx_ecc256_open_context: %d\n", sgx_ret);
+        LOG_DEBUG("Enclave: sgx_ecc256_open_context: %d", sgx_ret);
         return sgx_ret;
     }
 
@@ -35,7 +35,7 @@ int ecall_init(void)
     sgx_ret = sgx_ecc256_create_key_pair(&enclave_sk, &enclave_pk, ecc_handle);
     if (sgx_ret != SGX_SUCCESS)
     {
-        LOG_DEBUG("Enclave: sgx_ecc256_create_key_pair: %d\n", sgx_ret);
+        LOG_DEBUG("Enclave: sgx_ecc256_create_key_pair: %d", sgx_ret);
         return sgx_ret;
     }
     sgx_ecc256_close_context(ecc_handle);

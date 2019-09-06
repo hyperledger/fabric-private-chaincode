@@ -8,6 +8,25 @@
 #include "base64.h"
 #include "parson.h"
 
+int marshal_ecc_args(std::vector<std::string>& argss,
+    std::string& encoded_string)  // assumed to be initialized but empty
+{
+    JSON_Value* root = json_value_init_array();
+    JSON_Array* list = json_value_get_array(root);
+
+    for (std::size_t i = 0; i < argss.size(); i++)
+    {
+        json_array_append_string(list, argss[i].c_str());
+    }
+
+    char* ss = json_serialize_to_string(root);
+    encoded_string.append(ss);
+
+    json_free_serialized_string(ss);
+    json_value_free(root);
+    return 1;
+}
+
 int unmarshal_ecc_response(const uint8_t* json_bytes,
     uint32_t json_len,
     uint8_t* response_data,

@@ -7,8 +7,10 @@
 #pragma once
 
 #include <string>
+#include "shim.h"
 
-std::string auction_create(std::string auction_name, void* ctx);
-std::string auction_submit(std::string auction_name, std::string bidder_name, int value, void* ctx);
-std::string auction_eval(std::string auction_name, void* ctx);
-std::string auction_close(std::string auction_name, void* ctx);
+std::string auction_create(std::string auction_name, shim_ctx_ptr_t ctx);
+std::string auction_submit(
+    std::string auction_name, std::string bidder_name, int value, shim_ctx_ptr_t ctx);
+std::string auction_eval(std::string auction_name, shim_ctx_ptr_t ctx);
+std::string auction_close(std::string auction_name, shim_ctx_ptr_t ctx);

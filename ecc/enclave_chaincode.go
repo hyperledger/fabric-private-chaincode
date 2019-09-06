@@ -67,6 +67,8 @@ func (t *EnclaveChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response 
 		// so if you change here you also will have to change there ...
 		// If/when we refactor we should define such stuff somewhere as constants..
 		return t.setup(stub)
+	} else if function == "__init" { // pass CC init to chaincode
+		return t.init(stub)
 	} else if function == "__getEnclavePk" { //get Enclave PK
 		return t.getEnclavePk(stub)
 	}
@@ -144,6 +146,43 @@ func (t *EnclaveChaincode) setup(stub shim.ChaincodeStubInterface) pb.Response {
 }
 
 // ============================================================
+// init -
+// ============================================================
+func (t *EnclaveChaincode) init(stub shim.ChaincodeStubInterface) pb.Response {
+	// check if we have an enclave already
+	if t.enclave == nil {
+		return shim.Error("ecc: Enclave not initialized! Run setup first!")
+	}
+
+	// get and json encode parameters
+	_, argss := stub.GetFunctionAndParameters() // ignore function-name == __init
+	jsonArgs, err := json.Marshal(argss)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	// call enclave
+	responseData, signature, err := t.enclave.Init(jsonArgs, stub, t.tlccStub)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("ecc: Error while calling CC init enclave: %s", err))
+	}
+
+	enclavePk, err := t.enclave.GetPublicKey()
+	if err != nil {
+		return shim.Error(fmt.Sprintf("ecc: Error retrieving enclave pk: %s", err))
+	}
+
+	response := &utils.Response{
+		ResponseData: responseData,
+		Signature:    signature,
+		PublicKey:    enclavePk,
+	}
+	responseBytes, _ := json.Marshal(response)
+
+	return shim.Success(responseBytes)
+}
+
+// ============================================================
 // invoke -
 // ============================================================
 func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response {
@@ -151,12 +190,20 @@ func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response 
 	if t.enclave == nil {
 		return shim.Error("ecc: Enclave not initialized! Run setup first!")
 	}
+
+	// get and json-encode parameters
+	// Note: client side call of '{ "Args": [ arg1, arg2, .. ] }' and '{ "Function": "arg1", "Args": [ arg2, .. ] }' are identical ...
 	argss := stub.GetStringArgs()
-	args := []byte(argss[0])
-	pk := []byte(argss[1])
+	jsonArgs, err := json.Marshal(argss)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	pk := []byte(nil) // we don't really support a secure channel to the client yet ..
+	// TODO: one of the place to fix when integrating end-to-end secure channel to client
 
 	// call enclave
-	responseData, signature, err := t.enclave.Invoke(args, pk, stub, t.tlccStub)
+	responseData, signature, err := t.enclave.Invoke(jsonArgs, pk, stub, t.tlccStub)
 	if err != nil {
 		return shim.Error(fmt.Sprintf("ecc: Error while invoking enclave: %s", err))
 	}

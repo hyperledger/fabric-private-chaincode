@@ -22,12 +22,27 @@ import (
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"golang.org/x/sync/semaphore"
+
+	"crypto/x509"
+	"encoding/pem"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric/protos/msp"
 )
 
 // #cgo CFLAGS: -I${SRCDIR}/ecc-enclave-include
 // #cgo LDFLAGS: -L${SRCDIR}/ecc-enclave-lib -lsgxcc
 // #include "sgxcclib.h"
+// #include <stdio.h>
 // #include <string.h>
+//
+// /*
+//    Below extern definitions should really be done by cgo but without we get following warning:
+//       warning: implicit declaration of function ▒▒▒_GoStringPtr_▒▒▒ [-Wimplicit-function-declaration]
+// */
+// extern const char *_GoStringPtr(_GoString_ s);
+// extern size_t _GoStringLen(_GoString_ s);
+//
 // static inline void _cpy_bytes(uint8_t* target, uint8_t* val, uint32_t size)
 // {
 //   memcpy(target, val, size);
@@ -36,6 +51,15 @@ import (
 // static inline void _set_int(uint32_t* target, uint32_t val)
 // {
 //   *target = val;
+// }
+//
+// static inline void _cpy_str(char* target, _GoString_ val, uint32_t max_size)
+// {
+//   #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+//   // Note: have to do MIN as _GoStringPtr() might not be NULL terminated.
+//   // Also _GoStringLen returns the length without \0 ...
+//   size_t goStrLen = _GoStringLen(val)+1;
+//   snprintf(target, MIN(max_size, goStrLen), "%s", _GoStringPtr(val));
 // }
 //
 import "C"
@@ -98,13 +122,48 @@ func (r *Registry) Get(i int) *Stubs {
 	return stubs
 }
 
+// TODO: everywhere below
+// - we should check the max_*_len parameters!!!
+// - we should do more meaningful error handling than panic ..
+
 //export golog
 func golog(str *C.char) {
 	logger.Infof("%s", C.GoString(str))
 }
 
+// TODO: this seems dead-code? remove?
 var _logger = func(in string) {
 	logger.Info(in)
+}
+
+//export get_creator_name
+func get_creator_name(msp_id *C.char, max_msp_id_len C.uint32_t, dn *C.char, max_dn_len C.uint32_t, ctx unsafe.Pointer) {
+	stubs := registry.Get(*(*int)(ctx))
+
+	serializedID, err := stubs.shimStub.GetCreator()
+	if err != nil {
+		panic("error while getting creator")
+	}
+	sId := &msp.SerializedIdentity{}
+	err = proto.Unmarshal(serializedID, sId)
+	if err != nil {
+		panic("Could not deserialize a SerializedIdentity")
+	}
+
+	bl, _ := pem.Decode(sId.IdBytes)
+	if bl == nil {
+		panic("Failed to decode PEM structure")
+	}
+	cert, err := x509.ParseCertificate(bl.Bytes)
+	if err != nil {
+		panic("Unable to parse certificate %s")
+	}
+
+	var goMspId = sId.Mspid
+	C._cpy_str(msp_id, goMspId, max_msp_id_len)
+
+	var goDn = cert.Subject.String()
+	C._cpy_str(dn, goDn, max_dn_len)
 }
 
 //export get_state
@@ -197,6 +256,8 @@ type Stub interface {
 	GetRemoteAttestationReport(spid []byte) ([]byte, []byte, error)
 	// Return report and enclave PK in DER-encoded PKIX format
 	GetLocalAttestationReport(targetInfo []byte) ([]byte, []byte, error)
+	// Init chaincode
+	Init(args []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error)
 	// Invoke chaincode
 	Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error)
 	// Returns enclave PK in DER-encoded PKIX formatk
@@ -262,6 +323,52 @@ func (e *StubImpl) GetRemoteAttestationReport(spid []byte) ([]byte, []byte, erro
 func (e *StubImpl) GetLocalAttestationReport(spid []byte) ([]byte, []byte, error) {
 	// NOT IMPLEMENTED YET
 	return nil, nil, nil
+}
+
+// invoke calls the enclave for processing of (cc) init , takes arguments
+// and the current chaincode state as input and returns a new chaincode state
+func (e *StubImpl) Init(args []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error) {
+	if shimStub == nil {
+		return nil, nil, errors.New("Need shim")
+	}
+
+	// index := Register(Stubs{shimStub, tlccStub})
+	index := registry.Register(&Stubs{shimStub, tlccStub})
+	defer registry.Release(index)
+	// defer Release(index)
+	ctx := unsafe.Pointer(&index)
+
+	// args
+	argsPtr := C.CString(string(args))
+	defer C.free(unsafe.Pointer(argsPtr))
+
+	// response
+	responseLenOut := C.uint32_t(MAX_RESPONSET_SIZE)
+	responsePtr := C.malloc(MAX_RESPONSET_SIZE)
+	defer C.free(responsePtr)
+
+	// signature
+	signaturePtr := C.malloc(SIGNATURE_SIZE)
+	defer C.free(signaturePtr)
+
+	e.sem.Acquire(context.Background(), 1)
+	// invoke enclave
+	// TODO read error
+	ret := C.sgxcc_init(e.eid,
+		argsPtr,
+		(*C.uint8_t)(responsePtr), C.uint32_t(MAX_RESPONSET_SIZE), &responseLenOut,
+		(*C.ec256_signature_t)(signaturePtr),
+		ctx)
+	e.sem.Release(1)
+	if ret != 0 {
+		return nil, nil, fmt.Errorf("Invoke failed. Reason: %d", int(ret))
+	}
+
+	sig, err := crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
+	if err != nil {
+		return nil, nil, err
+	}
+	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, nil
 }
 
 // invoke calls the enclave for transaction processing, takes arguments

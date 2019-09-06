@@ -27,14 +27,14 @@ echo_test() {
     try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p ${ENCLAVE_SO_PATH}
     sleep 3
 
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":[]}' -V ecc-vscc
+    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"Args":[]}' -V ecc-vscc
     sleep 3
 
     say "do echos"
     for (( i=1; i<=$num_rounds; i++ ))
     do
         # echos
-        try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["[\"echo-'$i'\"]", ""]}' --waitForEvent
+        try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["echo-'$i'"]}' --waitForEvent
         check_result "echo-$i"
      done
 }
@@ -66,6 +66,7 @@ if [[ "$FAILURES" == 0 ]]; then
     yell "Echo test PASSED"
 else
     yell "Echo test had ${FAILURES} failures"
+    exit 1
 fi
 exit 0
 
