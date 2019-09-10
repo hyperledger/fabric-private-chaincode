@@ -1,97 +1,319 @@
-
-
-
 @startuml
-
-'- force wrapping of longer text
-'skinparam wrapWidth 400
 
 !pragma teoz true
 
 hide footbox
 title Foot Box removed
 
-title Fabric Private Chaincode - Key generation and distribution - TBD ...
+title Fabric Private Chaincode - Key generation, distribution, confirmation 
+
+actor       "Admin_Org1" as Admin1
+participant "ECC_Manager (syscc) Peer_Org1" as ECC_Manager1
+database    "Local storage Peer_Org1" as Storage1
+participant "ECC Peer_Org1" as ECC1
+participant "ECC_Enclave Peer_Org1" as Enclave1 #99FF99
+participant "ERCC Peer_Org1" as ERCC1
+participant "TLCC_Enclave Peer1_Org1" as TLCC_Enclave1 #99FF99
+
+participant Orderer as Orderer
+
+actor	    "Admin_Org2" as Admin2
+participant "ECC_Manager (syscc) Peer_Org2" as ECC_Manager2
+database    "Local storage Peer_Org2" as Storage2
+participant "ECC Peer_Org2" as ECC2
+participant "ECC_Enclave Peer_Org2" as Enclave2 #99FF99
+participant "ERCC Peer_Org2" as ERCC2
+participant "TLCC_Enclave Peer1_Org1" as TLCC_Enclave2 #99FF99
 
 
-actor	"Admin_Org1" as Admin order 10
-
-participant "ECC_Manager (syscc) Peer1_Org1" as ECC_Manager1 order 20
-participant "ECC Peer1_Org1" as ECC1 order 21
-participant "ECC_Enclave Peer1_Org1" as Enclave1 order 22 #99FF99
-
-
-participant "ERCC Peer1_Org2" as ERCC2 order 30
-
-
-participant "ERCC Peer1_Org3" as ERCC3 order 40
-
-
-
-participant "TLCC_Enclave Peer1_Org1" as TLCC_Enclave order 40 #99FF99
-entity IAS order 50
-
-
-database "Local storage Peer1_Org1" as storage1 order 31
+ref over Admin1, ECC_Manager1, ECC1, Enclave1, ERCC1, TLCC_Enclave1
+  enclave creation, attestation generation, register attestation
+end ref
 
 group key generation
 
-  Admin -> ECC_Manager1 ++: generate key (CC_name, CC_ver, CH_id)
-
-  ECC_Manager1 -> ECC1 ++: generate key
-
-  ECC1 -> Enclave1 ++: generate key
-
-  Enclave1 -> Enclave1 : S_State, CC_{PK,SK} <- keyGen
-  note right
-    - S_State denotes state secret key.
-    - CC_{PK,SK} denotes chain code pub/priv key pair
+  note right Admin1
+    One admin must begin the key
+    generation using the local enclave.
+    This might as well be Admin2
+    using Enclave2.
   end note
-
-  Enclave1 -> Enclave1 : m <- encrypt {{S_State, CC_SK}} with ECC_E_PK
+  Admin1        -> Admin1       :   m <- <CC_name, CC_ver, CH_id>
+  Admin1        -> ECC_Manager1 ++: GenerateCCKeys(m)
+  ECC_Manager1  -> Storage1     ++: get enclave's sealed_state
   note right
-    enclave encryptes state secret key and chaincode privkey.
-    - m denotes encrypted message
+    If the enclave is up and running,
+    this step and the sealed_state
+    paramenters below can be skipped.
   end note
+  return /'Storage1 -> ECC_Manager1'/
 
-  Enclave1 -> Enclave1 : SIG_ECC <- sign {{m, CC_PK}} with ECC_S_SK
-  note right
-    enclave signs the encrypted message and the chaincode pubkey.
-    - SIG_ECC denotes the signature
+  ECC_Manager1  -> ECC1         ++: GenerateCCKeys(m, sealed_state)
+  ECC1          -> Enclave1     ++: GenerateCCKeys(m, sealed_state)
+  Enclave1      -> Enclave1     :   ecc_config <- Unseal(sealed_state)
+  Enclave1      -> Enclave1     :   check input parameters against ecc_config 
+  Enclave1      -> TLCC_Enclave1++: can_endorse(ECC1_S_PK)
+    note left of Enclave1
+        This can_endorse may be unnecessary,
+        because the enclave is registered,
+        and ERCC will check if it can endorse.
+    end note
+    note left of Enclave1 #ff0000
+        The can_endorse function is a nice-to-have feature.
+        We must check how it can be implemented.
+    end note
 
-  end note
+  return true
+    note left
+        if false, abort
+    end note
 
-  return ECC_S_PK, SIG_ECC, m, CC_PK
-  return ECC_S_PK, SIG_ECC, m, CC_PK
-  return ECC_S_PK, SIG_ECC, m, CC_PK
+  Enclave1      -> Enclave1     :   SEK, CC_E_{PK,SK} <- keyGen
+    note left
+        - SEK denotes the state encryption key
+        - CC_E_{PK,SK} denotes chain code pub/priv key pair
+    end note
+  Enclave1      -> Enclave1     :   add SEK, CC_E_{PK,SK} to ecc_config
+  Enclave1      -> Enclave1     : SIG_ECC1 <- sign <CC_E_PK> with ECC1_S_SK
+    note left
+        Confirmation statement that the enclave has CC_E_SK.
+    end note
+
+  Enclave1      -> Enclave1     :   sealed_state <- Seal(ecc_config)
+  Enclave1      -> Enclave1     :   m <- <ECC1_S_PK, SIG_ECC1, CC_E_PK>
+
+  return m, sealed_state /'ECC1 -> Enclave1'/
+  return m, sealed_state /'ECC_Manager1 -> ECC1'/
+
+  ECC_Manager1  -> Storage1     :   store sealed_state
+
+  return m /'Admin1 -> ECC_Manager1'/
 
 end group
 
-note right Admin #ff0000
-Discussion needed ... see below
-end note
+'note right Admin1 #ff0000
+'    Discussion needed ... see below
+'end note
 
-note right Admin
-- Where do we store ECC_S_PK, SIG_ECC, m, CC_PK??? At ECC or ERCC?
-- Do we treat key-mgnt as FPC lifcycle or is this application specific?
-- If FPC lifecycle => ERCC ; otherwise ECC
-end note
+'note right Admin1
+'    - Where do we store ECC1_S_PK, SIG_ECC, m, CC_E_PK??? At ECC or ERCC?
+'    - Do we treat key-mgnt as FPC lifcycle or is this application specific?
+'    - If FPC lifecycle => ERCC ; otherwise ECC
+'end note
 
-note right Admin
-**ERCC**
-+ aligned with FPC lifcycle policy
-+ central place where also FPC chaincodes store keys
-- how can ECC_Enclave access? m is stored in ERCC namespace
-- ERCC namspace can be accessed through cc2cc call
-    but not protected through TLCC
-TBD ...
-end note
+'note right Admin1
+'    **ERCC**
+'    + aligned with FPC lifcycle policy
+'    + central place where also FPC chaincodes store keys
+'    - how can ECC_Enclave access? m is stored in ERCC namespace
+'    - ERCC namspace can be accessed through cc2cc call
+'        but not protected through TLCC
+'    TBD ...
+'end note
 
-note right Admin
-**ECC**
-+ easy to securely access m protected through TLCC
-- difficult with application policy
-TBD ...
-end note
+'note right Admin1
+'    **ECC**
+'    + easy to securely access m protected through TLCC
+'    - difficult with application policy
+'    TBD ...
+'end note
+
+group key confirmation
+
+  note right of Admin1
+    Key confirmation is desirable in multi-org settings.
+    Assuming an org is running an enclave, other orgs may
+    want to ensure that the private chaincode transaction
+    can proceed in the case the running enclave is
+    unavailable - for any possible or malicious cause.
+    Key confirmation can ensure that backup enclave are
+    ready to take over and/or contribute.
+  end note
+  group key confirmation endorsement
+    Admin1  -> Admin1       :   m <- <ECC1_S_PK, SIG_ECC1, CC_E_PK>
+    Admin1  -> ERCC1        ++: ConfirmCCKeys(m)
+    ERCC1   -> ERCC1        :   check that creator is Admin
+    ERCC1   -> ERCC1        :   check that admin.org and enclave.org match
+    ERCC1   -> ERCC1        :   check ECC1_S_PK is registered
+    ERCC1   -> ERCC1        :   verify SIG_ECC1 over <CC_E_PK> using ECC1_S_PK
+    ERCC1   -> TLCC_Enclave1++: can_endorse(ECC1_S_PK)
+        note left
+            A secure channel with TLCC
+            is not required here.
+        end note
+    return true
+    note left
+        if false, abort
+    end note
+    ERCC1   -> ERCC1    :   put_state(key=<CC_name, CC_ver, ECC1_S_PK, "keydist_confirmed">, value=m)
+        note left
+            This is the proof (stored on the ledger)
+            that the enclave has the CC keys.
+            In a multi-org setting, the proof informs
+            of enclave availability.
+        end note
+
+    return /'Admin1 -> ERCC1'/
+
+  end group
+
+  ref over Admin1, ERCC2
+    key confirmation endorsement
+  end ref
+
+  Admin1 -> Orderer: submit key confirmation transaction
+
+end group
+
+
+group key distribution
+  ref over Admin1, TLCC_Enclave1, Admin2, TLCC_Enclave2
+    if necessary, upgrade chaincode policy to enable Enclave2 endorsements
+  end ref 
+  
+  ref over Admin2, ECC_Manager2, ECC2, Enclave2, ERCC2, TLCC_Enclave2
+    enclave creation, attestation generation, register attestation (see fpc-registration-new.puml)
+  end ref
+
+  note over Admin1, Admin2
+    At this point, a chaincode enclave is up and running, and another is waiting for the chaincode keys.
+    We need a means to trigger the key distribution. Now, an admin does it.
+    Can Fabric automate this?
+  end note
+
+  Admin1        -> ERCC1            ++: query registered enclave's key
+    note right
+        ERCC will likely return the list of enclaves
+        with their cryptographic material. Admin1
+        then selects the non-provisioned one(s).
+    end note
+  return ECC2_S_PK /'Admin1 -> ERCC1'/
+
+  Admin1        -> Admin1           :   m <- <CC_name, CC_ver, CH_id, org_id, ECC2_S_PK>
+  Admin1        -> ECC_Manager1     ++: DistributeKey(m)
+  ECC_Manager1  -> ECC1             ++: DistributeKey(m)
+  ECC1          -> Enclave1         ++: DistributeKey(m)
+  Enclave1      -> ERCC1            ++: GetRegistration(ECC2_S_PK)
+  return registration_message <- <m, attestation_report> /'Enclave1 -> ERCC1'/
+  Enclave1      -> TLCC_Enclave1    ++: check_committed_data(registration_message)
+  note left of TLCC_Enclave1
+    The actual implementation of check_committed_data
+    is out of scope here. A possible solution can be
+    sketched as follows. A principal asks TLCC whether
+    a chaincode (say ERCC) has stored a key
+    (say ECC2_SPK||".registration"), with a specific hash
+    value (say h=H(m || attestation_report)). TLCC returns
+    true/false (say h==H(value of store key)).
+  end note
+  return true /'Enclave1 -> TLCC_Enclave1'/
+    note left
+        if false, abort
+    end note
+  Enclave1      -> TLCC_Enclave1    ++: can_endorse(ECC2_S_PK)
+    note right
+        TLCC checks the endorsement policy to determine
+        if the recipient enclave is an eligible endorser.
+    end note
+    note right
+        TLCC should check that the recipient enclave's MRENCLAVE
+        matches the chaincode definition's MRENCLAVE.
+        This could enable key distribution from an old cc version,
+        with a different MRENCLAVE.
+        Notice: in this case there cannot be also a check
+        can_endorse(ECC1_S_PK) -- or it should be negated.
+    end note
+  return true /'Enclave1 -> TLCC_Enclave1'/
+    note left
+        if false, abort
+    end note
+  Enclave1      -> Enclave1         :   check CC_name, CC_ver, CH_id, org_id in sealed data
+  Enclave1      -> Enclave1         :   check ECC2_S_PK, ECC_E_PK, attestation_report
+  Enclave1      -> Enclave1         :   m <- encrypt <SEK, CC_E_SK> with ECC2_E_PK
+    note left
+        enclave encrypts state encryption key and chaincode private key
+        - m denotes encrypted message
+    end note
+
+  Enclave1      -> Enclave1         :   SIG_ECC1 <- sign <ECC1_S_PK, ECC2_s_PK, CC_E_PK, m> with ECC1_S_SK
+    note left
+        enclave signs the key material
+        it distributes together with the
+        sender and intended recipient identity
+    end note
+
+  Enclave1      -> Enclave1         :   w <- <ECC1_S_PK, ECC2_s_PK, CC_E_PK, SIG_ECC1>
+
+  return m, w /'ECC1 -> Enclave1'/
+  return m, w /'ECC_Manager1 -> ECC1'/
+  return m, w /'Admin1 -> ECC_Manager1'/
+
+  note right Admin1
+    Key distribution is in progress. We need a means to transfer the message with
+    the encrypted keys to the recipient enclave. The next step uses the ledger
+    itself for this data transfer. This additionally allows to log the two phases
+    of the key distribution: (1) the sender enclave produced the encrypted data blob;
+    (2) the recipient enclave correctly received it. This can be useful when dealing
+    with enclaves of two different orgs.
+  end note
+
+  group start key distribution endorsement
+    Admin1      -> ERCC1            ++: Start_KeyDist(m, w)
+    ERCC1       -> ERCC1            :   check ECC1_S_PK, ECC2_s_PK are registered
+    ERCC1       -> TLCC_Enclave1++: can_endorse(ECC1_S_PK)
+    return true
+    ERCC1       -> TLCC_Enclave1++: can_endorse(ECC2_S_PK)
+    return true
+    ERCC1       -> ERCC1            :   check SIG_ECC1
+    ERCC1       -> ERCC1            :   put_state(key=<CC_name, CC_ver, ECC1_S_PK, "keydist_started">, value=<w, m>)
+    return /'Admin1 -> ERCC1'/
+  end group
+
+  ref over Admin1, ERCC2
+    start key distribution endorsement
+  end ref
+
+  Admin1 -> Orderer: submit start key distribution transaction
+end group
+
+group complete key distribution
+  Admin2        -> Admin2           :   m <- <CC_name, CC_ver, CH_id, org_id>
+  Admin2        -> ECC_Manager2     ++: ConfirmCCKeyDist(m)
+  ECC_Manager2  -> ECC2             ++: ConfirmCCKeyDist(m)
+  ECC2          -> Enclave2         ++: ConfirmCCKeyDist(m)
+  Enclave2      -> ERCC2            ++: GetKeyDistStart(key=<CC_name, CC_ver, ECC2_S_PK, "keydist_started">)
+  return keydist_start_message <- value=<w, m> /'Enclave2 -> ERCC2'/
+  Enclave2      -> TLCC_Enclave2    ++: check_committed_data(keydist_start_message)
+  return true /'Enclave2 -> TLCC_Enclave2'/
+    note left
+        if false, abort
+    end note
+  Enclave2      -> ERCC2            ++: GetRegistration(ECC1_S_PK)
+  return registration_message <- <CC_name, CC_ver, CH_id, org_id, ECC1_S_PK, ECC1_E_PK, attestation_report> /'Enclave2 -> ERCC2'/
+  Enclave2      -> TLCC_Enclave2    ++: check_committed_data(registration_message)
+  return true /'Enclave2 -> TLCC_Enclave2'/
+    note left
+        if false, abort
+    end note
+  Enclave2      -> Enclave2         :   verify attestation report
+  Enclave2      -> Enclave2         :   verify ECC1_S_PK matches in registration_message and keydist_start_message
+  Enclave2      -> Enclave2         :   verify SIG_ECC1
+  Enclave2      -> Enclave2         :   SEK, CC_E_SK <- decrypt(m) with ECC2_E_SK
+
+  Enclave2      -> Enclave2         :   SIG_ECC2 <- sign <CC_E_PK> with ECC2_S_SK
+  Enclave2      -> Enclave2         :   store SEK, CC_E_SK in sealed_state
+  Enclave2      -> Enclave2         :   m <- <ECC2_S_PK, SIG_ECC2, CC_E_PK>
+
+  return m, sealed_state /'Enclave2 -> ECC2'/
+  return m, sealed_state /'ECC2 -> ECC_Manager2'/
+
+  ECC_Manager2  -> Storage2     :   store sealed_state
+
+  return m /'Admin2 -> ECC_Manager2'/
+
+  ref over ERCC1, Admin2, ERCC2, Orderer
+    key confirmation (same as that from Admin1)
+  end ref
+
+end group
 
 @enduml
