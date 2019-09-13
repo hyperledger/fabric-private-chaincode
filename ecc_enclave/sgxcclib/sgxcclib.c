@@ -145,7 +145,7 @@ int sgxcc_get_target_info(enclave_id_t eid, target_info_t* p_target_info)
     int ret = sgx_get_target_info(eid, (sgx_target_info_t*)p_target_info);
     if (ret != SGX_SUCCESS)
     {
-        LOG_ERROR("Lib: ERROR - ecall_get_target_info: %d", ret);
+        LOG_ERROR("Lib: ERROR - sgx_get_target_info: %d", ret);
     }
 
     return ret;
