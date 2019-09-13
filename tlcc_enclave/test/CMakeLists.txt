@@ -1,7 +1,25 @@
+SET(ECC_ATTESTATION_TYPE "$ENV{ECC_ATTESTATION_TYPE}")
+
+IF("$ENV{ECC_ATTESTATION_TYPE} " STREQUAL " ")
+    #default attestation flag is "epid_unlinkable"
+    SET(SGX_ATTESTATION_FLAG "-DUSE_EPID_UNLINKABLE")
+ELSE()
+    IF("${ECC_ATTESTATION_TYPE} " STREQUAL "epid_linkable ")
+        SET(SGX_ATTESTATION_FLAG "-DUSE_EPID_LINKABLE")
+    ELSEIF("${ECC_ATTESTATION_TYPE} " STREQUAL "epid_unlinkable ")
+        SET(SGX_ATTESTATION_FLAG "-DUSE_EPID_UNLINKABLE")
+    ELSE()
+        message(FATAL_ERROR "if set, ECC_ATTESTATION_TYPE must be 'epid_linkable' or 'epid_unlinkable'")
+    ENDIF()
+ENDIF()
+message(WARNING "TLCC attestation type derived from ECC -- TLCC does not use remote attestation")
+
 set(SOURCE_FILES
     test.c
     ${COMMON_SOURCE_DIR}/base64/base64.cpp
-    ${COMMON_SOURCE_DIR}/utils.c)
+    ${COMMON_SOURCE_DIR}/utils.c
+    ${COMMON_SOURCE_DIR}/sgxcclib/common-sgxcclib.c
+    )
 
 set(TEST_NAME test_runner)
 
@@ -12,9 +30,11 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/../trusted_ledger
     ${COMMON_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}/base64
-    ${SGX_SDK}/include)
+    ${COMMON_SOURCE_DIR}/sgxcclib
+    ${SGX_SDK}/include
+    )
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wall -Wno-attributes -std=c11")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wall -Wno-attributes -std=c11 ${SGX_ATTESTATION_FLAG}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SGX_COMMON_CFLAGS} -fpie -std=c++11 -fpermissive")
 
 target_link_libraries(${TEST_NAME}

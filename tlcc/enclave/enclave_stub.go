@@ -14,8 +14,9 @@ import (
 	"github.com/hyperledger/fabric/common/flogging"
 )
 
-// #cgo CFLAGS: -I${SRCDIR}/include
+// #cgo CFLAGS: -I${SRCDIR}/include -I${SRCDIR}/../../common/sgxcclib
 // #cgo LDFLAGS: -L${SRCDIR}/lib -ltl
+// #include "common-sgxcclib.h"
 // #include <trusted_ledger.h>
 import "C"
 
@@ -69,7 +70,7 @@ func (e *StubImpl) GetTargetInfo() ([]byte, error) {
 	targetInfoPtr := C.CBytes(targetInfo)
 	defer C.free(targetInfoPtr)
 
-	C.tlcc_get_target_info(e.eid,
+	C.sgxcc_get_target_info(e.eid,
 		(*C.target_info_t)(targetInfoPtr))
 
 	return targetInfo, nil
@@ -92,7 +93,7 @@ func (e *StubImpl) GetLocalAttestationReport(targetInfo []byte) ([]byte, []byte,
 	defer C.free(targetInfoPtr)
 
 	// call enclave
-	ret := C.tlcc_get_local_attestation_report(e.eid,
+	ret := C.sgxcc_get_local_attestation_report(e.eid,
 		(*C.target_info_t)(targetInfoPtr),
 		(*C.report_t)(reportPtr),
 		(*C.ec256_public_t)(pubkeyPtr))
@@ -169,7 +170,7 @@ func (e *StubImpl) Create(enclaveLibFile string) error {
 	defer C.free(unsafe.Pointer(f))
 
 	// todo read error
-	C.tlcc_create_enclave(&eid, f)
+	C.sgxcc_create_enclave(&eid, f)
 	e.eid = eid
 	return nil
 }
@@ -177,6 +178,6 @@ func (e *StubImpl) Create(enclaveLibFile string) error {
 // Destroy kills the current enclave instance
 func (e *StubImpl) Destroy() error {
 	// todo read error
-	C.tlcc_destroy_enclave(e.eid)
+	C.sgxcc_destroy_enclave(e.eid)
 	return nil
 }
