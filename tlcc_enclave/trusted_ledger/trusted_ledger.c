@@ -65,10 +65,10 @@ uint32_t tlcc_get_quote_size()
     return needed_quote_size;
 }
 
-int tlcc_get_target_info(enclave_id_t eid, target_info_t* target_info)
+int tlcc_get_target_info(enclave_id_t eid, target_info_t* p_target_info)
 {
     int enclave_ret = -1;
-    int ret = ecall_get_target_info(eid, &enclave_ret, (sgx_target_info_t*)target_info);
+    int ret = sgx_get_target_info(eid, (sgx_target_info_t*)p_target_info);
     if (ret != SGX_SUCCESS)
     {
         PERR("Lib: ERROR - ecall_target_info: %s", ret);
