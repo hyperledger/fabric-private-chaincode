@@ -133,6 +133,7 @@ func (t *EnclaveChaincode) setup(stub shim.ChaincodeStubInterface) pb.Response {
 	// get target info from our new enclave
 	eccTargetInfo, err := t.enclave.GetTargetInfo()
 	if err != nil {
+		logger.Errorf("t.enclave.GetTargetInfogrep failed: %s", err)
 		return shim.Error(fmt.Sprintf("Error while getting target info: %s", err))
 	}
 

@@ -64,6 +64,7 @@ func (t *TrustedLedgerCC) getLocalAttestationReport(stub shim.ChaincodeStubInter
 
 	reportAsBytes, enclavePk, err := t.enclave.GetLocalAttestationReport([]byte(targetInfo))
 	if err != nil {
+		logger.Errorf("t.enclave.GetLocalAttestationReport failed: %s", err)
 		return shim.Error(fmt.Sprintf("local attestation returns error: %s", err))
 	}
 
@@ -88,6 +89,7 @@ func (t *TrustedLedgerCC) getStateMetadata(stub shim.ChaincodeStubInterface) pb.
 
 	cmac, err := t.enclave.GetStateMetadata(key, []byte(nonce), isRangeQuery)
 	if err != nil {
+		logger.Errorf("t.enclave.GetStateMetadata failed: %s", err)
 		return shim.Error(fmt.Sprintf("GetState returns error: %s", err))
 	}
 
@@ -149,11 +151,13 @@ func (t *TrustedLedgerCC) initNewEnclave(genesis []byte) error {
 	// create new Enclave
 	err := t.enclave.Create(enclaveLibFile)
 	if err != nil {
+		logger.Errorf("t.enclave.Create failed: %s", err)
 		return fmt.Errorf("Error while creating enclave %s", err)
 	}
 
 	err = t.enclave.InitWithGenesis([]byte(genesis))
 	if err != nil {
+		logger.Errorf("t.enclave.InitWithGenesis failed: %s", err)
 		return fmt.Errorf("Error while initializing with genesis: %s", err)
 	}
 

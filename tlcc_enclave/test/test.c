@@ -14,8 +14,8 @@
 #include "error.h"
 #include "logging.h"
 
-#include "trusted_ledger.h"
 #include "common-sgxcclib.h"
+#include "trusted_ledger.h"
 
 #include "sgx_quote.h"
 

@@ -15,12 +15,17 @@ extern "C" {
 
 int sgxcc_create_enclave(enclave_id_t* eid, const char* enclave_file);
 int sgxcc_destroy_enclave(enclave_id_t eid);
-int sgxcc_get_quote_size(uint8_t *p_sig_rl, uint32_t sig_rl_size, uint32_t *p_quote_size);
+int sgxcc_get_quote_size(uint8_t* p_sig_rl, uint32_t sig_rl_size, uint32_t* p_quote_size);
 int sgxcc_get_target_info(enclave_id_t eid, target_info_t* target_info);
 int sgxcc_get_local_attestation_report(
     enclave_id_t eid, target_info_t* target_info, report_t* report, ec256_public_t* pubkey);
-int sgxcc_get_remote_attestation_report(
-    enclave_id_t eid, quote_t* quote, uint32_t quote_size, ec256_public_t* pubkey, spid_t* spid, uint8_t *p_sig_rl, uint32_t sig_rl_size);
+int sgxcc_get_remote_attestation_report(enclave_id_t eid,
+    quote_t* quote,
+    uint32_t quote_size,
+    ec256_public_t* pubkey,
+    spid_t* spid,
+    uint8_t* p_sig_rl,
+    uint32_t sig_rl_size);
 int sgxcc_get_pk(enclave_id_t eid, ec256_public_t* pubkey);
 int sgxcc_get_egid(unsigned int* p_egid);
 
@@ -29,4 +34,3 @@ int sgxcc_get_egid(unsigned int* p_egid);
 #endif /* __cplusplus */
 
 #endif /* !_COMMON_SGXCCLIB_H_ */
-

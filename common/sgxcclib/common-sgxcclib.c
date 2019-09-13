@@ -6,16 +6,16 @@
  */
 
 #include "common-sgxcclib.h"
+#include <unistd.h>   // access
 #include "sgx_eid.h"  // sgx_enclave_id_t
 #include "sgx_error.h"
-#include <unistd.h> // access
 #include "sgx_urts.h"
 //#include "sgx_quote.h"
+#include "enclave_u.h"  //ecall_init, ...
 #include "sgx_attestation_type.h"
 #include "sgx_uae_service.h"
-#include "enclave_u.h" //ecall_init, ...
 
-//TODO: separate logging in sgxcclib
+// TODO: separate logging in sgxcclib
 
 // Prototypes of CGo functions implemented in ecc/enclave/enclave_stub.go
 // - logging
@@ -24,39 +24,40 @@
 #define CYN "\x1B[36m"
 extern void golog(const char* format, ...);
 
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #define BUF_SIZE 1024
-#define LARGE_BUF_SIZE (BUF_SIZE*2)
-void LOG_ERROR(const char* fmt, ...) {
-    //create message
+#define LARGE_BUF_SIZE (BUF_SIZE * 2)
+void LOG_ERROR(const char* fmt, ...)
+{
+    // create message
     char msg[BUF_SIZE];
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(msg, BUF_SIZE, fmt, ap);
     va_end(ap);
-    //color the message
+    // color the message
     char colored_msg[LARGE_BUF_SIZE];
     snprintf(colored_msg, LARGE_BUF_SIZE, RED "ERROR: %s" NRM "\n", msg);
-    //dump message
+    // dump message
     golog(colored_msg);
 }
 
-void LOG_DEBUG(const char* fmt, ...) {
-    //create message
+void LOG_DEBUG(const char* fmt, ...)
+{
+    // create message
     char msg[BUF_SIZE];
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(msg, BUF_SIZE, fmt, ap);
     va_end(ap);
-    //color the message
+    // color the message
     char colored_msg[LARGE_BUF_SIZE];
     snprintf(colored_msg, LARGE_BUF_SIZE, CYN "DEBUG: %s" NRM "\n", msg);
-    //dump message
+    // dump message
     golog(colored_msg);
 }
-
 
 int sgxcc_create_enclave(sgx_enclave_id_t* eid, const char* enclave_file)
 {
@@ -95,20 +96,23 @@ int sgxcc_destroy_enclave(enclave_id_t eid)
     return ret;
 }
 
-int sgxcc_get_quote_size(uint8_t *p_sig_rl, uint32_t sig_rl_size, uint32_t *p_quote_size)
+int sgxcc_get_quote_size(uint8_t* p_sig_rl, uint32_t sig_rl_size, uint32_t* p_quote_size)
 {
     *p_quote_size = 0;
-    if(sig_rl_size > 0 && p_sig_rl == NULL) {
+    if (sig_rl_size > 0 && p_sig_rl == NULL)
+    {
         LOG_ERROR("Lib: Error: sigrlsize not zero but null sig_rl");
         return SGX_ERROR_UNEXPECTED;
     }
-    if(p_quote_size == NULL) {
+    if (p_quote_size == NULL)
+    {
         LOG_ERROR("Lib: Error: pquotesize is null");
         return SGX_ERROR_UNEXPECTED;
     }
 
     sgx_status_t ret = sgx_calc_quote_size(p_sig_rl, sig_rl_size, p_quote_size);
-    if(ret != SGX_SUCCESS) {
+    if (ret != SGX_SUCCESS)
+    {
         LOG_ERROR("Lib: Error: %d", ret);
     }
 
@@ -139,8 +143,13 @@ int sgxcc_get_local_attestation_report(
     return enclave_ret;
 }
 
-int sgxcc_get_remote_attestation_report(
-    enclave_id_t eid, quote_t* quote, uint32_t quote_size, ec256_public_t* pubkey, spid_t* spid, uint8_t *p_sig_rl, uint32_t sig_rl_size)
+int sgxcc_get_remote_attestation_report(enclave_id_t eid,
+    quote_t* quote,
+    uint32_t quote_size,
+    ec256_public_t* pubkey,
+    spid_t* spid,
+    uint8_t* p_sig_rl,
+    uint32_t sig_rl_size)
 {
     sgx_target_info_t qe_target_info = {0};
     sgx_epid_group_id_t gid = {0};
@@ -164,14 +173,15 @@ int sgxcc_get_remote_attestation_report(
 
     uint32_t required_quote_size = 0;
     ret = sgxcc_get_quote_size(p_sig_rl, sig_rl_size, &required_quote_size);
-    if(ret != SGX_SUCCESS)
+    if (ret != SGX_SUCCESS)
     {
         LOG_ERROR("Lib: ERROR - get quote size, %d", ret);
         return ret;
     }
     if (quote_size < required_quote_size)
     {
-        LOG_ERROR("Lib: ERROR - quote size too small. Required %u have %u", required_quote_size, quote_size);
+        LOG_ERROR("Lib: ERROR - quote size too small. Required %u have %u", required_quote_size,
+            quote_size);
         return SGX_ERROR_OUT_OF_MEMORY;
     }
 
@@ -201,7 +211,8 @@ int sgxcc_get_pk(enclave_id_t eid, ec256_public_t* pubkey)
     return enclave_ret;
 }
 
-int sgxcc_get_egid(unsigned int* p_egid) {
+int sgxcc_get_egid(unsigned int* p_egid)
+{
     sgx_target_info_t target_info = {0};
     int ret = sgx_init_quote(&target_info, (sgx_epid_group_id_t*)p_egid);
     if (ret != SGX_SUCCESS)
@@ -211,4 +222,3 @@ int sgxcc_get_egid(unsigned int* p_egid) {
     LOG_DEBUG("EGID: %u", *p_egid);
     return ret;
 }
-
