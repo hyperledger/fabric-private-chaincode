@@ -30,8 +30,9 @@ import (
 	"github.com/hyperledger/fabric/protos/msp"
 )
 
-// #cgo CFLAGS: -I${SRCDIR}/ecc-enclave-include
+// #cgo CFLAGS: -I${SRCDIR}/ecc-enclave-include -I${SRCDIR}/../../common/sgxcclib
 // #cgo LDFLAGS: -L${SRCDIR}/ecc-enclave-lib -lsgxcc
+// #include "common-sgxcclib.h"
 // #include "sgxcclib.h"
 // #include <stdio.h>
 // #include <string.h>

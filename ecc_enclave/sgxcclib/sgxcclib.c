@@ -11,14 +11,12 @@
 
 #include <stdbool.h>
 #include <string.h>
-#include <unistd.h>
 
 // for RA:
 #include "sgx_quote.h"
 #include "sgx_report.h"
 #include "sgx_uae_service.h"
 
-#include "sgx_eid.h"  // sgx_enclave_id_t
 #include "sgx_urts.h"
 
 #define NRM "\x1B[0m"
@@ -82,43 +80,6 @@ extern void get_state_by_partial_composite_key(const char* comp_key,
     cmac_t* cmac,
     void* ctx);
 extern void put_state(const char* key, uint8_t* val, uint32_t val_len, void* ctx);
-
-int sgxcc_create_enclave(sgx_enclave_id_t* eid, const char* enclave_file)
-{
-    if (access(enclave_file, F_OK) == -1)
-    {
-        LOG_ERROR("Lib: enclave file does not exist! %s", enclave_file);
-        return SGX_ERROR_UNEXPECTED;
-    }
-
-    sgx_launch_token_t token = {0};
-    int updated = 0;
-
-    int ret = sgx_create_enclave(enclave_file, SGX_DEBUG_FLAG, &token, &updated, eid, NULL);
-    if (ret != SGX_SUCCESS)
-    {
-        LOG_ERROR("Lib: Unable to create enclave. reason: %d", ret);
-        return ret;
-    }
-
-    int enclave_ret = SGX_ERROR_UNEXPECTED;
-    ret = ecall_init(*eid, &enclave_ret);
-    if (ret != SGX_SUCCESS || enclave_ret != SGX_SUCCESS)
-    {
-        LOG_ERROR("Lib: Unable to initialize enclave. reason: %d", ret);
-    }
-    return enclave_ret;
-}
-
-int sgxcc_destroy_enclave(enclave_id_t eid)
-{
-    int ret = sgx_destroy_enclave((sgx_enclave_id_t)eid);
-    if (ret != SGX_SUCCESS)
-    {
-        LOG_ERROR("Lib: Error: %d", ret);
-    }
-    return ret;
-}
 
 int sgxcc_get_quote_size(uint8_t *p_sig_rl, uint32_t sig_rl_size, uint32_t *p_quote_size)
 {

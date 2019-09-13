@@ -1,4 +1,5 @@
 /*
+ * Copyright 2019 Intel Corporation
  * Copyright IBM Corp. All Rights Reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -12,10 +13,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-int sgxcc_create_enclave(enclave_id_t* eid, const char* enclave_file);
-
-int sgxcc_destroy_enclave(enclave_id_t eid);
 
 int sgxcc_get_quote_size(uint8_t *p_sig_rl, uint32_t sig_rl_size, uint32_t *p_quote_size);
 

@@ -7,6 +7,7 @@ INCLUDE(CMakeVariables.txt)
 set(SOURCE_FILES
     sgxcclib.c
     enclave_u.c
+    ${COMMON_SOURCE_DIR}/sgxcclib/common-sgxcclib.c
     )
 
 set(cleanup_files
@@ -32,6 +33,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}/base64
+    ${COMMON_SOURCE_DIR}/sgxcclib
     ${SGX_SDK}/include
     )
 
