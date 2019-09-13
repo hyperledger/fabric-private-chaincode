@@ -1,4 +1,5 @@
 /*
+ * Copyright 2019 Intel Corporation
  * Copyright IBM Corp. All Rights Reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -24,12 +25,44 @@
 #define RED "\x1B[31m"
 #define CYN "\x1B[36m"
 
-#define LOG_ERROR(fmt, ...) golog(CYN "ERROR" RED fmt NRM "\n", ##__VA_ARGS__)
+//TODO: separate logging in sgxcclib
 
 // Prototypes of CGo functions implemented in ecc/enclave/enclave_stub.go
-
 // - logging
 extern void golog(const char* format, ...);
+
+#include <stdio.h>
+#include <stdarg.h>
+
+#define BUF_SIZE 1024
+#define LARGE_BUF_SIZE (BUF_SIZE*2)
+void LOG_ERROR(const char* fmt, ...) {
+    //create message
+    char msg[BUF_SIZE];
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(msg, BUF_SIZE, fmt, ap);
+    va_end(ap);
+    //color the message
+    char colored_msg[LARGE_BUF_SIZE];
+    snprintf(colored_msg, LARGE_BUF_SIZE, RED "ERROR: %s" NRM "\n", msg);
+    //dump message
+    golog(colored_msg);
+}
+
+void LOG_DEBUG(const char* fmt, ...) {
+    //create message
+    char msg[BUF_SIZE];
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(msg, BUF_SIZE, fmt, ap);
+    va_end(ap);
+    //color the message
+    char colored_msg[LARGE_BUF_SIZE];
+    snprintf(colored_msg, LARGE_BUF_SIZE, CYN "DEBUG: %s" NRM "\n", msg);
+    //dump message
+    golog(colored_msg);
+}
 
 // - creator access
 extern void get_creator_name(
@@ -55,7 +88,7 @@ int sgxcc_create_enclave(sgx_enclave_id_t* eid, const char* enclave_file)
     if (access(enclave_file, F_OK) == -1)
     {
         LOG_ERROR("Lib: enclave file does not exist! %s", enclave_file);
-        return -1;
+        return SGX_ERROR_UNEXPECTED;
     }
 
     sgx_launch_token_t token = {0};
@@ -68,15 +101,13 @@ int sgxcc_create_enclave(sgx_enclave_id_t* eid, const char* enclave_file)
         return ret;
     }
 
-    int enclave_ret = -1;
+    int enclave_ret = SGX_ERROR_UNEXPECTED;
     ret = ecall_init(*eid, &enclave_ret);
     if (ret != SGX_SUCCESS || enclave_ret != SGX_SUCCESS)
     {
         LOG_ERROR("Lib: Unable to initialize enclave. reason: %d", ret);
-        return ret;
     }
-
-    return SGX_SUCCESS;
+    return enclave_ret;
 }
 
 int sgxcc_destroy_enclave(enclave_id_t eid)
@@ -85,48 +116,59 @@ int sgxcc_destroy_enclave(enclave_id_t eid)
     if (ret != SGX_SUCCESS)
     {
         LOG_ERROR("Lib: Error: %d", ret);
-        return ret;
     }
-    return SGX_SUCCESS;
+    return ret;
 }
 
-uint32_t sgxcc_get_quote_size()
+int sgxcc_get_quote_size(uint8_t *p_sig_rl, uint32_t sig_rl_size, uint32_t *p_quote_size)
 {
-    uint32_t needed_quote_size = 0;
-    sgx_calc_quote_size(NULL, 0, &needed_quote_size);
-    return needed_quote_size;
+    *p_quote_size = 0;
+    if(sig_rl_size > 0 && p_sig_rl == NULL) {
+        LOG_ERROR("Lib: Error: sigrlsize not zero but null sig_rl");
+        return SGX_ERROR_UNEXPECTED;
+    }
+    if(p_quote_size == NULL) {
+        LOG_ERROR("Lib: Error: pquotesize is null");
+        return SGX_ERROR_UNEXPECTED;
+    }
+
+    sgx_status_t ret = sgx_calc_quote_size(p_sig_rl, sig_rl_size, p_quote_size);
+    if(ret != SGX_SUCCESS) {
+        LOG_ERROR("Lib: Error: %d", ret);
+    }
+
+    return (int)ret;
 }
 
-int sgxcc_get_target_info(enclave_id_t eid, target_info_t* target_info)
+int sgxcc_get_target_info(enclave_id_t eid, target_info_t* p_target_info)
 {
-    int enclave_ret;
-    int ret = ecall_get_target_info(eid, &enclave_ret, (sgx_target_info_t*)target_info);
+    int ret = sgx_get_target_info(eid, (sgx_target_info_t*)p_target_info);
     if (ret != SGX_SUCCESS)
     {
         LOG_ERROR("Lib: ERROR - sgx_get_target_info: %d", ret);
     }
+
     return ret;
 }
 
 int sgxcc_get_local_attestation_report(
     enclave_id_t eid, target_info_t* target_info, report_t* report, ec256_public_t* pubkey)
 {
-    int enclave_ret;
+    int enclave_ret = SGX_ERROR_UNEXPECTED;
     int ret = ecall_create_report(eid, &enclave_ret, (sgx_target_info_t*)target_info,
         (sgx_report_t*)report, (uint8_t*)pubkey);
-    if (ret != SGX_SUCCESS)
+    if (ret != SGX_SUCCESS || enclave_ret != SGX_SUCCESS)
     {
         LOG_ERROR("Lib: ERROR - ecall_create_report: %d", ret);
-        return ret;
     }
-    return ret;
+    return enclave_ret;
 }
 
 int sgxcc_bind(enclave_id_t eid, report_t* report, ec256_public_t* pubkey)
 {
-    int enclave_ret;
+    int enclave_ret = SGX_ERROR_UNEXPECTED;
     int ret = ecall_bind_tlcc(eid, &enclave_ret, (sgx_report_t*)report, (uint8_t*)pubkey);
-    if (ret != SGX_SUCCESS)
+    if (ret != SGX_SUCCESS || enclave_ret != SGX_SUCCESS)
     {
         LOG_ERROR("Lib: ERROR - ecall_bind_tlcc: %d", ret);
     }
@@ -134,7 +176,7 @@ int sgxcc_bind(enclave_id_t eid, report_t* report, ec256_public_t* pubkey)
 }
 
 int sgxcc_get_remote_attestation_report(
-    enclave_id_t eid, quote_t* quote, uint32_t quote_size, ec256_public_t* pubkey, spid_t* spid)
+    enclave_id_t eid, quote_t* quote, uint32_t quote_size, ec256_public_t* pubkey, spid_t* spid, uint8_t *p_sig_rl, uint32_t sig_rl_size)
 {
     sgx_target_info_t qe_target_info = {0};
     sgx_epid_group_id_t gid = {0};
@@ -148,49 +190,50 @@ int sgxcc_get_remote_attestation_report(
     }
 
     // get report from enclave
-    int enclave_ret = -1;
+    int enclave_ret = SGX_ERROR_UNEXPECTED;
     ret = ecall_create_report(eid, &enclave_ret, &qe_target_info, &report, (uint8_t*)pubkey);
-    if (ret != SGX_SUCCESS)
+    if (ret != SGX_SUCCESS || enclave_ret != SGX_SUCCESS)
     {
+        LOG_ERROR("Lib: ERROR - ecall_create_report: %d", ret);
+        return enclave_ret;
+    }
+
+    uint32_t required_quote_size = 0;
+    ret = sgxcc_get_quote_size(p_sig_rl, sig_rl_size, &required_quote_size);
+    if(ret != SGX_SUCCESS)
+    {
+        LOG_ERROR("Lib: ERROR - get quote size, %d", ret);
         return ret;
     }
-
-    int32_t needed = sgxcc_get_quote_size();
-    if (quote_size < needed)
+    if (quote_size < required_quote_size)
     {
-        LOG_ERROR("Lib: ERROR - quote size to small needed: %i but have %i", needed, quote_size);
+        LOG_ERROR("Lib: ERROR - quote size too small. Required %u have %u", required_quote_size, quote_size);
         return SGX_ERROR_OUT_OF_MEMORY;
     }
-
-    // TODO: retrieve SigRL from IAS instead of just passing NULL below ...
 
     ret = sgx_get_quote(&report, SGX_QUOTE_SIGN_TYPE,
         (sgx_spid_t*)spid,  // spid
         NULL,               // nonce
-        NULL,               // sig_rl
-        0,                  // sig_rl_size
+        p_sig_rl,           // sig_rl
+        sig_rl_size,        // sig_rl_size
         NULL,               // p_qe_report
         (sgx_quote_t*)quote, quote_size);
 
     if (ret != SGX_SUCCESS)
     {
         LOG_ERROR("Lib: ERROR - sgx_get_quote: %d", ret);
-        return ret;
     }
-
     return ret;
 }
 
 int sgxcc_get_pk(enclave_id_t eid, ec256_public_t* pubkey)
 {
-    int enclave_ret;
+    int enclave_ret = SGX_ERROR_UNEXPECTED;
     int ret = ecall_get_pk(eid, &enclave_ret, (uint8_t*)pubkey);
-    if (ret != SGX_SUCCESS)
+    if (ret != SGX_SUCCESS || enclave_ret != SGX_SUCCESS)
     {
         LOG_ERROR("Lib: ERROR - ecall_get_pk: %d", ret);
-        return ret;
     }
-
     return enclave_ret;
 }
 
@@ -202,18 +245,16 @@ int sgxcc_init(enclave_id_t eid,
     ec256_signature_t* signature,
     void* ctx)
 {
-    int enclave_ret;
+    int enclave_ret = SGX_ERROR_UNEXPECTED;
     int ret = ecall_cc_init(eid, &enclave_ret,
         encoded_args,                                 // args (encoded and potentially encrypted)
         response, response_len_in, response_len_out,  // response
         (sgx_ec256_signature_t*)signature,            // signature
         ctx);                                         // context for callback
-    if (ret != SGX_SUCCESS)
+    if (ret != SGX_SUCCESS || enclave_ret != SGX_SUCCESS)
     {
         LOG_ERROR("Lib: ERROR - invoke: %d", ret);
-        return ret;
     }
-
     return enclave_ret;
 }
 
@@ -226,20 +267,30 @@ int sgxcc_invoke(enclave_id_t eid,
     ec256_signature_t* signature,
     void* ctx)
 {
-    int enclave_ret;
+    int enclave_ret = SGX_ERROR_UNEXPECTED;
     int ret = ecall_cc_invoke(eid, &enclave_ret,
         encoded_args,  // args  (encoded and potentially encrypted)
         pk,            // client pk used for args encryption, if null no encryption used
         response, response_len_in, response_len_out,  // response
         (sgx_ec256_signature_t*)signature,            // signature
         ctx);                                         // context for callback
-    if (ret != SGX_SUCCESS)
+    if (ret != SGX_SUCCESS || enclave_ret != SGX_SUCCESS)
     {
         LOG_ERROR("Lib: ERROR - invoke: %d", ret);
-        return ret;
     }
 
     return enclave_ret;
+}
+
+int sgxcc_get_egid(unsigned int* p_egid) {
+    sgx_target_info_t target_info = {0};
+    int ret = sgx_init_quote(&target_info, (sgx_epid_group_id_t*)p_egid);
+    if (ret != SGX_SUCCESS)
+    {
+        LOG_ERROR("Lib: ERROR - sgx_get_egid: %d", ret);
+    }
+    LOG_DEBUG("EGID: %u", *p_egid);
+    return ret;
 }
 
 /* OCall functions */
