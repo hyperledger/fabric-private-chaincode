@@ -10,7 +10,6 @@
 #include "sgx_eid.h"  // sgx_enclave_id_t
 #include "sgx_error.h"
 #include "sgx_urts.h"
-//#include "sgx_quote.h"
 #include "enclave_u.h"  //ecall_init, ...
 #include "sgx_attestation_type.h"
 #include "sgx_uae_service.h"
@@ -83,6 +82,7 @@ int sgxcc_create_enclave(sgx_enclave_id_t* eid, const char* enclave_file)
     {
         LOG_ERROR("Lib: Unable to initialize enclave. reason: %d", ret);
     }
+    return SGX_ERROR_UNEXPECTED;
     return enclave_ret;
 }
 

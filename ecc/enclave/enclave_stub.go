@@ -317,15 +317,15 @@ func (e *StubImpl) GetRemoteAttestationReport(spid []byte, sig_rl []byte, sig_rl
 	quotePtr := C.malloc(C.ulong(quoteSize))
 	defer C.free(quotePtr)
 
-	e.sem.Acquire(context.Background(), 1)
 	// call enclave
+	e.sem.Acquire(context.Background(), 1)
 	ret = C.sgxcc_get_remote_attestation_report(e.eid, (*C.quote_t)(quotePtr), C.uint32_t(quoteSize),
 		(*C.ec256_public_t)(pubkeyPtr), (*C.spid_t)(spidPtr), (*C.uint8_t)(sig_rlPtr), C.uint32_t(sig_rl_size))
+	e.sem.Release(1)
 	if ret != 0 {
 		return nil, nil, fmt.Errorf("C.sgxcc_get_remote_attestation_report failed. Reason: %d", int(ret))
 	}
 
-	e.sem.Release(1)
 
 	// convert sgx format to DER-encoded PKIX format
 	pk, err := crypto.MarshalEnclavePk(C.GoBytes(pubkeyPtr, C.int(PUB_KEY_SIZE)))
