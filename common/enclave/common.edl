@@ -16,8 +16,6 @@ enclave {
                 [out] sgx_report_t *report,
                 [out, size=64] uint8_t *pubkey);
 
-        public int ecall_get_target_info([in, out] sgx_target_info_t *target_info);
-
         public int ecall_get_pk([out, size=64] uint8_t *pubkey);
     };
 
