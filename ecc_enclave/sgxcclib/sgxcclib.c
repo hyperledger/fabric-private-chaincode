@@ -6,6 +6,7 @@
  */
 
 #include "sgxcclib.h"
+#include "common-sgxcclib.h"  //ERROR_CHECK_AND_RETURN macro
 #include "enclave_u.h"
 
 #include <stdbool.h>
@@ -44,11 +45,8 @@ int sgxcc_bind(enclave_id_t eid, report_t* report, ec256_public_t* pubkey)
 {
     int enclave_ret = SGX_ERROR_UNEXPECTED;
     int ret = ecall_bind_tlcc(eid, &enclave_ret, (sgx_report_t*)report, (uint8_t*)pubkey);
-    if (ret != SGX_SUCCESS || enclave_ret != SGX_SUCCESS)
-    {
-        LOG_ERROR("Lib: ERROR - ecall_bind_tlcc: %d", ret);
-    }
-    return enclave_ret;
+
+    ERROR_CHECK_AND_RETURN(ecall_bind_tlcc)
 }
 
 int sgxcc_init(enclave_id_t eid,
@@ -65,11 +63,8 @@ int sgxcc_init(enclave_id_t eid,
         response, response_len_in, response_len_out,  // response
         (sgx_ec256_signature_t*)signature,            // signature
         ctx);                                         // context for callback
-    if (ret != SGX_SUCCESS || enclave_ret != SGX_SUCCESS)
-    {
-        LOG_ERROR("Lib: ERROR - invoke: %d", ret);
-    }
-    return enclave_ret;
+
+    ERROR_CHECK_AND_RETURN(ecall_cc_init)
 }
 
 int sgxcc_invoke(enclave_id_t eid,
@@ -88,12 +83,8 @@ int sgxcc_invoke(enclave_id_t eid,
         response, response_len_in, response_len_out,  // response
         (sgx_ec256_signature_t*)signature,            // signature
         ctx);                                         // context for callback
-    if (ret != SGX_SUCCESS || enclave_ret != SGX_SUCCESS)
-    {
-        LOG_ERROR("Lib: ERROR - invoke: %d", ret);
-    }
 
-    return enclave_ret;
+    ERROR_CHECK_AND_RETURN(ecall_cc_invoke)
 }
 
 /* OCall functions */

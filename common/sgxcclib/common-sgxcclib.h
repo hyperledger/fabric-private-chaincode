@@ -1,4 +1,5 @@
 /*
+ * Copyright 2019 Intel Corporation
  * Copyright IBM Corp. All Rights Reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -28,6 +29,25 @@ int sgxcc_get_remote_attestation_report(enclave_id_t eid,
     uint32_t sig_rl_size);
 int sgxcc_get_pk(enclave_id_t eid, ec256_public_t* pubkey);
 int sgxcc_get_egid(unsigned int* p_egid);
+
+#define ERROR_CHECK_RET(func_name)                             \
+    if (ret != SGX_SUCCESS)                                    \
+    {                                                          \
+        LOG_ERROR("Lib: ERROR - " #func_name ": ret=%d", ret); \
+        return ret;                                            \
+    }
+
+#define ERROR_CHECK(func_name)                                                 \
+    ERROR_CHECK_RET(func_name)                                                 \
+    if (enclave_ret != SGX_SUCCESS)                                            \
+    {                                                                          \
+        LOG_ERROR("Lib: ERROR - " #func_name ": enclave_ret=%d", enclave_ret); \
+        return enclave_ret;                                                    \
+    }
+
+#define ERROR_CHECK_AND_RETURN(func_name) \
+    ERROR_CHECK(func_name)                \
+    return SGX_SUCCESS;
 
 #ifdef __cplusplus
 }
