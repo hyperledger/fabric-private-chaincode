@@ -190,6 +190,10 @@ func (vscc *VSCCECC) checkEnclaveEndorsement(cis *peer.ChaincodeInvocationSpec, 
 
 		// range query reads
 		for _, rqi := range ns.KvRwSet.RangeQueriesInfo {
+			if rqi.GetRawReads() == nil {
+				// no raw reads available in this range query
+				continue
+			}
 			for _, qr := range rqi.GetRawReads().KvReads {
 				k := sgx_utils.TransformToSGX(qr.Key, sgx_utils.SEP)
 				readKeys = append(readKeys, k)
