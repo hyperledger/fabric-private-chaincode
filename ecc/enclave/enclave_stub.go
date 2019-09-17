@@ -326,7 +326,6 @@ func (e *StubImpl) GetRemoteAttestationReport(spid []byte, sig_rl []byte, sig_rl
 		return nil, nil, fmt.Errorf("C.sgxcc_get_remote_attestation_report failed. Reason: %d", int(ret))
 	}
 
-
 	// convert sgx format to DER-encoded PKIX format
 	pk, err := crypto.MarshalEnclavePk(C.GoBytes(pubkeyPtr, C.int(PUB_KEY_SIZE)))
 	if err != nil {
