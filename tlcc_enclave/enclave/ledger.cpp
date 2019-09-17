@@ -675,8 +675,8 @@ int parse_endorser_transaction(
                         }
                         LOG_DEBUG("Ledger: \t\t\t \\-> key = %s", key.c_str());
                         // note prototype does not support deletes
-                        std::string val((const char*)kvrwset.writes[0].value->bytes,
-                            kvrwset.writes[0].value->size);
+                        std::string val((const char*)kvrwset.writes[i].value->bytes,
+                            kvrwset.writes[i].value->size);
                         version_t version = {tx_version->block_num, tx_version->tx_num};
                         updates->insert(kvs_item_t(key, kvs_value_t(val, version)));
 
