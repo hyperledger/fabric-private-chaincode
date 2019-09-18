@@ -128,7 +128,7 @@ Make sure that you have the following required dependencies installed:
 
 * [SSL](https://github.com/intel/intel-sgx-ssl)  for SGX SDK v2.4.1 (we recommend using OpenSSL 1.1.0j) 
 
-* Hyperledger [Fabric](https://github.com/hyperledger/fabric) v1.4.2
+* Hyperledger [Fabric](https://github.com/hyperledger/fabric) v1.4.3
 
 * Clang-format 6.x or higher
 
@@ -222,10 +222,10 @@ configuration that your `$GOPATH` has a _single_ root-directoy!)
 
 Next we need to patch the Fabric peer and rebuild it in order to enable Fabric Private Chaincode support. 
 
-Checkout Fabric 1.4.2 release and apply our patch using the following commands:
+Checkout Fabric 1.4.3 release and apply our patch using the following commands:
 
     $ export FABRIC_PATH=${GOPATH}/src/github.com/hyperledger/fabric
-    $ git clone --branch v1.4.2 https://github.com/hyperledger/fabric.git $FABRIC_PATH
+    $ git clone --branch v1.4.3 https://github.com/hyperledger/fabric.git $FABRIC_PATH
     $ cd $FABRIC_PATH
     $ git am ../../hyperledger-labs/fabric-private-chaincode/fabric/*.patch
     
