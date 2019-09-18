@@ -93,9 +93,9 @@ auction_test() {
     check_result "NO_BIDS"
 
     # Code below is used to test bug in issue #42
-    #becho ">>>> Create a new auction. Response should be OK"
-    #try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"create", "Args": ["MyAuction4"]}' --waitForEvent
-    #check_result "OK"
+    becho ">>>> Create a new auction. Response should be OK"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"create", "Args": ["MyAuction4"]}' --waitForEvent
+    check_result "OK"
 }
 
 # 1. prepare
