@@ -5,7 +5,7 @@
 TOP = ..
 include $(TOP)/build.mk
 
-SUB_DIRS = fabric fabric-ccenv-sgx
+SUB_DIRS = docker fabric
 
 all build test clean :
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@;)
