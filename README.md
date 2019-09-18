@@ -122,7 +122,7 @@ Make sure that you have the following required dependencies installed:
 
 * Protocol Buffers 3.x and [Nanopb](http://github.com/nanopb/nanopb) 0.3.9.2
 
-* SGX SDK v2.4 or v2.5 for [Linux](https://github.com/intel/linux-sgx)
+* SGX SDK v2.6 for [Linux](https://github.com/intel/linux-sgx)
 
 * Credentials for Intel Attestation Service, read [here](#intel-attestation-service-ias) (for hardware-mode SGX)
 
@@ -230,7 +230,7 @@ Checkout Fabric 1.4.3 release and apply our patch using the following commands:
     $ git am ../../hyperledger-labs/fabric-private-chaincode/fabric/*.patch
     
 Note that this patch does currently not work with the Fabric master branch, therefore make sure you use the Fabric
-v1.4.2 branch.
+v1.4.3 branch.
 
 Make sure Fabric is in your ``$GOPATH`` and you enable the plugin feature using `GO_TAGS=pluginsenabled`. Simply run"
 

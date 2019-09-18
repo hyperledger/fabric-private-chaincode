@@ -30,7 +30,7 @@ gotools:
 	# install goimports if not present
 	$(GO) get golang.org/x/tools/cmd/goimports
 
-godeps:
+godeps: gotools
 	$(GO) get github.com/spf13/viper
 	$(GO) get golang.org/x/sync/semaphore
 	$(GO) get github.com/pkg/errors
