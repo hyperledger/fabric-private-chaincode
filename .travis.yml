@@ -1,0 +1,65 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+dist: bionic
+language: go
+
+sudo: required
+services:
+  docker
+
+addons:
+  apt:
+    packages:
+      - protobuf-compiler
+      - python-protobuf
+
+go_import_path: github.com/hyperledger-labs/fabric-private-chaincode
+
+env:
+  global:
+    # SGX config
+    - SGX_MODE=SIM
+    - SGX_SDK=/opt/intel/sgxsdk
+    # SGX SSL
+    - OPENSSL=1.1.0j
+    - SGXSSL_VERSION=v2.4.1
+    - SGXSSL=/opt/intel/sgxssl
+    # NANOPB
+    - NANOPB_VERSION=0.3.9.2
+    - NANOPB_PATH=${HOME}/nanopb
+    # FABRIC
+    - FABRIC_VERSION=1.4.3
+    - FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
+    - PATH=$PATH:$SGX_SDK/bin:$SGX_SDK/bin/x64
+    - PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$SGX_SDK/pkgconfig
+    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SGX_SDK/sdk_libs
+    - SGX_REPO=https://download.01.org/intel-sgx/linux-2.6/ubuntu18.04-server
+    - SGX_LIB_COMMON=libsgx-enclave-common_2.6.100.51363-bionic1_amd64.deb
+    - SGX_SDK_BIN=sgx_linux_x64_sdk_2.6.100.51363.bin
+
+before_install:
+  # SGX SDK
+  - mkdir -p /opt/intel && mkdir -p /etc/init
+  - pushd /opt/intel; wget ${SGX_REPO}/${SGX_LIB_COMMON}
+  - sudo dpkg -i ${SGX_LIB_COMMON}
+  - wget ${SGX_REPO}/${SGX_SDK_BIN}
+  - chmod +x ${SGX_SDK_BIN}
+  - sudo sh -c "echo 'yes' | ./${SGX_SDK_BIN}"; popd
+  # SGX SSL
+  - pushd $HOME; git clone --branch $SGXSSL_VERSION https://github.com/intel/intel-sgx-ssl.git
+  - wget https://www.openssl.org/source/openssl-$OPENSSL.tar.gz; mv openssl-$OPENSSL.tar.gz intel-sgx-ssl/openssl_source
+  - cd intel-sgx-ssl/Linux; make SGX_MODE=SIM DESTDIR=$SGXSSL all test
+  - cd intel-sgx-ssl/Linux; make install; popd
+  # NANOPB
+  - git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH}
+  - pushd ${NANOPB_PATH} && git checkout nanopb-${NANOPB_VERSION} && cd generator/proto && make && popd
+  # Fabric
+  - git clone --branch v$FABRIC_VERSION https://github.com/hyperledger/fabric.git $FABRIC_PATH
+  - pushd $FABRIC_PATH
+  - git am $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/*.patch
+  - GO_TAGS=pluginsenabled make peer orderer cryptogen configtxgen && popd
+
+script:
+  - make
