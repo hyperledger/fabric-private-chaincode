@@ -30,24 +30,13 @@ int sgxcc_get_remote_attestation_report(enclave_id_t eid,
 int sgxcc_get_pk(enclave_id_t eid, ec256_public_t* pubkey);
 int sgxcc_get_egid(unsigned int* p_egid);
 
-#define ERROR_CHECK_RET(func_name)                             \
-    if (ret != SGX_SUCCESS)                                    \
-    {                                                          \
-        LOG_ERROR("Lib: ERROR - " #func_name ": ret=%d", ret); \
-        return ret;                                            \
+#define CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(sgx_status_ret)                                        \
+    if (sgx_status_ret != SGX_SUCCESS)                                                             \
+    {                                                                                              \
+        LOG_ERROR(                                                                                 \
+            "Lib: ERROR - %s:%d: " #sgx_status_ret "=%d", __FUNCTION__, __LINE__, sgx_status_ret); \
+        return sgx_status_ret;                                                                     \
     }
-
-#define ERROR_CHECK(func_name)                                                 \
-    ERROR_CHECK_RET(func_name)                                                 \
-    if (enclave_ret != SGX_SUCCESS)                                            \
-    {                                                                          \
-        LOG_ERROR("Lib: ERROR - " #func_name ": enclave_ret=%d", enclave_ret); \
-        return enclave_ret;                                                    \
-    }
-
-#define ERROR_CHECK_AND_RETURN(func_name) \
-    ERROR_CHECK(func_name)                \
-    return SGX_SUCCESS;
 
 #ifdef __cplusplus
 }

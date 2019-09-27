@@ -22,21 +22,27 @@ int tlcc_init_with_genesis(enclave_id_t eid, uint8_t* genesis, uint32_t genesis_
 {
     int enclave_ret = SGX_ERROR_UNEXPECTED;
     int ret = ecall_join_channel(eid, &enclave_ret, genesis, genesis_size);
-    ERROR_CHECK_AND_RETURN(ecall_join_channel)
+    CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(ret)
+    CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(enclave_ret)
+    return SGX_SUCCESS;
 }
 
 int tlcc_send_block(enclave_id_t eid, uint8_t* block, uint32_t block_size)
 {
     int enclave_ret = SGX_ERROR_UNEXPECTED;
     int ret = ecall_next_block(eid, &enclave_ret, block, block_size);
-    ERROR_CHECK_AND_RETURN(ecall_next_block)
+    CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(ret)
+    CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(enclave_ret)
+    return SGX_SUCCESS;
 }
 
 int tlcc_get_state_metadata(enclave_id_t eid, const char* key, uint8_t* nonce, cmac_t* cmac)
 {
     int enclave_ret = SGX_ERROR_UNEXPECTED;
     int ret = ecall_get_state_metadata(eid, (int*)&enclave_ret, key, nonce, cmac);
-    ERROR_CHECK_AND_RETURN(ecall_get_state_metadata)
+    CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(ret)
+    CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(enclave_ret)
+    return SGX_SUCCESS;
 }
 
 int tlcc_get_multi_state_metadata(
@@ -44,7 +50,9 @@ int tlcc_get_multi_state_metadata(
 {
     int enclave_ret = SGX_ERROR_UNEXPECTED;
     int ret = ecall_get_multi_state_metadata(eid, (int*)&enclave_ret, comp_key, nonce, cmac);
-    ERROR_CHECK_AND_RETURN(ecall_get_multi_state_metadata)
+    CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(ret)
+    CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(enclave_ret)
+    return SGX_SUCCESS;
 }
 
 // this is only for debugging
@@ -52,7 +60,9 @@ int tlcc_print_state(enclave_id_t eid)
 {
     int enclave_ret = SGX_ERROR_UNEXPECTED;
     int ret = ecall_print_state(eid, (int*)&enclave_ret);
-    ERROR_CHECK_AND_RETURN(ecall_print_state)
+    CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(ret)
+    CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(enclave_ret)
+    return SGX_SUCCESS;
 }
 
 /* OCall functions */
