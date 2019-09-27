@@ -17,6 +17,7 @@ DOCKER_CONTAINER_ID?=$$(docker ps | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | a
 # the following are the required docker build parameters
 DOCKER_IMAGE ?= $$(docker images | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
 DOCKER_BOILERPLATE_ECC_IMAGE ?= $(PROJECT_NAME)/boilerplate-ecc
+INSTALLED_DOCKER_BOILERPLATE_ECC_IMAGE ?= $$(docker images | grep -- ${DOCKER_BOILERPLATE_ECC_IMAGE} | awk '{print $$1;}')
 DOCKER_ENCLAVE_SO_PATH ?= $(ENCLAVE_SO_PATH)
 
 all: build
@@ -86,3 +87,4 @@ docker-stop:
 
 docker-clean: docker-stop
 	-if [ ! -z "$(DOCKER_IMAGE)" ]; then docker rmi -f $(DOCKER_IMAGE); fi
+	-if [ ! -z "$(INSTALLED_DOCKER_BOILERPLATE_ECC_IMAGE)" ]; then echo "Remove boilerplate image"; docker rmi $(INSTALLED_DOCKER_BOILERPLATE_ECC_IMAGE); fi

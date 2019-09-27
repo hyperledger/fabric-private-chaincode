@@ -30,8 +30,9 @@ import (
 	"github.com/hyperledger/fabric/protos/msp"
 )
 
-// #cgo CFLAGS: -I${SRCDIR}/ecc-enclave-include
+// #cgo CFLAGS: -I${SRCDIR}/ecc-enclave-include -I${SRCDIR}/../../common/sgxcclib
 // #cgo LDFLAGS: -L${SRCDIR}/ecc-enclave-lib -lsgxcc
+// #include "common-sgxcclib.h"
 // #include "sgxcclib.h"
 // #include <stdio.h>
 // #include <string.h>
@@ -253,7 +254,7 @@ func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max
 // Stub interface
 type Stub interface {
 	// Return quote and enclave PK in DER-encoded PKIX format
-	GetRemoteAttestationReport(spid []byte) ([]byte, []byte, error)
+	GetRemoteAttestationReport(spid []byte, sig_rl []byte, sig_rl_size uint) ([]byte, []byte, error)
 	// Return report and enclave PK in DER-encoded PKIX format
 	GetLocalAttestationReport(targetInfo []byte) ([]byte, []byte, error)
 	// Init chaincode
@@ -287,11 +288,22 @@ func NewEnclave() Stub {
 
 // GetRemoteAttestationReport - calls the enclave for attestation, takes SPID as input
 // and returns a quote and enclaves public key
-func (e *StubImpl) GetRemoteAttestationReport(spid []byte) ([]byte, []byte, error) {
-	// quote
-	quote_size := C.sgxcc_get_quote_size()
-	quotePtr := C.malloc(C.ulong(quote_size))
-	defer C.free(quotePtr)
+func (e *StubImpl) GetRemoteAttestationReport(spid []byte, sig_rl []byte, sig_rl_size uint) ([]byte, []byte, error) {
+	//sig_rl
+	var sig_rlPtr unsafe.Pointer
+	if sig_rl == nil {
+		sig_rlPtr = unsafe.Pointer(sig_rlPtr)
+	} else {
+		sig_rlPtr = C.CBytes(sig_rl)
+		defer C.free(sig_rlPtr)
+	}
+
+	// quote size
+	quoteSize := C.uint32_t(0)
+	ret := C.sgxcc_get_quote_size((*C.uint8_t)(sig_rlPtr), C.uint(sig_rl_size), (*C.uint32_t)(unsafe.Pointer(&quoteSize)))
+	if ret != 0 {
+		return nil, nil, fmt.Errorf("C.sgxcc_get_quote_size failed. Reason: %d", int(ret))
+	}
 
 	// pubkey
 	pubkeyPtr := C.malloc(PUB_KEY_SIZE)
@@ -301,13 +313,18 @@ func (e *StubImpl) GetRemoteAttestationReport(spid []byte) ([]byte, []byte, erro
 	spidPtr := C.CBytes(spid)
 	defer C.free(spidPtr)
 
-	e.sem.Acquire(context.Background(), 1)
-	// call enclave
-	// TODO read error
-	C.sgxcc_get_remote_attestation_report(e.eid, (*C.quote_t)(quotePtr), quote_size,
-		(*C.ec256_public_t)(pubkeyPtr), (*C.spid_t)(spidPtr))
+	// prepare quote space
+	quotePtr := C.malloc(C.ulong(quoteSize))
+	defer C.free(quotePtr)
 
+	// call enclave
+	e.sem.Acquire(context.Background(), 1)
+	ret = C.sgxcc_get_remote_attestation_report(e.eid, (*C.quote_t)(quotePtr), C.uint32_t(quoteSize),
+		(*C.ec256_public_t)(pubkeyPtr), (*C.spid_t)(spidPtr), (*C.uint8_t)(sig_rlPtr), C.uint32_t(sig_rl_size))
 	e.sem.Release(1)
+	if ret != 0 {
+		return nil, nil, fmt.Errorf("C.sgxcc_get_remote_attestation_report failed. Reason: %d", int(ret))
+	}
 
 	// convert sgx format to DER-encoded PKIX format
 	pk, err := crypto.MarshalEnclavePk(C.GoBytes(pubkeyPtr, C.int(PUB_KEY_SIZE)))
@@ -315,7 +332,7 @@ func (e *StubImpl) GetRemoteAttestationReport(spid []byte) ([]byte, []byte, erro
 		return nil, nil, err
 	}
 
-	return C.GoBytes(quotePtr, C.int(quote_size)), pk, nil
+	return C.GoBytes(quotePtr, C.int(quoteSize)), pk, nil
 }
 
 // GetLocalAttestationReport - calls the enclave for attestation, takes SPID as input
@@ -352,8 +369,7 @@ func (e *StubImpl) Init(args []byte, shimStub shim.ChaincodeStubInterface, tlccS
 	defer C.free(signaturePtr)
 
 	e.sem.Acquire(context.Background(), 1)
-	// invoke enclave
-	// TODO read error
+	// invoke (init) enclave
 	ret := C.sgxcc_init(e.eid,
 		argsPtr,
 		(*C.uint8_t)(responsePtr), C.uint32_t(MAX_RESPONSET_SIZE), &responseLenOut,
@@ -403,7 +419,6 @@ func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInt
 
 	e.sem.Acquire(context.Background(), 1)
 	// invoke enclave
-	// TODO read error
 	ret := C.sgxcc_invoke(e.eid,
 		argsPtr,
 		pkPtr,
@@ -430,9 +445,11 @@ func (e *StubImpl) GetPublicKey() ([]byte, error) {
 
 	e.sem.Acquire(context.Background(), 1)
 	// call enclave
-	// TODO read error
-	C.sgxcc_get_pk(e.eid, (*C.ec256_public_t)(pubkeyPtr))
+	ret := C.sgxcc_get_pk(e.eid, (*C.ec256_public_t)(pubkeyPtr))
 	e.sem.Release(1)
+	if ret != 0 {
+		return nil, fmt.Errorf("C.sgxcc_get_pk failed. Reason: %d", int(ret))
+	}
 
 	// convert sgx format to DER-encoded PKIX format
 	return crypto.MarshalEnclavePk(C.GoBytes(pubkeyPtr, C.int(PUB_KEY_SIZE)))
@@ -441,7 +458,6 @@ func (e *StubImpl) GetPublicKey() ([]byte, error) {
 // Create starts a new enclave instance
 func (e *StubImpl) Create(enclaveLibFile string) error {
 	var eid C.enclave_id_t
-	// todo read error
 	e.sem.Acquire(context.Background(), 1)
 	if ret := C.sgxcc_create_enclave(&eid, C.CString(enclaveLibFile)); ret != 0 {
 		return fmt.Errorf("Can not create enclave (lib %s): Reason: %d", enclaveLibFile, ret)
@@ -457,7 +473,10 @@ func (e *StubImpl) GetTargetInfo() ([]byte, error) {
 	defer C.free(targetInfoPtr)
 
 	e.sem.Acquire(context.Background(), 1)
-	C.sgxcc_get_target_info(e.eid, (*C.target_info_t)(targetInfoPtr))
+	ret := C.sgxcc_get_target_info(e.eid, (*C.target_info_t)(targetInfoPtr))
+	if ret != 0 {
+		return nil, fmt.Errorf("C.sgxcc_get_target_info failed. Reason: %d", int(ret))
+	}
 	e.sem.Release(1)
 
 	return C.GoBytes(targetInfoPtr, TARGET_INFO_SIZE), nil
@@ -493,8 +512,10 @@ func (e *StubImpl) Bind(report, pk []byte) error {
 
 // Destroy kills the current enclave instance
 func (e *StubImpl) Destroy() error {
-	// todo read error
-	C.sgxcc_destroy_enclave(e.eid)
+	ret := C.sgxcc_destroy_enclave(e.eid)
+	if ret != 0 {
+		return fmt.Errorf("C.sgxcc_destroy_enclave failed. Reason: %d", int(ret))
+	}
 	return nil
 }
 

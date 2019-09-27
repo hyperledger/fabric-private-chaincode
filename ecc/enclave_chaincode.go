@@ -84,6 +84,9 @@ func (t *EnclaveChaincode) setup(stub shim.ChaincodeStubInterface) pb.Response {
 	// TODO check that args are valid
 	args := stub.GetStringArgs()
 	erccName := args[1]
+	//TODO: pass sigrl via args
+	sig_rl := []byte(nil)
+	sig_rl_size := uint(0)
 	channelName := stub.GetChannelID()
 
 	// check if there is already an enclave
@@ -94,7 +97,9 @@ func (t *EnclaveChaincode) setup(stub shim.ChaincodeStubInterface) pb.Response {
 	// create new Enclave
 	// TODO we should return error in case there is any :)
 	if err := t.enclave.Create(enclaveLibFile); err != nil {
-		return shim.Error(fmt.Sprintf("ecc: Error while creating enclave %s", err))
+		err_msg := fmt.Sprintf("t.enclave.Create  failed: %s", err)
+		logger.Errorf(err_msg)
+		return shim.Error(err_msg)
 	}
 
 	//get spid from ercc
@@ -105,9 +110,11 @@ func (t *EnclaveChaincode) setup(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Debugf("ecc: SPID from ercc: %x", spid)
 
 	// ask enclave for quote
-	quoteAsBytes, enclavePk, err := t.enclave.GetRemoteAttestationReport(spid)
+	quoteAsBytes, enclavePk, err := t.enclave.GetRemoteAttestationReport(spid, sig_rl, sig_rl_size)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("ecc: Error while creating attestation report: %s", err))
+		err_msg := fmt.Sprintf("t.enclave.GetRemoteAttestationReport failed: %s", err)
+		logger.Errorf(err_msg)
+		return shim.Error(err_msg)
 	}
 
 	enclavePkBase64 := base64.StdEncoding.EncodeToString(enclavePk)
@@ -128,7 +135,9 @@ func (t *EnclaveChaincode) setup(stub shim.ChaincodeStubInterface) pb.Response {
 	// get target info from our new enclave
 	eccTargetInfo, err := t.enclave.GetTargetInfo()
 	if err != nil {
-		return shim.Error(fmt.Sprintf("Error while getting target info: %s", err))
+		err_msg := fmt.Sprintf("t.enclave.GetTargetInfo failed: %s", err)
+		logger.Errorf(err_msg)
+		return shim.Error(err_msg)
 	}
 
 	// get report and pk from tlcc using target info from ecc enclave
@@ -164,12 +173,16 @@ func (t *EnclaveChaincode) init(stub shim.ChaincodeStubInterface) pb.Response {
 	// call enclave
 	responseData, signature, err := t.enclave.Init(jsonArgs, stub, t.tlccStub)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("ecc: Error while calling CC init enclave: %s", err))
+		err_msg := fmt.Sprintf("t.enclave.Init failed. Reason: %s", err)
+		logger.Errorf(err_msg)
+		return shim.Error(err_msg)
 	}
 
 	enclavePk, err := t.enclave.GetPublicKey()
 	if err != nil {
-		return shim.Error(fmt.Sprintf("ecc: Error retrieving enclave pk: %s", err))
+		err_msg := fmt.Sprintf("init t.enclave.GetPublicKey failed. Reason: %s", err)
+		logger.Errorf(err_msg)
+		return shim.Error(err_msg)
 	}
 
 	response := &utils.Response{
@@ -205,12 +218,16 @@ func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response 
 	// call enclave
 	responseData, signature, err := t.enclave.Invoke(jsonArgs, pk, stub, t.tlccStub)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("ecc: Error while invoking enclave: %s", err))
+		err_msg := fmt.Sprintf("t.enclave.Invoke failed: %s", err)
+		logger.Errorf(err_msg)
+		return shim.Error(err_msg)
 	}
 
 	enclavePk, err := t.enclave.GetPublicKey()
 	if err != nil {
-		return shim.Error(fmt.Sprintf("ecc: Error while retrieving enclave pk: %s", err))
+		err_msg := fmt.Sprintf("invoke t.enclave.GetPublicKey failed. Reason: %s", err)
+		logger.Errorf(err_msg)
+		return shim.Error(err_msg)
 	}
 
 	response := &utils.Response{
@@ -235,7 +252,9 @@ func (t *EnclaveChaincode) getEnclavePk(stub shim.ChaincodeStubInterface) pb.Res
 	// get enclaves public key
 	enclavePk, err := t.enclave.GetPublicKey()
 	if err != nil {
-		return shim.Error(fmt.Sprintf("ecc: Error while retrieving enclave pk %s", err))
+		err_msg := fmt.Sprintf("getEnclavePk t.enclave.GetPublicKey failed. Reason: %s", err)
+		logger.Errorf(err_msg)
+		return shim.Error(err_msg)
 	}
 
 	// marshal response
@@ -243,9 +262,12 @@ func (t *EnclaveChaincode) getEnclavePk(stub shim.ChaincodeStubInterface) pb.Res
 	return shim.Success(responseBytes)
 }
 
+// TODO: check if destroy is called
 func (t *EnclaveChaincode) destroy() {
 	if err := t.enclave.Destroy(); err != nil {
-		panic("ecc: Can not destory enclave!!!")
+		err_msg := fmt.Sprintf("t.enclave.Destroy failed: %s", err)
+		logger.Errorf(err_msg)
+		panic(err_msg)
 	}
 }
 

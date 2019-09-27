@@ -1,6 +1,23 @@
+SET(FPC_ATTESTATION_TYPE "$ENV{FPC_ATTESTATION_TYPE}")
+
+IF("$ENV{FPC_ATTESTATION_TYPE} " STREQUAL " ")
+    #default attestation flag is "epid_unlinkable"
+    SET(SGX_ATTESTATION_FLAG "-DUSE_EPID_UNLINKABLE")
+ELSE()
+    IF("${FPC_ATTESTATION_TYPE} " STREQUAL "epid_linkable ")
+        SET(SGX_ATTESTATION_FLAG "-DUSE_EPID_LINKABLE")
+    ELSEIF("${FPC_ATTESTATION_TYPE} " STREQUAL "epid_unlinkable ")
+        SET(SGX_ATTESTATION_FLAG "-DUSE_EPID_UNLINKABLE")
+    ELSE()
+        message(FATAL_ERROR "if set, FPC_ATTESTATION_TYPE must be 'epid_linkable' or 'epid_unlinkable'")
+    ENDIF()
+ENDIF()
+message(WARNING "TLCC attestation type derived from ECC -- TLCC does not use remote attestation")
+
 set(SOURCE_FILES
     trusted_ledger.c
     enclave_u.c
+    ${COMMON_SOURCE_DIR}/sgxcclib/common-sgxcclib.c
 )
 
 set(cleanup_files
@@ -27,10 +44,11 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}/base64
+    ${COMMON_SOURCE_DIR}/sgxcclib
     ${SGX_SDK}/include
 )
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wall -Wno-attributes -std=c11")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wall -Wno-attributes -std=c11 ${SGX_ATTESTATION_FLAG}")
 
 set_target_properties(libtl PROPERTIES PREFIX "")
 

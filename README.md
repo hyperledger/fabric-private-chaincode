@@ -196,7 +196,7 @@ with Intel. On the [IAS EPID registration page](https://api.portal.trustedservic
 you can find more details on how to register and obtain your SPID plus corresponding api-key.
 
 We currently support both `linkable` and `unlinkable` signatures for the attestation.
-The type of attestation used is selected based on the `ECC_ATTESTATION_TYPE` environment variable:
+The type of attestation used is selected based on the `FPC_ATTESTATION_TYPE` environment variable:
 `epid_unlinkable` for unlinkable or `epid_linkable` for linkable signatures. If you 
 do not define that environment variable, the chosen attestation method is `epid_unlinkable`.
 Note that a mismatch between your IAS credentials and the linkable setting
@@ -329,10 +329,10 @@ export SGX_MODE=HW
 # The attestation type is ignored when SGX_MODE=SIM is set.
 
 # IAS attestation (unlinkable)
-export ECC_ATTESTATION_TYPE = epid_unlinkable
+export FPC_ATTESTATION_TYPE = epid_unlinkable
 
 # IAS attestation (linkable)
-export ECC_ATTESTATION_TYPE = epid_linkable
+export FPC_ATTESTATION_TYPE = epid_linkable
 
 ```
 

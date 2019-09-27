@@ -1,4 +1,5 @@
 /*
+ * Copyright 2019 Intel Corporation
  * Copyright IBM Corp. All Rights Reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -13,6 +14,7 @@
 #include "error.h"
 #include "logging.h"
 
+#include "common-sgxcclib.h"
 #include "trusted_ledger.h"
 
 #include "sgx_quote.h"
@@ -129,7 +131,7 @@ int main(int argc, char** argv)
 
     LOG_INFO("Test: Create enclave and send blocks");
     enclave_id_t eid;
-    if (tlcc_create_enclave(&eid, ENCLAVE_FILENAME) < 0)
+    if (sgxcc_create_enclave(&eid, ENCLAVE_FILENAME) < 0)
     {
         LOG_ERROR("Test: Can not create enclave!!!");
         failNow();
@@ -168,7 +170,7 @@ int main(int argc, char** argv)
     // show what we got
     tlcc_print_state(eid);
     test_get_and_verify_cmac(eid);
-    tlcc_destroy_enclave(eid);
+    sgxcc_destroy_enclave(eid);
     free(genesis);
     globfree(&globbed_test_files);
 

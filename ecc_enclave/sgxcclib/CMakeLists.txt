@@ -1,3 +1,4 @@
+# Copyright 2019 Intel Corporation
 # Copyright IBM Corp. All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -7,6 +8,7 @@ INCLUDE(CMakeVariables.txt)
 set(SOURCE_FILES
     sgxcclib.c
     enclave_u.c
+    ${COMMON_SOURCE_DIR}/sgxcclib/common-sgxcclib.c
     )
 
 set(cleanup_files
@@ -32,6 +34,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}/base64
+    ${COMMON_SOURCE_DIR}/sgxcclib
     ${SGX_SDK}/include
     )
 
@@ -46,7 +49,6 @@ add_custom_command(TARGET libsgxcc
     POST_BUILD
     COMMAND mkdir -p ${CMAKE_BINARY_DIR}/include
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/sgxcclib.h ${CMAKE_BINARY_DIR}/include
-    COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/sgx_attestation_type.h ${CMAKE_BINARY_DIR}/include
     COMMAND cp ${COMMON_SOURCE_DIR}/types.h ${CMAKE_BINARY_DIR}/include
     COMMAND mkdir -p ${CMAKE_BINARY_DIR}/lib/
     COMMAND cp ${CMAKE_BINARY_DIR}/libsgxcc.so ${CMAKE_BINARY_DIR}/lib/

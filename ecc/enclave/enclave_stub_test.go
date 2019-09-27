@@ -34,7 +34,11 @@ func TestEnclaveStub_RemoteAttestation(t *testing.T) {
 	mockRegistry := ercc.MockEnclaveRegistryStub{}
 	spid, _ := mockRegistry.GetSPID(nil, "", "")
 
-	quoteAsBytes, pkBytes, err := stub.GetRemoteAttestationReport(spid)
+	//TODO: retrieve sigrl
+	sig_rl := []byte(nil)
+	sig_rl_size := uint(0)
+
+	quoteAsBytes, pkBytes, err := stub.GetRemoteAttestationReport(spid, sig_rl, sig_rl_size)
 	if err != nil {
 		t.Fatalf("Attestation returned error %s", err)
 	}

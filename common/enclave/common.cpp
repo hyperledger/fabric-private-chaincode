@@ -83,35 +83,6 @@ int ecall_create_report(
     return SGX_SUCCESS;
 }
 
-int ecall_get_target_info(sgx_target_info_t* target)
-{
-    if (!target)
-    {
-        LOG_ERROR("Enclave: Invalid input");
-        return SGX_ERROR_INVALID_PARAMETER;
-    }
-
-    // create a report and extract target_info
-    sgx_report_t temp_report;
-    memset(&temp_report, 0, sizeof(temp_report));
-    memset(target, 0, sizeof(sgx_target_info_t));
-
-    sgx_status_t ret = sgx_create_report(NULL, NULL, &temp_report);
-    if (ret != SGX_SUCCESS)
-    {
-        LOG_ERROR("Enclave: Error while creating report");
-        return ret;
-    }
-
-    // target info size is 512
-    memcpy(&target->mr_enclave, &temp_report.body.mr_enclave, sizeof(sgx_measurement_t));
-    memcpy(&target->attributes, &temp_report.body.attributes, sizeof(sgx_attributes_t));
-    memcpy(&target->misc_select, &temp_report.body.misc_select, sizeof(sgx_misc_select_t));
-
-    LOG_DEBUG("Enc: TargetInfo created!");
-    return SGX_SUCCESS;
-}
-
 // returns enclave pk in Big Endian format
 int ecall_get_pk(uint8_t* pubkey)
 {
