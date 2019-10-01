@@ -52,15 +52,16 @@ target_link_libraries(enclave "${SGX_COMMON_CFLAGS} -Wl,--no-undefined -nostdlib
 
 add_custom_command(TARGET enclave
     POST_BUILD
+    COMMENT "Create enclave signer's key"
+    COMMAND openssl genrsa -3 -out ${CMAKE_BINARY_DIR}/enclave_signer_private.pem 3072
+    COMMENT "Signing the enclave => ${CMAKE_BINARY_DIR}/lib/enclave.signed.so"
     COMMAND mkdir -p ${CMAKE_BINARY_DIR}/lib
     COMMAND ${SGX_ENCLAVE_SIGNER} sign
-    -key ${ECC_ENCLAVE_DIR}/enclave/enclave_private.pem
+    -key ${CMAKE_BINARY_DIR}/enclave_signer_private.pem
     -config ${ECC_ENCLAVE_DIR}/enclave/enclave.config.xml
     -enclave enclave.so
     -out ${CMAKE_BINARY_DIR}/lib/enclave.signed.so
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMENT "Signing the enclave => ${CMAKE_BINARY_DIR}/lib/enclave.signed.so"
-    )
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_custom_command(TARGET enclave
     POST_BUILD
