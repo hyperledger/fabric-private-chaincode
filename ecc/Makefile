@@ -16,7 +16,7 @@ VSCC_OUT = ecc-vscc.so
 DOCKER_CONTAINER_ID?=$$(docker ps | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
 # the following are the required docker build parameters
 DOCKER_IMAGE ?= $$(docker images | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
-DOCKER_BOILERPLATE_ECC_IMAGE ?= $(PROJECT_NAME)/boilerplate-ecc
+DOCKER_BOILERPLATE_ECC_IMAGE ?= hyperledger/$(PROJECT_NAME)-boilerplate-ecc
 INSTALLED_DOCKER_BOILERPLATE_ECC_IMAGE ?= $$(docker images | grep -- ${DOCKER_BOILERPLATE_ECC_IMAGE} | awk '{print $$1;}')
 DOCKER_ENCLAVE_SO_PATH ?= $(ENCLAVE_SO_PATH)
 
