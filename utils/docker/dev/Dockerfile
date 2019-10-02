@@ -9,9 +9,21 @@ ARG GO_TAR=$GO_VERSION.linux-amd64.tar.gz
 ARG OPENSSL=1.1.0j
 ARG SGXSSL=v2.4.1
 ARG NANOPB_VERSION=0.3.9.2
-ARG FABRIC_VERSION=1.4.3
+ARG FABRIC_REPO=https://github.com/hyperledger/fabric.git
+ARG FABRIC_VERSION=v1.4.3
+ARG FPC_REPO=https://github.com/hyperledger-labs/fabric-private-chaincode
+ARG FPC_VERSION=master
+
+ARG APT_ADD_PKGS=
 
 WORKDIR /tmp
+
+# we need docker commands (even though we use docker daemon from "outside")
+RUN apt-get update \
+ && apt-get install -y \
+    docker.io \
+    clang-format \
+    $APT_ADD_PKGS
 
 # Install go
 RUN wget https://dl.google.com/go/$GO_TAR \
@@ -42,12 +54,21 @@ RUN git clone https://github.com/nanopb/nanopb.git $NANOPB_PATH \
  && cd generator/proto \
  && make
 
-# Get Fabric
-ENV FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
-RUN git clone --branch v$FABRIC_VERSION https://github.com/hyperledger/fabric.git $FABRIC_PATH
-
 # Get FPC
 ENV FPC_PATH=$GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
-RUN git clone https://github.com/hyperledger-labs/fabric-private-chaincode $FPC_PATH
+# Note: could add --single-branch to below to speed-up and keep size smaller. But for now for a dev-image better keep complete repo
+RUN git clone --branch $FPC_VERSION $FPC_REPO $FPC_PATH
+
+# Get Fabric (after FPC as we need the FPC patches!)
+ENV FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
+# Note: could add --single-branch to below to speed-up and keep size smaller. But for now for a dev-image better keep complete repo
+# Note: the git config shouldn't really be necessary for a git am but that fails without it.
+#   To not commit an id, just do it only temporarily and only locally ...
+RUN git clone --branch $FABRIC_VERSION $FABRIC_REPO $FABRIC_PATH \
+ && cd $FABRIC_PATH \
+ && git config user.email "FPC" \
+ && git am $FPC_PATH/fabric/*patch \
+ && git config --unset user.email \
+ && GO_TAGS=pluginsenabled make peer orderer cryptogen configtxgen
 
 WORKDIR $FPC_PATH
