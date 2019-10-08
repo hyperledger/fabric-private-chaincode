@@ -110,7 +110,10 @@ Moreover, we assume that you are familiar with the Intel SGX SDK.
 
 ### Requirements
 
-Make sure that you have the following required dependencies installed:
+Make sure that you have the following required dependencies installed
+(see also below [docker section](#docker) for a _pre-configured fpc developer
+docker image_ which handles the corresponding installs automatically
+for you):
 
 * Linux (OS) (we recommend Ubuntu 18.04, see [list](https://github.com/intel/linux-sgx#prerequisites) supported OS)
 
@@ -137,8 +140,56 @@ Make sure that you have the following required dependencies installed:
 
 #### Docker
 
-We recommend to set privileges to manage docker as a non-root user. See the official docker
-[documentation](https://docs.docker.com/install/linux/linux-postinstall/) for more details.  
+As standard Fabric, we require docker to run chaincode.  We recommend
+to set privileges to manage docker as a non-root user. See the
+official docker [documentation](https://docs.docker.com/install/linux/linux-postinstall/)
+for more details.
+
+##### Docker-based FPC Development Environment
+
+Additionally, we also provide a docker image containing the FPC
+development environment. This will enable you to get a quick start to
+get FPC running.
+First make sure your host has
+* A running Docker daemon compatible with docker provided by Ubuntu
+  18.04, currently `Docker version 18.09`.  It also should use
+  `/var/run/docker.sock` as socket to interact with the daemon (or you
+  will have to override in `./config.override.mk` the default
+  definition in make of `DOCKER_DAEMON_SOCKET`)
+* GNU make
+
+To build the docker image, run
+
+    $ cd utils/docker; make dev
+
+and then use it with
+
+    $ cd utils/docker; make run
+
+This will open a shell inside the FPC development container, with
+environment variables like GOPATH appropriately defined and all
+dependencies like fabric built, ready to build and run FPC.
+
+A few notes:
+* if your host is SGX enabled, i.e., there is a device `/dev/sgx` or
+  `/dev/isgx` and your PSW daemon listens to `/var/run/aesmd`, then
+  the docker image will be sgx-enabled and your settings from
+  `./config/ias` will be used. You will, though, have to
+  manually set `SGX_MODE=HW` before building anything to use HW mode.
+* if you want additional apt packages in your container image, define
+  `DOCKER_DEV_IMAGE_APT_ADD__PKGS` in `./config.override.mk` with a
+  list of packages you want and they will be automatically added to
+  the docker image
+* Docker images do not persist between runs. Hence, you might also
+  consider maintaining the FPC source on your host and just export it
+  as a volume mapped to `/project/src/github.com/hyperledger-labs/fabric-private-chaincode`.
+  To achieve this, add `DOCKER_DEV_RUN_OPTS= -v ../..:/project/src/github.com/hyperledger-labs/fabric-private-chaincode`
+  to your `./config.override.mk`.
+* if you run behind a proxy, you might have to configure the proxy,
+  e.g., for docker (`~/.docker/config.json`).
+* Due to the way the peer's port for chaincode connection is managed,
+  you will be able to run only a single FPC development container on a
+  particular host.
 
 
 #### Protocol Buffers

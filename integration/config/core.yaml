@@ -24,7 +24,7 @@ peer:
     # The endpoint this peer uses to listen for inbound chaincode connections.
     # If this is commented-out, the listen address is selected to be
     # the peer's address (see below) with port 7052
-    # chaincodeListenAddress: 0.0.0.0:7052
+    chaincodeListenAddress: 0.0.0.0:7052 # Note: we uncommented it to make working with our dev docker image
 
     # The endpoint the chaincode for this peer uses to connect to the peer.
     # If this is not specified, the chaincodeListenAddress address is selected.
