@@ -4,7 +4,7 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+package ecc
 
 import (
 	"encoding/base64"
@@ -38,6 +38,15 @@ func NewEcc() *EnclaveChaincode {
 	return &EnclaveChaincode{
 		erccStub: &ercc.EnclaveRegistryStubImpl{},
 		tlccStub: &tlcc.TLCCStubImpl{},
+		enclave:  enclave.NewEnclave(),
+		verifier: &crypto.ECDSAVerifier{},
+	}
+}
+
+func CreateMockedECC() *EnclaveChaincode {
+	return &EnclaveChaincode{
+		erccStub: &ercc.MockEnclaveRegistryStub{},
+		tlccStub: &tlcc.MockTLCCStub{},
 		enclave:  enclave.NewEnclave(),
 		verifier: &crypto.ECDSAVerifier{},
 	}
@@ -262,22 +271,11 @@ func (t *EnclaveChaincode) getEnclavePk(stub shim.ChaincodeStubInterface) pb.Res
 	return shim.Success(responseBytes)
 }
 
-// TODO: check if destroy is called
-func (t *EnclaveChaincode) destroy() {
+// TODO: check if Destroy is called
+func (t *EnclaveChaincode) Destroy() {
 	if err := t.enclave.Destroy(); err != nil {
 		err_msg := fmt.Sprintf("t.enclave.Destroy failed: %s", err)
 		logger.Errorf(err_msg)
 		panic(err_msg)
-	}
-}
-
-func main() {
-	// create enclave chaincode
-	t := NewEcc()
-	defer t.destroy()
-
-	// start chaincode
-	if err := shim.Start(t); err != nil {
-		logger.Errorf("Error starting ecc: %s", err)
 	}
 }
