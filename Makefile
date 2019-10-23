@@ -38,6 +38,8 @@ godeps: gotools
 	$(GO) get github.com/golang/protobuf/proto
 	$(GO) get github.com/onsi/ginkgo
 	$(GO) get github.com/onsi/gomega
+	$(GO) get github.com/gin-contrib/cors
+	$(GO) get github.com/gin-gonic/gin
 
 plugins:
 	$(foreach DIR, $(PLUGINS), $(MAKE) -C $(DIR) build || exit;)

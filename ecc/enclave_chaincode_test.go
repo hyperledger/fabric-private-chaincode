@@ -4,7 +4,7 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+package ecc
 
 import (
 	"crypto/ecdsa"
@@ -18,9 +18,6 @@ import (
 	"testing"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
-	enc "github.com/hyperledger-labs/fabric-private-chaincode/ecc/enclave"
-	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/ercc"
-	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/tlcc"
 	"github.com/hyperledger-labs/fabric-private-chaincode/eval/benchmark/executor"
 	th "github.com/hyperledger-labs/fabric-private-chaincode/utils"
 
@@ -34,7 +31,7 @@ func createArgs(stringArgs []string, pk string) [][]byte {
 
 // my tests
 func TestEnclaveChaincode_Init(t *testing.T) {
-	ecc := createECC()
+	ecc := CreateMockedECC()
 	stub := shim.NewMockStub("ecc", ecc)
 
 	th.CheckInit(t, stub, nil)
@@ -42,7 +39,7 @@ func TestEnclaveChaincode_Init(t *testing.T) {
 }
 
 func TestEnclaveChaincode_Setup(t *testing.T) {
-	ecc := createECC()
+	ecc := CreateMockedECC()
 	stub := shim.NewMockStub("ecc", ecc)
 
 	th.CheckInit(t, stub, nil)
@@ -50,7 +47,7 @@ func TestEnclaveChaincode_Setup(t *testing.T) {
 }
 
 func TestEnclaveChaincode_Invoke(t *testing.T) {
-	ecc := createECC()
+	ecc := CreateMockedECC()
 	stub := shim.NewMockStub("ecc", ecc)
 
 	th.CheckInit(t, stub, nil)
@@ -89,7 +86,7 @@ func (t *Task) doInvoke() error {
 }
 
 func TestEnclaveChaincode_Invoke_Auction(t *testing.T) {
-	ecc := createECC()
+	ecc := CreateMockedECC()
 	stub := shim.NewMockStub("ecc", ecc)
 
 	pk := ""
@@ -192,7 +189,7 @@ func TestEnclaveChaincode_Invoke_Auction(t *testing.T) {
 }
 
 func TestEnclaveChaincode_EncryptedInvoke(t *testing.T) {
-	ecc := createECC()
+	ecc := CreateMockedECC()
 	stub := shim.NewMockStub("ecc", ecc)
 
 	th.CheckInit(t, stub, nil)
@@ -250,14 +247,5 @@ func TestEnclaveChaincode_EncryptedInvoke(t *testing.T) {
 			fmt.Println("Invoke getPK failed", string(res.Message))
 			t.FailNow()
 		}
-	}
-}
-
-func createECC() *EnclaveChaincode {
-	return &EnclaveChaincode{
-		erccStub: &ercc.MockEnclaveRegistryStub{},
-		tlccStub: &tlcc.MockTLCCStub{},
-		enclave:  enc.NewEnclave(),
-		verifier: &crypto.ECDSAVerifier{},
 	}
 }

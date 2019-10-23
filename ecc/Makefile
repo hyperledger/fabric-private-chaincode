@@ -37,7 +37,7 @@ sym-links:
 	ln -sfn ../../ecc_enclave/_build/include enclave/ecc-enclave-include
 
 ecc: ecc_enclave
-	$(GO) build
+	$(GO) build -o ecc cmd/main.go
 
 vscc-plugin: $(VSCC_SRC)
 	$(GO) build -o $(VSCC_OUT) -buildmode=plugin $^
