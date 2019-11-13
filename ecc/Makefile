@@ -23,7 +23,7 @@ DOCKER_ENCLAVE_SO_PATH ?= $(ENCLAVE_SO_PATH)
 all: build
 # test target disable because it requires revision
 #all: build test
-build: docker-boilerplate-ecc vscc-plugin
+build: vscc-plugin
 
 ECC_ENCLAVE_BUILD = ../ecc_enclave/_build
 ERR_MSG = "ecc_enclave build does not exist!"
@@ -60,7 +60,7 @@ clean: docker-clean
 docker-boilerplate-ecc: ecc
 	$(DOCKER) build -t $(DOCKER_BOILERPLATE_ECC_IMAGE) -f Dockerfile.boilerplate-ecc ..
 
-docker-fpc-app:
+docker-fpc-app: docker-boilerplate-ecc
 	if [ -z "$(DOCKER_IMAGE)" ]; then\
 		echo "\033[0;31mERROR: cannot override $(CC_NAME) docker image - not found\033[0m";\
 		exit 1;\
