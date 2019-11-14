@@ -7,6 +7,7 @@ TOP = .
 include $(TOP)/build.mk
 
 SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc examples integration # docs
+PLUGINS = ercc ecc_enclave ecc tlcc_enclave tlcc
 
 build : godeps
 
@@ -37,3 +38,6 @@ godeps: gotools
 	$(GO) get github.com/golang/protobuf/proto
 	$(GO) get github.com/onsi/ginkgo
 	$(GO) get github.com/onsi/gomega
+
+plugins:
+	$(foreach DIR, $(PLUGINS), $(MAKE) -C $(DIR) build || exit;)
