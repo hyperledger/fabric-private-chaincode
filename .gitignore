@@ -4,3 +4,8 @@ make.log
 cscope.out
 *~
 **/_build/*
+utils/docker-compose/bin/
+utils/docker-compose/network-config/crypto-config/
+utils/docker-compose/network-config/config/
+utils/docker-compose/node-sdk/node_modules
+utils/docker-compose/node-sdk/wallet

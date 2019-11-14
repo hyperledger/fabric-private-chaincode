@@ -6,6 +6,7 @@ TOP = ../..
 include $(TOP)/build.mk
 
 FPC_DOCKER_NAMESPACE := hyperledger/fabric-private-chaincode
+FPC_PEER_DOCKER_NAMESPACE := hyperledger/fabric-peer-fpc
 
 DOCKER_DAEMON_SOCKET ?= /var/run/docker.sock
 FABRIC_PEER_DAEMON_CHAINCODE_PORT ?= 7052
@@ -26,7 +27,7 @@ ifneq ($(SGX_DEVICE_PATH),)
 	DOCKER_DEV_RUN_OPTS += -v $(PWD)/../../config/ias/:$(DOKER_FPCPATH)/config/ias/ -v $(SGX_PSW_SOCKET):$(SGX_PSW_SOCKET) --device $(SGX_DEVICE_PATH)
 endif
 
-.PHONY: base ccenv dev
+.PHONY: base ccenv dev peer
 
 build: base ccenv
 
@@ -38,6 +39,9 @@ ccenv: base
 
 dev: base
 	$(DOCKER) build -t $(FPC_DOCKER_NAMESPACE)-dev $(DOCKER_DEV_BUILD_OPTS) dev
+
+peer: base
+	$(DOCKER) build -t ${FABRIC_PEER_DOCKER_NAMESPACE} peer
 
 run: dev
 	$(DOCKER) run $(DOCKER_DEV_RUN_OPTS) -it $(FPC_DOCKER_NAMESPACE)-dev
