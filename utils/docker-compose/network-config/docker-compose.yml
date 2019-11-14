@@ -1,0 +1,83 @@
+#
+# Copyright IBM Corp All Rights Reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+# Environment Variables that need to be set to use this file
+#
+#   COMPOSE_PROJECT_NAME - This is used to ensure all chaincode containers are running on the same network
+#                          as the peers, orderer, and ca. The only requirement is that this is set to
+#                          some string and cannot be left blank. To match with the scripts use `fabric-fpc`.
+#   FABRIC_VERSION       - This is the version of fabric being used that should match with an image tag
+#                          for hyperledger/fabric-orderer. Recommended value is `1.4.3`.
+#   FPC_CONFIG           - Set this to `-fpc` to bring up a network using FPC Peers. Leaving it unset
+#                          will cause the network to use the hyperledger/fabric-peer:latest images
+#   PEER_CMD             - This variable indicates which peer binary should be used to start the peer.
+#                          If regular peers are desired set this value to `peer`, if FPC peers are
+#                          desired set this value to
+#                          `/project/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/bin/peer.sh`
+#
+#
+#
+version: '2'
+
+networks:
+  basic:
+
+services:
+  ca.example.com:
+    extends:
+      file: base/base.yaml
+      service: ca-base
+    container_name: ca.example.com
+    ports:
+      - "7054:7054"
+    volumes:
+      - ./crypto-config/peerOrganizations/org1.example.com/ca/:/etc/hyperledger/fabric-ca-server-config
+    networks:
+      - basic
+
+  orderer.example.com:
+    container_name: orderer.example.com
+    image: hyperledger/fabric-orderer:${FABRIC_VERSION}
+    environment:
+      - FABRIC_LOGGING_SPEC=info
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/etc/hyperledger/msp/orderer/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/orderer
+    command: orderer
+    ports:
+      - 7050:7050
+    volumes:
+        - ./config/:/etc/hyperledger/configtx
+        - ./crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/:/etc/hyperledger/msp/orderer
+        - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/:/etc/hyperledger/msp/peerOrg1
+        - ./orderer.yaml:/etc/hyperledger/fabric/orderer.yaml
+    networks:
+      - basic
+
+  peer0.org1.example.com:
+    extends:
+      file: base/base.yaml
+      service: peer-base
+    image: hyperledger/fabric-peer${FPC_CONFIG}
+    container_name: peer0.org1.example.com
+    environment:
+      - CORE_PEER_ID=peer0.org1.example.com
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+    ports:
+      - 7051:7051
+      - 7053:7053
+    volumes:
+        - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/msp/peer
+        - ./crypto-config/peerOrganizations/org1.example.com/users:/etc/hyperledger/msp/users
+        - ./core${FPC_CONFIG}.yaml:/etc/hyperledger/fabric/core.yaml
+    depends_on:
+      - orderer.example.com
+    networks:
+      - basic
