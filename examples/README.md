@@ -17,7 +17,7 @@ Components](https://github.com/hyperledger-labs/fabric-private-chaincode#archite
 for more details of involved components.
 
 ## Prequisites
-This tutorial presumes that the repository in https://github.com/hyperledger-labs/fabric-private-chaincode has been installed as per [README.md](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/README.md) in `FPC-INSTALL-DIR` which is in the `$GOPATH` folder.
+This tutorial presumes that the repository in https://github.com/hyperledger-labs/fabric-private-chaincode has been installed as per [README.md](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/README.md#requirements) in `FPC-INSTALL-DIR` which is in the `$GOPATH` folder.
 
 ## Develop chaincode
 * Create a folder named `helloworld`  in `FPC-INSTALL-DIR/examples`.
