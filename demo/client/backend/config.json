@@ -1,0 +1,15 @@
+{
+    "connection_profile_filename":"../gateway/localhost/connection_profile.json",
+    "channel_name":"mychannel",
+    "chaincode_name":"mockcc",
+    "wallet": "../gateway/localhost/wallet",
+    "adminEnrollmentId":"org1admin",
+    "enrollmentSecret":"adminpw",
+    "backend_port": 3000,
+
+    "users" : [
+    {"userName":  "A-Telecom",   "userRole" : "auction.bidder", "MSPID" : "Org1MSP"} ,
+    {"userName":  "B-Net",       "userRole" : "auction.bidder", "MSPID" : "Org1MSP"},
+    {"userName":  "C-Mobile",    "userRole" : "auction.bidder", "MSPID" : "Org1MSP"} ,
+    {"userName":  "Auctioneer1", "userRole" : "auction.auctioneer", "MSPID" : "Org1MSP"} ]
+}

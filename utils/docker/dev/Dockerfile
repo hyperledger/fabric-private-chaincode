@@ -23,6 +23,7 @@ RUN apt-get update \
  && apt-get install -y \
     docker.io \
     clang-format \
+    jq \
     $APT_ADD_PKGS
 
 # Install go
