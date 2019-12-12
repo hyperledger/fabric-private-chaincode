@@ -37,11 +37,19 @@ base:
 ccenv: base
 	$(DOCKER) build -t $(FPC_DOCKER_NAMESPACE)-ccenv ccenv
 
+# Note: for overall consistency reasons we want the FPC code from the current repo
+# as this will rebuild each time and take a while, we don't add a dependency
+# above in build ...
+peer: base
+	(cd ${TOP}; \
+         $(DOCKER) build -t ${FPC_PEER_DOCKER_NAMESPACE}\
+         -f utils/docker/peer/Dockerfile\
+         --build-arg FPC_REPO_URL=file:///tmp/build-src/.git\
+         --build-arg FPC_REPO_BRANCH=$$(git rev-parse --abbrev-ref HEAD)\
+         . )
+
 dev: base
 	$(DOCKER) build -t $(FPC_DOCKER_NAMESPACE)-dev $(DOCKER_DEV_BUILD_OPTS) dev
-
-peer: base
-	$(DOCKER) build -t ${FABRIC_PEER_DOCKER_NAMESPACE} peer
 
 run: dev
 	$(DOCKER) run $(DOCKER_DEV_RUN_OPTS) -it $(FPC_DOCKER_NAMESPACE)-dev

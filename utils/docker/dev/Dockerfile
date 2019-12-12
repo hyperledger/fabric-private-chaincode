@@ -30,7 +30,7 @@ RUN wget https://dl.google.com/go/$GO_TAR \
  && tar -xf $GO_TAR \
  && mv go /usr/local \
  && rm $GO_TAR \
- && mkdir -p /projects
+ && mkdir -p /project
 
 ENV GOROOT=/usr/local/go
 ENV GOPATH=/project

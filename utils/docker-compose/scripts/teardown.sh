@@ -8,19 +8,41 @@
 set -e
 
 export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-export COMPOSE_PROJECT_NAME=fabric-fpc
-export NETWORK_CONFIG=${SCRIPT_DIR}/../network-config
 
-# Shut down the Docker containers for the system tests.
-docker-compose -f $NETWORK_CONFIG/docker-compose.yml stop
-docker-compose -f $NETWORK_CONFIG/docker-compose.yml kill && docker-compose -f $NETWORK_CONFIG/docker-compose.yml down
+. ${SCRIPT_DIR}/lib/common.sh
 
-# remove the local state
-rm -f ~/.hfc-key-store/*
 
-# remove chaincode docker images
-docker rm $(docker ps -aq)
-docker rmi $(docker images dev-* -q)
+# Shut down the Docker containers for the system tests and remove temporary volumes
+${DOCKER_COMPOSE} stop
+${DOCKER_COMPOSE} kill && ${DOCKER_COMPOSE} down
 
-# Your system is now clean
-docker volume prune
+if [ "$1" == '--clean-slate' ]; then
+        echo "removing state of CA etc."
+	${DOCKER_COMPOSE} kill && ${DOCKER_COMPOSE} down --volumes
+
+	# CA state got destroyed, so corresponding wallets are obsolete
+        if [ -d "${NODE_WALLETS}" ]; then
+		echo "deleting obsolet wallets in '${NODE_WALLETS}'"
+		rm -rf "${NODE_WALLETS}";
+	fi
+
+	echo "removing generated fabric configuration and credentials"
+	rm -fr ${FABRIC_CFG_PATH}/config/*
+	rm -fr ${FABRIC_CFG_PATH}/crypto-config/*
+
+	# remove the local state
+	rm -f ~/.hfc-key-store/*
+
+	# remove chaincode docker images
+	# (Peer should usually clean them up, but for case it has crashed ...)
+        # This might also clean other container as colleteral damage ...
+	echo "removing running containers and left-over chaincode images"
+	containers=$(docker ps -aq)
+	if [ ! -z "$containers" ]; then
+		docker rm --force ${containers}
+	fi
+	images=$(docker images dev-* -q)
+	if [ ! -z "${images}" ]; then
+		docker rmi "${images}"
+	fi
+fi

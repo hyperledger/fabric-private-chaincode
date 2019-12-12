@@ -29,6 +29,7 @@ services:
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
       - FABRIC_LOGGING_SPEC=info
       - PEER_CMD=${PEER_CMD}
+      - ORDERER_ADDR=orderer.example.com:7050
     working_dir: /etc/hyperledger/configtx
     command: ${PEER_CMD} node start
     volumes:

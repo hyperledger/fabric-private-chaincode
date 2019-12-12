@@ -1,9 +1,14 @@
 #!/bin/bash
 #
 # Copyright IBM Corp. All Rights Reserved.
+# Copyright Intel Corp. All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+
+# download the files to a consistent place
+export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+cd ${SCRIPT_DIR}/..
 
 # if version not passed in, default to latest released version
 export VERSION=1.4.3
@@ -77,7 +82,7 @@ binaryIncrementalDownload() {
           remoteMd5sum=$(curl -s ${URL}.md5)
           if [ "$localMd5sum" == "$remoteMd5sum" ]; then
               echo "==> Extracting ${BINARY_FILE}..."
-              tar xzf ./${BINARY_FILE} --overwrite
+              tar xzf ./${BINARY_FILE} --overwrite bin
 	      echo "==> Done."
               rm -f ${BINARY_FILE} ${BINARY_FILE}.md5
           else
@@ -103,7 +108,7 @@ binaryDownload() {
           echo "==> Partial binary file found. Resuming download..."
           binaryIncrementalDownload ${BINARY_FILE} ${URL}
       else
-          curl ${URL} | tar xz || rc=$?
+          curl ${URL} | tar xz bin || rc=$?
           if [ ! -z "$rc" ]; then
               echo "==> There was an error downloading the binary file. Switching to incremental download."
               echo "==> Downloading file..."
@@ -158,11 +163,11 @@ BINARIES=true
 
 # Parse commandline args pull out
 # version and/or ca-version strings first
-if echo $1 | grep -q '\d'; then
+if echo $1 | egrep -vq '^-'; then
   VERSION=$1;shift
-  if echo $1 | grep -q '\d'; then
+  if echo $1 | egrep -vq '^-'; then
     CA_VERSION=$1;shift
-    if echo $1 | grep -q '\d'; then
+    if echo $1 | egrep -vq '^-'; then
       THIRDPARTY_IMAGE_VERSION=$1;shift
     fi
   fi
@@ -183,8 +188,9 @@ fi
 BINARY_FILE=hyperledger-fabric-${ARCH}-${VERSION}.tar.gz
 CA_BINARY_FILE=hyperledger-fabric-ca-${ARCH}-${CA_VERSION}.tar.gz
 
+echo DEBUG: $1 $2 $3 $4 ...
 # then parse opts
-while getopts "h?db" opt; do
+while getopts "hdb" opt; do
   case "$opt" in
     h|\?)
       printHelp
