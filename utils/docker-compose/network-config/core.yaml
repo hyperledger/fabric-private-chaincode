@@ -302,12 +302,8 @@ peer:
     mspConfigPath: msp
 
     # Identifier of the local MSP
-    # ----!!!!IMPORTANT!!!-!!!IMPORTANT!!!-!!!IMPORTANT!!!!----
-    # Deployers need to change the value of the localMspId string.
-    # In particular, the name of the local MSP ID of a peer needs
-    # to match the name of one of the MSPs in each of the channel
-    # that this peer is a member of. Otherwise this peer's messages
-    # will not be identified as valid by other nodes.
+    # Note: below will be overwritten in the docker-compose files
+    # by defining the  CORE_PEER_LOCALMSPID variable
     localMspId: SampleOrg
 
     # CLI common client config options

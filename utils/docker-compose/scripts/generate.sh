@@ -5,9 +5,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-export PATH=${SCRIPT_DIR}/../bin:${PWD}:$PATH
-export FABRIC_CFG_PATH=${SCRIPT_DIR}/../network-config
-CHANNEL_NAME=mychannel
+
+. ${SCRIPT_DIR}/lib/common.sh
 
 # remove previous crypto material and config transactions
 rm -fr ${FABRIC_CFG_PATH}/config/*
@@ -24,7 +23,7 @@ fi
 mv ${FABRIC_CFG_PATH}/crypto-config/peerOrganizations/org1.example.com/ca/*_sk ${FABRIC_CFG_PATH}/crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com_sk
 
 #generate channel configuration transaction
-configtxgen -profile OneOrgChannel -outputCreateChannelTx ${FABRIC_CFG_PATH}/config/channel.tx -channelID $CHANNEL_NAME
+configtxgen -profile OneOrgChannel -outputCreateChannelTx ${FABRIC_CFG_PATH}/config/channel.tx -channelID ${CHANNEL_NAME}
 if [ "$?" -ne 0 ]; then
   echo "Failed to generate channel configuration transaction..."
   exit 1
