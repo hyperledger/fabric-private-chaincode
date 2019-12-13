@@ -9,7 +9,11 @@
 export PATH=${SCRIPT_DIR}/../bin:${PWD}:$PATH
 export FABRIC_CFG_PATH=${SCRIPT_DIR}/../network-config
 
-CHANNEL_NAME=mychannel
+# Variables which we allow the caller override ..
+export FABRIC_VERSION=${FABRIC_VERSION:=1.4.3}
+export CHANNEL_NAME=${CHANNEL_NAME:=mychannel}
+export NODE_WALLETS=${NODE_WALLETS:=${SCRIPT_DIR}/../node-sdk/wallet}
+export DOCKER_COMPOSE_OPTS=${DOCKER_COMPOSE_OPTS:=}
 
 # don't rewrite paths for Windows Git Bash users
 export MSYS_NO_PATHCONV=1
@@ -24,9 +28,7 @@ else
     export FABRIC_BIN_DIR=/project/src/github.com/hyperledger/fabric/.build/bin
 fi
 
-export FABRIC_VERSION=${FABRIC_VERSION:=1.4.3}
 export NETWORK_CONFIG=${SCRIPT_DIR}/../network-config
-export NODE_WALLETS=${SCRIPT_DIR}/../node-sdk/wallet
 export COMPOSE_PROJECT_NAME="fabric$(echo ${FPC_CONFIG} | sed 's/[^a-zA-Z0-9]//g')"
 # Note: COMPOSE_PROJECT_NAME should have only chars in [a-zA-Z0-9], see https://github.com/docker/compose/issues/4002
 

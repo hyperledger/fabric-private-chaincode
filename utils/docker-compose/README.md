@@ -118,9 +118,14 @@ The [examples](../../examples) directory has been [mounted](base/base.yaml) into
    docker exec -it peer0.org1.example.com bash
    ```
 
-3. There also some a number of useful predefined environment variables such as the orderer address, the peer command to use and the credentials used by fabric.
+3. There also some a number of useful predefined environment variables such as the orderer address, 
+   the channel name, the peer command to use and the credentials used by fabric.
    ```
-   echo CORE_PEER_MSPCONFIGPATH=${CORE_PEER_MSPCONFIGPATH} ORDERER_ADDR=${ORDERER_ADDR} PEER_CMD=${PEER_CMD} CORE_PEER_MSPCONFIGPATH=${CORE_PEER_MSPCONFIGPATH}
+   echo CORE_PEER_MSPCONFIGPATH=${CORE_PEER_MSPCONFIGPATH}\
+        ORDERER_ADDR=${ORDERER_ADDR}\
+        CHANNEL_NAME=${CHANNEL_NAME}\
+        PEER_CMD=${PEER_CMD}\
+        CORE_PEER_MSPCONFIGPATH=${CORE_PEER_MSPCONFIGPATH}
    ```
    Note that to safe you to explicitly having to specify CORE_PEER_MSPCONFIGPATH on each call, we defined them
    in `docker-compose.yml' as admin credentials. This means though also that your peer will run with admin and
