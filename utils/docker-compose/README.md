@@ -91,8 +91,8 @@ is used. Otherwise it will use `core.yaml` and the regular peer image.
    ```
    scripts/start.sh
    ```
-   Note that the script returns you an export statements with environment variables
-   which enable to easily run `docker-compose` commands such as `ps`, `top`, `logs`
+   **Note** that the script returns to you an export statements with environment variables
+   which enable you to easily run `docker-compose` commands such as `ps`, `top`, `logs`
    and alike. Just copy/paste the export statement into your shell and you can get,
    e.g., the container status with `${DOCKER_COMPOSE} ps`.
 
@@ -106,9 +106,9 @@ The [examples](../../examples) directory has been [mounted](base/base.yaml) into
 1. Follow the [steps](../../examples/README.md) in the tutorial to build your
    chaincode outside of the peer container. Do not continue to the testing step.
    Though this tutorial references the hello world example, users can also deploy
-   other already  FPC examples, e.g., the ](../../examples/echo) or
-   [auction](../../examples/auction) where the code is provided in the git rep out-of-the-box.
-   Follow the similar steps as below with corresponding change of chaincode name and
+   other FPC examples, e.g., the [echo](../../examples/echo) or
+   [auction](../../examples/auction) examples, where the code is provided in the git repo out-of-the-box.
+   Follow similar steps as outlined below with corresponding changes of chaincode name and
    queries/transactions.
    
    The rest of these steps should be done within the peer container.
@@ -128,9 +128,9 @@ The [examples](../../examples) directory has been [mounted](base/base.yaml) into
         CORE_PEER_MSPCONFIGPATH=${CORE_PEER_MSPCONFIGPATH}
    ```
    Note that to safe you to explicitly having to specify CORE_PEER_MSPCONFIGPATH on each call, we defined them
-   in `docker-compose.yml' as admin credentials. This means though also that your peer will run with admin and
-   not peer credential. If you have role-specific endorsement policies, you might have to comment out the
-   corresponding definition in [docker-compose.yml](./network-config/docker-compose.yml) and then manually
+   in `docker-compose.yml' as admin credentials. This means though also that your peer will run with admin 
+   instead of peer credentials. If you have role-specific endorsement policies, you might have to comment out the
+   corresponding definition in [docker-compose.yml](./network-config/docker-compose.yml) to peer credentials and then manually
    define the corresponding value here in the docker exec shell.
 
 4. Install your chaincode.

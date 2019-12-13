@@ -73,7 +73,7 @@ services:
       # we set here credentials to admin, so we don't have to explicitly have to set
       # it in 'docker exec' so we can run ${PEER_CMD}. It means, though, that the peer
       # also will run with admin and not peer credentials. If that gives problems, e.g.,
-      # because of role-specific endorsement policies, you will have to uncomment below
+      # because of role-specific endorsement policies, you will have to comment below
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp
     ports:
       - 7051:7051

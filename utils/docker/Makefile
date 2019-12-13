@@ -39,7 +39,7 @@ ccenv: base
 
 # Note: for overall consistency reasons we want the FPC code from the current repo
 # as this will rebuild each time and take a while, we don't add a dependency
-# above in build ...
+# to the build target above ...
 peer: base
 	(cd ${TOP}; \
          $(DOCKER) build -t ${FPC_PEER_DOCKER_NAMESPACE}\
