@@ -6,6 +6,14 @@
 
 #!/bin/bash
 
+#  These curl commands are provided here to illustrate the usage of the backend client.  
+#  With a Fabric network running, a chaincode installed and the client deployed, this script
+#  exercises all of the exposed apis of the client.  However, the inputs do not cover all 
+#  possible inputs for the purpose of testing the client.  
+
+#  Future enhancement:  This script could be extended to test the client by adding all possible
+#  inputs and by adding checks to verify the return values / errors.
+
 set -ev
 curl -H "Content-Type: application/json" -X GET  http://localhost:3000/api/clock_auction/getDefaultAuction
 
