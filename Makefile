@@ -9,6 +9,8 @@ include $(TOP)/build.mk
 SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc examples integration # docs
 PLUGINS = ercc ecc_enclave ecc tlcc_enclave tlcc
 
+.PHONY: license
+
 build : godeps
 
 build test clean :
@@ -18,7 +20,7 @@ checks: linter license
 
 license:
 	@echo "License: Running licence checks.."
-	@${GOPATH}/src/github.com/hyperledger/fabric/scripts/check_license.sh
+	@scripts/check_license.sh
 
 linter: gotools build
 	@echo "LINT: Running code checks for Go files..."
