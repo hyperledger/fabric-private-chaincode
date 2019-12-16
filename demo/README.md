@@ -1,9 +1,12 @@
-
-## Goal: Bring up Backend client for Demo Auction network
+## Goal: Bring up Clock Auction Demo Application
 
 ###  Prerequisites
 - It is assumed that Fabric Private Chaincode repository on your machine is installed in $FPC_PATH.
 - JSON processor, jq is installed.
+
+Instructions to bring up end-to-end application to be added here.
+
+## Backend client
 
 ### Usage
 ```
@@ -12,9 +15,11 @@ cd $FPC_PATH/demo/client/backend
 docker build -t auction_client_backend .
 ```
 
-Before the following steps can be run, an FPC network should be setup using this [README](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/utils/docker-compose/README.md).
-
 ###  Register users
+
+Before the following steps can be run, an FPC network should be setup using [README](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/utils/docker-compose/README.md).  Make sure to modify [config.json](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/demo/client/backend/fabric-gateway/config.json) to refer to the correct chaincode name.  
+
+
 Register auction application users (bidders and auctioneers) with Certificate Authority
 ```
 cd $FPC_PATH/demo/client/backend
@@ -27,7 +32,7 @@ Note: This is work in progress.  Some environment variables are hardcoded in the
 
 - NETWORK_NAME:  Depends on the network setup; Refer to the usage of environment variable $USE_FPC in [README](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/utils/docker-compose/README.md).  The requirement is that the backend client runs in the _same_ network as the Fabric network.
 
-- BACKEND_PORT:  Port at which the backend client server is available;  Default value:  3000;  Set in [config.json](https://github.com/sjanakir2015/fabric-private-chaincode/blob/master/demo/client/backend/config.json)
+- BACKEND_PORT:  Port at which the backend client server is available;  Default value:  3000;  Set in [config.json](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/demo/client/backend/fabric-gateway/config.json)
 
 
 ```                 
@@ -39,6 +44,7 @@ docker run --network $NETWORK_NAME -d  -v ${PWD}:/usr/src/app \
 ```
 
 ### Test
+
 With FPC network running and chaincode installed, you can submit transactions using curl commands.  In the same folder, `$FPC_PATH/demo/client/backend`, run:
 ```
 ./testClient.sh
