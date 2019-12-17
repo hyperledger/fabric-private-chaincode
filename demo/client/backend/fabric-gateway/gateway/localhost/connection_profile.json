@@ -1,0 +1,51 @@
+{
+    "name": "auctiondemo-network",
+    "version": "1.0.0",
+    "client": {
+        "organization": "org1",
+        "connection": {
+            "timeout": {
+                "peer": {
+                    "endorser": "500"
+                },
+                "orderer": "500"
+            }
+        }
+    },
+    "channels": {
+        "mychannel": {
+            "orderers": [
+                "orderer.example.com"
+            ],
+            "peers": {
+                "peer0.org1.example.com": {}
+            }
+        }
+    },
+    "organizations": {
+        "org1": {
+            "mspid": "Org1MSP",
+            "peers": [ "peer0.org1.example.com" ],
+            "certificateAuthorities": [ "ca.example.com" ]
+        }
+    },
+    "orderers": {
+        "orderer.example.com": {
+            "url": "grpc://orderer.example.com:7050"
+        }
+    },
+    "peers": {
+        "peer0.org1.example.com": {
+            "url": "grpc://peer0.org1.example.com:7051"
+        }
+    },
+    "certificateAuthorities": {
+        "ca.example.com": {
+            "url": "http://ca.example.com:7054",
+            "registrar": {
+                "enrollId": "admin",
+                "enrollSecret": "adminpw"
+            }
+        }
+    }
+}
