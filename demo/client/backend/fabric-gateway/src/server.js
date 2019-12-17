@@ -33,7 +33,6 @@ app.use('/api/clock_auction', clockauctionRoute);
 
 async function main() {
     let port = JSON.parse(fs.readFileSync('config.json', 'utf8'))['backend_port'];
-    //port = configdata["port"];
 
     try {
         await fabricClient.connectToNetwork ();

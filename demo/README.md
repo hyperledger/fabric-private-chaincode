@@ -11,7 +11,7 @@ Instructions to bring up end-to-end application to be added here.
 ### Usage
 ```
 # Build image once
-cd $FPC_PATH/demo/client/backend
+cd $FPC_PATH/demo/client/backend/fabric-gateway
 docker build -t auction_client_backend .
 ```
 
@@ -22,7 +22,7 @@ Before the following steps can be run, an FPC network should be setup using [REA
 
 Register auction application users (bidders and auctioneers) with Certificate Authority
 ```
-cd $FPC_PATH/demo/client/backend
+cd $FPC_PATH/demo/client/backend/fabric-gateway
 ./registerUsers.sh
 ```
 
@@ -36,7 +36,7 @@ Note: This is work in progress.  Some environment variables are hardcoded in the
 
 
 ```                 
-cd $FPC_PATH/demo/client/backend
+cd $FPC_PATH/demo/client/backend/fabric-gateway
 export NETWORK_NAME=fabricfpc-fpc_basic
 export BACKEND_PORT=3000
 docker run --network $NETWORK_NAME -d  -v ${PWD}:/usr/src/app \
@@ -45,7 +45,7 @@ docker run --network $NETWORK_NAME -d  -v ${PWD}:/usr/src/app \
 
 ### Test
 
-With FPC network running and chaincode installed, you can submit transactions using curl commands.  In the same folder, `$FPC_PATH/demo/client/backend`, run:
+With FPC network running and chaincode installed, you can submit transactions using curl commands.  In the same folder, `$FPC_PATH/demo/client/backend/fabric-gateway`, run:
 ```
 ./testClient.sh
 ```
