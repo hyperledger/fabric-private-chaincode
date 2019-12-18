@@ -700,12 +700,16 @@ int parse_endorser_transaction(
                 if (function.compare("__setup") != 0)
                 {
                     LOG_DEBUG("Ledger: Validate ECC tx");
-                    uint8_t response_data[96];
-                    uint32_t response_len = 0;
-                    uint8_t signature[96];
-                    uint32_t signature_len = 0;
-                    uint8_t pk[96];
-                    uint32_t pk_len = 0;
+                    uint8_t response_data[cc_action.response.payload
+                                              ->size];  // no compression involved, so this should
+                                                        // be a safe upperbound ...
+                    uint32_t response_len = sizeof(response_data);
+                    uint8_t signature[96];  // TODO: replace me with something more robust than a
+                                            // simply (unexplained) constant ..
+                    uint32_t signature_len = sizeof(signature);
+                    uint8_t pk[96];  // TODO: replace me with something more robust than a simply
+                                     // (unexplained) constant ..
+                    uint32_t pk_len = sizeof(pk);
 
                     unmarshal_ecc_response((const uint8_t*)cc_action.response.payload->bytes,
                         cc_action.response.payload->size, (uint8_t*)&response_data, &response_len,
