@@ -60,7 +60,12 @@ void get_state(
         sgx_sha256_msg(encoded_cipher, encoded_cipher_len, &state_hash);
     }
 
-    if (check_cmac(key, NULL, &state_hash, &session_key, &cmac) == 0)
+    if (check_cmac(key, NULL, &state_hash, &session_key, &cmac) != 0)
+    {
+        LOG_ERROR("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
+        // TODO: proper error handling/abort rather than just continue
+    }
+    else
     {
         LOG_DEBUG("Enclave: State verification: cmac correct!! :D");
     }
@@ -180,6 +185,7 @@ void get_state_by_partial_composite_key(
     if (check_cmac(comp_key, NULL, &state_hash, &session_key, &cmac) != 0)
     {
         LOG_ERROR("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
+        // TODO: proper error handling/abort rather than just continue
     }
     else
     {
