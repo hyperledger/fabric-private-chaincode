@@ -5,11 +5,11 @@
 
 # This CMake file is included by the CMake files in chaincode example
 
-include(../../cmake/Init.cmake)
-include(../../cmake/ConfigSGX.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/Init.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../../cmake/ConfigSGX.cmake)
 
-set(COMMON_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../common)
-set(ECC_ENCLAVE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../ecc_enclave)
+set(COMMON_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/../../common)
+set(ECC_ENCLAVE_DIR ${CMAKE_CURRENT_LIST_DIR}/../../ecc_enclave)
 
 include(${ECC_ENCLAVE_DIR}/enclave/CMakeVariables.txt)
 
