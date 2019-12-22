@@ -14,4 +14,4 @@ run-go:
 
 run-fpc:
 	$(GO) build -tags fpc
-	./mock
+	./mock --debug

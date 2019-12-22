@@ -11,6 +11,7 @@ const { Gateway, FileSystemWallet, X509WalletMixin } = require('fabric-network')
 const fs = require('fs');
 const path = require('path');
 
+
 /////////////////  Global constants  /////////////////
 //  errorcodes
 const SUCCESS = 0;
@@ -135,6 +136,22 @@ async function setUserContext (userName, pwd)  {
     }
 }  //  end of UserContext(userName)
 
+
+function processFpcResponse (response) {
+    let strResponse = response.toString();
+    console.log ('Response (string): ', strResponse);
+    let jsonResponse = JSON.parse(strResponse);
+    // TODO: check signature/attestation ...
+    let resultStr = Buffer.from(jsonResponse.ResponseData,"base64").toString();
+    console.log ('Decoded ResponseData: ', resultStr);
+    let result = JSON.parse(resultStr);
+    if (typeof result.status === 'undefined' || typeof result.status.rc === 'undefined' || typeof result.status.message === 'undefined') {
+        throw new Error("invalid response data '" + resultStr + "'");
+    }
+    return result;
+}
+
+
 //  Function to invoke transaction or do a query (evaluateTransaction)
 /*
   Input:  bSubmitTransaction: true => submitTransaction will be called;
@@ -154,19 +171,34 @@ async function submitToFabric (bSubmitTransaction, userName, txName, ...args) {
             result = contract.evaluateTransaction(txName,...args);
         }
         return result.then((response) => {
-            let strResponse = response.toString();
-            console.log ('Response (string): ', strResponse);
-            let result = prepareStatus (SUCCESS, 'Transaction submitted successfully');
-            result['Response'] = strResponse;
-            return result;
+	    try {
+                return processFpcResponse(response);
+            } catch (error) {
+                console.log('Error on tx success return: ', error)
+                throw prepareStatus(FAILURE, "Error on tx success return: "+error);
+            }
         },(error) =>
         {
-            // error from call to SDK
-            throw prepareStatus(FAILURE, error);
+            try {
+                // error during call to Fabric SDK, either chaincode failed or peer problem
+                console.log('Error on tx return: ', error)
+                // find any payload
+                if (typeof error.payload === 'undefined') {
+                    // if none found, just throw our backend error
+                    throw new Error('No payload found');
+                }
+                console.log("Found payload")
+                // otherwise, return (fpc) response from (fabric) payload
+                return processFpcResponse(error.payload);
+            } catch (error) {
+                console.log('Error on tx error return: ', error)
+                throw prepareStatus(FAILURE, "Error on tx error return: "+error);
+            }
         });
     } catch (error) {
-        // error from call to SDK
-        throw prepareStatus(FAILURE, error);
+        // error from initial call to Fabric SDK
+        console.log('Error on tx init: ', error)
+        throw prepareStatus(FAILURE, "Error on tx init: "+error);
     }
 }
 

@@ -2,6 +2,21 @@
 Copyright IBM Corp. All Rights Reserved.
 
 SPDX-License-Identifier: Apache-2.0
+
+TODO (eventually):
+  eventually refactor the mock backend as it has the potential of wider
+  usefulness (the same applies also to the fabric gateway).
+  Auction-specific aspects;
+   - the bridge change-code has auction in names (trivial to remove)
+   - the "/api/getRegisteredUsers" and, in particular,
+     "/api/clock_auction/getDefaultAuction", are auction-specific
+   - processing of response
+
+  PS: probably also worth moving the calls to __init & __setup as well
+  as the unpacking of the payload objects, which are specific to FPC
+  to chaincode/fpc_chaincode.go (or handle these calls for non-fpc
+  in chaincode/go_chaincode.go such that actual go chaincode doesn't
+   have to know about it?)
 */
 
 package main
@@ -21,6 +36,7 @@ import (
 )
 
 var flagPort string
+var flagDebug bool
 var stub *shim.MockStub
 var logger = shim.NewLogger("server")
 
@@ -28,10 +44,15 @@ const ccName = "ecc"
 
 func init() {
 	flag.StringVar(&flagPort, "port", "3000", "Port to listen on")
+	flag.BoolVar(&flagDebug, "debug", false, "debug output")
 }
 
 func main() {
 	flag.Parse()
+
+	if flagDebug {
+		logger.SetLevel(shim.LogDebug)
+	}
 
 	stub = shim.NewMockStub(ccName, chaincode.NewMockAuction())
 
@@ -70,6 +91,55 @@ type Payload struct {
 	Args []string
 }
 
+// the JSON objects returned from FPC
+
+type ResponseStatus struct {
+	RC      int    `json:"rc"`
+	Message string `json:"message"`
+}
+
+type ResponseObject struct {
+	Status ResponseStatus `json:"status"`
+}
+
+// Unmarshallers for above to ensure the fields exists ...
+// (would be nice if there would be a tag 'jsoon:required,...' or alike but alas
+// despite 4 years of requests and discussion nothing such has materialized
+
+func (status *ResponseStatus) UnmarshalJSON(data []byte) (err error) {
+	required := struct {
+		RC      *int    `json:"rc"`
+		Message *string `json:"message"`
+	}{}
+	err = json.Unmarshal(data, &required)
+	if err != nil {
+		return
+	} else if required.RC == nil || required.Message == nil {
+		err = fmt.Errorf("Required fields for ResponseStatus missing")
+	} else {
+		status.RC = *required.RC
+		status.Message = *required.Message
+	}
+	return
+}
+
+func (response *ResponseObject) UnmarshalJSON(data []byte) (err error) {
+	required := struct {
+		Status *ResponseStatus `json:"status"`
+	}{}
+	err = json.Unmarshal(data, &required)
+	if err != nil {
+		return
+	} else if required.Status == nil {
+		err = fmt.Errorf("Required fields for ResponseStatus missing")
+	} else {
+		response.Status = *required.Status
+	}
+	return
+}
+
+// Main invocation handling
+
 func invoke(c *gin.Context) {
 
 	user := c.GetHeader("x-user")
@@ -86,23 +156,54 @@ func invoke(c *gin.Context) {
 	}
 
 	res := stub.MockInvoke("someTxID", args)
-	if res.Status != shim.OK {
-		//fmt.Printf("Chaincode error: %s", res.Message)
-		logger.Error(fmt.Sprintf("Chaincode Error: %s\n", res.Message))
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": res.Message})
-		return
+	logger.Debugf("invocation response: status='%v' / payload='%v' / message='%s'", res.Status, res.Payload, res.Message)
+
+	// NOTE: we (try to) return error even if the invocation get success back
+	// but does not contain a response payload. According to the auction
+	// specifications, all queries and transactions should return a response
+	// object (even more specifically, an object which at the very least
+	// contains a 'status' field)
+	var fpcResponse []byte
+	var errMsg *string = nil // nil means no error
+	// we might get payload and response regardless of invocation success,
+	// so try to decode in all cases
+	if res.Payload != nil {
+		var response utils.Response
+		// unwarp ecc response and return only responseData
+		if err = json.Unmarshal(res.Payload, &response); err != nil {
+			msg := fmt.Sprintf("No valid response payload received due to error=%v (status=%v/message=%v)",
+				err, res.Status, res.Message)
+			errMsg = &msg
+		} else {
+			logger.Debugf("decoded fpc response: ResponseData='%s'",
+				response.ResponseData)
+			fpcResponse = response.ResponseData
+			// a proper client would now also verify response signature,
+			// we just make sure the response is a json object as expected
+			var responseObj ResponseObject
+			if err = json.Unmarshal(fpcResponse, &responseObj); err != nil {
+				msg := fmt.Sprintf("Response payload '%s' not a valid response object (status=%v/message=%v)",
+					fpcResponse, res.Status, res.Message)
+				errMsg = &msg
+			}
+		}
+	} else {
+		msg := fmt.Sprintf("No response payload received (status=%v/message=%v)",
+			res.Status, res.Message)
+		errMsg = &msg
 	}
 
-	// unwarp ecc response and return only responseData
-	// a proper client would now also verify response signature
-	var response utils.Response
-	err = json.Unmarshal(res.Payload, &response)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
+	if errMsg != nil {
+		fpcResponseJson := ResponseObject{
+			Status: ResponseStatus{
+				RC:      499, // TODO (maybe): more specific explicit error codes?
+				Message: *errMsg,
+			},
+		}
+		fpcResponse, _ = json.Marshal(fpcResponseJson)
 	}
 
-	c.Data(http.StatusOK, c.ContentType(), response.ResponseData)
+	c.Data(http.StatusOK, c.ContentType(), fpcResponse)
 }
 
 func parsePayload(c *gin.Context) ([][]byte, error) {

@@ -19,7 +19,7 @@ type AuctionStatus struct {
 
 type Status struct {
 	Rc  int    `json:"rc"`
-	Msg string `json:"msg"`
+	Msg string `json:"message"`
 }
 
 type ReturnMsg struct {
