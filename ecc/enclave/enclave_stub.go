@@ -391,21 +391,29 @@ func (e *StubImpl) Init(args []byte, shimStub shim.ChaincodeStubInterface, tlccS
 
 	e.sem.Acquire(context.Background(), 1)
 	// invoke (init) enclave
-	ret := C.sgxcc_init(e.eid,
+	init_ret := C.sgxcc_init(e.eid,
 		argsPtr,
 		(*C.uint8_t)(responsePtr), C.uint32_t(MAX_RESPONSE_SIZE), &responseLenOut,
 		(*C.ec256_signature_t)(signaturePtr),
 		ctx)
 	e.sem.Release(1)
-	if ret != 0 {
-		return nil, nil, fmt.Errorf("Invoke failed. Reason: %d", int(ret))
+	// Note: we do try to return the response in all cases, even then there is an error ...
+	var sig []byte = nil
+	var err error
+	if init_ret == 0 {
+		sig, err = crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
+		if err != nil {
+			sig = nil
+		}
+	} else {
+		err = fmt.Errorf("Init failed. Reason: %d", int(init_ret))
+		// TODO: ideally we would also sign error messages but would
+		// require including the error into the signature itself
+		// which has involves a rathole of changes, so defer to the
+		// time which design & refactor everything to be end-to-end
+		// secure ...
 	}
-
-	sig, err := crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
-	if err != nil {
-		return nil, nil, err
-	}
-	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, nil
+	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, err
 }
 
 // invoke calls the enclave for transaction processing, takes arguments
@@ -440,22 +448,26 @@ func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInt
 
 	e.sem.Acquire(context.Background(), 1)
 	// invoke enclave
-	ret := C.sgxcc_invoke(e.eid,
+	invoke_ret := C.sgxcc_invoke(e.eid,
 		argsPtr,
 		pkPtr,
 		(*C.uint8_t)(responsePtr), C.uint32_t(MAX_RESPONSE_SIZE), &responseLenOut,
 		(*C.ec256_signature_t)(signaturePtr),
 		ctx)
 	e.sem.Release(1)
-	if ret != 0 {
-		return nil, nil, fmt.Errorf("Invoke failed. Reason: %d", int(ret))
+	// Note: we do try to return the response in all cases, even then there is an error ...
+	var sig []byte = nil
+	var err error
+	if invoke_ret == 0 {
+		sig, err = crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
+		if err != nil {
+			sig = nil
+		}
+	} else {
+		err = fmt.Errorf("Invoke failed. Reason: %d", int(invoke_ret))
+		// TODO: (see above Init for comment applying also here)
 	}
-
-	sig, err := crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
-	if err != nil {
-		return nil, nil, err
-	}
-	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, nil
+	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, err
 }
 
 // GetPublicKey returns the enclave ec public key

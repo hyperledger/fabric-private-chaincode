@@ -1,0 +1,31 @@
+--- transaction.js	2019-12-22 17:18:22.004770000 +0000
++++ node_modules/fabric-network/lib/transaction.js	1985-10-26 08:15:00.000000000 +0000
+@@ -218,24 +218,18 @@
+ 		});
+ 
+ 		if (validResponses.length === 0) {
+-			const errorMessages = errorResponses.map((response) => util.format('peer=%s, status=%s, message=%s, payload=%s',
+-				response.peer.name, response.status, response.message, response.payload));
++			const errorMessages = errorResponses.map((response) => util.format('peer=%s, status=%s, message=%s',
++				response.peer.name, response.status, response.message));
+ 			const messages = Array.of(`No valid responses from any peers. ${errorResponses.length} peer error responses:`,
+ 				...errorMessages);
+ 			const msg = messages.join('\n    ');
+ 			logger.error('_validatePeerResponses: ' + msg);
+-			throw new class FPCError extends Error {
+-	    			constructor(message, responses) {
+-                		    super(message);
+-				    this.name = this.constructor.name;
+-				    this.responses = responses;
+-				    this.payload = responses[0].payload;
+-	    			}
+-			    }(msg, errorResponses);
++			throw new Error(msg);
+ 		}
+ 
+ 		return {validResponses, invalidResponses: errorResponses};
+ 	}
++
+ 	/**
+ 	 * Evaluate a transaction function and return its results.
+ 	 * The transaction function will be evaluated on the endorsing peers but
