@@ -8,8 +8,8 @@
     "backend_port": 3000,
 
     "users" : [
-    {"userName":  "A-Telecom",   "userRole" : "auction.bidder", "MSPID" : "Org1MSP"} ,
-    {"userName":  "B-Net",       "userRole" : "auction.bidder", "MSPID" : "Org1MSP"},
-    {"userName":  "C-Mobile",    "userRole" : "auction.bidder", "MSPID" : "Org1MSP"} ,
-    {"userName":  "Auctioneer1", "userRole" : "auction.auctioneer", "MSPID" : "Org1MSP"} ]
+    {"userName":  "A-Telecom",   "userRole" : "auction.bidder",     "MSPID" : "org1"} ,
+    {"userName":  "B-Net",       "userRole" : "auction.bidder",     "MSPID" : "org1"},
+    {"userName":  "C-Mobile",    "userRole" : "auction.bidder",     "MSPID" : "org1"} ,
+    {"userName":  "Auctioneer1", "userRole" : "auction.auctioneer", "MSPID" : "org1"} ]
 }

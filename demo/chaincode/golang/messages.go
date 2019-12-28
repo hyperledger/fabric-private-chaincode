@@ -73,7 +73,7 @@ type AuctionRequest struct {
 // State
 
 type Auction struct {
-	Owner                         *Principle    `json:"owner"`
+	Owner                         *Principal    `json:"owner"`
 	Name                          string        `json:"name"`
 	Territories                   []Territory   `json:"territories"`
 	Bidders                       []Bidder      `json:"bidders"`
@@ -82,8 +82,8 @@ type Auction struct {
 	ClockPriceIncrementPercentage int           `json:"clockPriceIncrementPercentage"`
 }
 
-type Principle struct {
-	Mspid []byte `json:"mspid"`
+type Principal struct {
+	Mspid string `json:"mspid"`
 	Dn    string `json:"dn"`
 }
 
@@ -103,7 +103,7 @@ type Eligibility struct {
 type Bidder struct {
 	Id          int        `json:"id"`
 	DisplayName string     `json:"displayName"`
-	Principle   *Principle `json:"principle"`
+	Principal   *Principal `json:"principal"`
 }
 
 type Channel struct {

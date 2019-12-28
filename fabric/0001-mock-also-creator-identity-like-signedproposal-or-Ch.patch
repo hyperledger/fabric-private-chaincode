@@ -1,0 +1,36 @@
+From 9ba29b96a85150596a5bc45a5196693c46d5dc3e Mon Sep 17 00:00:00 2001
+From: Michael Steiner <michael.steiner@intel.com>
+Date: Wed, 25 Dec 2019 19:04:22 -0700
+Subject: [PATCH] * mock also creator identity like signedproposal or ChannelID
+
+Signed-off-by: Michael Steiner <michael.steiner@intel.com>
+---
+ core/chaincode/shim/mockstub.go | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/core/chaincode/shim/mockstub.go b/core/chaincode/shim/mockstub.go
+index d58db9c4a..8b4b83ab5 100644
+--- a/core/chaincode/shim/mockstub.go
++++ b/core/chaincode/shim/mockstub.go
+@@ -55,6 +55,9 @@ type MockStub struct {
+ 	// mocked signedProposal
+ 	signedProposal *pb.SignedProposal
+ 
++	// mocked creator
++	Creator []byte
++
+ 	// stores a channel ID of the proposal
+ 	ChannelID string
+ 
+@@ -357,7 +360,7 @@ func (stub *MockStub) InvokeChaincode(chaincodeName string, args [][]byte, chann
+ 
+ // Not implemented
+ func (stub *MockStub) GetCreator() ([]byte, error) {
+-	return nil, nil
++	return stub.Creator, nil
+ }
+ 
+ // Not implemented
+-- 
+2.17.1
+
