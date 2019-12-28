@@ -11,6 +11,7 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	cid "github.com/hyperledger/fabric/core/chaincode/shim/ext/cid"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
@@ -81,7 +82,27 @@ func createAuction(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	}
 
 	// assign owner
-	auction.Owner = &Principle{[]byte("auctioneeer@org4"), "auctioneeer"}
+	clientIdentity, err := cid.New(stub)
+	if err != nil {
+		return shim.Error("clientidentity constructor error: " + err.Error())
+	}
+
+	ownerMSPId, err := clientIdentity.GetMSPID()
+	if err != nil {
+		return shim.Error("GetMSPID error: " + err.Error())
+	}
+	// Note: as we require x509, we use this instead of GetID()
+	// which would be more generic but creates a more complicated
+	// non-standard encoding (base64-encoding of concatation
+	// of 'x509::' and DN ..
+	ownerCert, err := clientIdentity.GetX509Certificate()
+	if err != nil {
+		return shim.Error("GetX509Certificate error: " + err.Error())
+	}
+	ownerDN := ownerCert.Subject.String()
+
+	auction.Owner = &Principal{ownerMSPId, ownerDN}
+	logger.Info(fmt.Sprintf("CreateAuction: new owner mspid='%v', dn='%v')\n", ownerMSPId, ownerDN))
 
 	auctionJson, err := json.Marshal(auction)
 	if err != nil {
