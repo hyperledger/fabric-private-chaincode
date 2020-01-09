@@ -83,7 +83,7 @@ type Auction struct {
 }
 
 type Principal struct {
-	Mspid string `json:"mspid"`
+	Mspid string `json:"mspId"`
 	Dn    string `json:"dn"`
 }
 
