@@ -15,6 +15,7 @@ COPY \
     package.json \
     package-lock.json\
     config.json\
+    auction.json\
     fabric-sdk-node_fabric-network_lib_transaction.js.patch\
   /usr/src/app/
 COPY src /usr/src/app/src

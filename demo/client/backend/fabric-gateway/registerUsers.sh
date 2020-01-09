@@ -1,12 +1,14 @@
+#!/bin/bash
+
 #
 # Copyright IBM Corp All Rights Reserved
 #
 # SPDX-License-Identifier: Apache-2.0
 #
 
-#!/bin/bash
-
 set -ev
+
+FABRIC_GATEWAY_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 export WAIT_TIME=5
 export version=1.1
 #enroll CA's admin so that we can use the id to register org1's admin
@@ -37,8 +39,8 @@ docker exec ca.example.com fabric-ca-client identity list
 #
 for (( i=0; i<4; i++ ))
 do
-    export username=$( (jq --arg i $i '.users[$i|tonumber].userName' config.json ) | sed 's/"//g')
-    export userrole=$( (jq --arg i $i '.users[$i|tonumber].userRole' config.json) | sed 's/"//g')
+    export username=$( (jq --arg i $i '.users[$i|tonumber].userName' "$FABRIC_GATEWAY_DIR/config.json" ) | sed 's/"//g')
+    export userrole=$( (jq --arg i $i '.users[$i|tonumber].userRole' "$FABRIC_GATEWAY_DIR/config.json" ) | sed 's/"//g')
     echo "i = $i; username=$username;  userrole=$userrole"
 
     docker exec ca.example.com fabric-ca-client register \
