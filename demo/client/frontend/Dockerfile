@@ -10,6 +10,8 @@ WORKDIR /usr/src/app
 ENV PATH /usr/src/app/node_modules/.bin:$PATH
 
 COPY package.json /usr/src/app/
+COPY package-lock.json /usr/src/app/
+COPY src/ /usr/src/app/src
 COPY .env.development /usr/src/app/
 
 RUN npm install
