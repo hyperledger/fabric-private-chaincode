@@ -28,6 +28,7 @@ services:
       - DOCKER_HOST=unix:///host/var/run/docker.sock
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
       - FABRIC_LOGGING_SPEC=info
+      - CORE_VM_DOCKER_ATTACHSTDOUT=true
       - PEER_CMD=${PEER_CMD}
       - ORDERER_ADDR=orderer.example.com:7050
       - CHANNEL_NAME=${CHANNEL_NAME}
@@ -37,6 +38,7 @@ services:
         - /var/run/:/host/var/run/
         - ../config:/etc/hyperledger/configtx
         - ../../../../examples:/project/src/github.com/hyperledger-labs/fabric-private-chaincode/examples
+        - ../../../../demo:/project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo
 
 
   ca-base:
