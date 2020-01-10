@@ -97,9 +97,10 @@ is used. Otherwise it will use `core.yaml` and the regular peer image.
    e.g., the container status with `${DOCKER_COMPOSE} ps`.
 
 ## Deploying your FPC Chaincode
-The [examples](../../examples) directory has been [mounted](base/base.yaml) into
- the peer container for convenience, under
- `/project/src/github.com/hyperledger-labs/fabric-private-chaincode/examples`.
+The [examples](../../examples) and [demo](../../demo) directories has been
+[mounted](base/base.yaml) into the peer container for convenience, under
+`/project/src/github.com/hyperledger-labs/fabric-private-chaincode/examples` and
+`/project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo`.
  **NOTE** If you are running a normal fabric network, the rest of the tutorial
  will not work.
 
@@ -127,8 +128,8 @@ The [examples](../../examples) directory has been [mounted](base/base.yaml) into
         PEER_CMD=${PEER_CMD}\
         CORE_PEER_MSPCONFIGPATH=${CORE_PEER_MSPCONFIGPATH}
    ```
-   Note that to safe you to explicitly having to specify CORE_PEER_MSPCONFIGPATH on each call, we defined them
-   in `docker-compose.yml' as admin credentials. This means though also that your peer will run with admin 
+   Note that to save you from explicitly having to specify CORE_PEER_MSPCONFIGPATH on each call, we defined them
+   in `docker-compose.yml` as admin credentials. This means though also that your peer will run with admin
    instead of peer credentials. If you have role-specific endorsement policies, you might have to comment out the
    corresponding definition in [docker-compose.yml](./network-config/docker-compose.yml) to peer credentials and then manually
    define the corresponding value here in the docker exec shell.
@@ -251,4 +252,3 @@ commands in the peer container before you can use these node sdk scripts**
    ```
    scripts/teardown.sh
    ```
-   
