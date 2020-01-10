@@ -161,34 +161,17 @@ DOCKER=true
 SAMPLES=true
 BINARIES=true
 
-# Parse commandline args pull out
-# version and/or ca-version strings first
-if echo $1 | egrep -vq '^-'; then
-  VERSION=$1;shift
-  if echo $1 | egrep -vq '^-'; then
-    CA_VERSION=$1;shift
-    if echo $1 | egrep -vq '^-'; then
-      THIRDPARTY_IMAGE_VERSION=$1;shift
-    fi
-  fi
-fi
+VERSION=1.4.3 # Fabric Version for Binaries and Images
+CA_VERSION=1.4.3
+THIRDPARTY_IMAGE_VERSION=0.4.18
 
-# prior to 1.1.0 architecture was determined by uname -m
-if [[ $VERSION =~ ^1\.[0]\.* ]]; then
-  export FABRIC_TAG=${MARCH}-${VERSION}
-  export CA_TAG=${MARCH}-${CA_VERSION}
-  export THIRDPARTY_TAG=${MARCH}-${THIRDPARTY_IMAGE_VERSION}
-else
-  # starting with 1.2.0, multi-arch images will be default
-  : ${CA_TAG:="$CA_VERSION"}
-  : ${FABRIC_TAG:="$VERSION"}
-  : ${THIRDPARTY_TAG:="$THIRDPARTY_IMAGE_VERSION"}
-fi
+export FABRIC_TAG=${FABRIC_TAG:="$VERSION"}
+export CA_TAG=${CA_TAG:="$CA_VERSION"}
+export THIRDPARTY_TAG=${THIRDPARTY_TAG:="$THIRDPARTY_IMAGE_VERSION"}
 
 BINARY_FILE=hyperledger-fabric-${ARCH}-${VERSION}.tar.gz
 CA_BINARY_FILE=hyperledger-fabric-ca-${ARCH}-${CA_VERSION}.tar.gz
 
-echo DEBUG: $1 $2 $3 $4 ...
 # then parse opts
 while getopts "hdb" opt; do
   case "$opt" in
