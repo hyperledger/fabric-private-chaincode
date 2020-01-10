@@ -234,25 +234,25 @@
       {
         "id": 1,
         "displayName": "A-Telecom",
-        "principle": {
+        "principal": {
           "mspid": "org1",
-          "dn": "bidder@org1"
+          "dn": "CN=,OU=user+OU=org1"
         }
       },
       {
         "id": 2,
         "displayName": "B-Net",
-        "principle": {
-          "mspid": "org2",
-          "dn": "bidder@org2"
+        "principal": {
+          "mspid": "org1",
+          "dn": "CN=,OU=user+OU=org1"
         }
       },
       {
         "id": 3,
-        "displayName": "C-Mobil",
-        "principle": {
-          "mspid": "org3",
-          "dn": "bidder@org3"
+        "displayName": "C-Mobile",
+        "principal": {
+          "mspid": "org1",
+          "dn": "CN=,OU=user+OU=org1"
         }
       }
     ],

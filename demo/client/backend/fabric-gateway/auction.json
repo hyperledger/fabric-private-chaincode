@@ -170,23 +170,23 @@
 	"bidders": [{
 		"id": 1,
 		"displayName": "A-Telecom",
-		"principle": {
-			"mspid": "Org1MSP",
-			"dn": "bidder@org1"
+		"principal": {
+			"mspid": "org1",
+			"dn": "CN=A-Telecom,OU=user+OU=org1"
 		}
 	}, {
 		"id": 2,
 		"displayName": "B-Net",
-		"principle": {
-			"mspid": "Org1MSP",
-			"dn": "bidder@org2"
+		"principal": {
+			"mspid": "org1",
+			"dn": "CN=B-Net,OU=user+OU=org1"
 		}
 	}, {
 		"id": 3,
 		"displayName": "C-Mobile",
-		"principle": {
-			"mspid": "Org1MSP",
-			"dn": "bidder@org3"
+		"principal": {
+			"mspid": "org1",
+			"dn": "CN=C-Mobile,OU=user+OU=org1"
 		}
 	}],
 	"initialEligibilities": [{

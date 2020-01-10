@@ -5,6 +5,11 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
+/*
+TODO:
+- add everywhere explicit (& consistent) return errors to ocalls/ecalls
+*/
+
 package enclave
 
 import (
@@ -67,8 +72,7 @@ import "C"
 
 const EPID_SIZE = 8
 const SPID_SIZE = 16
-const MAX_OUTPUT_SIZE = 1024
-const MAX_RESPONSET_SIZE = 1024
+const MAX_RESPONSE_SIZE = 1024 * 100 // Let's be really conservative ...
 const SIGNATURE_SIZE = 64
 const PUB_KEY_SIZE = 64
 const TARGET_INFO_SIZE = 512
@@ -123,10 +127,6 @@ func (r *Registry) Get(i int) *Stubs {
 	return stubs
 }
 
-// TODO: everywhere below
-// - we should check the max_*_len parameters!!!
-// - we should do more meaningful error handling than panic ..
-
 //export golog
 func golog(str *C.char) {
 	logger.Infof("%s", C.GoString(str))
@@ -140,6 +140,10 @@ var _logger = func(in string) {
 //export get_creator_name
 func get_creator_name(msp_id *C.char, max_msp_id_len C.uint32_t, dn *C.char, max_dn_len C.uint32_t, ctx unsafe.Pointer) {
 	stubs := registry.Get(*(*int)(ctx))
+
+	// TODO (eventually): replace/simplify below via ext.ClientIdentity,
+	// should also make it easier to eventually return more than only
+	// msp & dn ..
 
 	serializedID, err := stubs.shimStub.GetCreator()
 	if err != nil {
@@ -165,6 +169,7 @@ func get_creator_name(msp_id *C.char, max_msp_id_len C.uint32_t, dn *C.char, max
 
 	var goDn = cert.Subject.String()
 	C._cpy_str(dn, goDn, max_dn_len)
+	// TODO (eventually): return the eror case of the dn buffer being too small
 }
 
 //export get_state
@@ -180,6 +185,14 @@ func get_state(key *C.char, val *C.uint8_t, max_val_len C.uint32_t, val_len *C.u
 	data, err := stubs.shimStub.GetState(key_str)
 	if err != nil {
 		panic("error while getting state")
+	}
+	if C.uint32_t(len(data)) > max_val_len {
+		C._set_int(val_len, C.uint32_t(0))
+		// NOTE: there is currently no way to explicitly return an error
+		// to distinguish from absence of key.  However, iff key exist
+		// and we return an error, this should trigger an integrity
+		// error, so the shim implicitly notice the difference.
+		return
 	}
 	C._cpy_bytes(val, (*C.uint8_t)(C.CBytes(data)), C.uint32_t(len(data)))
 	C._set_int(val_len, C.uint32_t(len(data)))
@@ -209,7 +222,7 @@ func put_state(key *C.char, val unsafe.Pointer, val_len C.int, ctx unsafe.Pointe
 }
 
 //export get_state_by_partial_composite_key
-func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max_vales_len C.uint32_t, values_len *C.uint32_t, cmac *C.uint8_t, ctx unsafe.Pointer) {
+func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max_values_len C.uint32_t, values_len *C.uint32_t, cmac *C.uint8_t, ctx unsafe.Pointer) {
 	stubs := registry.Get(*(*int)(ctx))
 
 	// split and get a proper composite key
@@ -240,6 +253,14 @@ func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max
 	buf.WriteString("]")
 	data := buf.Bytes()
 
+	if C.uint32_t(len(data)) > max_values_len {
+		C._set_int(values_len, C.uint32_t(0))
+		// NOTE: there is currently no way to explicitly return an error
+		// to distinguish from absence of key.  However, iff key exist
+		// and we return an error, this should trigger an integrity
+		// error, so the shim implicitly notice the difference.
+		return
+	}
 	C._cpy_bytes(values, (*C.uint8_t)(C.CBytes(data)), C.uint32_t(len(data)))
 	C._set_int(values_len, C.uint32_t(len(data)))
 
@@ -360,8 +381,8 @@ func (e *StubImpl) Init(args []byte, shimStub shim.ChaincodeStubInterface, tlccS
 	defer C.free(unsafe.Pointer(argsPtr))
 
 	// response
-	responseLenOut := C.uint32_t(MAX_RESPONSET_SIZE)
-	responsePtr := C.malloc(MAX_RESPONSET_SIZE)
+	responseLenOut := C.uint32_t(0) // We pass maximal length separatedly; set to zero so we can detect valid responses
+	responsePtr := C.malloc(MAX_RESPONSE_SIZE)
 	defer C.free(responsePtr)
 
 	// signature
@@ -370,21 +391,29 @@ func (e *StubImpl) Init(args []byte, shimStub shim.ChaincodeStubInterface, tlccS
 
 	e.sem.Acquire(context.Background(), 1)
 	// invoke (init) enclave
-	ret := C.sgxcc_init(e.eid,
+	init_ret := C.sgxcc_init(e.eid,
 		argsPtr,
-		(*C.uint8_t)(responsePtr), C.uint32_t(MAX_RESPONSET_SIZE), &responseLenOut,
+		(*C.uint8_t)(responsePtr), C.uint32_t(MAX_RESPONSE_SIZE), &responseLenOut,
 		(*C.ec256_signature_t)(signaturePtr),
 		ctx)
 	e.sem.Release(1)
-	if ret != 0 {
-		return nil, nil, fmt.Errorf("Invoke failed. Reason: %d", int(ret))
+	// Note: we do try to return the response in all cases, even then there is an error ...
+	var sig []byte = nil
+	var err error
+	if init_ret == 0 {
+		sig, err = crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
+		if err != nil {
+			sig = nil
+		}
+	} else {
+		err = fmt.Errorf("Init failed. Reason: %d", int(init_ret))
+		// TODO: ideally we would also sign error messages but would
+		// require including the error into the signature itself
+		// which has involves a rathole of changes, so defer to the
+		// time which design & refactor everything to be end-to-end
+		// secure ...
 	}
-
-	sig, err := crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
-	if err != nil {
-		return nil, nil, err
-	}
-	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, nil
+	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, err
 }
 
 // invoke calls the enclave for transaction processing, takes arguments
@@ -409,8 +438,8 @@ func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInt
 	defer C.free(unsafe.Pointer(pkPtr))
 
 	// response
-	responseLenOut := C.uint32_t(MAX_RESPONSET_SIZE)
-	responsePtr := C.malloc(MAX_RESPONSET_SIZE)
+	responseLenOut := C.uint32_t(0) // We pass maximal length separatedly; set to zero so we can detect valid responses
+	responsePtr := C.malloc(MAX_RESPONSE_SIZE)
 	defer C.free(responsePtr)
 
 	// signature
@@ -419,22 +448,26 @@ func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInt
 
 	e.sem.Acquire(context.Background(), 1)
 	// invoke enclave
-	ret := C.sgxcc_invoke(e.eid,
+	invoke_ret := C.sgxcc_invoke(e.eid,
 		argsPtr,
 		pkPtr,
-		(*C.uint8_t)(responsePtr), C.uint32_t(MAX_RESPONSET_SIZE), &responseLenOut,
+		(*C.uint8_t)(responsePtr), C.uint32_t(MAX_RESPONSE_SIZE), &responseLenOut,
 		(*C.ec256_signature_t)(signaturePtr),
 		ctx)
 	e.sem.Release(1)
-	if ret != 0 {
-		return nil, nil, fmt.Errorf("Invoke failed. Reason: %d", int(ret))
+	// Note: we do try to return the response in all cases, even then there is an error ...
+	var sig []byte = nil
+	var err error
+	if invoke_ret == 0 {
+		sig, err = crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
+		if err != nil {
+			sig = nil
+		}
+	} else {
+		err = fmt.Errorf("Invoke failed. Reason: %d", int(invoke_ret))
+		// TODO: (see above Init for comment applying also here)
 	}
-
-	sig, err := crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
-	if err != nil {
-		return nil, nil, err
-	}
-	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, nil
+	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, err
 }
 
 // GetPublicKey returns the enclave ec public key

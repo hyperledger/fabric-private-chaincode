@@ -22,8 +22,6 @@ import "C"
 
 const EPID_SIZE = 8
 const SPID_SIZE = 16
-const MAX_OUTPUT_SIZE = 1024
-const MAX_RESPONSET_SIZE = 1024
 const SIGNATURE_SIZE = 64
 const PUB_KEY_SIZE = 64
 const REPORT_SIZE = 432
