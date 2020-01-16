@@ -15,15 +15,15 @@ bwht=`tput setab 7`
 crst=`tput sgr0`
 
 function recho () {
-    echo "${cbld}${cred}" $@ "${crst}" >&2
+    echo "${cbld}${cred}"$@"${crst}" >&2
 }
 
 function becho () {
-    echo "${cbld}${cblu}" $@ "${crst}" >&2
+    echo "${cbld}${cblu}"$@"${crst}" >&2
 }
 
 function gecho () {
-    echo "${cbld}${cgrn}" $@ "${crst}" >&2
+    echo "${cbld}${cgrn}"$@"${crst}" >&2
 }
 
 # Common reporting functions: say, yell & die
