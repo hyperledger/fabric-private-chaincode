@@ -71,3 +71,15 @@ int decrypt_state(sgx_aes_gcm_128bit_key_t* key,
         NULL, 0,                                                   /* aad */
         (sgx_aes_gcm_128bit_tag_t*)(cipher + SGX_AESGCM_IV_SIZE)); /* tag */
 }
+
+int get_random_bytes(uint8_t* buffer, size_t length)
+{
+    /* WARNING WARNING WARNING */
+    /* WARNING WARNING WARNING */
+
+    // the implementation of this function with SGX rand forces to have a single encalve endorser
+
+    /* WARNING WARNING WARNING */
+    /* WARNING WARNING WARNING */
+    return sgx_read_rand(buffer, length);
+}
