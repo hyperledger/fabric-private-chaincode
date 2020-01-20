@@ -22,9 +22,11 @@ TODO (eventually):
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/gin-contrib/cors"
@@ -33,14 +35,17 @@ import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/demo/client/backend/mock/chaincode"
 	"github.com/hyperledger-labs/fabric-private-chaincode/utils"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric/protos/peer"
 )
 
 var flagPort string
 var flagDebug bool
-var stub *shim.MockStub
+var stub *MockStubWrapper
 var logger = shim.NewLogger("server")
+var notifier = NewNotifier()
 
-const ccName = "ecc"
+const ccName = "FPCAuction"
+const channelName = "Mychannel"
 
 const mspId = "Org1MSP"
 const org = "org1"
@@ -57,12 +62,14 @@ func main() {
 		logger.SetLevel(shim.LogDebug)
 	}
 
-	stub = shim.NewMockStub(ccName, chaincode.NewMockAuction())
+	// deploy
+	deployChaincode()
 
-	// setup and init
-	stub.MockInvoke("someTxID", [][]byte{[]byte("__setup"), []byte("ercc"), []byte("mychannel"), []byte("tlcc")})
-	stub.MockInvoke("1", [][]byte{[]byte("__init"), []byte("My Auction")})
+	// start web service
+	startServer()
+}
 
+func startServer() {
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	config.AllowHeaders = append(config.AllowHeaders, "x-user")
@@ -70,13 +77,108 @@ func main() {
 	r := gin.Default()
 	r.Use(cors.New(config))
 
+	// notifications
+	r.GET("/api/notifications", notifications)
+
+	// controller
+	r.GET("/api/demo/start", startDemo)
+
+	// ledger debug API
+	r.GET("/api/ledger", getLedger)
+	r.GET("/api/state", getState)
+	r.DELETE("/api/state/:key", deleteStateEntry)
+	r.POST("/api/state/:key", updateStateEntry)
+
+	// auction util API
 	r.GET("/api/getRegisteredUsers", getAllUsers)
 	r.GET("/api/clock_auction/getDefaultAuction", getDefaultAuction)
+	r.GET("/api/clock_auction/getAuctionDetails/:auctionId", getAuctionDetails)
+
+	// chaincode API
 	r.POST("/api/cc/invoke", invoke)
 	// note that using a MockStub there is no need to differentiate between query and invoke
-	r.POST("/api/cc/query", invoke)
+	r.POST("/api/cc/query", query)
 
 	r.Run(":" + flagPort)
+}
+
+func deployChaincode() {
+	logger.Info("Deploy new chaincode")
+
+	stub = NewWrapper(ccName, chaincode.NewMockAuction(), notifier)
+
+	// setup and init
+	stub.Creator = "Auctioneer1"
+	stub.MockInvoke("someTxID", [][]byte{[]byte("__setup"), []byte("ercc"), []byte(channelName), []byte("tlcc")})
+	stub.MockInvoke("1", [][]byte{[]byte("__init"), []byte(ccName)})
+}
+
+func notifications(c *gin.Context) {
+	listener := notifier.OpenListener()
+	defer func() {
+		notifier.CloseListener(listener)
+	}()
+
+	c.Stream(func(w io.Writer) bool {
+		select {
+		case msg := <-listener:
+			c.SSEvent("update", msg)
+		}
+		return true
+	})
+}
+
+func startDemo(c *gin.Context) {
+	// destroy enclave
+	Destroy(stub)
+	notifier.Submit("restart")
+
+	// let's create a new chaincode
+	deployChaincode()
+	c.IndentedJSON(http.StatusOK, "start")
+}
+
+func getLedger(c *gin.Context) {
+	ledger := stub.Transactions
+	c.IndentedJSON(http.StatusOK, ledger)
+}
+
+func getState(c *gin.Context) {
+	ledgerState := stub.MockStub.State
+	c.IndentedJSON(http.StatusOK, ledgerState)
+}
+
+func deleteStateEntry(c *gin.Context) {
+	key := c.Params.ByName("key")
+	bk, err := base64.StdEncoding.DecodeString(key)
+	if err != nil {
+		panic(err)
+	}
+	key = string(bk)
+
+	_ = stub.DelState(key)
+	c.String(http.StatusOK, "deleted")
+}
+
+func updateStateEntry(c *gin.Context) {
+	key := c.Params.ByName("key")
+	bk, err := base64.StdEncoding.DecodeString(key)
+	if err != nil {
+		panic(err)
+	}
+	key = string(bk)
+
+	value, err := c.GetRawData()
+	if err != nil {
+		c.String(http.StatusBadRequest, "error reading data")
+	}
+
+	stub.MockStub.TxID = "dummyTXId"
+	defer func() { stub.MockStub.TxID = "" }()
+	_ = stub.PutState(key, value)
+
+	logger.Infof("updated %s to %s", key, value)
+	c.String(http.StatusOK, "updated")
 }
 
 func getAllUsers(c *gin.Context) {
@@ -85,8 +187,32 @@ func getAllUsers(c *gin.Context) {
 }
 
 func getDefaultAuction(c *gin.Context) {
-	users := api.MockData["getDefaultAuction"]
-	c.IndentedJSON(http.StatusOK, users)
+	auction := api.MockData["getDefaultAuction"]
+	c.IndentedJSON(http.StatusOK, auction)
+}
+
+func getAuctionDetails(c *gin.Context) {
+	auctionId := c.Params.ByName("auctionId")
+
+	val, _ := stub.MockStub.GetState(auctionId)
+	if val == nil {
+		// no auction created yet
+		status := ResponseStatus{
+			RC:      1,
+			Message: "Does not exist",
+		}
+		c.IndentedJSON(http.StatusOK, ResponseObject{Status: status})
+		return
+	}
+
+	resp := ResponseObject{
+		Status: ResponseStatus{
+			RC:      0,
+			Message: "Ok",
+		},
+		Response: api.MockData["getDefaultAuction"],
+	}
+	c.IndentedJSON(http.StatusOK, resp)
 }
 
 type Payload struct {
@@ -102,7 +228,8 @@ type ResponseStatus struct {
 }
 
 type ResponseObject struct {
-	Status ResponseStatus `json:"status"`
+	Status   ResponseStatus `json:"status"`
+	Response interface{}    `json:"response"`
 }
 
 // Unmarshallers for above to ensure the fields exists ...
@@ -142,20 +269,15 @@ func (response *ResponseObject) UnmarshalJSON(data []byte) (err error) {
 }
 
 // Main invocation handling
-
 func invoke(c *gin.Context) {
-	stub.ChannelID = "MyChannel"
 
-	user := c.GetHeader("x-user")
-	logger.Debug(fmt.Sprintf("user: %s\n", user))
-
-	creator, err := generateMockCreator(mspId, org, user)
-	if err != nil {
-		logger.Error(fmt.Sprintf("Failure to generate Creator: %s\n", err))
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	if stub == nil {
+		panic("stub is nil!")
 	}
-	stub.Creator = creator
+
+	stub.MockStub.ChannelID = channelName
+	user := c.GetHeader("x-user")
+	stub.Creator = user
 
 	args, err := parsePayload(c)
 	if err != nil {
@@ -164,8 +286,39 @@ func invoke(c *gin.Context) {
 		return
 	}
 
+	logger.Debugf("%s invokes %s", user, args)
 	res := stub.MockInvoke("someTxID", args)
-	logger.Debugf("invocation response: status='%v' / payload='%v' / message='%s'", res.Status, res.Payload, res.Message)
+
+	fpcResponse := createFPCResponse(res)
+	c.Data(http.StatusOK, c.ContentType(), fpcResponse)
+}
+
+// Main invocation handling
+func query(c *gin.Context) {
+
+	if stub == nil {
+		panic("stub is nil!")
+	}
+
+	stub.MockStub.ChannelID = channelName
+	user := c.GetHeader("x-user")
+	stub.Creator = user
+
+	args, err := parsePayload(c)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Request Error: %s\n", err))
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	logger.Debugf("%s queries %s", user, args)
+	res := stub.MockQuery("someTxID", args)
+
+	fpcResponse := createFPCResponse(res)
+	c.Data(http.StatusOK, c.ContentType(), fpcResponse)
+}
+
+func createFPCResponse(res peer.Response) []byte {
 
 	// NOTE: we (try to) return error even if the invocation get success back
 	// but does not contain a response payload. According to the auction
@@ -179,12 +332,12 @@ func invoke(c *gin.Context) {
 	if res.Payload != nil {
 		var response utils.Response
 		// unwarp ecc response and return only responseData
-		if err = json.Unmarshal(res.Payload, &response); err != nil {
+		if err := json.Unmarshal(res.Payload, &response); err != nil {
 			msg := fmt.Sprintf("No valid response payload received due to error=%v (status=%v/message=%v)",
 				err, res.Status, res.Message)
 			errMsg = &msg
 		} else {
-			logger.Debugf("decoded fpc response: ResponseData='%s'",
+			logger.Debugf("FPC response: ResponseData='%s'",
 				response.ResponseData)
 			fpcResponse = response.ResponseData
 			// a proper client would now also verify response signature,
@@ -208,11 +361,11 @@ func invoke(c *gin.Context) {
 				RC:      499, // TODO (maybe): more specific explicit error codes?
 				Message: *errMsg,
 			},
+			Response: fpcResponse,
 		}
 		fpcResponse, _ = json.Marshal(fpcResponseJson)
 	}
-
-	c.Data(http.StatusOK, c.ContentType(), fpcResponse)
+	return fpcResponse
 }
 
 func parsePayload(c *gin.Context) ([][]byte, error) {
