@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
     <template v-slot:top>
       <v-toolbar flat color="white">
         <v-toolbar-title>Territories</v-toolbar-title>
-        <v-spacer></v-spacer>
+        <v-spacer />
       </v-toolbar>
     </template>
 
@@ -56,7 +56,7 @@ SPDX-License-Identifier: Apache-2.0
                           label="Territory name"
                           :rules="nameRules"
                           required
-                        ></v-text-field>
+                        />
                       </v-col>
                       <v-col cols="12" sm="6" md="4">
                         <v-text-field
@@ -65,7 +65,7 @@ SPDX-License-Identifier: Apache-2.0
                           type="number"
                           :rules="minPriceRules"
                           required
-                        ></v-text-field>
+                        />
                       </v-col>
                       <v-col cols="12">
                         <v-textarea
@@ -74,14 +74,14 @@ SPDX-License-Identifier: Apache-2.0
                           label="Channels"
                           auto-grow
                           filled
-                        ></v-textarea>
+                        />
                       </v-col>
                     </v-row>
                   </v-container>
                 </v-card-text>
 
                 <v-card-actions>
-                  <v-spacer></v-spacer>
+                  <v-spacer />
                   <v-btn color="red darken-1" text @click="onClickCancel"
                     >Cancel</v-btn
                   >

@@ -71,7 +71,7 @@ SPDX-License-Identifier: Apache-2.0
                               label="Edit"
                               single-line
                               autofocus
-                            ></v-text-field>
+                            />
                           </template>
                         </v-edit-dialog>
                       </td>
@@ -94,7 +94,7 @@ SPDX-License-Identifier: Apache-2.0
     </v-row>
 
     <v-overlay :value="waitingOverlay">
-      <v-progress-circular indeterminate size="64"></v-progress-circular>
+      <v-progress-circular indeterminate size="64" />
     </v-overlay>
 
     <v-dialog v-model="confirmDialog" max-width="400">
@@ -126,7 +126,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-simple-table>
         </v-card-text>
         <v-card-actions>
-          <v-spacer></v-spacer>
+          <v-spacer />
           <v-btn color="red darken-1" text @click="confirmDialog = false">
             Cancel
           </v-btn>
