@@ -2,28 +2,19 @@
   "getRegisteredUsers": [
     {
       "id": "A-Telecom",
-      "approle": "auction.bidder",
-      "avatar" : "./img/users/a-telecom.svg",
-      "color": "light-blue"
+      "approle": "auction.bidder"
     },
     {
       "id": "B-Net",
-      "approle": "auction.bidder",
-      "avatar" : "./img/users/b-net.svg",
-      "color": "deep-orange"
-
+      "approle": "auction.bidder"
     },
     {
       "id": "C-Mobile",
-      "approle": "auction.bidder",
-      "avatar" : "./img/users/c-mobile.svg",
-      "color": "lime"
+      "approle": "auction.bidder"
     },
     {
-      "id": "Auctioneer",
-      "approle": "auction.auctioneer",
-      "avatar" : "./img/users/auctioneer.svg",
-      "color": "orange"
+      "id": "Auctioneer1",
+      "approle": "auction.auctioneer"
     }
   ],
   "getDefaultAuction": {

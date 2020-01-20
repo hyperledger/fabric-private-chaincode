@@ -19,7 +19,7 @@ const state = {
   owner: "",
   state: "clock",
   clockRound: 1,
-  roundActive: false,
+  roundActive: false
 };
 
 const getters = {};
@@ -65,7 +65,7 @@ const actions = {
   NEXT_ROUND({ commit }, auction_id) {
     return auction
       .startNextRound(auction_id)
-      .then(resp => helpers.checkStatus(resp.data))
+      .then(resp => helpers.checkStatus(resp.data));
   },
 
   UPDATE_AUCTION_STATE({ commit }, state) {

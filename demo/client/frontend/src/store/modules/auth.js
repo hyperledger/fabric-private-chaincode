@@ -9,7 +9,8 @@ import api from "@/api/api";
 const state = {
   status: "",
   name: "",
-  role: ""
+  role: "",
+  avatars: ""
 };
 
 const getters = {
@@ -40,6 +41,7 @@ const mutations = {
     state.status = "success";
     state.name = user.id;
     state.role = user.approle;
+    state.avatar = user.avatar;
   },
   LOGOUT(state) {
     state.status = "";

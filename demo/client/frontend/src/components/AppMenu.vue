@@ -7,6 +7,9 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <v-navigation-drawer :clipped="true" :dark="true" permanent app>
     <v-list-item>
+      <v-list-item-avatar>
+        <v-img v-bind:src="userAvatar" />
+      </v-list-item-avatar>
       <v-list-item-content>
         <v-list-item-title class="title">{{ userName }} </v-list-item-title>
         <v-list-item-subtitle>
@@ -64,6 +67,7 @@ export default {
   computed: mapState({
     userName: state => state.auth.name,
     userRole: state => state.auth.role.replace("auction.", "").toUpperCase(),
+    userAvatar: state => state.auth.avatar,
     isAuctionDone: state => state.auction.state.toString() === "done",
     isBidder: state => state.auth.role.toString() === "auction.bidder",
 
