@@ -54,8 +54,8 @@ export default {
     menuItems(state) {
       let bidderItems = [
         { title: "Place Bids", link: "/place_bid", icon: "fa-hammer" },
-        { title: "Bid Summary", link: "bid_summary", icon: "fa-list-alt" },
-        { title: "My Results", link: "/my_results", icon: "fa-chart-line" }
+        { title: "Bid Summary", link: "", icon: "fa-list-alt" },
+        { title: "My Results", link: "", icon: "fa-chart-line" }
       ];
 
       let defaultItems = [
