@@ -43,6 +43,7 @@ godeps: gotools
 	$(GO) get github.com/onsi/gomega
 	$(GO) get github.com/gin-contrib/cors
 	$(GO) get github.com/gin-gonic/gin
+	$(GO) get github.com/dustin/go-broadcast
 
 plugins:
 	$(foreach DIR, $(PLUGINS), $(MAKE) -C $(DIR) build || exit;)

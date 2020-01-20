@@ -2,25 +2,35 @@
   "getRegisteredUsers": [
     {
       "id": "A-Telecom",
-      "approle": "auction.bidder"
+      "approle": "auction.bidder",
+      "avatar" : "./img/users/a-telecom.svg",
+      "color": "light-blue"
     },
     {
       "id": "B-Net",
-      "approle": "auction.bidder"
+      "approle": "auction.bidder",
+      "avatar" : "./img/users/b-net.svg",
+      "color": "deep-orange"
+
     },
     {
       "id": "C-Mobile",
-      "approle": "auction.bidder"
+      "approle": "auction.bidder",
+      "avatar" : "./img/users/c-mobile.svg",
+      "color": "lime"
     },
     {
-      "id": "Auctioneer1",
-      "approle": "auction.auctioneer"
+      "id": "Auctioneer",
+      "approle": "auction.auctioneer",
+      "avatar" : "./img/users/auctioneer.svg",
+      "color": "orange"
     }
   ],
   "getDefaultAuction": {
     "name": "Spectrum Auction 2020",
     "activityRequirementPercentage": 95,
     "clockPriceIncrementPercentage": 10,
+    "owner": "Auctioneer",
     "territories": [
       {
         "id": 1,
