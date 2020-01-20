@@ -7,9 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <v-app>
     <v-content>
-      <v-container fluid>
-        <router-view />
-      </v-container>
+      <router-view />
     </v-content>
   </v-app>
 </template>
@@ -18,7 +16,8 @@ SPDX-License-Identifier: Apache-2.0
 import { mapActions } from "vuex";
 
 export default {
-  name: "App"
+  name: "FPCDemo",
+
   data() {
     return {
       evtSource: null
@@ -33,6 +32,7 @@ export default {
   },
 
   created() {
+    document.title = "Fabric Private Chaincode - Demo";
 
     let that = this;
     // listen for restart then logout

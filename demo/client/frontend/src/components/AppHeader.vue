@@ -7,51 +7,47 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <v-app-bar :clipped-left="true" app>
     <v-toolbar-title class="headline text-uppercase">
-      <span>Elbonia Communication Commmission</span>
-      <span class="font-weight-light" v-if="auction.name">
-        - {{ auction.name }}
-      </span>
+      <strong>Fabric Private Chaincode</strong>
+      <span class="font-weight-light"> - Auction Demo</span>
     </v-toolbar-title>
 
-    <v-spacer></v-spacer>
+    <v-spacer />
+    <!--    <v-toolbar-items>-->
+    <!--      <v-menu offset-y v-if="auction.name">-->
+    <!--        <template v-slot:activator="{ on }">-->
+    <!--          <v-btn color="primary" dark v-on="on">-->
+    <!--            {{ auctionState }}-->
+    <!--          </v-btn>-->
+    <!--        </template>-->
+    <!--        <v-list>-->
+    <!--          <v-list-item-->
+    <!--            v-for="s in auctionStates"-->
+    <!--            :key="s.key"-->
+    <!--            @click="UPDATE_AUCTION_STATE(s.key)"-->
+    <!--          >-->
+    <!--            <v-list-item-title>{{ s.value }}</v-list-item-title>-->
+    <!--          </v-list-item>-->
+    <!--        </v-list>-->
+    <!--      </v-menu>-->
 
-    <v-toolbar-items v-if="auction">
-      <v-menu offset-y>
-        <template v-slot:activator="{ on }">
-          <v-btn color="primary" dark v-on="on">
-            {{ auctionState }}
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item
-            v-for="s in auctionStates"
-            :key="s.key"
-            @click="UPDATE_AUCTION_STATE(s.key)"
-          >
-            <v-list-item-title>{{ s.value }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-
-      <v-menu offset-y v-if="auction.state === 'clock'">
-        <template v-slot:activator="{ on }">
-          <v-btn color="secondary" dark v-on="on">
-            Round {{ auction.clockRound }}
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item
-            v-for="index in 4"
-            :key="index"
-            @click="UPDATE_CLOCK_ROUND(index)"
-          >
-            <v-list-item-title>Round {{ index }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-
-      <v-btn text>{{ currentTime }}</v-btn>
-    </v-toolbar-items>
+    <!--      <v-menu offset-y v-if="auction.name && auction.state === 'clock'">-->
+    <!--        <template v-slot:activator="{ on }">-->
+    <!--          <v-btn color="secondary" dark v-on="on">-->
+    <!--            Round {{ auction.clockRound }}-->
+    <!--          </v-btn>-->
+    <!--        </template>-->
+    <!--        <v-list>-->
+    <!--          <v-list-item-->
+    <!--            v-for="index in 4"-->
+    <!--            :key="index"-->
+    <!--            @click="UPDATE_CLOCK_ROUND(index)"-->
+    <!--          >-->
+    <!--            <v-list-item-title>Round {{ index }}</v-list-item-title>-->
+    <!--          </v-list-item>-->
+    <!--        </v-list>-->
+    <!--      </v-menu>-->
+    <!--      &lt;!&ndash;      <v-btn text>{{ currentTime }}</v-btn>&ndash;&gt;-->
+    <!--    </v-toolbar-items>-->
   </v-app-bar>
 </template>
 

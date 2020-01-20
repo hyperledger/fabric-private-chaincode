@@ -197,7 +197,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-simple-table>
         </v-card-text>
         <v-card-actions>
-          <v-spacer></v-spacer>
+          <v-spacer />
           <v-btn color="red darken-1" text @click="confirmDialog = false"
             >Cancel</v-btn
           >
@@ -244,7 +244,7 @@ export default {
   },
 
   computed: {
-    tableHeader: function() {
+    tableHeader() {
       if (this.auction.clockRound === 1) {
         return [
           { text: "Territory", value: "name" },
@@ -353,7 +353,7 @@ export default {
       });
     },
 
-    prepareBid: function() {
+    prepareBid() {
       this.currentBid = {
         auctionId: this.auction.id,
         round: this.auction.currentRound,

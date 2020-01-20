@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 
 import axios from "axios";
 import auction from "@/api/auction";
+import helpers from "../helpers";
 
 const state = {
   id: "",
@@ -17,91 +18,71 @@ const state = {
   initialEligibilities: [],
   owner: "",
   state: "clock",
-  clockRound: 1
+  clockRound: 1,
+  roundActive: false,
 };
 
 const getters = {};
 
 const actions = {
   NEW_AUCTION({ commit }, auctionData) {
-    auction
+    return auction
       .createAuction(auctionData)
-      .then(resp => {
-        const status = resp.data.status;
-        if (status.rc !== 0) {
-          console.log("error: " + status.msg);
-        } else {
-          auctionData.id = resp.data.response.id;
-          commit("SET_AUCTION", auctionData);
-        }
-      })
-      .catch(err => console.log(err));
+      .then(resp => helpers.checkStatus(resp.data))
+      .then(auction => {
+        commit("SET_AUCTION_ID", auction.auctionId);
+        commit("SET_AUCTION", auctionData);
+      });
   },
+
   LOAD_AUCTION({ commit }, auction_id) {
-    axios
+    return axios
       .all([
-        auction.getAuctionDetails(auction_id),
-        auction.getAuctionStatus(auction_id)
+        auction
+          .getAuctionDetails(auction_id)
+          .then(resp => helpers.checkStatus(resp.data)),
+        auction
+          .getAuctionStatus(auction_id)
+          .then(resp => helpers.checkStatus(resp.data))
       ])
       .then(
         axios.spread(function(auctionDetails, auctionStatus) {
-          // some error checking
-          if (auctionDetails.data.status.rc !== 0) {
-            console.log("error" + auctionDetails.data.status.msg);
-            return;
-          }
-
-          if (auctionStatus.data.status.rc !== 0) {
-            console.log("error" + auctionStatus.data.status.msg);
-            return;
-          }
-
           // only when chaincode returned something
-          auctionDetails.data.response.id = auction_id.auctionId;
-          commit("SET_AUCTION", auctionDetails.data.response);
-          commit("SET_STATUS", auctionStatus.data.response);
+          commit("SET_AUCTION_ID", auction_id.auctionId);
+          commit("SET_AUCTION", auctionDetails);
+          commit("SET_STATUS", auctionStatus);
         })
-      )
-      .catch(err => console.log(err));
+      );
   },
+
   END_ROUND({ commit }, auction_id) {
-    auction
+    return auction
       .endRound(auction_id)
-      .then(resp => {
-        const status = resp.data.status;
-        if (status.rc !== 0) {
-          console.log("error: " + status.msg);
-        } else {
-          commit("SET_ROUND_ACTIVE", false);
-        }
-      })
-      .catch(err => console.log(err));
+      .then(resp => helpers.checkStatus(resp.data))
+      .then(() => commit("SET_ROUND_ACTIVE", false));
   },
-  START_NEXT_ROUND({ commit }, auction_id) {
-    auction
+
+  NEXT_ROUND({ commit }, auction_id) {
+    return auction
       .startNextRound(auction_id)
-      .then(resp => {
-        const status = resp.data.status;
-        if (status.rc !== 0) {
-          console.log("error: " + status.msg);
-        } else {
-          commit("SET_ROUND_ACTIVE", true);
-          // TODO get auction status
-        }
-      })
-      .catch(err => console.log(err));
+      .then(resp => helpers.checkStatus(resp.data))
   },
+
   UPDATE_AUCTION_STATE({ commit }, state) {
     commit("SET_AUCTION_STATE", state);
   },
+
   UPDATE_CLOCK_ROUND({ commit }, round) {
     commit("SET_CLOCK_ROUND", round);
   }
 };
 
 const mutations = {
+  SET_AUCTION_ID: (state, auctionId) => {
+    state.id = auctionId;
+  },
+
   SET_AUCTION: (state, auction) => {
-    state.id = auction.id;
     state.name = auction.name;
     state.activityRequirementPercentage = auction.activityRequirementPercentage;
     state.clockPriceIncrementPercentage = auction.clockPriceIncrementPercentage;

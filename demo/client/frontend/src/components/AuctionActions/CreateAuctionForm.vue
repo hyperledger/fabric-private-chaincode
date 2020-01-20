@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <v-dialog v-model="dialog" persistent max-width="1024px">
     <template v-slot:activator="{ on }">
-      <v-btn dark text v-on="on">Create Auction</v-btn>
+      <v-btn dark text v-on="on">Create</v-btn>
     </template>
     <v-card>
       <v-card-title>
@@ -21,15 +21,11 @@ SPDX-License-Identifier: Apache-2.0
                 v-model="auction.name"
                 label="Auction name*"
                 required
-              ></v-text-field>
+              />
             </v-col>
 
             <v-col cols="4">
-              <v-text-field
-                v-model="owner"
-                label="Auction owner"
-                disabled
-              ></v-text-field>
+              <v-text-field v-model="owner" label="Auction owner" disabled />
             </v-col>
 
             <v-col cols="12">
@@ -55,7 +51,7 @@ SPDX-License-Identifier: Apache-2.0
                 label="Activity Requirement*"
                 type="number"
                 required
-              ></v-text-field>
+              />
             </v-col>
             <v-col cols="12" sm="6" md="4">
               <v-text-field
@@ -63,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
                 label="Clock Price Increment*"
                 type="number"
                 required
-              ></v-text-field>
+              />
             </v-col>
           </v-row>
         </v-container>
@@ -71,7 +67,7 @@ SPDX-License-Identifier: Apache-2.0
       </v-card-text>
 
       <v-card-actions>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn color="red darken-1" text @click="onClickCancel">Cancel</v-btn>
         <v-btn color="green darken-1" text @click="onClickSubmit">Submit</v-btn>
       </v-card-actions>
@@ -112,9 +108,7 @@ export default {
   methods: {
     initialize() {
       Auction.getDefaultAuction()
-        .then(response => {
-          this.auction = response.data;
-        })
+        .then(response => (this.auction = response.data))
         .catch(err => console.log(err));
     },
 

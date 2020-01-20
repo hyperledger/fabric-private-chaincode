@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
   <div>
     <v-toolbar color="primary" dark>
       <v-toolbar-title>Auction Actions</v-toolbar-title>
-      <v-spacer></v-spacer>
+      <v-spacer />
 
       <v-toolbar-items>
         <CreateAuctionForm></CreateAuctionForm>
