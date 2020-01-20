@@ -113,8 +113,17 @@ export default {
     },
 
     onClickSubmit() {
-      this.$store.dispatch("auction/NEW_AUCTION", this.auction);
-      this.onClickCancel();
+      this.$store
+        .dispatch("transaction/submit")
+        .then(() => this.$store.dispatch("auction/NEW_AUCTION", this.auction))
+        .then(() =>
+          this.$store.dispatch("auction/LOAD_AUCTION", {
+            auctionId: this.auction.id
+          })
+        )
+        .then(() => this.$emit("success", "Auction successfully created"))
+        .catch(error => this.$emit("error", error))
+        .finally(() => this.onClickCancel());
     },
 
     onClickCancel() {
