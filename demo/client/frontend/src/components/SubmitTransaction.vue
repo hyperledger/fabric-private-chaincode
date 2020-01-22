@@ -125,7 +125,7 @@ export default {
           that.fetchAuction();
         }
         // 1200 default
-      }, 1200);
+      }, 200);
     }
   }
 };
