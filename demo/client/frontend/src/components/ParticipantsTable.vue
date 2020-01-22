@@ -60,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
                       </v-col>
                       <v-col cols="12">
                         <v-text-field
-                          v-model="editedItem.principal.mspid"
+                          v-model="editedItem.principal.mspId"
                           label="MSP Id"
                           :rules="mspRules"
                           required
@@ -117,7 +117,7 @@ export default {
     dialog: false,
     headers: [
       { text: "Name", value: "displayName" },
-      { text: "MSP ID", value: "principal.mspid" },
+      { text: "MSP ID", value: "principal.mspId" },
       { text: "DN", value: "principal.dn", sortable: false },
       { text: "Eligibility", value: "eligibility", sortable: false },
       { text: "Actions", value: "action", sortable: false, align: "right" }

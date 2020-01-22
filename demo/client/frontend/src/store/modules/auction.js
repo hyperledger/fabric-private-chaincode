@@ -37,6 +37,7 @@ const actions = {
   },
 
   LOAD_AUCTION({ commit }, auction_id) {
+    auction_id = { auctionId: auction_id };
     return axios
       .all([
         auction
@@ -57,6 +58,7 @@ const actions = {
   },
 
   END_ROUND({ commit }, auction_id) {
+    auction_id = { auctionId: auction_id };
     return auction
       .endRound(auction_id)
       .then(resp => helpers.checkStatus(resp.data))
@@ -64,6 +66,7 @@ const actions = {
   },
 
   NEXT_ROUND({ commit }, auction_id) {
+    auction_id = { auctionId: auction_id };
     return auction
       .startNextRound(auction_id)
       .then(resp => helpers.checkStatus(resp.data))

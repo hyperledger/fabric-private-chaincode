@@ -62,21 +62,16 @@ SPDX-License-Identifier: Apache-2.0
                   Closed
                 </v-chip>
               </span>
+
+              <span>
+                Round
+                <v-chip class="mx-1" color="green" label text-color="white">
+                  {{ auction.clockRound }}
+                </v-chip>
+              </span>
             </v-card-text>
           </v-card>
         </v-col>
-
-        <!--        <v-col cols="2">-->
-        <!--          <InfoCard title="Status" value="Open" />-->
-        <!--        </v-col>-->
-
-        <!--        <v-col cols="2">-->
-        <!--          <InfoCard title="CurrentPhase" value="Clock" />-->
-        <!--        </v-col>-->
-
-        <!--        <v-col cols="2">-->
-        <!--          <InfoCard title="Round" value="1" />-->
-        <!--        </v-col>-->
       </v-row>
 
       <v-row v-if="showWinner">
@@ -232,8 +227,8 @@ export default {
   },
 
   mounted() {
-    // fetch the auction state
-    this.fetchAuction({ auctionId: 1 })
+    // fetch the auction state .. try 1
+    this.fetchAuction(1)
       .catch(err => console.log(err))
       .finally(() => (this.isLoading = false));
   }
