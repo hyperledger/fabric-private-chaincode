@@ -357,7 +357,7 @@ void ClockAuction::DynamicAuctionState::processAssignmentRound(StaticAuctionStat
             for (unsigned int j = 0; j < channelsN; j++)
             {
                 channelPrice_[i][j] =
-                    postedPrice_[getRound()][i] * (double)(impairments[j]) / 100.0;
+                    postedPrice_[getRound()][i] * ((100.0 - (double)(impairments[j])) / 100.0);
             }
 
             // assign the randomized channel indexes to winning bidders
