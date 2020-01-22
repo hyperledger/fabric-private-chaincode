@@ -334,22 +334,49 @@ export default {
     initialize() {
       this.territories = JSON.parse(JSON.stringify(this.auction.territories));
 
-      const request = {
+      const that = this;
+
+      const roundInfoRequest = {
         auctionId: this.auction.id || 1,
         round: this.auction.clockRound || 1
       };
 
-      let that = this;
+      // in the first round we only get the round info
+      if (this.auction.clockRound === 1) {
+        auction
+          .getRoundInfo(roundInfoRequest)
+          .then(resp => helpers.checkStatus(resp.data))
+          .then(roundInfo =>
+            roundInfo.prices.forEach(p => {
+              let i = that.territories.findIndex(t => t.id === p.terId);
+              if (i > -1) {
+                that.territories[i].minPrice = p.minPrice;
+                that.territories[i].clockPrice = p.clockPrice;
+              }
+            })
+          )
+          .catch(err => console.log(err))
+          .finally(() => (this.isLoading = false));
+        return;
+      }
+
+      const roundResultRequest = {
+        auctionId: this.auction.id || 1,
+        round: (this.auction.clockRound || 1) - 1
+      };
+
       axios
         .all([
-          auction.getRoundInfo(request).then(resp => helpers.checkStatus(resp)),
           auction
-            .getBidderRoundResults(request)
-            .then(resp => helpers.checkStatus(resp))
+            .getRoundInfo(roundInfoRequest)
+            .then(resp => helpers.checkStatus(resp.data)),
+          auction
+            .getBidderRoundResults(roundResultRequest)
+            .then(resp => helpers.checkStatus(resp.data))
         ])
         .then(
           axios.spread(function(roundInfo, roundResult) {
-            roundInfo.data.response.prices.forEach(p => {
+            roundInfo.prices.forEach(p => {
               let i = that.territories.findIndex(t => t.id === p.terId);
               if (i > -1) {
                 that.territories[i].minPrice = p.minPrice;
@@ -358,18 +385,16 @@ export default {
             });
 
             // do this only when we expect a result from getBidderRoundResults
-            if (request.round > 1) {
-              roundResult.data.response.result.forEach(p => {
-                let i = that.territories.findIndex(t => t.id === p.terId);
-                if (i > -1) {
-                  that.territories[i].price = p.postedPrice;
-                  that.territories[i].demand = p.excessDemand;
-                  that.territories[i].quantity = p.processedLicenses;
-                }
-              });
+            roundResult.result.forEach(p => {
+              let i = that.territories.findIndex(t => t.id === p.terId);
+              if (i > -1) {
+                that.territories[i].price = p.postedPrice;
+                that.territories[i].demand = p.excessDemand;
+                that.territories[i].quantity = p.processedLicenses;
+              }
+            });
 
-              // TODO set eligibility
-            }
+            // TODO set eligibility
           })
         )
         .catch(err => console.log(err))
