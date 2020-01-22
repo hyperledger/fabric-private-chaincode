@@ -1,0 +1,29 @@
+# Copyright Intel Corp All Rights Reserved
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+#  Scripted scenario
+#  (to be excuted by demo/client/scripting/scenario-run.sh)
+#------------------------------------------------------------
+
+scenario
+
+# to start we either have to
+# (a) manually create auction (iff so, uncomment below) ..
+# wait "create auction manuall and enter auction id" auctionId
+# or (b) auto-create auction (iff so, uncomment below)
+submit Auctioneer1 createAuction
+
+# clock-rounds ...
+submit Auctioneer1 startNextRound
+wait "enter A-Telecom bid manually ...  (Hit any key to continue)"
+submit B-Net submitClockBid
+submit Auctioneer1 endRound
+
+# assignment rounds ...
+submit Auctioneer1 startNextRound
+# bidding not yet implemented, add here once done ....
+submit Auctioneer1 endRound
+
+# auction is closed ...

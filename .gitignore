@@ -1,7 +1,8 @@
+# SPDX-License-Identifier: Apache-2.0
 tags
 config.override.mk
 make.log
-cscope.out
+cscope.*
 *~
 **/_build/*
 utils/docker-compose/bin/
