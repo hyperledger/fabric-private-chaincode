@@ -11,6 +11,7 @@ The present document only provides references to the auction specification, and 
 
 A [specification document](https://docs.google.com/document/d/1YUF4mzzuybzWk3fbXbTANWO8-tr757BP85qcwE7gQdk) is available for additional information about APIs, input and output messages.
 
+The chaincode implements a simple randomized version of the Assignment phase of the auction. Hence, it does not implement the `submitAssignmentBid` API. In particular, the Assignment phase is terminated immediately, with no bids. Then, the assignment is performed randomly. Finally, the phase, and so the auction itself, is closed.
 
 ## Build the code
 
