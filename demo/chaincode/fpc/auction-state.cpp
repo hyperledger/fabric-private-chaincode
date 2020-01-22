@@ -8,6 +8,14 @@
 #include "common.h"
 #include "utils.h"
 
+const char* AUCTION_STATE_STRINGS[MAX_STATE_INDEX] = {
+    "undefined", "clock", "assign", "failed_fsr", "done"};
+const static std::map<std::string, auction_state_e> stateMap_ = {
+    {AUCTION_STATE_STRINGS[STATE_UNDEFINED], STATE_UNDEFINED},
+    {AUCTION_STATE_STRINGS[CLOCK_PHASE], CLOCK_PHASE},
+    {AUCTION_STATE_STRINGS[ASSIGNMENT_PHASE], ASSIGNMENT_PHASE},
+    {AUCTION_STATE_STRINGS[FSR_FAILED], FSR_FAILED}, {AUCTION_STATE_STRINGS[CLOSED], CLOSED}};
+
 bool ClockAuction::StaticAuctionState::toJsonObject(JSON_Object* root_object) const
 {
     {
@@ -399,7 +407,7 @@ void ClockAuction::DynamicAuctionState::identifySubmitter(shim_ctx_ptr_t ctx)
 
 bool ClockAuction::DynamicAuctionState::toJsonObject(JSON_Object* root_object) const
 {
-    json_object_set_number(root_object, "state", auctionState_);
+    json_object_set_string(root_object, "state", AUCTION_STATE_STRINGS[auctionState_]);
     json_object_set_number(root_object, "clockRound", clockRound_);
     json_object_set_boolean(root_object, "roundActive", (int)roundActive_);
     {
@@ -545,10 +553,11 @@ bool ClockAuction::DynamicAuctionState::fromJsonObject(const JSON_Object* root_o
 {
     {
         FAST_FAIL_CHECK(er_, EC_INVALID_INPUT,
-            !json_object_has_value_of_type(root_object, "state", JSONNumber));
-        double d = json_object_get_number(root_object, "state");
-        FAST_FAIL_CHECK(er_, EC_INVALID_INPUT, !ClockAuction::JsonUtils::isInteger(d));
-        auctionState_ = (d >= 0 && d <= MAX_STATE_INDEX ? (auction_state_e)d : STATE_UNDEFINED);
+            !json_object_has_value_of_type(root_object, "state", JSONString));
+        const char* s = json_object_get_string(root_object, "state");
+        auto fIter = stateMap_.find(s);
+        FAST_FAIL_CHECK(er_, EC_INVALID_INPUT, fIter == stateMap_.end());
+        auctionState_ = fIter->second;
         FAST_FAIL_CHECK(er_, EC_INVALID_INPUT, auctionState_ == 0);
     }
     {
