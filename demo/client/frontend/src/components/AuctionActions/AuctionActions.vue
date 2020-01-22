@@ -13,9 +13,8 @@ SPDX-License-Identifier: Apache-2.0
       <v-toolbar-items>
         <SubmitTransaction />
         <CreateAuctionForm v-on:error="onError" v-on:success="onSuccess" />
-        <v-btn dark text @click="onClickEndRound">Close</v-btn>
-        <!--        <v-btn dark text @click="onClickStartNextRound">Start next round</v-btn>-->
-        <v-btn dark text @click="onClickStartNextRound">Eval</v-btn>
+        <v-btn dark text @click="onClickEndRound">End Round</v-btn>
+        <v-btn dark text @click="onClickStartNextRound">Start Next Round</v-btn>
       </v-toolbar-items>
     </v-toolbar>
 
@@ -80,7 +79,9 @@ export default {
       this.$store
         .dispatch("transaction/submit")
         .then(() => this.$store.dispatch("auction/NEXT_ROUND", this.auctionId))
-        .then(() => this.$store.dispatch("auction/LOAD_AUCTION", this.auction))
+        .then(() =>
+          this.$store.dispatch("auction/LOAD_AUCTION", this.auctionId)
+        )
         .catch(err => this.onError(err));
     },
 

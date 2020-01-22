@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-row>
             <v-col cols="8">
               <v-text-field
-                v-model="auction.name"
+                v-model="newAuction.name"
                 label="Auction name*"
                 required
               />
@@ -30,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0
 
             <v-col cols="12">
               <TerritoryTable
-                :territories="auction.territories"
+                :territories="newAuction.territories"
                 @update-territories="updateTerritories"
               >
               </TerritoryTable>
@@ -38,8 +38,8 @@ SPDX-License-Identifier: Apache-2.0
 
             <v-col cols="12">
               <ParticipantsTable
-                :participants="auction.bidders"
-                :initialEligibilities="auction.initialEligibilities"
+                :participants="newAuction.bidders"
+                :initialEligibilities="newAuction.initialEligibilities"
                 @update-participants="updateBidders"
               >
               </ParticipantsTable>
@@ -47,7 +47,7 @@ SPDX-License-Identifier: Apache-2.0
 
             <v-col cols="12" sm="6" md="4">
               <v-text-field
-                v-model="auction.activityRequirementPercentage"
+                v-model="newAuction.activityRequirementPercentage"
                 label="Activity Requirement*"
                 type="number"
                 required
@@ -55,7 +55,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-col>
             <v-col cols="12" sm="6" md="4">
               <v-text-field
-                v-model="auction.clockPriceIncrementPercentage"
+                v-model="newAuction.clockPriceIncrementPercentage"
                 label="Clock Price Increment*"
                 type="number"
                 required
@@ -86,7 +86,7 @@ export default {
 
   data: () => ({
     dialog: false,
-    auction: {
+    newAuction: {
       name: ""
     }
   }),
@@ -102,24 +102,25 @@ export default {
   },
 
   computed: mapState({
-    owner: state => state.auth.name
+    owner: state => state.auth.name,
+    auction: state => state.auction
   }),
 
   methods: {
     initialize() {
       Auction.getDefaultAuction()
-        .then(response => (this.auction = response.data))
+        .then(response => (this.newAuction = response.data))
         .catch(err => console.log(err));
     },
 
     onClickSubmit() {
       this.$store
         .dispatch("transaction/submit")
-        .then(() => this.$store.dispatch("auction/NEW_AUCTION", this.auction))
         .then(() =>
-          this.$store.dispatch("auction/LOAD_AUCTION", {
-            auctionId: this.auction.id
-          })
+          this.$store.dispatch("auction/NEW_AUCTION", this.newAuction)
+        )
+        .then(() =>
+          this.$store.dispatch("auction/LOAD_AUCTION", this.auction.id)
         )
         .then(() => this.$emit("success", "Auction successfully created"))
         .catch(error => this.$emit("error", error))
@@ -135,14 +136,14 @@ export default {
     },
 
     updateBidders(participants, eligibilities) {
-      this.auction.bidders = JSON.parse(JSON.stringify(participants));
-      this.auction.initialEligibilities = JSON.parse(
+      this.newAuction.bidders = JSON.parse(JSON.stringify(participants));
+      this.newAuction.initialEligibilities = JSON.parse(
         JSON.stringify(eligibilities)
       );
     },
 
     updateTerritories(territories) {
-      this.auction.territories = JSON.parse(JSON.stringify(territories));
+      this.newAuction.territories = JSON.parse(JSON.stringify(territories));
     }
   }
 };

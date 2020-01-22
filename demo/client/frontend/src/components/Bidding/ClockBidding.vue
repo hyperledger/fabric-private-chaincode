@@ -76,7 +76,7 @@ SPDX-License-Identifier: Apache-2.0
 
             <v-card-text class="pa-0">
               <v-data-table
-                v-if="auction.currentRound === 1"
+                v-if="auction.clockRound === 1"
                 :headers="tableHeader"
                 :items="territories"
                 :search="search"
@@ -395,7 +395,7 @@ export default {
     prepareBid() {
       this.currentBid = {
         auctionId: this.auction.id,
-        round: this.auction.currentRound,
+        round: this.auction.clockRound,
         bids: [],
         totalQuantity: 0,
         totalPrice: 0
