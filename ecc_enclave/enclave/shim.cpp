@@ -40,38 +40,11 @@ void get_creator_name(
 void get_state(
     const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* val_len, shim_ctx_ptr_t ctx)
 {
-    // read state
-    ctx->read_set.insert(std::string(key));
-
-    sgx_cmac_128bit_tag_t cmac = {0};
-
     uint8_t encoded_cipher[(max_val_len + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE + 2) / 3 * 4];
     uint32_t encoded_cipher_len;
-    ocall_get_state(key, encoded_cipher, sizeof(encoded_cipher), &encoded_cipher_len,
-        (sgx_cmac_128bit_tag_t*)cmac, ctx->u_shim_ctx);
 
-    LOG_DEBUG("Enclave: got enc-cipher for key=%s len=%d val='%s'", key, encoded_cipher_len,
-        (encoded_cipher_len > 0 ? (const char*)encoded_cipher : ""));
+    get_public_state(key, encoded_cipher, sizeof(encoded_cipher), &encoded_cipher_len, ctx);
 
-    // create state hash
-    sgx_sha256_hash_t state_hash = {0};
-    if (encoded_cipher_len > 0)
-    {
-        sgx_sha256_msg(encoded_cipher, encoded_cipher_len, &state_hash);
-    }
-
-    if (check_cmac(key, NULL, &state_hash, &session_key, &cmac) != 0)
-    {
-        LOG_ERROR("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
-	// TODO: proper error handling. Below throw should probably do the right
-	//   thing but for now we leave it out as as the mock-server relies on
-	//   bogus MACs for it to work ....
-        // throw std::runtime_error("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
-    }
-    else
-    {
-        LOG_DEBUG("Enclave: State verification: cmac correct!! :D");
-    }
     // if nothing read, no need for decryption
     if (encoded_cipher_len == 0)
     {
@@ -108,7 +81,7 @@ void get_public_state(
 
     ocall_get_state(key, val, max_val_len, val_len, (sgx_cmac_128bit_tag_t*)cmac, ctx->u_shim_ctx);
 
-    LOG_DEBUG("Enclave: got public state for key=%s len=%d val='%s'", key, *val_len,
+    LOG_DEBUG("Enclave: got state for key=%s len=%d val='%s'", key, *val_len,
         (*val_len > 0 ? (const char*)val : ""));
 
     // create state hash
@@ -121,9 +94,9 @@ void get_public_state(
     if (check_cmac(key, NULL, &state_hash, &session_key, &cmac) != 0)
     {
         LOG_ERROR("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
-	// TODO: proper error handling. Below throw should probably do the right
-	//   thing but for now we leave it out as as the mock-server relies on
-	//   bogus MACs for it to work ....
+        // TODO: proper error handling. Below throw should probably do the right
+        //   thing but for now we leave it out as as the mock-server relies on
+        //   bogus MACs for it to work ....
         // throw std::runtime_error("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
     }
     else
@@ -147,13 +120,11 @@ void put_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t c
     std::string base64 = base64_encode((unsigned char*)cipher, cipher_len);
 
     // write state
-    ctx->write_set.insert({key, base64});
-    ocall_put_state(key, (uint8_t*)base64.c_str(), base64.size(), ctx->u_shim_ctx);
+    put_public_state(key, (uint8_t*)base64.c_str(), base64.size(), ctx);
 }
 
 void put_public_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t ctx)
 {
-    // write state
     std::string s((const char*)val, val_len);
     ctx->write_set.insert({key, s});
     ocall_put_state(key, val, val_len, ctx->u_shim_ctx);
@@ -184,28 +155,10 @@ int unmarshal_values(
 void get_state_by_partial_composite_key(
     const char* comp_key, std::map<std::string, std::string>& values, shim_ctx_ptr_t ctx)
 {
-    uint8_t json[262144];  // 128k needed for 1000 bids
-    uint32_t len;
-
-    sgx_cmac_128bit_tag_t cmac = {0};
-    ocall_get_state_by_partial_composite_key(
-        comp_key, json, sizeof(json), &len, (sgx_cmac_128bit_tag_t*)cmac, ctx->u_shim_ctx);
-
-    unmarshal_values(values, (const char*)json, len);
-
-    // create state hash
-    sgx_sha256_hash_t state_hash = {0};
-    sgx_sha_state_handle_t sha_handle;
-    sgx_sha256_init(&sha_handle);
+    get_public_state_by_partial_composite_key(comp_key, values, ctx);
 
     for (auto& u : values)
     {
-        ctx->read_set.insert(u.first);
-
-        // but also compute hash
-        sgx_sha256_update((const uint8_t*)u.first.c_str(), u.first.size(), sha_handle);
-        sgx_sha256_update((const uint8_t*)u.second.c_str(), u.second.size(), sha_handle);
-
         // base64 decode
         std::string cipher = base64_decode(u.second.c_str());
 
@@ -222,22 +175,6 @@ void get_state_by_partial_composite_key(
 
         std::string s((const char*)plain, plain_len);
         u.second = s;
-    }
-
-    sgx_sha256_get_hash(sha_handle, &state_hash);
-    sgx_sha256_close(sha_handle);
-
-    if (check_cmac(comp_key, NULL, &state_hash, &session_key, &cmac) != 0)
-    {
-        LOG_ERROR("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
-	// TODO: proper error handling. Below throw should probably do the right
-	//   thing but for now we leave it out as as the mock-server relies on
-	//   bogus MACs for it to work ....
-        // throw std::runtime_error("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
-    }
-    else
-    {
-        LOG_DEBUG("Enclave: State verification: cmac correct!! :D");
     }
 }
 
@@ -262,7 +199,6 @@ void get_public_state_by_partial_composite_key(
     {
         ctx->read_set.insert(u.first);
 
-        // but also compute hash
         sgx_sha256_update((const uint8_t*)u.first.c_str(), u.first.size(), sha_handle);
         sgx_sha256_update((const uint8_t*)u.second.c_str(), u.second.size(), sha_handle);
     }
@@ -273,9 +209,9 @@ void get_public_state_by_partial_composite_key(
     if (check_cmac(comp_key, NULL, &state_hash, &session_key, &cmac) != 0)
     {
         LOG_ERROR("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
-	// TODO: proper error handling. Below throw should probably do the right
-	//   thing but for now we leave it out as as the mock-server relies on
-	//   bogus MACs for it to work ....
+        // TODO: proper error handling. Below throw should probably do the right
+        //   thing but for now we leave it out as as the mock-server relies on
+        //   bogus MACs for it to work ....
         // throw std::runtime_error("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
     }
     else
