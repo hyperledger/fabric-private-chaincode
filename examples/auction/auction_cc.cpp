@@ -22,8 +22,8 @@
 #define AUCTION_ALREADY_CLOSED "AUCTION_ALREADY_CLOSED"
 #define AUCTION_STILL_OPEN "AUCTION_STILL_OPEN"
 
-#define INITALIZED_KEY "__initialized"
-#define AUCTION_HOUSE_NAME_KEY "__auction_house_name"
+#define INITIALIZED_KEY "initialized"
+#define AUCTION_HOUSE_NAME_KEY "auction_house_name"
 
 const std::string SEP = ".";
 const std::string PREFIX = SEP + "somePrefix" + SEP;
@@ -52,7 +52,7 @@ int init(
         AUCTION_HOUSE_NAME_KEY, (uint8_t*)_auction_house_name, strlen(_auction_house_name), ctx);
 
     bool _initialized = true;
-    put_state(INITALIZED_KEY, (uint8_t*)&_initialized, sizeof(_initialized), ctx);
+    put_state(INITIALIZED_KEY, (uint8_t*)&_initialized, sizeof(_initialized), ctx);
 
     *actual_response_len = 0;
     LOG_DEBUG("AuctionCC: +++ Initialization done +++");
@@ -68,7 +68,7 @@ int invoke(
     char _auction_house_name_buf[128];
 
     uint32_t init_len = -1;
-    get_state(INITALIZED_KEY, (uint8_t*)&_initialized, sizeof(_initialized), &init_len, ctx);
+    get_state(INITIALIZED_KEY, (uint8_t*)&_initialized, sizeof(_initialized), &init_len, ctx);
     if ((init_len == 0) || !_initialized)
     {
         _initialized = false;
@@ -291,6 +291,9 @@ std::string auction_eval(std::string auction_name, shim_ctx_ptr_t ctx)
         return AUCTION_STILL_OPEN;
     }
 
+    // the result of the auction
+    std::string auction_result;
+
     // get all bids
     std::string bid_composite_key = PREFIX + auction_name + SEP;
     std::map<std::string, std::string> values;
@@ -299,41 +302,51 @@ std::string auction_eval(std::string auction_name, shim_ctx_ptr_t ctx)
     if (values.empty())
     {
         LOG_DEBUG("AuctionCC: No bids");
-        return AUCTION_NO_BIDS;
-    }
-
-    // search highest bid
-    bid_t winner;
-    int high = -1;
-    int draw = 0;
-
-    LOG_DEBUG("AuctionCC: All concidered bids:");
-    for (auto u : values)
-    {
-        bid_t b;
-        unmarshal_bid(&b, u.second.c_str(), u.second.size());
-
-        LOG_DEBUG("AuctionCC: \t%s value %d", b.bidder_name.c_str(), b.value);
-        if (b.value > high)
-        {
-            draw = 0;
-            high = b.value;
-            winner = b;
-        }
-        else if (b.value == high)
-        {
-            draw = 1;
-        }
-    }
-
-    if (draw != 1)
-    {
-        LOG_DEBUG("AuctionCC: Winner is: %s with %d", winner.bidder_name.c_str(), winner.value);
-        return marshal_bid(&winner);
+        auction_result = AUCTION_NO_BIDS;
     }
     else
     {
-        LOG_DEBUG("AuctionCC: DRAW");
-        return AUCTION_DRAW;
+        // search highest bid
+        bid_t winner;
+        int high = -1;
+        int draw = 0;
+
+        LOG_DEBUG("AuctionCC: All concidered bids:");
+        for (auto u : values)
+        {
+            bid_t b;
+            unmarshal_bid(&b, u.second.c_str(), u.second.size());
+
+            LOG_DEBUG("AuctionCC: \t%s value %d", b.bidder_name.c_str(), b.value);
+            if (b.value > high)
+            {
+                draw = 0;
+                high = b.value;
+                winner = b;
+            }
+            else if (b.value == high)
+            {
+                draw = 1;
+            }
+        }
+
+        if (draw != 1)
+        {
+            LOG_DEBUG("AuctionCC: Winner is: %s with %d", winner.bidder_name.c_str(), winner.value);
+            auction_result = marshal_bid(&winner);
+        }
+        else
+        {
+            LOG_DEBUG("AuctionCC: DRAW");
+            auction_result = AUCTION_DRAW;
+        }
     }
+
+    // publically store result ..
+    std::string auction_result_key(auction_name + SEP + "outcome" + SEP);
+    put_public_state(
+        auction_result_key.c_str(), (uint8_t*)auction_result.c_str(), auction_result.size(), ctx);
+
+    // .. but also return it to caller ...
+    return auction_result;
 }

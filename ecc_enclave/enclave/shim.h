@@ -33,20 +33,69 @@ int invoke(uint8_t* response,
 
 // put/get state
 //-------------------------------------------------
+
+// Normal, encrypted state
+
 // - store value located at val of size val_len under key key
+//   Note:
+//   - while the values are encrypted, the key will remain in clear text.
+//     So care has to be taken by the programmer that the key doesn't leak
+//     anything sensitive!
 void put_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t ctx);
+
 // - look for key and, if found, store it in val and return size in val_len.
 //   val must be of size at least max_val_len and the query will fail
 //   if the retrieved value would be larger.
 //   Absence of key is denoted by val_len == 0 when the function returns.
+//   Note:
+//   - this function doesn't check whether this was also stored privately.
+//     If it was stored with put_public_state, reading the key will fail
+//     due to a decryption or decoding failure.
 void get_state(
     const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* val_len, shim_ctx_ptr_t ctx);
+
 // - look for composite keys, i.e., return the set of keys and values which match the
 //   provided composite (prefix) key comp_key
+//   Note:
+//   - this function doesn't check whether this was also stored privately.
+//     If it was stored with put_public_state, reading the key will fail
+//     due to a decryption or decoding failure.
 void get_state_by_partial_composite_key(
     const char* comp_key, std::map<std::string, std::string>& values, shim_ctx_ptr_t ctx);
 
-// TODO (possible extensions): possible extension of above
+// Public, unencrypted state
+
+// - store value located at val of size val_len under key key in unencrypted form
+void put_public_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t ctx);
+//   Note:
+//   - As the value will be unencrypted, a transaction creator will be able to read
+//     updated state before it is committed to the ledger (and hence allows to prevent
+//     it from being committed). For certain types of updates this can lead to attacks,
+//     similar to pre-maturely return results in the response before a new transaction
+//     state is committed. To counter this, the chaincode programmer must deploy a
+//     commit-then-reveal pattern where in a first transaction, the state is privately
+//     updated and only in a second transaction, when the state update can be confirmed,
+//     the information is released to the public (for put_public_state) and/or to the
+//     transactor (in case the sensitive information is revealed in the response).
+
+// - look for key and, if found, store it in val and return size in val_len.
+//   val must be of size at least max_val_len and the query will fail
+//   if the retrieved value would be larger.
+//   Absence of key is denoted by val_len == 0 when the function returns.
+//   Note:
+//   - this function doesn't check whether this was also stored publically.
+//     If not, it would return the encrypted value ....
+void get_public_state(
+    const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* val_len, shim_ctx_ptr_t ctx);
+
+// - look for composite keys, i.e., return the set of keys and values which match the
+//   provided composite (prefix) key comp_key
+//   Note:
+//   - this function doesn't check whether this was also stored publically.
+//     If not, it would return the encrypted value ....
+void get_public_state_by_partial_composite_key(
+    const char* comp_key, std::map<std::string, std::string>& values, shim_ctx_ptr_t ctx);
+
 // - '*_public_state*' variant of above which does _not_ encrypt
 //   This could potentially allow for broadcasting decisions to the public
 //   (such as auction results) and provide long-term evidence of outcomes even
@@ -55,6 +104,8 @@ void get_state_by_partial_composite_key(
 //   possible via queryBlock() and queryTransaction(); not as convenient as with a
 //   chaincode query but still seems useful in practice ..?
 //
+
+// TODO (possible extensions): possible extension of above
 // - '*_super_private_state*' a variant of above where data is stored encrypted
 //   in a private data collection.
 //   Fabric private data collection definitely can give a performance boost when
@@ -80,8 +131,9 @@ void get_state_by_partial_composite_key(
 // - '*_semi_public_state*' variant of '*_super_private_state*' where data is
 //   stored unencrypted in a private data collection
 //
-// - for composite-key function, the current shim also have additional utility functions such as
-// createCompositeKey, splitCompositeKey: worth supporting? (Seems though primarily syntactic sugar?
+// - for composite-key function, the current fabric shim also have additional
+//   utility functions such as createCompositeKey, splitCompositeKey: worth supporting? (Seems
+//   though primarily syntactic sugar?
 //
 // - other functions: {get,set}StateValidationParameter, getHistoryForKey. Can/should we ignore?
 
@@ -147,13 +199,14 @@ int get_func_and_params(
 // - creator
 //   return the distinguished name of the creator as well as the msp_id of the corresponding
 //   organization.
+//   Note:
+//   - The name might be truncated (but guaranteed to be null-terminated)
+//     if the provided buffer is too small.
 void get_creator_name(char* msp_id,  // MSP id of organization to which transaction creator belongs
     uint32_t max_msp_id_len,         // size of allocated buffer for msp_id
     char* dn,                        // distinguished name of transaction creator
     uint32_t max_dn_len,             // size of allocated buffer for dn
     shim_ctx_ptr_t ctx);
-// Note: The name might be truncated (but guaranteed to be null-terminated)
-// if the provided buffer is too small.
 //
 // TODO (eventually): The go shim GoCreator returns protobuf serialized identity which (usally)
 // is the pair of msp_id and a (PEM-encoded) certificate. We might eventually add a function
