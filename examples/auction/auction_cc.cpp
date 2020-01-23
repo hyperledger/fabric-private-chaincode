@@ -22,7 +22,7 @@
 #define AUCTION_ALREADY_CLOSED "AUCTION_ALREADY_CLOSED"
 #define AUCTION_STILL_OPEN "AUCTION_STILL_OPEN"
 
-#define INITALIZED_KEY "initialized"
+#define INITIALIZED_KEY "initialized"
 #define AUCTION_HOUSE_NAME_KEY "auction_house_name"
 
 const std::string SEP = ".";
@@ -52,7 +52,7 @@ int init(
         AUCTION_HOUSE_NAME_KEY, (uint8_t*)_auction_house_name, strlen(_auction_house_name), ctx);
 
     bool _initialized = true;
-    put_state(INITALIZED_KEY, (uint8_t*)&_initialized, sizeof(_initialized), ctx);
+    put_state(INITIALIZED_KEY, (uint8_t*)&_initialized, sizeof(_initialized), ctx);
 
     *actual_response_len = 0;
     LOG_DEBUG("AuctionCC: +++ Initialization done +++");
@@ -68,7 +68,7 @@ int invoke(
     char _auction_house_name_buf[128];
 
     uint32_t init_len = -1;
-    get_state(INITALIZED_KEY, (uint8_t*)&_initialized, sizeof(_initialized), &init_len, ctx);
+    get_state(INITIALIZED_KEY, (uint8_t*)&_initialized, sizeof(_initialized), &init_len, ctx);
     if ((init_len == 0) || !_initialized)
     {
         _initialized = false;
