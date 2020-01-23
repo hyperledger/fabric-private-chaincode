@@ -50,7 +50,7 @@ void put_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t c
 //   Note:
 //   - this function doesn't check whether this was also stored privately.
 //     If it was stored with put_public_state, reading the key will fail
-//     due to an integrity failure.
+//     due to a decryption or decoding failure.
 void get_state(
     const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* val_len, shim_ctx_ptr_t ctx);
 
@@ -59,7 +59,7 @@ void get_state(
 //   Note:
 //   - this function doesn't check whether this was also stored privately.
 //     If it was stored with put_public_state, reading the key will fail
-//     due to an integrity failure.
+//     due to a decryption or decoding failure.
 void get_state_by_partial_composite_key(
     const char* comp_key, std::map<std::string, std::string>& values, shim_ctx_ptr_t ctx);
 
