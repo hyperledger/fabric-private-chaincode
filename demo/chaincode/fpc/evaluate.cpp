@@ -6,7 +6,7 @@
 
 #include "auction-state.h"
 #include "common.h"
-#include "crypto.h"
+#include "shim.h"  // get_random_bytes
 #include "spectrum-auction.h"
 
 void ClockAuction::SpectrumAuction::evaluateClockRound()
