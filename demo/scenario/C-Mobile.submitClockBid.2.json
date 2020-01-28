@@ -1,0 +1,16 @@
+{
+    "auctionId": 1,
+    "round": 2,
+    "bids": [
+	{
+	    "terId": 1,
+	    "qty": 3,
+	    "price":12000
+	},
+	{
+	    "terId": 2,
+	    "qty": 5,
+	    "price":4800
+	}
+    ]
+}
