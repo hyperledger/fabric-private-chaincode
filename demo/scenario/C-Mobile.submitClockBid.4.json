@@ -1,15 +1,15 @@
 {
     "auctionId": 1,
-    "round": 1,
+    "round": 4,
     "bids": [
 	{
 	    "terId": 1,
-	    "qty": 5,
-	    "price":10000
+	    "qty": 1,
+	    "price":16000
 	},{
 	    "terId": 2,
 	    "qty": 4,
-	    "price":4000
+	    "price":6000
 	}
     ]
 }

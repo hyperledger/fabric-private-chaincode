@@ -17,9 +17,36 @@ submit Auctioneer1 createAuction
 
 # clock-rounds ...
 submit Auctioneer1 startNextRound
-wait "enter A-Telecom bid manually ...  (Hit any key to continue)"
+submit A-Telecom submitClockBid
+submit B-Net submitClockBid
+submit C-Mobile submitClockBid
+submit Auctioneer1 endRound
+
+wait "End Round 1  (Hit any key to continue)"
+
+submit Auctioneer1 startNextRound
+submit A-Telecom submitClockBid
+submit B-Net submitClockBid
+submit C-Mobile submitClockBid
+submit Auctioneer1 endRound
+
+wait "End Round 2  (Hit any key to continue)"
+
+submit Auctioneer1 startNextRound
+wait "enter C-Mobile bid manually ...  (Hit any key to continue)"
+submit A-Telecom submitClockBid
 submit B-Net submitClockBid
 submit Auctioneer1 endRound
+
+wait "End Round 3  (Hit any key to continue)"
+
+submit Auctioneer1 startNextRound
+submit A-Telecom submitClockBid
+submit B-Net submitClockBid
+submit C-Mobile submitClockBid
+submit Auctioneer1 endRound
+
+wait "End Round 4 - Clock Phase Complete  (Hit any key to continue)"
 
 # assignment rounds ...
 submit Auctioneer1 startNextRound
