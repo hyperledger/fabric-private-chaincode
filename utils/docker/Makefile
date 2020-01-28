@@ -29,7 +29,7 @@ endif
 
 .PHONY: base ccenv dev peer
 
-build: base ccenv
+build: base ccenv cc-builder
 
 base:
 	$(DOCKER) build -t $(FPC_DOCKER_NAMESPACE)-base base
