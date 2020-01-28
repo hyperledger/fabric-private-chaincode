@@ -13,9 +13,63 @@ to an FPC network, a FPC network and a chaincode to execute the auction logic.
 
 ## Bring Up the Demo End To End
 ### Setup
-To set up all components at once run the start script.
+To set up all components at once run the start script. An [FPC Network](../utils/docker-compose/network-config/docker-compose.yml)
+will automatically be created.
 ```
-scripts/startFPCAuctionNetwork.sh
+cd $FPC_PATH/demo
+scripts/startFPCAuctionNetwork.sh --build-cc
+```
+
+The channel `mychannel` will be created and used to install and instantiate
+all chaincodes. The [golang mock chaincode](chaincode/golang) will be
+instantiated as `mockcc` and the [FPC auction chaincode](chaincode/fpc) will be
+instantiated as `ecc_auctioncc`.  If you do not need to build
+the FPC Auction CC, omit the `--build-cc` flag. If you do pass the `--build-cc`
+flag, the script assumes that the docker image
+`hyperledger/fabric-private-chaincode-cc-builder` exists. If the image does not
+exist, the [cc-builder](../utils/docker/cc-builder/Dockerfile) and the
+[dev](../utils/docker/dev/Dockerfile) images will be built automatically before
+building the chaincode.
+
+The fabric gateway will be configured to use the `auctioncc` chaincode. This can
+be changed by changing the `chaincode_name` in the fabric gateway
+[config](client/backend/fabric-gateway/config.json). Currently it is set to
+`ecc_auctioncc`. If you change the fabric gateway config, remember to rebuild
+the client so the updated configuration is added in the fabric gateway image.
+You can add the `--build-client` flag to the above start script to automatically
+rebuild the fabric gateway and frontend.
+
+**NOTE** To differentiate FPC chaincode from other chaincodes,
+we currently prefix the chaincode name with `ecc_` when installing it. While the
+FPC peer cli hides this name mapping, you will have to manually prefix the
+chaincode name in `config.json`, hence the default `ecc_auctioncc`.
+
+Both the frontend and fabric-gateway [expose ports](docker-compose.yml) and are
+accessible on the host machine. The frontend can be accessed at `localhost:5000`
+and the fabric-gateway can be accessed at `localhost:3000`.
+
+Below is the script's help text.
+
+```
+startFPCAuctionNetwork.sh [options]
+
+   This script, by default, will teardown possible previous iterations of this demo, generate new
+   crypto material for the network, start an FPC network as defined in $FPC_PATH/utils/docker-compose,
+   install the mock golang auction chaincode($FPC_PATH/demo/chaincode/golang), install the FPC
+   compliant auction chaincode($FPC_PATH/demo/chaincode/fpc), register auction users, and bring up
+   both the fabric-gatway & frontend UI. If the fabric-gateway and frontend UI docker images have
+   not previously been built it will build them, otherwise the script will reuse the images already
+   existing. The FPC chaincode will not be built unless specified by the flag --build-cc.
+
+   options:
+       --build-cc:
+           As part of bringing up the demo components, the auction cc in demo/chaincode/fpc will
+           be rebuilt using the docker-build make target.
+       --build-client:
+           As part of bringing up the demo components, the Fabric Gateway and the UI docker images
+           will be built or rebuilt using current source code.
+       --help,-h:
+           Print this help screen.
 ```
 **NOTE** The above [script](scripts/startFPCAuctionNetwork.sh) will bring up a
 fresh FPC Network and generate new credentials using the FPC Network Setup
@@ -33,7 +87,7 @@ following script.
 scripts/teardown.sh
 ```
 **NOTE** The script will run the [teardown script](../utils/docker-compose/scripts/teardown.sh)
-in the FPC Network scripts. If you run with the `--clean-slate` flag the script
+in the FPC Network scripts. If you run it with the `--clean-slate` flag the script
 will delete all the unused volumes and chaincode images.
 
 ## Manually Bring Up The Components
@@ -44,6 +98,25 @@ in this repo to bring one up. The demo directory is [mounted](../utils/docker-co
 into the peer to make installing chaincode easy.
 
 ### 2. Install the Auction Chaincode
+
+#### Build the FPC Auction Chaincode
+Build the FPC Auction Chaincode in a docker image. The make target makes use
+of the `hyperledger/fabric-private-chaincode-cc-builder`. If the image does not
+already exist, the target will build the [cc-builder](../utils/docker/cc-builder/Dockerfile)
+and the [dev](../utils/docker/dev/Dockerfile) images automatically before
+building the chaincode.
+```
+cd $FPC_PATH/demo/chaincode/fpc
+make docker-build
+```
+If you do not wish to use docker to build the chaincode you can build directly.
+The FPC project must be built to be able to run this.
+```
+cd $FPC_PATH/demo/chaincode/fpc
+make build
+```
+
+#### Install the FPC Auction Chaincode
 Install the mock golang chaincode for the demo.
 
 To install the chaincode you can run [installCC script](scripts/installCC.sh)
@@ -52,6 +125,33 @@ cd $FPC_PATH/demo
 scripts/installCC.sh
 ```
 If you prefer to install it manually use the following steps.
+
+1. Exec into the peer container.The demo directory has been mounted into the
+peer container for convenience, so the chaincode build files will be available.
+There are environment variables already set in the peer container that will be
+convenient for next set of steps. Please refer to the FPC Network Setup
+[documentation](../utils/docker-compose/README.md#Deploying-your-FPC-Chaincode)
+for details on what environment variables exist and how to see their values.
+```
+docker exec -it peer0.org1.example.com
+```
+
+2. Install the Auction Chaincode
+```
+${PEER_CMD} chaincode install -n auctioncc -v 1.0 --path demo/chaincode/fpc/_build/lib -l fpc-c
+```
+
+3. Instantiate the Auction chaincode
+```
+${PEER_CMD} chaincode instantiate -n auctioncc -v 1.0 --channelID mychannel -c '{"Args":[]}'
+```
+
+4. Exit the peer container
+```
+ctrl + d
+```
+
+#### Install Mock Chaincode
 
 1. Exec into the peer container. There are environment variables already set in
 the peer container that will be convenient for next set of steps. Please refer

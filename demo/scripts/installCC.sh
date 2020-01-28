@@ -18,3 +18,9 @@ sleep ${WAIT_TIME}
 
 docker exec peer0.org1.example.com ${PEER_CMD} chaincode instantiate -n mockcc -v ${version} --channelID mychannel -c '{"Args":[]}'
 sleep ${WAIT_TIME}
+
+docker exec peer0.org1.example.com ${PEER_CMD} chaincode install -n auctioncc -v ${version} --path demo/chaincode/fpc/_build/lib -l fpc-c
+sleep ${WAIT_TIME}
+
+docker exec peer0.org1.example.com ${PEER_CMD} chaincode instantiate -n auctioncc -v ${version} --channelID mychannel -c '{"Args":[]}'
+sleep ${WAIT_TIME}
