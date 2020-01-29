@@ -171,21 +171,21 @@
 		"id": 1,
 		"displayName": "A-Telecom",
 		"principal": {
-			"mspid": "org1",
+			"mspId": "Org1MSP",
 			"dn": "CN=A-Telecom,OU=user+OU=org1"
 		}
 	}, {
 		"id": 2,
 		"displayName": "B-Net",
 		"principal": {
-			"mspid": "org1",
+			"mspId": "Org1MSP",
 			"dn": "CN=B-Net,OU=user+OU=org1"
 		}
 	}, {
 		"id": 3,
 		"displayName": "C-Mobile",
 		"principal": {
-			"mspid": "org1",
+			"mspId": "Org1MSP",
 			"dn": "CN=C-Mobile,OU=user+OU=org1"
 		}
 	}],
