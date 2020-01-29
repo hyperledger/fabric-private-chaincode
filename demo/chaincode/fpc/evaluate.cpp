@@ -11,6 +11,7 @@
 
 void ClockAuction::SpectrumAuction::evaluateClockRound()
 {
+    dynamicAuctionState_.processBidsPreamble();
     if (dynamicAuctionState_.getRound() == 1)
     {
         LOG_DEBUG("Processing initial bids");
@@ -29,6 +30,12 @@ void ClockAuction::SpectrumAuction::evaluateClockRound()
 void ClockAuction::SpectrumAuction::evaluateAssignmentRound()
 {
     dynamicAuctionState_.processAssignmentRound(staticAuctionState_);
+}
+
+void ClockAuction::DynamicAuctionState::processBidsPreamble()
+{
+    er_.set(EC_SUCCESS, "");
+    // NOTE: we pre-set to success. If any error occurs, this will be overwritten.
 }
 
 void ClockAuction::DynamicAuctionState::processInitialRoundBids(
@@ -81,7 +88,22 @@ void ClockAuction::DynamicAuctionState::processBidsPostamble(StaticAuctionState&
     {
         roundExcessDemand[i] = aggregatedDemand[i] - supply[i];
     }
-    excessDemand_.push_back(roundExcessDemand);
+    // Note: in regular bid processing, we have already added the excess demand
+    //       so we simply double check that the vectors are the same
+    if (excessDemand_.size() == clockRound_)
+    {
+        excessDemand_.push_back(roundExcessDemand);
+    }
+    else
+    {
+        if (excessDemand_[clockRound_] != roundExcessDemand)
+        {
+            std::string s("error excess demand - stop bid processing");
+            LOG_ERROR("%s", s.c_str());
+            er_.set(EC_EVALUATION_ERROR, s);
+            return;
+        }
+    }
 
     // final stage rule check
     std::vector<bool> highDemand = sState.getHighDemandVector();

@@ -138,6 +138,7 @@ public:
     void storeBid(const StaticAuctionState& sState, const Bid& bid);
     void fillMissingBids(const StaticAuctionState& sState, uint32_t auctionId);
 
+    void processBidsPreamble();
     void processInitialRoundBids(StaticAuctionState& sState, uint32_t auctionId);
     void processRegularRoundBids(StaticAuctionState& sState, uint32_t auctionId);
     void processBidsPostamble(StaticAuctionState& sState);

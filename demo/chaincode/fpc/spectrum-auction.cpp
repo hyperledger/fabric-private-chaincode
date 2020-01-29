@@ -215,6 +215,9 @@ AUCTION_API_PROTOTYPE(ClockAuction::SpectrumAuction::endRound)
 
     dynamicAuctionState_.endRound();
     evaluateClockRound();
+    FAST_FAIL_CHECK_EX(
+        er, &dynamicAuctionState_.er_, EC_INVALID_INPUT, !dynamicAuctionState_.er_.isSuccess());
+
     storeAuctionState();
 
     er.set(EC_SUCCESS, "");
