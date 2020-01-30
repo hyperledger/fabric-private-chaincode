@@ -218,6 +218,21 @@ void get_creator_name(char* msp_id,  // MSP id of organization to which transact
 // invokeChaincode
 // TODO (possible extensions): Currently not supported (but eventually should)
 
+// Source of Randomness
+// --------------------
+// Note-1: this is currently implemented as part of crypto.
+// Note-2: many chaincode applications require a (secure) source of randomness.
+// In Fabric, however, chaincodes with "independent" sources of randomness will produce different
+// outputs. Therefore, in multi-endorser settings, endorsers will sign different transactions and,
+// when the endorsement policy requires more than one signature, the policy check will simply fail.
+// Single-endorser settings should work fine, provided that nobody requires to check/reproduce the
+// output. Note-3: due to what highlighted in note-2, a chaincode's source of randomness should
+// rather be securely provided by the Fabric infrastructure, ensuring that chaincodes running on
+// different platforms can get access to the same random coins.
+// ***WARNING***: we implement this function using the SGX random number generator, but we expect to
+// upgrade it according to what highlighted in note-3.
+extern int get_random_bytes(uint8_t* buffer, size_t length);
+
 // logging
 //-------------------------------------------------
 void log_critical(const char* format, ...);

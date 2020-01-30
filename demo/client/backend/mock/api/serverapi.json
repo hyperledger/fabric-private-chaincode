@@ -235,7 +235,7 @@
         "id": 1,
         "displayName": "A-Telecom",
         "principal": {
-          "mspId": "org1",
+          "mspId": "Org1MSP",
           "dn": "CN=,OU=user+OU=org1"
         }
       },
@@ -243,7 +243,7 @@
         "id": 2,
         "displayName": "B-Net",
         "principal": {
-          "mspId": "org1",
+          "mspId": "Org1MSP",
           "dn": "CN=,OU=user+OU=org1"
         }
       },
@@ -251,7 +251,7 @@
         "id": 3,
         "displayName": "C-Mobile",
         "principal": {
-          "mspId": "org1",
+          "mspId": "Org1MSP",
           "dn": "CN=,OU=user+OU=org1"
         }
       }
