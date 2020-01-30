@@ -42,7 +42,8 @@ var logger = shim.NewLogger("server")
 
 const ccName = "ecc"
 
-const mspId = "org1"
+const mspId = "Org1MSP"
+const org = "org1"
 
 func init() {
 	flag.StringVar(&flagPort, "port", "3000", "Port to listen on")
@@ -148,7 +149,7 @@ func invoke(c *gin.Context) {
 	user := c.GetHeader("x-user")
 	logger.Debug(fmt.Sprintf("user: %s\n", user))
 
-	creator, err := generateMockCreator(mspId, user)
+	creator, err := generateMockCreator(mspId, org, user)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Failure to generate Creator: %s\n", err))
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

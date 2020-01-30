@@ -18,7 +18,7 @@ import (
 	"github.com/hyperledger/fabric/protos/msp"
 )
 
-func generateMockCreator(mspId string, user string) ([]byte, error) {
+func generateMockCreator(mspId string, org string, user string) ([]byte, error) {
 	// (1) generate key
 	//     NOTE:RSA gen is relative expensive, if turns into problem we
 	//     could cache or move to ECDSA
@@ -32,7 +32,7 @@ func generateMockCreator(mspId string, user string) ([]byte, error) {
 		SerialNumber: big.NewInt(100),
 		Subject: pkix.Name{
 			CommonName:         user,
-			OrganizationalUnit: []string{"user", mspId},
+			OrganizationalUnit: []string{"user", org},
 			// Below RDNs would be likely in a real certificates but
 			// seem to be skipped by dy default in fabric-ca ...
 			//   Organization: []string{mspId+".example.com"},
