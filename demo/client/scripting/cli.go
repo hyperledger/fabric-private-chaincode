@@ -169,6 +169,8 @@ func main() {
 
 	urlPtr := flag.String("url", "http://localhost:3000/api/cc/invoke", "URL to use for fpc backend call")
 
+	dryRunPtr := flag.Bool("dry-run", false, "show request on stdout but do not execute it")
+
 	debugPtr := flag.Bool("debug", false, "debug invocation")
 
 	flag.Parse()
@@ -190,9 +192,15 @@ func main() {
 		log.Fatalf("Could not read requestPayload object: err='%s'", err)
 	}
 
-	err = fpcBackendRequest(*urlPtr, *requestNamePtr, requestPayloadObj, *userPtr)
-	if err != nil {
-		log.Fatalf("Could not submit request '%s' with payload '%v': err='%s'", *requestNamePtr, requestPayloadObj, err)
+	if *dryRunPtr {
+		prettyJSON, _ := json.MarshalIndent(requestPayloadObj, "", "    ")
+		fmt.Printf("%s\n", prettyJSON)
+	} else {
+
+		err = fpcBackendRequest(*urlPtr, *requestNamePtr, requestPayloadObj, *userPtr)
+		if err != nil {
+			log.Fatalf("Could not submit request '%s' with payload '%v': err='%s'", *requestNamePtr, requestPayloadObj, err)
+		}
 	}
 
 }

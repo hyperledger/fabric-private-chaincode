@@ -10,7 +10,7 @@ GO_CMDS= cli
 
 build: ${GO_CMDS}
 
-${GO_CMDS}:
+${GO_CMDS}: ${GO_CMDS:=.go}
 	$(GO) build $@.go
 
 test: build
