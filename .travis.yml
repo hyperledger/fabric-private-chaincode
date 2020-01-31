@@ -32,6 +32,9 @@ env:
     # FABRIC
     - FABRIC_VERSION=1.4.3
     - FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
+    # FPC
+    - FPC_PATH=$GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
+    # SGX
     - PATH=$PATH:$SGX_SDK/bin:$SGX_SDK/bin/x64
     - PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$SGX_SDK/pkgconfig
     - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SGX_SDK/sdk_libs

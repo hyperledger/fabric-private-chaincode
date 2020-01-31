@@ -16,11 +16,16 @@ TEARDOWN_CMD="${FPC_ROOT}"/demo/scripts/teardown.sh
 
 
 help() {
-    echo "$(basename $0) [--help|-h|-?] [--bootstrap|-b] <script-file>
-    Run the demo scenario codified in the passed script file. If you
-    pass option --bootstrap, it will also first bring up the FPC network
-    and tear it down at the end; otherwise it assumes you have already
-    a running setup ...
+    echo "$(basename $0) [--help|-h|-?] [--bootstrap|-b] [--dry-run|-d] [--non-interactive|-n] <script-file>
+    Run the demo scenario codified in the passed script file.
+    - If you pass option --bootstrap, it will also first bring up an FPC network
+      and tear it down at the end; otherwise it assumes you have already
+      a running setup ...
+    - option --dry-run/-d will just display all requests but not execute/submit
+      any of them
+    - option --non-interactive/-n will case _all_ requests to be submited even
+      requests from submit_manual.  This allows you to easily validate all
+      json files, even when some steps would be manual in an actual scenario
 "
 }
 
@@ -33,6 +38,18 @@ do
     case $opt in
         --bootstrap|-b)
 	    bootstrap=1
+	    ;;
+
+        --bootstrap|-b)
+	    bootstrap=1
+	    ;;
+
+	--dry-run|-d)
+	    dry_run=1
+	    ;;
+
+	--non-interactive|-n)
+	    non_interactive=1
 	    ;;
 
         --help|-h|-\?)

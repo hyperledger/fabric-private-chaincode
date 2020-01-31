@@ -9,11 +9,10 @@
 
 scenario
 
-# to start we either have to
-# (a) manually create auction (iff so, uncomment below) ..
-# wait "create auction manuall and enter auction id" auctionId
-# or (b) auto-create auction (iff so, uncomment below)
+# create auction
 submit Auctioneer1 createAuction
+
+wait "Auction Created. Maybe show auctioneers auction view?  (Hit any key to continue)"
 
 # clock-rounds ...
 submit Auctioneer1 startNextRound
@@ -22,7 +21,7 @@ submit B-Net submitClockBid
 submit C-Mobile submitClockBid
 submit Auctioneer1 endRound
 
-wait "End Round 1  (Hit any key to continue)"
+say "End Round 1"
 
 submit Auctioneer1 startNextRound
 submit A-Telecom submitClockBid
@@ -30,15 +29,15 @@ submit B-Net submitClockBid
 submit C-Mobile submitClockBid
 submit Auctioneer1 endRound
 
-wait "End Round 2  (Hit any key to continue)"
+yell "End Round 2"
 
 submit Auctioneer1 startNextRound
-wait "enter C-Mobile bid manually ...  (Hit any key to continue)"
+submit_manual C-Mobile submitClockBid
 submit A-Telecom submitClockBid
 submit B-Net submitClockBid
 submit Auctioneer1 endRound
 
-wait "End Round 3  (Hit any key to continue)"
+say "End Round 3"
 
 submit Auctioneer1 startNextRound
 submit A-Telecom submitClockBid
@@ -50,7 +49,10 @@ wait "End Round 4 - Clock Phase Complete  (Hit any key to continue)"
 
 # assignment rounds ...
 submit Auctioneer1 startNextRound
-# bidding not yet implemented, add here once done ....
-submit Auctioneer1 endRound
+# bidding not yet implemented, add here once done and
+# uncomment below endRound (Note: currently startNextRound in assignment
+# phase immediately assigns (randomly) the slots and terminates the phase)
+# submit Auctioneer1 endRound
 
+yell "Assignment Phase Complete, Auction closed"
 # auction is closed ...
