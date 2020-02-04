@@ -53,3 +53,6 @@ dev: base
 
 run: dev
 	$(DOCKER) run $(DOCKER_DEV_RUN_OPTS) -it $(FPC_DOCKER_NAMESPACE)-dev
+
+cc-builder: dev
+	$(DOCKER) build -t $(FPC_DOCKER_NAMESPACE)-cc-builder cc-builder

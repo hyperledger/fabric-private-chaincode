@@ -4,11 +4,11 @@
     "bids": [
 	{
 	    "terId": 1,
-	    "qty": 5,
+	    "qty": 3,
 	    "price":10000
 	},{
 	    "terId": 2,
-	    "qty": 4,
+	    "qty": 5,
 	    "price":4000
 	}
     ]
