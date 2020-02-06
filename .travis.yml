@@ -65,4 +65,7 @@ before_install:
   - GO_TAGS=pluginsenabled make peer orderer cryptogen configtxgen && popd
 
 script:
+  # travis doesn't check out the branch itself but for our make to work we
+  # need a branch or alike. So check create a local one ...
+  - git checkout -b we-need-a-branch-for-below-to-work
   - make

@@ -66,7 +66,7 @@ dockerCaPull() {
 binaryIncrementalDownload() {
       local BINARY_FILE=$1
       local URL=$2
-      curl -f -s -C - ${URL} -o ${BINARY_FILE} || rc=$?
+      curl -L -f -s -C - ${URL} -o ${BINARY_FILE} || rc=$?
       # Due to limitations in the current Nexus repo:
       # curl returns 33 when there's a resume attempt with no more bytes to download
       # curl returns 2 after finishing a resumed download
@@ -79,7 +79,7 @@ binaryIncrementalDownload() {
           # The checksum validates that RC 33 or 2 are not real failures
           echo "==> File downloaded. Verifying the md5sum..."
           localMd5sum=$(md5sum ${BINARY_FILE} | awk '{print $1}')
-          remoteMd5sum=$(curl -s ${URL}.md5)
+          remoteMd5sum=$(curl -L -s ${URL}.md5)
           if [ "$localMd5sum" == "$remoteMd5sum" ]; then
               echo "==> Extracting ${BINARY_FILE}..."
               tar xzf ./${BINARY_FILE} --overwrite bin
@@ -108,7 +108,7 @@ binaryDownload() {
           echo "==> Partial binary file found. Resuming download..."
           binaryIncrementalDownload ${BINARY_FILE} ${URL}
       else
-          curl ${URL} | tar xz bin || rc=$?
+          curl -L ${URL} | tar xz bin || rc=$?
           if [ ! -z "$rc" ]; then
               echo "==> There was an error downloading the binary file. Switching to incremental download."
               echo "==> Downloading file..."
@@ -121,7 +121,7 @@ binaryDownload() {
 
 binariesInstall() {
   echo "===> Downloading version ${FABRIC_TAG} platform specific fabric binaries"
-  binaryDownload ${BINARY_FILE} https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric/hyperledger-fabric/${ARCH}-${VERSION}/${BINARY_FILE}
+  binaryDownload "${BINARY_FILE}" "https://github.com/hyperledger/fabric/releases/download/v${VERSION}/${BINARY_FILE}"
   if [ $? -eq 22 ]; then
      echo
      echo "------> ${FABRIC_TAG} platform specific fabric binary is not available to download <----"
@@ -129,7 +129,7 @@ binariesInstall() {
    fi
 
   echo "===> Downloading version ${CA_TAG} platform specific fabric-ca-client binary"
-  binaryDownload ${CA_BINARY_FILE} https://nexus.hyperledger.org/content/repositories/releases/org/hyperledger/fabric-ca/hyperledger-fabric-ca/${ARCH}-${CA_VERSION}/${CA_BINARY_FILE}
+  binaryDownload "${BINARY_FILE}" "https://github.com/hyperledger/fabric-ca/releases/download/v${CA_VERSION}/${CA_BINARY_FILE}"
   if [ $? -eq 22 ]; then
      echo
      echo "------> ${CA_TAG} fabric-ca-client binary is not available to download  (Available from 1.1.0-rc1) <----"
