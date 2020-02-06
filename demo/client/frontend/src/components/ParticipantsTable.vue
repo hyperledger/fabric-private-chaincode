@@ -60,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
                       </v-col>
                       <v-col cols="12">
                         <v-text-field
-                          v-model="editedItem.principle.mspid"
+                          v-model="editedItem.principal.mspId"
                           label="MSP Id"
                           :rules="mspRules"
                           required
@@ -68,7 +68,7 @@ SPDX-License-Identifier: Apache-2.0
                       </v-col>
                       <v-col cols="12">
                         <v-text-field
-                          v-model="editedItem.principle.dn"
+                          v-model="editedItem.principal.dn"
                           label="Dn"
                           :rules="dnRules"
                           required
@@ -117,8 +117,8 @@ export default {
     dialog: false,
     headers: [
       { text: "Name", value: "displayName" },
-      { text: "MSP ID", value: "principle.mspid" },
-      { text: "DN", value: "principle.dn", sortable: false },
+      { text: "MSP ID", value: "principal.mspId" },
+      { text: "DN", value: "principal.dn", sortable: false },
       { text: "Eligibility", value: "eligibility", sortable: false },
       { text: "Actions", value: "action", sortable: false, align: "right" }
     ],
@@ -133,7 +133,7 @@ export default {
     defaultItem: {
       id: "",
       displayName: "",
-      principle: {
+      principal: {
         mspid: "",
         dn: ""
       },

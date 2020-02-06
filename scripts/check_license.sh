@@ -51,6 +51,7 @@ function filterExcludedAndGeneratedFiles {
         '\.txt$'
         'utils/docker-compose/bin'
         '(^|/)vendor\/'
+        '\.ico$'
     )
 
     local filter
