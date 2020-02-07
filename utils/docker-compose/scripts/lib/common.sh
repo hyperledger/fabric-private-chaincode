@@ -8,6 +8,7 @@
 
 export PATH=${SCRIPT_DIR}/../bin:${PWD}:$PATH
 export FABRIC_CFG_PATH=${SCRIPT_DIR}/../network-config
+export FPC_PATH="${FPC_PATH:-${SCRIPT_DIR}/../../..}"
 
 # Variables which we allow the caller override ..
 export FABRIC_VERSION=${FABRIC_VERSION:=1.4.3}

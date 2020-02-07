@@ -12,12 +12,26 @@ export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && p
 
 . ${SCRIPT_DIR}/lib/common.sh
 
-# test that we have generated crypto-config. Otherwise below up
-# will create empty files as root which is a PITA if you are running
-# this as non-root
+# test pre-conditions and try to remediate
+#
+# - existance of FPC peer
+if [[ ! $USE_FPC = false ]]; then
+    FPC_PEER_NAME="hyperledger/fabric-peer-fpc"
+    if [ -z "$(docker images | grep ${FPC_PEER_NAME})" ]; then
+	echo "FPC peer container image '${FPC_PEER_NAME}' does not exist, try to build it ..."
+	# if it doesn't exist, build it: note this can take quite some time!!
+	pushd "${FPC_PATH}/utils/docker" || die "can't go to peer build location"
+	make peer || die "can't build peer"
+	popd
+    fi
+fi
+# - generated crypto-config files
+#   test that we have generated crypto-config. Otherwise below up
+#   will create empty files as root which is a PITA if you are running
+#   this as non-root
 if [ ! -d "${NETWORK_CONFIG}/crypto-config/ordererOrganizations" ]; then
-	echo "ERROR: crypto config does not exist; run 'generate.sh'" 1>&2
-	exit 1
+    echo "Could not find crypto configuration, try to generate it..."
+    "${FPC_PATH}/utils/docker-compose/scripts/generate.sh"
 fi
 
 
@@ -44,7 +58,7 @@ ${DOCKER_COMPOSE} ps
 
 # wait for Hyperledger Fabric to start
 # incase of errors when running later commands, issue export FABRIC_START_TIMEOUT=<larger number>
-export FABRIC_START_TIMEOUT=10
+export FABRIC_START_TIMEOUT=20
 sleep ${FABRIC_START_TIMEOUT}
 
 # Create the channel

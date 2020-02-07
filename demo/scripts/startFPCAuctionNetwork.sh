@@ -56,11 +56,11 @@ for var in "$@"; do
 done
 
 export DEMO_SCRIPTS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-export FPC_ROOT=${DEMO_SCRIPTS_DIR}/../..
-export DEMO_ROOT=${DEMO_SCRIPTS_DIR}/..
+export FPC_PATH="${FPC_PATH:-${DEMO_SCRIPTS_DIR}/../..}"
+export DEMO_ROOT="${DEMO_SCRIPTS_DIR}/.."
 
 # SCRIPT_DIR is the docker compose script dir that needs to be defined to source environment variables from the FPC Network
-export SCRIPT_DIR=${FPC_ROOT}/utils/docker-compose/scripts
+export SCRIPT_DIR=${FPC_PATH}/utils/docker-compose/scripts
 . ${SCRIPT_DIR}/lib/common.sh
 
 # Cleanup any previous iterations of the demo
@@ -73,7 +73,7 @@ if $BUILD_CHAINCODE; then
     echo ""
     echo "Building FPC Auction Chaincode"
     pushd ${DEMO_ROOT}/chaincode/fpc
-        FPC_PATH=${FPC_ROOT} make docker-build
+        make docker-build
     popd
 fi
 

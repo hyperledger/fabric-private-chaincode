@@ -27,7 +27,7 @@ ifneq ($(SGX_DEVICE_PATH),)
 	DOCKER_DEV_RUN_OPTS += -v $(PWD)/../../config/ias/:$(DOKER_FPCPATH)/config/ias/ -v $(SGX_PSW_SOCKET):$(SGX_PSW_SOCKET) --device $(SGX_DEVICE_PATH)
 endif
 
-.PHONY: base ccenv dev peer cc-build
+.PHONY: base ccenv dev peer cc-builder
 
 # - overall targets
 # ------------------

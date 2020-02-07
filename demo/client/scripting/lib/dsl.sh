@@ -5,9 +5,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-# assumes FPC_ROOT and DEMO_CLIENT_SCRIPTS_DIR is defined
+# assumes FPC_PATH and DEMO_CLIENT_SCRIPTS_DIR is defined
 
-. "${FPC_ROOT}"/fabric/bin/lib/common_utils.sh
+. "${FPC_PATH}"/fabric/bin/lib/common_utils.sh
 
 
 CLI="${DEMO_CLIENT_SCRIPTS_DIR}/cli"

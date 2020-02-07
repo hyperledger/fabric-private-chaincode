@@ -3,7 +3,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-TOP = $(FPC_PATH)
+#ifneq ($(FPC_PATH), '')
+ifdef FPC_PATH
+	TOP = $(FPC_PATH)
+else
+	TOP = ../../../
+	export FPC_PATH = $(abspath $(TOP))
+endif
+
 include $(TOP)/build.mk
 
 BUILD_DIR := _build
