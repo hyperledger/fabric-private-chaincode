@@ -17,6 +17,9 @@ test: build
 .PHONY: checks
 .PHONY: clean
 
+.PHONY: clobber
+clobber: clean
+
 .PHONY: docker
 .PHONY: docker-run
 .PHONY: docker-stop

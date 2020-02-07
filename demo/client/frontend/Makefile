@@ -8,8 +8,23 @@ include $(TOP)/build.mk
 DOCKER_IMAGE = auction_frontend
 APP_SRC = ${PWD}
 
-build:
-	$(DOCKER) build -t $(DOCKER_IMAGE) .
+# Note:
+# - docker images are not necessarily rebuild if they exist but are outdated.
+#   To force rebuild you have two options
+#   - do a 'make clobber' first. This ensures you will have the uptodate images
+#     but is a broad and slow brush
+#   - to just fore rebuilding an image, call `make` with FORCE_REBUILD defined
+DOCKER_BUILD_OPTS ?=
+ifdef FORCE_REBUILD
+	DOCKER_BUILD_OPTS += --no-cache
+endif
+
+build: docker
+
+docker:
+	# this image is usually built by docker-compose but we still add a
+	# convenience target ere until proxy issues with docker-compose are resolved
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_IMAGE) .
 
 run:
 	$(DOCKER) run \
@@ -25,3 +40,8 @@ cli:
 		-v ${APP_SRC}:/usr/src/app \
 		$(DOCKER_IMAGE) \
 		/bin/sh
+
+clobber:
+	IMAGE=$$(${DOCKER} images ${DOCKER_IMAGE} -q); \
+	if [ ! -z "$${IMAGE}" ]; then ${DOCKER} rmi ${IMAGE}; fi
+	# make clobber in demo/ also would take care but better safe than sorry

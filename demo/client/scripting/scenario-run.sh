@@ -84,6 +84,7 @@ if [ ${bootstrap} -eq 1 ]; then
         # .. and if not, build it
     	pushd "${FPC_ROOT}/utils/docker" || die "can't go to peer build location"
         make peer || die "can't build peer"
+	popd
     fi
     # START_CMD also does not call utils/docker-compose/scripts/bootstrap!
     # as docker(-compose) will download images, we care only about binaries
@@ -100,7 +101,7 @@ if [ ${bootstrap} -eq 1 ]; then
 fi
 
 # execute the script
-. "${scriptFile}"
+. "${scriptFile}" || die "executing script '${scriptFile}' failed ..."
 
 if [ ${bootstrap} -eq 1 ]; then
     $TEARDOWN_CMD || die "could not bring down fpc network"

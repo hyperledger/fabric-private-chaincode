@@ -46,8 +46,12 @@ DEMO_DOCKER_COMPOSE=${DEMO_SCRIPT_DIR}/../docker-compose.yml
 SCRIPT_DIR=${DEMO_SCRIPT_DIR}/../../utils/docker-compose/scripts
 . ${SCRIPT_DIR}/lib/common.sh
 
-
-COMPOSE_IGNORE_ORPHANS=true docker-compose -f ${DEMO_DOCKER_COMPOSE} kill && COMPOSE_IGNORE_ORPHANS=true docker-compose -f ${DEMO_DOCKER_COMPOSE} down
+if $CLEAN_SLATE; then
+	DOWN_OPT="--rmi all"
+else
+	DOWN_OPT=""
+fi
+COMPOSE_IGNORE_ORPHANS=true docker-compose -f ${DEMO_DOCKER_COMPOSE} kill && COMPOSE_IGNORE_ORPHANS=true docker-compose -f ${DEMO_DOCKER_COMPOSE} down ${DOWN_OPT}
 
 if $CLEAN_SLATE; then
     "${SCRIPT_DIR}/teardown.sh" --clean-slate
