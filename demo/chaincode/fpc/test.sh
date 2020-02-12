@@ -28,6 +28,7 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${FPC_PATH}/ecc_
 
 pushd ${FPC_PATH}/demo/client/backend/mock
 test -e mock || echo "Compiling mock server..." && make build
+rm -f enclave && ln -s ${FPC_PATH}/demo/chaincode/fpc/_build enclave
 ./mock 2>&1 /dev/null &
 pushd
 sleep 2
