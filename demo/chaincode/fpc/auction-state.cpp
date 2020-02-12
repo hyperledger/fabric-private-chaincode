@@ -154,10 +154,10 @@ bool ClockAuction::StaticAuctionState::checkValidity()
 {
     FAST_FAIL_CHECK(er_, EC_INVALID_INPUT, name_.length() == 0);
     FAST_FAIL_CHECK(er_, EC_INVALID_INPUT, territories_.size() == 0);
-    for(unsigned int j = 0; j < territories_.size(); j++)
+    for (unsigned int j = 0; j < territories_.size(); j++)
     {
         std::vector<uint32_t> impairments = territories_[j].getChannelImpairments();
-        for(unsigned int i = 0; i < impairments.size(); i++)
+        for (unsigned int i = 0; i < impairments.size(); i++)
         {
             FAST_FAIL_CHECK(er_, EC_INVALID_INPUT, impairments[i] > 100);
         }

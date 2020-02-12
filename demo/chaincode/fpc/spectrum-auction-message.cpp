@@ -327,7 +327,8 @@ bool ClockAuction::SpectrumAuctionMessage::fromPublishAssignmentResultsJson(uint
     return auctionId != 0;
 }
 
-void ClockAuction::SpectrumAuctionMessage::toPublishAssignmentResultsJson(int rc, const std::string& message)
+void ClockAuction::SpectrumAuctionMessage::toPublishAssignmentResultsJson(
+    int rc, const std::string& message)
 {
     JSON_Object* root_object = ClockAuction::JsonUtils::openJsonObject(NULL);
     {
