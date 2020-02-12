@@ -213,13 +213,14 @@ AUCTION_API_PROTOTYPE(ClockAuction::SpectrumAuction::endRound)
         // IMPORTANT: we short-circuit the assignment phase, by starting it immediately with
         // the end-round invocation (though only when the clock phase terminates)
         // *********
-        LOG_INFO("Assignment Phase short-circuit: start immediately, assign randomly, terminate, evaluate");
+        LOG_INFO(
+            "Assignment Phase short-circuit: start immediately, assign randomly, terminate, "
+            "evaluate");
         dynamicAuctionState_.startRound(staticAuctionState_);
         dynamicAuctionState_.endRound();
         evaluateAssignmentRound();
 
-        FAST_FAIL_CHECK(
-                er, EC_EVALUATION_ERROR, !dynamicAuctionState_.isStateClosedPhase());
+        FAST_FAIL_CHECK(er, EC_EVALUATION_ERROR, !dynamicAuctionState_.isStateClosedPhase());
         LOG_INFO("Assignment phase complete --> Auction closed");
     }
 
@@ -390,7 +391,8 @@ AUCTION_API_PROTOTYPE(ClockAuction::SpectrumAuction::publishAssignmentResults)
 {
     // parse and validate input string
     ClockAuction::SpectrumAuctionMessage inMsg(inputString);
-    FAST_FAIL_CHECK(er, EC_INVALID_INPUT, !inMsg.fromPublishAssignmentResultsJson(auctionIdCounter_));
+    FAST_FAIL_CHECK(
+        er, EC_INVALID_INPUT, !inMsg.fromPublishAssignmentResultsJson(auctionIdCounter_));
     FAST_FAIL_CHECK_EX(er, &er_, EC_INVALID_INPUT, !loadAuctionState());
 
     FAST_FAIL_CHECK(er, EC_INVALID_INPUT, !dynamicAuctionState_.isStateClosedPhase());
@@ -406,8 +408,9 @@ AUCTION_API_PROTOTYPE(ClockAuction::SpectrumAuction::publishAssignmentResults)
         dynamicAuctionState_.toAssignmentResultsJsonObject(r, staticAuctionState_);
         ClockAuction::JsonUtils::closeJsonObject(r, &publicResultsString);
 
-        //publish results on the ledger publicly (no encryption)
-        std::string publicResultsKeyString("Auction." + std::to_string(auctionIdCounter_) + ".publicResults");
+        // publish results on the ledger publicly (no encryption)
+        std::string publicResultsKeyString(
+            "Auction." + std::to_string(auctionIdCounter_) + ".publicResults");
         auctionStorage_.ledgerPublicPutString(publicResultsKeyString, publicResultsString);
         LOG_DEBUG("Published Results: %s", publicResultsString.c_str());
     }
@@ -418,4 +421,3 @@ AUCTION_API_PROTOTYPE(ClockAuction::SpectrumAuction::publishAssignmentResults)
     outputString = msg.getJsonString();
     return true;
 }
-

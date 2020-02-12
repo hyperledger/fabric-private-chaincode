@@ -95,7 +95,8 @@ void ClockAuction::Storage::ledgerPublicPutString(const std::string& key, const 
         (uint8_t*)valueKey.c_str(), valueKey.length(), (const uint8_t*)value.c_str(), valueLength);
 }
 
-void ClockAuction::Storage::ledgerPublicPutBinary(const uint8_t* key,const uint32_t keyLength, const uint8_t* value, const uint32_t valueLength)
+void ClockAuction::Storage::ledgerPublicPutBinary(
+    const uint8_t* key, const uint32_t keyLength, const uint8_t* value, const uint32_t valueLength)
 {
     put_public_state((const char*)key, (uint8_t*)value, valueLength, ctx_);
 }
