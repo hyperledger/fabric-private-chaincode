@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+set -e
+
 function cleanup {
     killall mock
 }
@@ -25,6 +27,7 @@ trap cleanup EXIT
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${FPC_PATH}/ecc_enclave/_build/lib
 
 pushd ${FPC_PATH}/demo/client/backend/mock
+test -e mock || echo "Compiling mock server..." && make build
 ./mock 2>&1 /dev/null &
 pushd
 sleep 2
@@ -163,9 +166,9 @@ eval $FAIL_ON_FAILURE
 RESPONSE=`curl -s -H "Content-Type: application/json" -H "x-user:TestUser-1" -X POST -d '{"tx":"submitAssignmentBid", "args":["{\"auctionId\": 1, \"bids\":[]}"]}' http://localhost:3000/api/cc/invoke`
 eval $FAIL_ON_SUCCESS
 
-#(succeeds, assignment evaluation) start round
+#(fails, assignment phase already done) start round
 RESPONSE=`curl -s -H "Content-Type: application/json" -H "x-user:TestAuctioneer-1" -X POST -d '{"tx":"startNextRound", "args":["{\"auctionId\": 1}"]}' http://localhost:3000/api/cc/invoke`
-eval $FAIL_ON_FAILURE
+eval $FAIL_ON_SUCCESS
 
 #(succeeds, assignment results) get assignment results
 RESPONSE=`curl -s -H "Content-Type: application/json" -H "x-user:anybody" -X POST -d '{"tx":"getAssignmentResults", "args":["{\"auctionId\": 1}"]}' http://localhost:3000/api/cc/invoke`
