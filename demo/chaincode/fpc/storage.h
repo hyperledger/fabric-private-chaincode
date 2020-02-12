@@ -20,6 +20,12 @@ public:
     void ledgerPrivatePutString(const std::string& key, const std::string& value);
     void ledgerPrivateGetString(const std::string& key, std::string& value);
 
+    void ledgerPublicPutString(const std::string& key, const std::string& value);
+
+    void ledgerPublicPutBinary(const uint8_t* key,const uint32_t keyLength,
+        const uint8_t* value,
+        const uint32_t valueLength);
+
     void ledgerPrivatePutBinary(const uint8_t* key,
         const uint32_t keyLength,
         const uint8_t* value,

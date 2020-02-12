@@ -75,6 +75,31 @@ void ClockAuction::Storage::ledgerPrivateGetString(const std::string& key, std::
     value.assign((char*)valueBinary);
 }
 
+void ClockAuction::Storage::ledgerPublicPutString(const std::string& key, const std::string& value)
+{
+    // first write length -- string with null char
+    unsigned int valueLength = value.length() + 1;
+    std::string valueLengthString = std::to_string(valueLength);
+    if (valueLengthString.length() == 0 || valueLengthString.length() > MAX_LENGTH_STRING_SIZE)
+    {
+        LOG_ERROR("value length is 0 or too large. No data will be written to ledger");
+        return;
+    }
+    std::string valueLengthKey = key + "L";
+    ledgerPublicPutBinary((const uint8_t*)valueLengthKey.c_str(), valueLengthKey.length(),
+        (const uint8_t*)valueLengthString.c_str(), valueLengthString.length() + 1);
+
+    // second, write actual value
+    std::string valueKey = key + "K";
+    ledgerPublicPutBinary(
+        (uint8_t*)valueKey.c_str(), valueKey.length(), (const uint8_t*)value.c_str(), valueLength);
+}
+
+void ClockAuction::Storage::ledgerPublicPutBinary(const uint8_t* key,const uint32_t keyLength, const uint8_t* value, const uint32_t valueLength)
+{
+    put_public_state((const char*)key, (uint8_t*)value, valueLength, ctx_);
+}
+
 void ClockAuction::Storage::ledgerPrivatePutBinary(
     const uint8_t* key, const uint32_t keyLength, const uint8_t* value, const uint32_t valueLength)
 {
