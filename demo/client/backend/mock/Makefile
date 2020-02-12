@@ -17,3 +17,6 @@ run-fpc: build
 
 build:
 	$(GO) build -tags fpc
+
+clean:
+	rm -rf mock enclave
