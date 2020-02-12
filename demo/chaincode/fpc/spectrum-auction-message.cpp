@@ -317,3 +317,21 @@ void ClockAuction::SpectrumAuctionMessage::toGetAssignmentResultsJson(int rc,
     }
     ClockAuction::JsonUtils::closeJsonObject(root_object, &jsonString_);
 }
+
+bool ClockAuction::SpectrumAuctionMessage::fromPublishAssignmentResultsJson(uint32_t& auctionId)
+{
+    JSON_Object* root_object = ClockAuction::JsonUtils::openJsonObject(inputJsonString_.c_str());
+    auctionId = json_object_get_number(root_object, "auctionId");
+    ClockAuction::JsonUtils::closeJsonObject(root_object, NULL);
+    // returns false is any of the parameters does not exist or is 0
+    return auctionId != 0;
+}
+
+void ClockAuction::SpectrumAuctionMessage::toPublishAssignmentResultsJson(int rc, const std::string& message)
+{
+    JSON_Object* root_object = ClockAuction::JsonUtils::openJsonObject(NULL);
+    {
+        toWrappedStatusJsonObject(root_object, rc, message);
+    }
+    ClockAuction::JsonUtils::closeJsonObject(root_object, &jsonString_);
+}

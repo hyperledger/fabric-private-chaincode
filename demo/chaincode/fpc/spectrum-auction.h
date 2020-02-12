@@ -49,6 +49,7 @@ public:
     AUCTION_API_PROTOTYPE(getOwnerRoundResults);
     AUCTION_API_PROTOTYPE(submitAssignmentBid);
     AUCTION_API_PROTOTYPE(getAssignmentResults);
+    AUCTION_API_PROTOTYPE(publishAssignmentResults);
 };
 }  // namespace ClockAuction
 
