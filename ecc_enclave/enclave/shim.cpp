@@ -51,8 +51,26 @@ void get_state(
         *val_len = 0;
         return;
     }
+    if (encoded_cipher_len > sizeof(encoded_cipher))
+    {
+        char s[] = "Enclave: encoded_cipher_len greater than (or equal to) buffer length";
+        LOG_ERROR("%s", s);
+        throw std::runtime_error(s);
+    }
+
+    // build the encoded cipher string
+    std::string encoded_cipher_s((const char*)encoded_cipher, encoded_cipher_len);
+
+    // check string length
+    if (encoded_cipher_len != encoded_cipher_s.size())
+    {
+        LOG_ERROR("Unexpected string length: received %u bytes, computed %u bytes",
+            encoded_cipher_len, encoded_cipher_s.size());
+        throw std::runtime_error("Unexpected string length");
+    }
+
     // base64 decode
-    std::string cipher = base64_decode((const char*)encoded_cipher);
+    std::string cipher = base64_decode(encoded_cipher_s);
     if (cipher.size() < SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE)
     {
         LOG_ERROR(
@@ -82,7 +100,7 @@ void get_public_state(
     ocall_get_state(key, val, max_val_len, val_len, (sgx_cmac_128bit_tag_t*)cmac, ctx->u_shim_ctx);
 
     LOG_DEBUG("Enclave: got state for key=%s len=%d val='%s'", key, *val_len,
-        (*val_len > 0 ? (const char*)val : ""));
+        (*val_len > 0 ? (std::string((const char*)val, *val_len)).c_str() : ""));
 
     // create state hash
     sgx_sha256_hash_t state_hash = {0};
