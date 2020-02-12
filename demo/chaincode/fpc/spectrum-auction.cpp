@@ -176,17 +176,6 @@ AUCTION_API_PROTOTYPE(ClockAuction::SpectrumAuction::startNextRound)
 
     dynamicAuctionState_.startRound(staticAuctionState_);
 
-    if (dynamicAuctionState_.isStateAssignmentPhase())
-    {
-        // *********
-        // IMPORTANT: we shortcut the assignment phase and terminate it immediately with a random
-        // assignment
-        // *********
-        LOG_INFO("Assignment phase: random assignment and immediate termination");
-        dynamicAuctionState_.endRound();
-        evaluateAssignmentRound();
-    }
-
     storeAuctionState();
 
     er.set(EC_SUCCESS, "");
@@ -217,6 +206,22 @@ AUCTION_API_PROTOTYPE(ClockAuction::SpectrumAuction::endRound)
     evaluateClockRound();
     FAST_FAIL_CHECK_EX(
         er, &dynamicAuctionState_.er_, EC_INVALID_INPUT, !dynamicAuctionState_.er_.isSuccess());
+
+    if (dynamicAuctionState_.isStateAssignmentPhase())
+    {
+        // *********
+        // IMPORTANT: we short-circuit the assignment phase, by starting it immediately with
+        // the end-round invocation (though only when the clock phase terminates)
+        // *********
+        LOG_INFO("Assignment Phase short-circuit: start immediately, assign randomly, terminate, evaluate");
+        dynamicAuctionState_.startRound(staticAuctionState_);
+        dynamicAuctionState_.endRound();
+        evaluateAssignmentRound();
+
+        FAST_FAIL_CHECK(
+                er, EC_EVALUATION_ERROR, !dynamicAuctionState_.isStateClosedPhase());
+        LOG_INFO("Assignment phase complete --> Auction closed");
+    }
 
     storeAuctionState();
 
