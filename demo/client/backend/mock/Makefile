@@ -12,6 +12,8 @@ APP_SRC = ${PWD}
 run-go:
 	env LD_LIBRARY_PATH=../../../../ecc_enclave/_build/lib:${LD_LIBRARY_PATH} $(GO) run .
 
-run-fpc:
-	$(GO) build -tags fpc
+run-fpc: build
 	env LD_LIBRARY_PATH=../../../../ecc_enclave/_build/lib:${LD_LIBRARY_PATH} ./mock --debug
+
+build:
+	$(GO) build -tags fpc
