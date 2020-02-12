@@ -90,5 +90,8 @@ public:
         const std::string& message,
         const StaticAuctionState& sState,
         const DynamicAuctionState& dState);
+
+    bool fromPublishAssignmentResultsJson(uint32_t& auctionId);
+    void toPublishAssignmentResultsJson(int rc, const std::string& message);
 };
 }  // namespace ClockAuction

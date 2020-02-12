@@ -34,7 +34,8 @@ ClockAuction::Dispatcher::Dispatcher(const std::string& functionName,
         {"getBidderRoundResults", &ClockAuction::SpectrumAuction::getBidderRoundResults},
         {"getOwnerRoundResults", &ClockAuction::SpectrumAuction::getOwnerRoundResults},
         {"submitAssignmentBid", &ClockAuction::SpectrumAuction::submitAssignmentBid},
-        {"getAssignmentResults", &ClockAuction::SpectrumAuction::getAssignmentResults}};
+        {"getAssignmentResults", &ClockAuction::SpectrumAuction::getAssignmentResults},
+        {"publishAssignmentResults", &ClockAuction::SpectrumAuction::publishAssignmentResults}};
 
     LOG_DEBUG("Try dispatch function %s with parameters %s", functionName_.c_str(),
         functionParameters[0].c_str());
