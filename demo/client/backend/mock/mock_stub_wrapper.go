@@ -12,6 +12,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hyperledger-labs/fabric-private-chaincode/demo/client/backend/mock/api"
+
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/utils"
@@ -115,7 +117,19 @@ func (m *MockStubWrapper) saveTransaction(uuid string, resp peer.Response) {
 
 // Initialise this chaincode,  also starts and ends a transaction.
 func (m *MockStubWrapper) MockInit(uuid string, args [][]byte) pb.Response {
-	creator, _ := generateMockCreator(mspId, org, m.Creator)
+	var ok bool
+	var mappedName api.MappedName
+
+	if mappedName, ok = api.MockNameMap[m.Creator]; ok {
+		logger.Debugf("Mapping user '%s' to { MspId: '%s', Org: '%s', User: '%s'}",
+			m.Creator, mappedName.MspId, mappedName.Org, mappedName.User)
+	} else {
+		mappedName = api.MappedName{User: m.Creator, MspId: defaultMspId, Org: defaultOrg}
+		logger.Debugf("No name mapping found for user '%s', using default MspId '%s' and Org '%s'",
+			m.Creator, defaultMspId, defaultOrg)
+	}
+
+	creator, _ := generateMockCreator(mappedName.MspId, mappedName.Org, mappedName.User)
 	m.MockStub.Creator = creator
 
 	uuid = m.createUuid(uuid)
@@ -126,7 +140,19 @@ func (m *MockStubWrapper) MockInit(uuid string, args [][]byte) pb.Response {
 
 // Invoke this chaincode, also starts and ends a transaction.
 func (m *MockStubWrapper) MockInvoke(uuid string, args [][]byte) pb.Response {
-	creator, _ := generateMockCreator(mspId, org, m.Creator)
+	var ok bool
+	var mappedName api.MappedName
+
+	if mappedName, ok = api.MockNameMap[m.Creator]; ok {
+		logger.Debugf("Mapping user '%s' to { MspId: '%s', Org: '%s', User: '%s'}",
+			m.Creator, mappedName.MspId, mappedName.Org, mappedName.User)
+	} else {
+		mappedName = api.MappedName{User: m.Creator, MspId: defaultMspId, Org: defaultOrg}
+		logger.Debugf("No name mapping found for user '%s', using default MspId '%s' and Org '%s'",
+			m.Creator, defaultMspId, defaultOrg)
+	}
+
+	creator, _ := generateMockCreator(mappedName.MspId, mappedName.Org, mappedName.User)
 	m.MockStub.Creator = creator
 
 	uuid = m.createUuid(uuid)
@@ -137,11 +163,22 @@ func (m *MockStubWrapper) MockInvoke(uuid string, args [][]byte) pb.Response {
 
 // Invoke this chaincode, also starts and ends a transaction.
 func (m *MockStubWrapper) MockQuery(uuid string, args [][]byte) pb.Response {
-	creator, _ := generateMockCreator(mspId, org, m.Creator)
+	var ok bool
+	var mappedName api.MappedName
+
+	if mappedName, ok = api.MockNameMap[m.Creator]; ok {
+		logger.Debugf("Mapping user '{}' to { MspId: '{}', Org: '{}', User: '{}'}",
+			m.Creator, mappedName.MspId, mappedName.Org, mappedName.User)
+	} else {
+		mappedName = api.MappedName{User: m.Creator, MspId: defaultMspId, Org: defaultOrg}
+		logger.Debugf("No name mapping found for user '{}', using default MspId '{}' and Org '{}'",
+			m.Creator, defaultMspId, defaultOrg)
+	}
+
+	creator, _ := generateMockCreator(mappedName.MspId, mappedName.Org, mappedName.User)
 	m.MockStub.Creator = creator
 
 	// save state
-
 	s, err := json.Marshal(m.MockStub.State)
 	if err != nil {
 		panic("error storing state")

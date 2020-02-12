@@ -1,0 +1,23 @@
+{
+    "Auctioneer1": {
+	"user": "Auctioneer",
+        "mspId": "ELBMSP",
+        "org": "elbonia"
+    },
+    "A-Telecom": {
+	"user": "A-Telecom",
+        "mspId": "ATMSP",
+        "org": "at"
+    },
+    "B-Net": {
+	"user": "B-Net",
+        "mspId": "BNMSP",
+        "org": "B-N"
+    },
+    "C-Mobile": {
+	"user": "C-Mobile",
+        "mspId": "CMOMSP",
+        "org": "cmo"
+    }
+}
+
