@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+set -e
+
 function cleanup {
     killall mock
 }
@@ -25,6 +27,8 @@ trap cleanup EXIT
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${FPC_PATH}/ecc_enclave/_build/lib
 
 pushd ${FPC_PATH}/demo/client/backend/mock
+test -e mock || echo "Compiling mock server..." && make build
+rm -f enclave && ln -s ${FPC_PATH}/demo/chaincode/fpc/_build enclave
 ./mock 2>&1 /dev/null &
 pushd
 sleep 2
@@ -34,7 +38,7 @@ RESPONSE=`curl -s -H "Content-Type: application/json" -H "x-user:TestAuctioneer-
 eval $FAIL_ON_SUCCESS
 
 #(succeeds) create auction
-RESPONSE=`curl -s -H "Content-Type: application/json" -H "x-user:TestAuctioneer-1" -X POST -d '{"tx":"createAuction","args":["{\"name\":\"bruno\", \"territories\":[{\"id\": 1, \"name\": \"myterritory\", \"isHighDemand\": false, \"minPrice\": 200, \"channels\": [{\"id\": 1, \"name\": \"mychannel1\", \"impairment\":2000}, {\"id\": 2, \"name\": \"mychannel2\", \"impairment\":2000}, {\"id\": 3, \"name\": \"mychannel3\", \"impairment\":2000}]}, {\"id\": 2, \"name\": \"myterritory2\", \"isHighDemand\": false, \"minPrice\": 300, \"channels\": [{\"id\": 1, \"name\": \"mychannel3\", \"impairment\":300}, {\"id\": 2, \"name\": \"mychannel4\", \"impairment\":400}, {\"id\": 3, \"name\": \"mychannel5\", \"impairment\":500}]}], \"bidders\":[{\"id\": 1, \"displayName\": \"mickey\", \"principal\":{\"id\": 1, \"mspId\": \"Org1MSP\",\"dn\": \"CN=TestUser-1,OU=user+OU=org1\"}}, {\"id\": 2, \"displayName\": \"duffy\", \"principal\":{\"id\": 2, \"mspId\": \"Org1MSP\",\"dn\": \"CN=TestUser-2,OU=user+OU=org1\"}}, {\"id\": 3, \"displayName\": \"goku\", \"principal\":{\"id\": 3, \"mspId\": \"Org1MSP\",\"dn\": \"CN=TestUser-3,OU=user+OU=org1\"}}], \"initialEligibilities\":[{\"bidderId\": 1, \"number\": 4}, {\"bidderId\": 2, \"number\": 6}, {\"bidderId\": 3, \"number\": 6}], \"activityRequirementPercentage\": 0, \"clockPriceIncrementPercentage\": 20}"]}' http://localhost:3000/api/cc/invoke`
+RESPONSE=`curl -s -H "Content-Type: application/json" -H "x-user:TestAuctioneer-1" -X POST -d '{"tx":"createAuction","args":["{\"name\":\"bruno\", \"territories\":[{\"id\": 1, \"name\": \"myterritory\", \"isHighDemand\": false, \"minPrice\": 200, \"channels\": [{\"id\": 1, \"name\": \"mychannel1\", \"impairment\":20}, {\"id\": 2, \"name\": \"mychannel2\", \"impairment\":40}, {\"id\": 3, \"name\": \"mychannel3\", \"impairment\":60}]}, {\"id\": 2, \"name\": \"myterritory2\", \"isHighDemand\": false, \"minPrice\": 300, \"channels\": [{\"id\": 1, \"name\": \"mychannel3\", \"impairment\":33}, {\"id\": 2, \"name\": \"mychannel4\", \"impairment\":66}, {\"id\": 3, \"name\": \"mychannel5\", \"impairment\":99}]}], \"bidders\":[{\"id\": 1, \"displayName\": \"mickey\", \"principal\":{\"id\": 1, \"mspId\": \"Org1MSP\",\"dn\": \"CN=TestUser-1,OU=user+OU=org1\"}}, {\"id\": 2, \"displayName\": \"duffy\", \"principal\":{\"id\": 2, \"mspId\": \"Org1MSP\",\"dn\": \"CN=TestUser-2,OU=user+OU=org1\"}}, {\"id\": 3, \"displayName\": \"goku\", \"principal\":{\"id\": 3, \"mspId\": \"Org1MSP\",\"dn\": \"CN=TestUser-3,OU=user+OU=org1\"}}], \"initialEligibilities\":[{\"bidderId\": 1, \"number\": 4}, {\"bidderId\": 2, \"number\": 6}, {\"bidderId\": 3, \"number\": 6}], \"activityRequirementPercentage\": 0, \"clockPriceIncrementPercentage\": 20}"]}' http://localhost:3000/api/cc/invoke`
 eval $FAIL_ON_FAILURE
 
 RESPONSE=`curl -s -H "Content-Type: application/json" -X POST -d '{"tx":"getAuctionDetails", "args":["{\"auctionId\": 1}"]}' http://localhost:3000/api/cc/invoke`
@@ -163,12 +167,16 @@ eval $FAIL_ON_FAILURE
 RESPONSE=`curl -s -H "Content-Type: application/json" -H "x-user:TestUser-1" -X POST -d '{"tx":"submitAssignmentBid", "args":["{\"auctionId\": 1, \"bids\":[]}"]}' http://localhost:3000/api/cc/invoke`
 eval $FAIL_ON_SUCCESS
 
-#(succeeds, assignment evaluation) start round
+#(fails, assignment phase already done) start round
 RESPONSE=`curl -s -H "Content-Type: application/json" -H "x-user:TestAuctioneer-1" -X POST -d '{"tx":"startNextRound", "args":["{\"auctionId\": 1}"]}' http://localhost:3000/api/cc/invoke`
-eval $FAIL_ON_FAILURE
+eval $FAIL_ON_SUCCESS
 
 #(succeeds, assignment results) get assignment results
 RESPONSE=`curl -s -H "Content-Type: application/json" -H "x-user:anybody" -X POST -d '{"tx":"getAssignmentResults", "args":["{\"auctionId\": 1}"]}' http://localhost:3000/api/cc/invoke`
+eval $FAIL_ON_FAILURE
+
+#(succeeds, publish assignment results) publish assignment results
+RESPONSE=`curl -s -H "Content-Type: application/json" -H "x-user:anybody" -X POST -d '{"tx":"publishAssignmentResults", "args":["{\"auctionId\": 1}"]}' http://localhost:3000/api/cc/invoke`
 eval $FAIL_ON_FAILURE
 
 echo "Test successful."

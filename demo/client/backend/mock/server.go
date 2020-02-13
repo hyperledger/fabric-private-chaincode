@@ -47,8 +47,8 @@ var notifier = NewNotifier()
 const ccName = "FPCAuction"
 const channelName = "Mychannel"
 
-const mspId = "Org1MSP"
-const org = "org1"
+const defaultMspId = "Org1MSP"
+const defaultOrg = "org1"
 
 func init() {
 	flag.StringVar(&flagPort, "port", "3000", "Port to listen on")
@@ -186,8 +186,35 @@ func getAllUsers(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, users)
 }
 
+func nameMapBidders(createAuctionInterface *interface{}) {
+	createAuctionObj := (*createAuctionInterface).(map[string]interface{})
+	bidders := createAuctionObj["bidders"].([]interface{})
+
+	for i := range bidders {
+		bidder := bidders[i].(map[string]interface{})
+		principal := bidder["principal"].(map[string]interface{})
+
+		var ok bool
+		var mappedName api.MappedName
+
+		if _, user, err := parseCreatorDN(principal["dn"].(string)); err != nil {
+			logger.Debugf("Do not understand dn for bidder (err=%v), so leaving MspId '%s' and dn '%s' as-is",
+				err, principal["mspId"].(string), principal["dn"].(string))
+		} else if mappedName, ok = api.MockNameMap[user]; !ok {
+			logger.Debugf("No name mapping found for bidder '%s', leaving MspId '%s' and dn '%s' as-is",
+				user, principal["mspId"].(string), principal["dn"].(string))
+		} else {
+			principal["mspId"] = mappedName.MspId
+			principal["dn"] = generateMockCreatorDN(mappedName.MspId, mappedName.Org, mappedName.User)
+			logger.Debugf("Mapping for bidder '%s' MspId to '%s' and Org to '%s', resulting in new DN '%s'",
+				user, mappedName.MspId, mappedName.Org, principal["dn"])
+		}
+	}
+}
+
 func getDefaultAuction(c *gin.Context) {
 	auction := api.MockData["getDefaultAuction"]
+	nameMapBidders(&auction)
 	c.IndentedJSON(http.StatusOK, auction)
 }
 
@@ -372,6 +399,22 @@ func parsePayload(c *gin.Context) ([][]byte, error) {
 	var payload Payload
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		return nil, err
+	}
+
+	if payload.Tx == "createAuction" {
+		// do name translation for bidders.
+		// Note: Have to do also here so it works also when createAuction is scripted rather
+		// than done in the UI (starting from the already translated getDefaultAuction)
+		// but to do so, we have to first undo the second layer of the s****p double-encoding of json objects
+		var createAuctionRequest interface{}
+		err := json.Unmarshal([]byte(payload.Args[0]), &createAuctionRequest)
+		if err != nil {
+			logger.Errorf("Could not decode the createAuctionRequest")
+			return nil, err
+		}
+		nameMapBidders(&createAuctionRequest)
+		createAuctionRequestBytes, _ := json.Marshal(createAuctionRequest)
+		payload.Args[0] = string(createAuctionRequestBytes)
 	}
 
 	args := make([][]byte, 0)

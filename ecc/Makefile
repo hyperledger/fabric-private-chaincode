@@ -23,7 +23,8 @@ DOCKER_ENCLAVE_SO_PATH ?= $(ENCLAVE_SO_PATH)
 all: build
 # test target disable because it requires revision
 #all: build test
-build: vscc-plugin
+
+build: vscc-plugin sym-links
 
 ECC_ENCLAVE_BUILD = ../ecc_enclave/_build
 ERR_MSG = "ecc_enclave build does not exist!"
@@ -56,6 +57,7 @@ vscc-plugin: $(VSCC_SRC)
 
 clean: docker-clean
 	$(GO) clean
+	rm -rf ecc enclave/ecc-enclave-lib enclave/ecc-enclave-include
 
 docker-boilerplate-ecc: ecc
 	$(DOCKER) build -t $(DOCKER_BOILERPLATE_ECC_IMAGE) -f Dockerfile.boilerplate-ecc ..
