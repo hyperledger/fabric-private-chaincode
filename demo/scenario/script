@@ -55,6 +55,12 @@ wait "End Round 4 - Clock Phase Complete  (Hit any key to continue)"
 # submit Auctioneer1 startNextRound
 # submit Auctioneer1 endRound
 
+yell "Assignment Phase Complete"
 
-yell "Assignment Phase Complete, Auction closed"
+say "Publish results on the ledger"
+
+submit Auctioneer1 publishAssignmentResults
+
+yell "Auction closed"
+
 # auction is closed ...
