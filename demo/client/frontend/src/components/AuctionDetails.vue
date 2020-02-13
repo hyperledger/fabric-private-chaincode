@@ -32,17 +32,25 @@ SPDX-License-Identifier: Apache-2.0
             <v-card-title class="title">{{ auction.name }}</v-card-title>
             <v-card-text class="px-4">
               <span class="mr-8"
-                >Created by
+                >Created by:
                 <v-chip class="mx-1" color="orange" label text-color="white">
                   <v-avatar class="mr-2">
-                    <v-img v-bind:src="getAvatar(auction.owner)"></v-img>
+                    <v-img
+                      v-bind:src="getAvatar($options.filters.dn(auction.owner))"
+                    ></v-img>
                   </v-avatar>
-                  {{ auction.owner }}
+                  {{ auction.owner | dn }}
                 </v-chip>
               </span>
+              <span class="mr-2" v-if="auction.state === 'clock'">
+                <v-chip class="mx-1" color="blue" label text-color="white">
+                  Clock Phase
+                </v-chip>
 
-              <span class="mr-8"
-                >Status
+                <v-chip class="mx-1" color="blue" label text-color="white">
+                  Round {{ auction.clockRound }}
+                </v-chip>
+
                 <v-chip
                   class="mx-1"
                   color="green"
@@ -50,7 +58,7 @@ SPDX-License-Identifier: Apache-2.0
                   text-color="white"
                   v-if="isOpen"
                 >
-                  Open
+                  Round Active
                 </v-chip>
                 <v-chip
                   class="mx-1"
@@ -59,14 +67,19 @@ SPDX-License-Identifier: Apache-2.0
                   text-color="white"
                   v-else
                 >
-                  Closed
+                  Round Inactive
                 </v-chip>
               </span>
 
-              <span>
-                Round
-                <v-chip class="mx-1" color="green" label text-color="white">
-                  {{ auction.clockRound }}
+              <span class="mr-2" v-if="auction.state === 'assign'">
+                <v-chip class="mx-1" color="purple" label text-color="white">
+                  Assignment Phase
+                </v-chip>
+              </span>
+
+              <span class="mr-2" v-if="auction.state === 'done'">
+                <v-chip class="mx-1" color="red" label text-color="white">
+                  Auction Closed
                 </v-chip>
               </span>
             </v-card-text>
@@ -231,6 +244,17 @@ export default {
     this.fetchAuction(1)
       .catch(err => console.log(err))
       .finally(() => (this.isLoading = false));
+  },
+
+  filters: {
+    dn: function(owner) {
+      //"CN=Auctioneer1,OU=user+OU=org1"
+      let p = owner.dn.match(/^CN=(\w+),.*$/);
+      if (p === null) {
+        return owner;
+      }
+      return p[1];
+    }
   }
 };
 </script>
