@@ -29,7 +29,7 @@ clean:
 	-rm -rf $(BUILD_DIR)
 
 docker-build: clean
-	$(DOCKER) image inspect hyperledger/fabric-private-chaincode-cc-builder > /dev/null 1>&1 || { cd $(TOP)/utils/docker && make cc-builder; }
+	$(DOCKER) image inspect hyperledger/fabric-private-chaincode-cc-builder > /dev/null 2>&1 || { cd $(TOP)/utils/docker && make cc-builder; }
 	$(DOCKER) run -u $$(id -u):$$(id -g) -v ${PWD}:/project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/fpc -w /project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/fpc hyperledger/fabric-private-chaincode-cc-builder sh -c make build
 
 test: build
