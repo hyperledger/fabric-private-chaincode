@@ -41,7 +41,7 @@ void get_state(
     const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* val_len, shim_ctx_ptr_t ctx)
 {
     uint8_t encoded_cipher[(max_val_len + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE + 2) / 3 * 4];
-    uint32_t encoded_cipher_len;
+    uint32_t encoded_cipher_len = 0;
 
     get_public_state(key, encoded_cipher, sizeof(encoded_cipher), &encoded_cipher_len, ctx);
 
@@ -53,7 +53,7 @@ void get_state(
     }
     if (encoded_cipher_len > sizeof(encoded_cipher))
     {
-        char s[] = "Enclave: encoded_cipher_len greater than (or equal to) buffer length";
+        char s[] = "Enclave: encoded_cipher_len greater than buffer length";
         LOG_ERROR("%s", s);
         throw std::runtime_error(s);
     }
@@ -98,6 +98,12 @@ void get_public_state(
     sgx_cmac_128bit_tag_t cmac = {0};
 
     ocall_get_state(key, val, max_val_len, val_len, (sgx_cmac_128bit_tag_t*)cmac, ctx->u_shim_ctx);
+    if (*val_len > max_val_len)
+    {
+        char s[] = "Enclave: val_len greater than max_val_len";
+        LOG_ERROR("%s", s);
+        throw std::runtime_error(s);
+    }
 
     LOG_DEBUG("Enclave: got state for key=%s len=%d val='%s'", key, *val_len,
         (*val_len > 0 ? (std::string((const char*)val, *val_len)).c_str() : ""));
@@ -200,11 +206,17 @@ void get_public_state_by_partial_composite_key(
     const char* comp_key, std::map<std::string, std::string>& values, shim_ctx_ptr_t ctx)
 {
     uint8_t json[262144];  // 128k needed for 1000 bids
-    uint32_t len;
+    uint32_t len = 0;
 
     sgx_cmac_128bit_tag_t cmac = {0};
     ocall_get_state_by_partial_composite_key(
         comp_key, json, sizeof(json), &len, (sgx_cmac_128bit_tag_t*)cmac, ctx->u_shim_ctx);
+    if (len > sizeof(json))
+    {
+        char s[] = "Enclave: len greater than json buffer size";
+        LOG_ERROR("%s", s);
+        throw std::runtime_error(s);
+    }
 
     unmarshal_values(values, (const char*)json, len);
 
