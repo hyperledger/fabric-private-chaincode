@@ -13,8 +13,8 @@ SPDX-License-Identifier: Apache-2.0
       <v-toolbar-items>
         <SubmitTransaction />
         <CreateAuctionForm v-on:error="onError" v-on:success="onSuccess" />
+        <v-btn dark text @click="onClickStartNextRound">Start Round</v-btn>
         <v-btn dark text @click="onClickEndRound">End Round</v-btn>
-        <v-btn dark text @click="onClickStartNextRound">Start Next Round</v-btn>
       </v-toolbar-items>
     </v-toolbar>
 
