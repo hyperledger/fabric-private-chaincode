@@ -10,8 +10,8 @@ DOCKER_IMAGE = auction_mock_backend
 APP_SRC = ${PWD}
 
 run-go:
-	$(GO) run .
+	env LD_LIBRARY_PATH=../../../../ecc_enclave/_build/lib:${LD_LIBRARY_PATH} $(GO) run .
 
 run-fpc:
 	$(GO) build -tags fpc
-	./mock --debug
+	env LD_LIBRARY_PATH=../../../../ecc_enclave/_build/lib:${LD_LIBRARY_PATH} ./mock --debug
