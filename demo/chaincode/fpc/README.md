@@ -16,12 +16,26 @@ The chaincode implements a simple randomized version of the Assignment phase of 
 ## Build the code
 
 * make sure the the `FPC_PATH` environment variable is set to the root folder of the Fabric Private Chaincode project
-* run `make`
+
+### Locally
+* run `make` to build locally
+
+### Using docker
+* Build the Auction Chaincode
+```
+cd $FPC_PATH/demo/chaincode/fpc
+make docker-build
+```
+**NOTE** If you already built the `hyperledger/fabric-private-chaincode-cc-builder`
+image, it will use that image to build the chaincode. Otherwise it will build
+the [`cc-builder` image](../../../utils/cc-builder/Dockerfile) and the
+[`dev` image](../../../utils/dev/Dockerfile) before building the chaincode.
 
 ## Test the code
+**NOTE** If you used docker to build the chaincode, make sure you run the
+following using the [development docker image](../../../utils/docker/dev/Dockerfile).
 
 The auction chaincode can be conveniently developed and tested by using the [FPC Mock Server](../../client/backend/mock) as follows:
 * build the auction chaincode
 * follow the instruction in the Mock Server [Readme](../../client/backend/mock/README.md) file to build the server and make sure the server can access the compiled auction artifacts
 * run `./test.sh`
-
