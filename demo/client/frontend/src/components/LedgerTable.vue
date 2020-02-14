@@ -7,15 +7,15 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <v-card>
     <v-card-text>
-      <v-alert prominent type="warning" class="mt-4">
-        <div>
-          Warning! This view can manipulate the peer's local ledger state.
-        </div>
-        <div>
-          Any actions performed here may result in invalid chaincode execution
-          results.
-        </div>
-      </v-alert>
+      <!--      <v-alert prominent type="warning" class="mt-4">-->
+      <!--        <div>-->
+      <!--          Warning! This view can manipulate the peer's local ledger state.-->
+      <!--        </div>-->
+      <!--        <div>-->
+      <!--          Any actions performed here may result in invalid chaincode execution-->
+      <!--          results.-->
+      <!--        </div>-->
+      <!--      </v-alert>-->
 
       <v-data-table
         :headers="headers"
