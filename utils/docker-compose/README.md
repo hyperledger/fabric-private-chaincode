@@ -24,7 +24,20 @@ is used. Otherwise it will use `core.yaml` and the regular peer image.
 `$PEER_CMD` must also be set to the location of binary or script that will start
  the peer.  **Docker version 17.06.2-ce or higher is needed**
 
-## Steps
+## Starting the network
+
+### Quick start
+   The quickest way to get up and running is to simply execute
+   ```
+   scripts/start.sh
+   ```
+   This will create all necessary installation artifacts and start the
+   network. For more information in the steps involved, continue
+   reading the following section. Otherwise, you can skip to the
+   Section on [Chaincode Installation](#deploying-your-fpc-chaincode).
+
+
+### Detailed Steps
 1. Build the peer image in `utils/docker/peer` directory which is defined by the
    peer [Dockerfile](../docker/peer/Dockerfile). This step
    assumes you have already built the [fabric-private-chaincode base image](../docker/base/Dockerfile).
@@ -91,10 +104,13 @@ is used. Otherwise it will use `core.yaml` and the regular peer image.
    ```
    scripts/start.sh
    ```
-   **Note** that the script returns to you an export statements with environment variables
-   which enable you to easily run `docker-compose` commands such as `ps`, `top`, `logs`
-   and alike. Just copy/paste the export statement into your shell and you can get,
-   e.g., the container status with `${DOCKER_COMPOSE} ps`.
+   **Note**
+   - if some of steps 1 to 3 were omitted before running start.sh, the
+     script will perform the missing steps in the default configuration
+   - the script returns to you an export statements with environment variables
+     which enable you to easily run `docker-compose` commands such as `ps`, `top`, `logs`
+     and alike. Just copy/paste the export statement into your shell and you can get,
+     e.g., the container status with `${DOCKER_COMPOSE} ps`.
 
 ## Deploying your FPC Chaincode
 The [examples](../../examples) and [demo](../../demo) directories has been

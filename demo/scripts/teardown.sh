@@ -46,22 +46,22 @@ DEMO_DOCKER_COMPOSE=${DEMO_SCRIPT_DIR}/../docker-compose.yml
 SCRIPT_DIR=${DEMO_SCRIPT_DIR}/../../utils/docker-compose/scripts
 . ${SCRIPT_DIR}/lib/common.sh
 
-
-COMPOSE_IGNORE_ORPHANS=true docker-compose -f ${DEMO_DOCKER_COMPOSE} kill && COMPOSE_IGNORE_ORPHANS=true docker-compose -f ${DEMO_DOCKER_COMPOSE} down
+if $CLEAN_SLATE; then
+	DOWN_OPT="--rmi all"
+else
+	DOWN_OPT=""
+fi
+COMPOSE_IGNORE_ORPHANS=true docker-compose -f ${DEMO_DOCKER_COMPOSE} kill && COMPOSE_IGNORE_ORPHANS=true docker-compose -f ${DEMO_DOCKER_COMPOSE} down ${DOWN_OPT}
 
 if $CLEAN_SLATE; then
     "${SCRIPT_DIR}/teardown.sh" --clean-slate
 
     image=$(go run ${DEMO_SCRIPT_DIR}/../../utils/fabric/get-fabric-container-name.go --cc-name mockcc --peer-id peer0.org1.example.com --net-id dev_test --cc-version 1.0)
-    if [ ! -z "${image}" ]; then
-        docker rmi "${image}"
-    fi
+    docker inspect $image > /dev/null 2>&1 && docker rmi "${image}" || echo "No mockcc images available to remove"
 
     image=$(go run ${DEMO_SCRIPT_DIR}/../../utils/fabric/get-fabric-container-name.go --cc-name ecc_auctioncc --peer-id peer0.org1.example.com --net-id dev_test --cc-version 1.0)
-    if [ ! -z "${image}" ]; then
-        docker rmi "${image}"
-    fi
-    exit
+    docker inspect $image > /dev/null 2>&1 && docker rmi "${image}" || echo "No auctioncc images available to remove"
 fi
+
 
 "${SCRIPT_DIR}/teardown.sh"
