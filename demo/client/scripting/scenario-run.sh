@@ -91,7 +91,7 @@ fi
 
 # (optional) which also sets up the whole fabric network
 if ${bootstrap}; then
-    $START_CMD || die "could not bring up fpc network"
+    $START_CMD --build-cc || die "could not bring up fpc network"
     sleep 10 # give some time for the client infrastructure to start ...
 fi
 
