@@ -58,6 +58,14 @@ const actions = {
       );
   },
 
+  UPDATE_STATUS({ commit }, auction_id) {
+    auction_id = { auctionId: auction_id };
+    return auction
+      .getAuctionStatus(auction_id)
+      .then(resp => helpers.checkStatus(resp.data))
+      .then(auctionStatus => commit("SET_STATUS", auctionStatus));
+  },
+
   END_ROUND({ commit }, auction_id) {
     auction_id = { auctionId: auction_id };
     return auction

@@ -251,6 +251,7 @@ export default {
   computed: {
     ...mapState({
       auction: state => state.auction,
+      auctionState: state => state.auction.state,
       isAuctioneer: state => state.auth.role === "auction.auctioneer",
       isOpen: state => state.auction.roundActive
     }),
@@ -330,6 +331,16 @@ export default {
         );
         return container;
       });
+    }
+  },
+
+  watch: {
+    // whenever question changes, this function will run
+    // eslint-disable-next-line no-unused-vars
+    auctionState: function(newState, oldState) {
+      if (newState === "done") {
+        this.fetchAssignmetresults(1).catch(err => console.log(err));
+      }
     }
   },
 

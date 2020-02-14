@@ -26,6 +26,7 @@ export default {
 
   methods: {
     ...mapActions({
+      updateAuction: "auction/UPDATE_STATUS",
       fetchState: "ledger/fetchState",
       newTransactionEvent: "ledger/newTransactionEvent"
     })
@@ -48,6 +49,7 @@ export default {
       } else {
         that.newTransactionEvent(event);
         that.fetchState();
+        that.updateAuction(1);
       }
     });
 
