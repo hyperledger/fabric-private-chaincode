@@ -8,6 +8,19 @@ export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && p
 
 . ${SCRIPT_DIR}/lib/common.sh
 
+# test pre-conditions and try to remediate
+#
+# - existances of docker binaries
+#   as docker(-compose) will download images, we care only about binaries
+#   but download only if we do not have already executables installed and/or
+#   in path. We also assume that if you have cryptogen in path, you probably
+#   have the others needed, e.g., configtxgen, as well ...
+FABRIC_BINARY_PATH="${FPC_PATH}/utils/docker-compose/bin"
+if [ ! -d "${FABRIC_BINARY_PATH}" ] && [ -z "$(which cryptogen)" ]; then
+    echo "Fabirc binaries not found in '${FABRIC_BINARY_PATH}' or in \$PATH, try to download them ..."
+    "${FPC_PATH}/utils/docker-compose/scripts/bootstrap.sh" -d
+fi
+
 # remove previous crypto material and config transactions
 rm -fr ${FABRIC_CFG_PATH}/config/*
 mkdir -p ${FABRIC_CFG_PATH}/config

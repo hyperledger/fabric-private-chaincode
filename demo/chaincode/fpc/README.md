@@ -15,7 +15,7 @@ The chaincode implements a simple randomized version of the Assignment phase of 
 
 ## Build the code
 
-* make sure the the `FPC_PATH` environment variable is set to the root folder of the Fabric Private Chaincode project
+* below assumes you have set the `FPC_PATH` environment variable to the root folder of the Fabric Private Chaincode project
 
 ### Locally
 * run `make` to build locally

@@ -27,32 +27,69 @@ ifneq ($(SGX_DEVICE_PATH),)
 	DOCKER_DEV_RUN_OPTS += -v $(PWD)/../../config/ias/:$(DOKER_FPCPATH)/config/ias/ -v $(SGX_PSW_SOCKET):$(SGX_PSW_SOCKET) --device $(SGX_DEVICE_PATH)
 endif
 
-.PHONY: base ccenv dev peer
+.PHONY: base ccenv dev peer cc-builder
 
+# - overall targets
+# ------------------
 build: base ccenv cc-builder
 
+run: dev
+	$(DOCKER) run $(DOCKER_DEV_RUN_OPTS) -it $(FPC_DOCKER_NAMESPACE)-dev
+
+clobber:
+	# first clean-up dangling images as that might prevent some of the later cleans
+	docker system prune --force
+	# then clean-up docker-compose network and demo related artifacts
+	(cd ../docker-compose; ${MAKE} clobber)
+	# delete locally created docker images and left-over peer artifacts
+	for imgs in \
+		dev-* \
+		dev_test-* \
+	        ${FPC_PEER_DOCKER_NAMESPACE} \
+		$(FPC_DOCKER_NAMESPACE)-dev \
+		$(FPC_DOCKER_NAMESPACE)-ccenv \
+		$(FPC_DOCKER_NAMESPACE)-cc-builder \
+		$(FPC_DOCKER_NAMESPACE)-base \
+	; do \
+		IMAGES=$$(${DOCKER} images $${imgs} -q); \
+		if [ ! -z "$${IMAGES}" ]; then ${DOCKER} rmi -f $${IMAGES} || exit 1; fi \
+	done
+
+
+# - building individual docker images
+# ------------------------------------------------------
+# Note:
+# - docker images are not necessarily rebuild if they exist but are outdated.
+#   To force rebuild you have two options
+#   - do a 'make clobber' first. This ensures you will have the uptodate images
+#     but is a broad and slow brush
+#   - to just fore rebuilding an image, call `make` with FORCE_REBUILD defined
+DOCKER_BUILD_OPTS ?=
+ifdef FORCE_REBUILD
+	DOCKER_BUILD_OPTS += --no-cache
+endif
+
+
 base:
-	$(DOCKER) build -t $(FPC_DOCKER_NAMESPACE)-base base
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_NAMESPACE)-base base
 
 ccenv: base
-	$(DOCKER) build -t $(FPC_DOCKER_NAMESPACE)-ccenv ccenv
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_NAMESPACE)-ccenv ccenv
 
 # Note: for overall consistency reasons we want the FPC code from the current repo
 # as this will rebuild each time and take a while, we don't add a dependency
 # to the build target above ...
 peer: base
 	(cd ${TOP}; \
-         $(DOCKER) build -t ${FPC_PEER_DOCKER_NAMESPACE}\
+         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t ${FPC_PEER_DOCKER_NAMESPACE}\
          -f utils/docker/peer/Dockerfile\
          --build-arg FPC_REPO_URL=file:///tmp/build-src/.git\
          --build-arg FPC_REPO_BRANCH=$$(git rev-parse --abbrev-ref HEAD)\
          . )
 
 dev: base
-	$(DOCKER) build -t $(FPC_DOCKER_NAMESPACE)-dev $(DOCKER_DEV_BUILD_OPTS) dev
-
-run: dev
-	$(DOCKER) run $(DOCKER_DEV_RUN_OPTS) -it $(FPC_DOCKER_NAMESPACE)-dev
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_NAMESPACE)-dev $(DOCKER_DEV_BUILD_OPTS) dev
 
 cc-builder: dev
-	$(DOCKER) build -t $(FPC_DOCKER_NAMESPACE)-cc-builder cc-builder
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_NAMESPACE)-cc-builder cc-builder
+

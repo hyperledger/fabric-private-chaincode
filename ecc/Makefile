@@ -59,8 +59,19 @@ clean: docker-clean
 	$(GO) clean
 	rm -rf ecc enclave/ecc-enclave-lib enclave/ecc-enclave-include
 
+# Note:
+# - docker images are not necessarily rebuild if they exist but are outdated.
+#   To force rebuild you have two options
+#   - do a 'make clobber' first. This ensures you will have the uptodate images
+#     but is a broad and slow brush
+#   - to just fore rebuilding an image, call `make` with FORCE_REBUILD defined
+DOCKER_BUILD_OPTS ?=
+ifdef FORCE_REBUILD
+	DOCKER_BUILD_OPTS += --no-cache
+endif
+
 docker-boilerplate-ecc: ecc
-	$(DOCKER) build -t $(DOCKER_BOILERPLATE_ECC_IMAGE) -f Dockerfile.boilerplate-ecc ..
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_BOILERPLATE_ECC_IMAGE) -f Dockerfile.boilerplate-ecc ..
 
 docker-fpc-app: docker-boilerplate-ecc
 	if [ -z "$(DOCKER_IMAGE)" ]; then\
@@ -68,7 +79,7 @@ docker-fpc-app: docker-boilerplate-ecc
 		exit 1;\
 	fi
 	echo "\033[1;33mWARNING: overriding $(DOCKER_IMAGE) docker image\033[0m"
-	$(DOCKER) build -t $(DOCKER_IMAGE) -f Dockerfile.fpc-app --build-arg enclave_so_path=$(DOCKER_ENCLAVE_SO_PATH) ..
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_IMAGE) -f Dockerfile.fpc-app --build-arg enclave_so_path=$(DOCKER_ENCLAVE_SO_PATH) ..
 
 docker-run:
 	$(DOCKER) run \
@@ -90,3 +101,5 @@ docker-stop:
 docker-clean: docker-stop
 	-if [ ! -z "$(DOCKER_IMAGE)" ]; then docker rmi -f $(DOCKER_IMAGE); fi
 	-if [ ! -z "$(INSTALLED_DOCKER_BOILERPLATE_ECC_IMAGE)" ]; then echo "Remove boilerplate image"; docker rmi $(INSTALLED_DOCKER_BOILERPLATE_ECC_IMAGE); fi
+
+clobber: docker-clean

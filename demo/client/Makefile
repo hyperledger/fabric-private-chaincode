@@ -7,6 +7,6 @@ include $(TOP)/build.mk
 
 SUB_DIRS = scripting frontend backend
 
-build test clean :
+build test clean clobber:
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)
 
