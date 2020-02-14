@@ -48,11 +48,19 @@ submit Auctioneer1 endRound
 wait "End Round 4 - Clock Phase Complete  (Hit any key to continue)"
 
 # assignment rounds ...
-submit Auctioneer1 startNextRound
 # bidding not yet implemented, add here once done and
-# uncomment below endRound (Note: currently startNextRound in assignment
+# uncomment below startNextRound and endRound (Note: last endRound in clock
 # phase immediately assigns (randomly) the slots and terminates the phase)
+
+# submit Auctioneer1 startNextRound
 # submit Auctioneer1 endRound
 
-yell "Assignment Phase Complete, Auction closed"
+yell "Assignment Phase Complete"
+
+say "Publish results on the ledger"
+
+submit Auctioneer1 publishAssignmentResults
+
+yell "Auction closed"
+
 # auction is closed ...

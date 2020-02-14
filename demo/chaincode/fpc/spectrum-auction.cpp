@@ -176,17 +176,6 @@ AUCTION_API_PROTOTYPE(ClockAuction::SpectrumAuction::startNextRound)
 
     dynamicAuctionState_.startRound(staticAuctionState_);
 
-    if (dynamicAuctionState_.isStateAssignmentPhase())
-    {
-        // *********
-        // IMPORTANT: we shortcut the assignment phase and terminate it immediately with a random
-        // assignment
-        // *********
-        LOG_INFO("Assignment phase: random assignment and immediate termination");
-        dynamicAuctionState_.endRound();
-        evaluateAssignmentRound();
-    }
-
     storeAuctionState();
 
     er.set(EC_SUCCESS, "");
@@ -217,6 +206,23 @@ AUCTION_API_PROTOTYPE(ClockAuction::SpectrumAuction::endRound)
     evaluateClockRound();
     FAST_FAIL_CHECK_EX(
         er, &dynamicAuctionState_.er_, EC_INVALID_INPUT, !dynamicAuctionState_.er_.isSuccess());
+
+    if (dynamicAuctionState_.isStateAssignmentPhase())
+    {
+        // *********
+        // IMPORTANT: we short-circuit the assignment phase, by starting it immediately with
+        // the end-round invocation (though only when the clock phase terminates)
+        // *********
+        LOG_INFO(
+            "Assignment Phase short-circuit: start immediately, assign randomly, terminate, "
+            "evaluate");
+        dynamicAuctionState_.startRound(staticAuctionState_);
+        dynamicAuctionState_.endRound();
+        evaluateAssignmentRound();
+
+        FAST_FAIL_CHECK(er, EC_EVALUATION_ERROR, !dynamicAuctionState_.isStateClosedPhase());
+        LOG_INFO("Assignment phase complete --> Auction closed");
+    }
 
     storeAuctionState();
 
@@ -377,6 +383,41 @@ AUCTION_API_PROTOTYPE(ClockAuction::SpectrumAuction::getAssignmentResults)
     ClockAuction::SpectrumAuctionMessage msg;
     msg.toGetAssignmentResultsJson(
         0, "Get assignment results", staticAuctionState_, dynamicAuctionState_);
+    outputString = msg.getJsonString();
+    return true;
+}
+
+AUCTION_API_PROTOTYPE(ClockAuction::SpectrumAuction::publishAssignmentResults)
+{
+    // parse and validate input string
+    ClockAuction::SpectrumAuctionMessage inMsg(inputString);
+    FAST_FAIL_CHECK(
+        er, EC_INVALID_INPUT, !inMsg.fromPublishAssignmentResultsJson(auctionIdCounter_));
+    FAST_FAIL_CHECK_EX(er, &er_, EC_INVALID_INPUT, !loadAuctionState());
+
+    FAST_FAIL_CHECK(er, EC_INVALID_INPUT, !dynamicAuctionState_.isStateClosedPhase());
+
+    // no authentication, anybody can execute
+
+    // all check passed, return details
+
+    {
+        // create string of public results
+        std::string publicResultsString;
+        JSON_Object* r = ClockAuction::JsonUtils::openJsonObject(NULL);
+        dynamicAuctionState_.toAssignmentResultsJsonObject(r, staticAuctionState_);
+        ClockAuction::JsonUtils::closeJsonObject(r, &publicResultsString);
+
+        // publish results on the ledger publicly (no encryption)
+        std::string publicResultsKeyString(
+            "Auction." + std::to_string(auctionIdCounter_) + ".publicResults");
+        auctionStorage_.ledgerPublicPutString(publicResultsKeyString, publicResultsString);
+        LOG_DEBUG("Published Results: %s", publicResultsString.c_str());
+    }
+
+    er.set(EC_SUCCESS, "");
+    ClockAuction::SpectrumAuctionMessage msg;
+    msg.toPublishAssignmentResultsJson(0, "Publish assignment results");
     outputString = msg.getJsonString();
     return true;
 }
