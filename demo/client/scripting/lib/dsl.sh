@@ -27,13 +27,14 @@ CLI="${DEMO_CLIENT_SCRIPTS_DIR}/cli"
 # - "submit" <user> <action> [<expected return code, by default 0>]
 # - "submit_manual" <user> <action>
 # - "wait" <message> [<variable-for-user-input>]
+# - "delay" <seconds> [<randomize-between-0-and-first-arg-if-provided>]
 # - "say" "some text"
 # - "yell" "some important text"
 
 # variables which influence the behaviour
-dry_run=0		# never submit, just echo action
-non_interactive=0	# always submit action, even submit_manual
-
+dry_run=false		# never submit, just echo action
+non_interactive=false	# always submit action, even submit_manual
+skip_delay=false		# ignore any delay verbs if set to one
 
 # - state
 typeset -i round=0
@@ -58,11 +59,11 @@ submit() {
     action="$2"
     expected_rc=$3
 
-    if [ ${dry_run} -eq 1 ]; then
+    if ${dry_run}; then
 	say "dry-run mode: simulation action for submit '${user}' '${action}'"
-	submit_raw 0 0 "${user}" "${action}" ${expected_rc}
+	submit_raw false false "${user}" "${action}" ${expected_rc}
     else
-	submit_raw 1 0 "${user}" "${action}" ${expected_rc}
+	submit_raw true false "${user}" "${action}" ${expected_rc}
     fi
 }
 
@@ -70,18 +71,18 @@ submit_manual() {
     user="$1"
     action="$2"
 
-    if [ ${non_interactive} -eq 1 ]; then
+    if ${non_interactive}; then
 	say "non-interactive mode: simulation action for submit '${user}' '${action}'"
-	submit_raw 1 0 "${user}" "${action}" 
+	submit_raw true false "${user}" "${action}" 
     else
 	yell "create following request manually in the UI" # note, submit prints action & user, so no need to repeat here
-	submit_raw 0 1 "${user}" "${action}" 
+	submit_raw false true "${user}" "${action}" 
     fi
 }
 
 submit_raw() {
-    do_it="$1"
-    wait="$2"
+    do_it=$1
+    do_wait=$2
     user="$3"
     action="$4"
     expected_rc=$5
@@ -129,7 +130,7 @@ submit_raw() {
     fi
 
     # execute request
-    if [ ${do_it} -eq 1 ]; then
+    if ${do_it}; then
 	say "user '$user' performs '$action'$round_text${auction_text}"
 	result=$(${CLI} --user "${user}" --request "${action}" ${round_opt} ${auction_opt} ${scenario_opt1} "${scenario_opt2}") || die "failed to run request '${action}' as user '${user}'${round_text}${auction_text} (rc=$? /result='${result}')"
 
@@ -145,7 +146,7 @@ submit_raw() {
 	say "user '$user' would perform '$action'$round_text${auction_text}"
 	${CLI} --dry-run --user "${user}" --request "${action}" ${round_opt} ${auction_opt} ${scenario_opt1} "${scenario_opt2}" || die "failed to run dry-run request '${action}' as user '${user}'${round_text}${auction_text} (rc=$? /result='${result}')"
 
-	if [ ${wait} -eq 1 ]; then
+	if ${do_wait}; then
 	    wait "(Hit any key to continue)"
 	fi
     fi
@@ -157,8 +158,31 @@ wait() {
     varName="$2"
 
     yell "${msg}"
-    if [ ${non_interactive} -eq 0 ]; then
+    if ! ${non_interactive}; then
 	eval read $varName
     fi
 }
 
+delay() {
+    seconds="$1"
+    if [ -z "$2" ]; then
+	doRandomized=false
+    else
+	doRandomized=true
+    fi
+
+    if ${doRandomized}; then
+	delaySeconds=$(echo "scale=2; ${RANDOM} * ${seconds} / 32767" | bc)
+	randomizedTxt="(randomized) "
+    else
+	delaySeconds=${seconds}
+	randomizedTxt=""
+    fi
+
+    if ${skip_delay}; then
+	say "skipping delay for ${randomizedTxt}${delaySeconds} seconds"
+    else
+	say "delaying for ${randomizedTxt}${delaySeconds} seconds"
+	sleep ${delaySeconds}
+    fi
+}
