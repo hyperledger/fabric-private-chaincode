@@ -53,7 +53,7 @@ export \\
 EOF
 
 ${DOCKER_COMPOSE} down
-${DOCKER_COMPOSE} up -d orderer.example.com peer0.org1.example.com ca.example.com
+${DOCKER_COMPOSE} up -d
 ${DOCKER_COMPOSE} ps
 
 # wait for Hyperledger Fabric to start

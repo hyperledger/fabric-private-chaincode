@@ -34,6 +34,7 @@ if [ "$?" -ne 0 ]; then
 fi
 
 mv ${FABRIC_CFG_PATH}/crypto-config/peerOrganizations/org1.example.com/ca/*_sk ${FABRIC_CFG_PATH}/crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com_sk
+mv ${FABRIC_CFG_PATH}/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/*_sk ${FABRIC_CFG_PATH}/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/admin_sk
 
 #generate channel configuration transaction
 configtxgen -profile OneOrgChannel -outputCreateChannelTx ${FABRIC_CFG_PATH}/config/channel.tx -channelID ${CHANNEL_NAME}
