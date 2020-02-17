@@ -134,6 +134,10 @@ SPDX-License-Identifier: Apache-2.0
                   {{ props.item.channels.length }}
                 </template>
 
+                <template v-slot:item.demand="props">
+                  {{ props.item.demand || 0 }}
+                </template>
+
                 <template v-slot:item.clockPrice="props">
                   $ {{ props.item.clockPrice }}
                 </template>
@@ -144,7 +148,7 @@ SPDX-License-Identifier: Apache-2.0
                     large
                     @save="save"
                   >
-                    <div>{{ props.item.price }}</div>
+                    <div>$ {{ props.item.price || 0 }}</div>
                     <template v-slot:input>
                       <div class="mt-4 title">Update bid price</div>
                     </template>
