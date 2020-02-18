@@ -19,6 +19,11 @@ export DOCKER_COMPOSE_OPTS=${DOCKER_COMPOSE_OPTS:=}
 # don't rewrite paths for Windows Git Bash users
 export MSYS_NO_PATHCONV=1
 
+# defaults for services used
+export USE_FPC=${USE_FPC:=true} 
+export USE_COUCHDB=${USE_COUCHDB:=false} 
+export USE_EXPLORER=${USE_EXPLORER:=false} 
+
 if [[ $USE_FPC = false ]]; then
     export FPC_CONFIG=""
     export PEER_CMD="peer"
@@ -35,4 +40,10 @@ export COMPOSE_PROJECT_NAME="fabric$(echo ${FPC_CONFIG} | sed 's/[^a-zA-Z0-9]//g
 
 export DOCKER_COMPOSE_CMD="docker-compose"
 export DOCKER_COMPOSE_OPTS="${DOCKER_COMPOSE_OPTS:+${DOCKER_COMPOSE_OPTS} }-f ${NETWORK_CONFIG}/docker-compose.yml"
+if $USE_COUCHDB; then
+	export DOCKER_COMPOSE_OPTS="${DOCKER_COMPOSE_OPTS} -f ${NETWORK_CONFIG}/docker-compose-couchdb.yml"
+fi
+if $USE_EXPLORER; then
+	export DOCKER_COMPOSE_OPTS="${DOCKER_COMPOSE_OPTS} -f ${NETWORK_CONFIG}/docker-compose-explorer.yml"
+fi
 export DOCKER_COMPOSE="${DOCKER_COMPOSE_CMD} ${DOCKER_COMPOSE_OPTS}"
