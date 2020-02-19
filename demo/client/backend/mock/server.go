@@ -129,8 +129,11 @@ func notifications(c *gin.Context) {
 }
 
 func startDemo(c *gin.Context) {
+	stub.Lock()
+	defer stub.Unlock()
+
 	// destroy enclave
-	Destroy(stub)
+	DestroyChaincode(stub)
 	notifier.Submit("restart")
 
 	// let's create a new chaincode
@@ -139,11 +142,17 @@ func startDemo(c *gin.Context) {
 }
 
 func getLedger(c *gin.Context) {
+	stub.RLock()
+	defer stub.RUnlock()
+
 	ledger := stub.Transactions
 	c.IndentedJSON(http.StatusOK, ledger)
 }
 
 func getState(c *gin.Context) {
+	stub.RLock()
+	defer stub.RUnlock()
+
 	ledgerState := stub.MockStub.State
 	c.IndentedJSON(http.StatusOK, ledgerState)
 }
@@ -155,6 +164,9 @@ func deleteStateEntry(c *gin.Context) {
 		panic(err)
 	}
 	key = string(bk)
+
+	stub.Lock()
+	defer stub.Unlock()
 
 	_ = stub.DelState(key)
 	c.String(http.StatusOK, "deleted")
@@ -172,6 +184,9 @@ func updateStateEntry(c *gin.Context) {
 	if err != nil {
 		c.String(http.StatusBadRequest, "error reading data")
 	}
+
+	stub.Lock()
+	defer stub.Unlock()
 
 	stub.MockStub.TxID = "dummyTXId"
 	defer func() { stub.MockStub.TxID = "" }()
@@ -220,6 +235,9 @@ func getDefaultAuction(c *gin.Context) {
 
 func getAuctionDetails(c *gin.Context) {
 	auctionId := c.Params.ByName("auctionId")
+
+	stub.RLock()
+	defer stub.RUnlock()
 
 	val, _ := stub.MockStub.GetState(auctionId)
 	if val == nil {
@@ -302,20 +320,26 @@ func invoke(c *gin.Context) {
 		panic("stub is nil!")
 	}
 
-	stub.MockStub.ChannelID = channelName
-	user := c.GetHeader("x-user")
-	stub.Creator = user
-
+	// prepare arguments
 	args, err := parsePayload(c)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Request Error: %s\n", err))
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
+	user := c.GetHeader("x-user")
 	logger.Debugf("%s invokes %s", user, args)
+
+	// invoke transactions
+	stub.Lock()
+	defer stub.Unlock()
+
+	stub.MockStub.ChannelID = channelName
+	stub.Creator = user
+
 	res := stub.MockInvoke("someTxID", args)
 
+	// prepare return
 	fpcResponse := createFPCResponse(res)
 	c.Data(http.StatusOK, c.ContentType(), fpcResponse)
 }
@@ -327,20 +351,27 @@ func query(c *gin.Context) {
 		panic("stub is nil!")
 	}
 
-	stub.MockStub.ChannelID = channelName
-	user := c.GetHeader("x-user")
-	stub.Creator = user
-
+	// prepare arguments
 	args, err := parsePayload(c)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Request Error: %s\n", err))
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	user := c.GetHeader("x-user")
 
 	logger.Debugf("%s queries %s", user, args)
+
+	// invoke transactions
+	stub.Lock()
+	defer stub.Unlock()
+
+	stub.MockStub.ChannelID = channelName
+	stub.Creator = user
+
 	res := stub.MockQuery("someTxID", args)
 
+	// prepare return
 	fpcResponse := createFPCResponse(res)
 	c.Data(http.StatusOK, c.ContentType(), fpcResponse)
 }
