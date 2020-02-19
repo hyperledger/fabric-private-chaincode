@@ -174,9 +174,11 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import { mapState, mapActions, mapGetters } from "vuex";
+import AuctionWinner from "./AuctionWinner";
 
 export default {
   name: "AuctionDetails",
+  components: { AuctionWinner },
 
   data: () => ({
     isLoading: true
