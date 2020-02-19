@@ -144,11 +144,11 @@ SPDX-License-Identifier: Apache-2.0
 
                 <template v-slot:item.price="props">
                   <v-edit-dialog
-                    :return-value.sync="props.item.price"
+                    :return-value.sync="props.value"
                     large
                     @save="save"
                   >
-                    <div>$ {{ props.item.price || 0 }}</div>
+                    <div :key="newPrice">{{ props.item.price }}</div>
                     <template v-slot:input>
                       <div class="mt-4 title">Update bid price</div>
                     </template>
@@ -172,11 +172,11 @@ SPDX-License-Identifier: Apache-2.0
 
                 <template v-slot:item.quantity="props">
                   <v-edit-dialog
-                    :return-value.sync="props.item.quantity"
+                    :return-value.sync="props.value"
                     large
                     @save="save"
                   >
-                    <div>{{ props.item.quantity || 0 }}</div>
+                    <div :key="newQuantity">{{ props.item.quantity || 0 }}</div>
                     <template v-slot:input>
                       <div class="mt-4 title">Update quantity</div>
                     </template>
@@ -270,6 +270,8 @@ export default {
       territories: [],
       totalCommitment: 0,
       requestedActivity: 0,
+      newQuantity: 0,
+      newPrice: 0,
       currentBid: null,
       defaultBid: {
         auctionId: "",
@@ -418,6 +420,8 @@ export default {
       this.territories.map(t => {
         this.totalCommitment += Number(t.quantity || 0) * Number(t.minPrice);
         this.requestedActivity += Number(t.quantity || 0);
+        this.newQuantity = Number(t.quantity || 0);
+        this.newPrice = Number(t.price);
       });
     },
 
