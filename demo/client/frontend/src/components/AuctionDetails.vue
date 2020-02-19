@@ -90,73 +90,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-row v-if="showResults">
         <v-col cols="12">
           <v-expand-transition>
-            <v-card v-show="showResults" dark>
-              <div class="d-flex flex-no-wrap justify-space-between">
-                <v-list-item two-line>
-                  <v-list-item-content>
-                    <div class="headline mb-8">Auction Results</div>
-                    <v-simple-table>
-                      <template v-slot:default>
-                        <thead>
-                          <tr>
-                            <th>Territory Name</th>
-                            <th></th>
-                            <th
-                              v-for="(item, index) in getBidderResults"
-                              :key="index"
-                            >
-                              {{ item.name }}
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr
-                            v-for="(territory, index) in auction.territories"
-                            :key="index"
-                          >
-                            <td>{{ territory.name }}</td>
-                            <td>
-                              <tr>
-                                <td># of Channels</td>
-                              </tr>
-                              <tr>
-                                <td>Total cost</td>
-                              </tr>
-                            </td>
-
-                            <td
-                              v-for="(item, val, index) in getBidderResults"
-                              :key="index"
-                            >
-                              <span
-                                v-for="(t_obj, index) in item.territories"
-                                :key="index"
-                              >
-                                <span
-                                  v-if="territory.name === t_obj.name"
-                                  class="justify-content-center"
-                                >
-                                  <tr>
-                                    <td style="vertical-align:middle">
-                                      {{ t_obj.channels }}
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td style="vertical-align:middle">
-                                      ${{ t_obj.cost }}
-                                    </td>
-                                  </tr>
-                                </span>
-                              </span>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </template>
-                    </v-simple-table>
-                  </v-list-item-content>
-                </v-list-item>
-              </div>
-            </v-card>
+            <AuctionWinner />
           </v-expand-transition>
         </v-col>
       </v-row>
@@ -240,11 +174,9 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import { mapState, mapActions, mapGetters } from "vuex";
-import AuctionWinner from "./AuctionWinner";
 
 export default {
   name: "AuctionDetails",
-  components: { AuctionWinner },
 
   data: () => ({
     isLoading: true
@@ -264,59 +196,7 @@ export default {
     }),
 
     showResults() {
-      return this.isAuctioneer && this.auction.state === "done";
-    },
-
-    getBidderResults: function() {
-      var displayInfo = [];
-      for (var i in this.auction.results) {
-        var bidder_dic = {};
-        for (var bidder in this.auction.bidders) {
-          if (
-            this.auction.bidders[bidder].id === this.auction.results[i].bidderId
-          ) {
-            bidder_dic.name = this.auction.bidders[bidder].displayName;
-            break;
-          }
-        }
-        var territoryList = [];
-        for (var j in this.auction.results[i].assignment) {
-          var territoryInfo = {};
-          var tmp = "";
-          for (var t in this.auction.territories) {
-            if (
-              this.auction.territories[t].id ===
-              this.auction.results[i].assignment[j].territoryId
-            ) {
-              tmp = this.auction.territories[t].name;
-              break;
-            }
-          }
-
-          // getting channel prices
-          var totalcost = 0;
-          var c = 0;
-          for (var k in this.auction.results[i].assignment[j].channels) {
-            c = c + 1;
-            totalcost =
-              totalcost +
-              this.auction.results[i].assignment[j].channels[k].price;
-            console.log("Count " + c);
-          }
-          console.log("Total cost " + totalcost);
-          var channelcount = this.auction.results[i].assignment[j].channels
-            .length; // this is the count of channels
-          territoryInfo.name = tmp;
-          territoryInfo.channels = channelcount;
-          territoryInfo.cost = totalcost;
-          territoryList.push(territoryInfo);
-        }
-        bidder_dic.territories = territoryList; // setting territory names
-
-        displayInfo.push(bidder_dic); // appending all the info for displaying in an array
-      }
-
-      return displayInfo;
+      return this.auction.state === "done";
     },
 
     // todo this move to auction state as a getter
@@ -349,14 +229,14 @@ export default {
   methods: {
     ...mapActions({
       fetchAuction: "auction/LOAD_AUCTION",
-      fetchAssignmetresults: "auction/UPDATE_RESULTS"
+      fetchAssignmetResults: "auction/UPDATE_RESULTS"
     })
   },
 
   mounted() {
     // fetch the auction state .. try 1
     this.fetchAuction(1)
-      .then(this.fetchAssignmetresults(1))
+      .then(this.fetchAssignmetResults(1))
       .catch(err => console.log(err))
       .finally(() => (this.isLoading = false));
   },
