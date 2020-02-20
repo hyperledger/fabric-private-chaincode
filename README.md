@@ -38,6 +38,9 @@ architecture. Note that the code provided in this repository is prototype code
 and not meant for production use! The main goal of this lab is to discuss and
 refine the proposed architecture involving the Hyperledger community.
 
+For up to date information about our community meeting schedule, past
+presentations, and info on how to contact us please refer to our
+[wiki page](https://wiki.hyperledger.org/display/fabric/Hyperledger+Fabric+Private+Chaincode).
 
 ## Architecture and components
 
