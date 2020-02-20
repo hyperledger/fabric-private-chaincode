@@ -198,7 +198,7 @@ export default {
     }),
 
     showResults() {
-      return this.auction.state === "done";
+      return this.auction.state === "done" && this.auction.results !== "";
     },
 
     // todo this move to auction state as a getter
@@ -223,7 +223,7 @@ export default {
     // eslint-disable-next-line no-unused-vars
     auctionState: function(newState, oldState) {
       if (newState === "done") {
-        this.fetchAssignmetresults(1).catch(err => console.log(err));
+        this.fetchAssignmetResults(1).catch(err => console.log(err));
       }
     }
   },
@@ -238,7 +238,11 @@ export default {
   mounted() {
     // fetch the auction state .. try 1
     this.fetchAuction(1)
-      .then(this.fetchAssignmetResults(1))
+      .then(() => {
+        if (this.auction.state === "done") {
+          this.fetchAssignmetResults(1);
+        }
+      })
       .catch(err => console.log(err))
       .finally(() => (this.isLoading = false));
   },

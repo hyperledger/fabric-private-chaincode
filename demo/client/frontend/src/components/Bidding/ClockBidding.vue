@@ -148,7 +148,7 @@ SPDX-License-Identifier: Apache-2.0
                     large
                     @save="save"
                   >
-                    <div :key="newPrice">{{ props.item.price }}</div>
+                    <div :key="newPrice">$ {{ props.item.price || 0 }}</div>
                     <template v-slot:input>
                       <div class="mt-4 title">Update bid price</div>
                     </template>
