@@ -11,6 +11,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/demo/client/backend/mock/api"
 
@@ -33,6 +34,7 @@ type Transaction struct {
 }
 
 type MockStubWrapper struct {
+	sync.RWMutex
 	MockStub     *shim.MockStub
 	Creator      string
 	Seq          int
@@ -46,7 +48,7 @@ func NewWrapper(name string, cc shim.Chaincode, notifier *Notifier) *MockStubWra
 	return &MockStubWrapper{MockStub: stub, Seq: 0, notifier: notifier, cc: cc}
 }
 
-func Destroy(m *MockStubWrapper) {
+func DestroyChaincode(m *MockStubWrapper) {
 	if e, ok := m.cc.(*ecc.EnclaveChaincode); ok {
 		e.Destroy()
 	}
