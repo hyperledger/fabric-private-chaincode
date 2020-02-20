@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 export default {
   name: "FPCDemo",
@@ -24,8 +24,15 @@ export default {
     };
   },
 
+  computed: {
+    ...mapState({
+      auction: state => state.auction
+    })
+  },
+
   methods: {
     ...mapActions({
+      loadAuction: "auction/LOAD_AUCTION",
       updateAuction: "auction/UPDATE_STATUS",
       fetchState: "ledger/fetchState",
       newTransactionEvent: "ledger/newTransactionEvent"
@@ -49,7 +56,12 @@ export default {
       } else {
         that.newTransactionEvent(event);
         that.fetchState();
-        that.updateAuction(1);
+
+        if (this.auction.id === "") {
+          that.loadAuction(1);
+        } else {
+          that.updateAuction(this.auction.id);
+        }
       }
     });
 
