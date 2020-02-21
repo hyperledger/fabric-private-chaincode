@@ -223,7 +223,9 @@ export default {
     // eslint-disable-next-line no-unused-vars
     auctionState: function(newState, oldState) {
       if (newState === "done") {
-        this.fetchAssignmetResults(1).catch(err => console.log(err));
+        this.fetchAssignmentResults(this.auction.id).catch(err =>
+          console.log(err)
+        );
       }
     }
   },
@@ -231,19 +233,24 @@ export default {
   methods: {
     ...mapActions({
       fetchAuction: "auction/LOAD_AUCTION",
-      fetchAssignmetResults: "auction/UPDATE_RESULTS"
+      fetchAssignmentResults: "auction/UPDATE_RESULTS"
     })
   },
 
   mounted() {
-    // fetch the auction state .. try 1
+    // fetch the auction state .. try 1 (might not exist yet, though)
     this.fetchAuction(1)
       .then(() => {
         if (this.auction.state === "done") {
-          this.fetchAssignmetResults(1);
+          this.fetchAssignmentResults(this.auction.id);
         }
       })
-      .catch(err => console.log(err))
+      .catch(err => {
+        if (err.rc != 5) {
+          // 5 = invalid param ~= no such auction yet ..
+          console.log(err);
+        }
+      })
       .finally(() => (this.isLoading = false));
   },
 

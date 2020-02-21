@@ -9,6 +9,8 @@ make
 ```
 make run
 ```
+Note: the service will run on port 5000 and expects the backend to run on http://localhost:3000/api'.
+To change the latter, edit the file `.env.development` accordingly.
 
 ### Launch docker CLI
 ```
