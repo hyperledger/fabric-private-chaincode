@@ -4,6 +4,6 @@ Thumbs.db
 db.json
 *.log
 node_modules/
-public/
+public/img/users
 .deploy*/
 src/_drafts

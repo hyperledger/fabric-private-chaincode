@@ -19,7 +19,7 @@ ifdef FORCE_REBUILD
 	DOCKER_BUILD_OPTS += --no-cache
 endif
 
-build: docker
+build: docker avatars
 
 docker:
 	# this image is usually built by docker-compose but we still add a
@@ -41,7 +41,32 @@ cli:
 		$(DOCKER_IMAGE) \
 		/bin/sh
 
+
+AVATARS = auctioneer a-telecom b-net c-mobile
+AVATAR_DIR = public/img/users
+AVATAR_FILES = $(AVATARS:%=$(AVATAR_DIR)/%.svg)
+
+avatars: $(AVATAR_DIR) $(AVATAR_FILES)
+
+$(AVATAR_DIR):
+	mkdir $@
+
+public/img/users/auctioneer.svg:
+	wget -O $@ "https://avataaars.io/?avatarStyle=Circle&topType=LongHairStraight&accessoriesType=Blank&hairColor=BrownDark&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light"
+
+public/img/users/a-telecom.svg:
+	wget -O $@ "https://avataaars.io/?avatarStyle=Circle&topType=LongHairFrida&accessoriesType=Kurt&hairColor=Red&facialHairType=BeardLight&facialHairColor=BrownDark&clotheType=GraphicShirt&clotheColor=Gray01&graphicType=Skull&eyeType=Wink&eyebrowType=RaisedExcitedNatural&mouthType=Disbelief&skinColor=Brown"
+
+public/img/users/b-net.svg:
+	wget -O $@ "https://avataaars.io/?avatarStyle=Circle&topType=ShortHairFrizzle&accessoriesType=Prescription02&hairColor=Black&facialHairType=MoustacheMagnum&facialHairColor=BrownDark&clotheType=BlazerSweater&clotheColor=Black&eyeType=Default&eyebrowType=FlatNatural&mouthType=Default&skinColor=Tanned"
+
+public/img/users/c-mobile.svg:
+	wget -O $@ "https://avataaars.io/?avatarStyle=Circle&topType=LongHairMiaWallace&accessoriesType=Sunglasses&hairColor=BlondeGolden&facialHairType=Blank&clotheType=BlazerSweater&eyeType=Surprised&eyebrowType=RaisedExcited&mouthType=Smile&skinColor=Pale"
+
+
+
 clobber:
 	IMAGE=$$(${DOCKER} images ${DOCKER_IMAGE} -q); \
 	if [ ! -z "$${IMAGE}" ]; then ${DOCKER} rmi ${IMAGE}; fi
 	# make clobber in demo/ also would take care but better safe than sorry
+	-$(RM) $(AVATAR_FILES)

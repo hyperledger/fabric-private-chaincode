@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
     <AuctionHeader />
     <BidderMenu />
     <ClockBidding v-if="isClockPhase" />
-    <AssignmentBidding v-if="isAssignPhase" />
+    <AssignmentBidding v-else-if="isAssignPhase" />
     <div v-else>
       <v-alert prominent type="warning" class="mt-4">
         No auction running
