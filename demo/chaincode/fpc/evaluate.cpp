@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <cmath>
 #include "auction-state.h"
 #include "common.h"
 #include "shim.h"  // get_random_bytes
@@ -215,8 +216,8 @@ void ClockAuction::DynamicAuctionState::processRegularRoundBids(
             // compute price point
             double minPrice = postedPrice_[clockRound_ - 1][eBid.territoryIndex];
             double clockPrice = clockPrice_[clockRound_][eBid.territoryIndex];
-            double pp = (eBid.demand.price_ - minPrice) / (clockPrice - minPrice);
-            eBid.pricePoint = (uint32_t)pp;
+            double pp = (eBid.demand.price_ - minPrice) / (clockPrice - minPrice) * (100.0);
+            eBid.pricePoint = std::lround(pp);
 
             // compute random value for breaking ties
             if (get_random_bytes((uint8_t*)&eBid.randomValue, sizeof(eBid.randomValue)) != 0)
