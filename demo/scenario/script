@@ -63,9 +63,9 @@ submit B-Net submitClockBid
 delay 2 randomized
 submit C-Mobile submitClockBid
 delay 2 randomized
-submit Auctioneer1 endRound
+submit_manual Auctioneer1 endRound
 
-wait "End Round 4 - Clock Phase Complete  (Hit any key to continue)"
+say "End Round 4 - Clock Phase Complete"
 
 # assignment rounds ...
 # bidding not yet implemented, add here once done and
