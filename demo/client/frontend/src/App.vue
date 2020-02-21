@@ -47,7 +47,9 @@ export default {
     // note that this currently works with the mock server
     // when using the gateway this listener will output an error but can be ignored; does not harm
     // TODO implement the nofications api at the gateway
-    this.evtSource = new EventSource("//localhost:3000/api/notifications");
+    this.evtSource = new EventSource(
+      process.env.VUE_APP_API_BASE_URL + "/notifications"
+    );
     this.evtSource.addEventListener("update", event => {
       if (event.data === "restart") {
         if (that.$router.currentRoute.path !== "/debug") {

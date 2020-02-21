@@ -5,6 +5,7 @@
   "scripts": {
     "serve": "vue-cli-service serve --port 5000",
     "build": "vue-cli-service build",
+    "//": "note below lint does not only flag but also fix problems. so if you get runtime errors in dev server mentioning eslint and '--fix', just do a `npm run lint` ....",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
