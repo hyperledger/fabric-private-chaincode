@@ -232,14 +232,14 @@ export default {
 
   methods: {
     ...mapActions({
-      fetchAuction: "auction/LOAD_AUCTION",
+      loadAuction: "auction/LOAD_AUCTION",
       fetchAssignmentResults: "auction/UPDATE_RESULTS"
     })
   },
 
   mounted() {
     // fetch the auction state .. try 1 (might not exist yet, though)
-    this.fetchAuction(1)
+    this.loadAuction(1)
       .then(() => {
         if (this.auction.state === "done") {
           this.fetchAssignmentResults(this.auction.id);
