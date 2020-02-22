@@ -25,6 +25,10 @@ const actions = {
 
   finish({ commit }) {
     commit("setInProgress", false);
+  },
+
+  clear: ({ commit }) => {
+    commit("setInProgress", false);
   }
 };
 
