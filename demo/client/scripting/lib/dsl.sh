@@ -12,7 +12,10 @@
 
 CLI="${DEMO_CLIENT_SCRIPTS_DIR}/cli"
 
-
+if [ ! -x ${CLI} ]; then
+    # cli does not exist, try to build it
+    make -C ${DEMO_CLIENT_SCRIPTS_DIR} cli || die "command $LCI did not exist and could not be built"
+fi
 
 
 #  Simple "DSL" to script auction scenarios

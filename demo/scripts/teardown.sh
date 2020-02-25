@@ -51,7 +51,7 @@ if $CLEAN_SLATE; then
 else
 	DOWN_OPT=""
 fi
-COMPOSE_IGNORE_ORPHANS=true docker-compose -f ${DEMO_DOCKER_COMPOSE} kill && COMPOSE_IGNORE_ORPHANS=true docker-compose -f ${DEMO_DOCKER_COMPOSE} down ${DOWN_OPT}
+COMPOSE_IGNORE_ORPHANS=true ${DOCKER_COMPOSE_CMD} -f ${DEMO_DOCKER_COMPOSE} kill && COMPOSE_IGNORE_ORPHANS=true docker-compose -f ${DEMO_DOCKER_COMPOSE} down ${DOWN_OPT}
 
 if $CLEAN_SLATE; then
     "${SCRIPT_DIR}/teardown.sh" --clean-slate

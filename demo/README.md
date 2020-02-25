@@ -45,8 +45,8 @@ FPC peer cli hides this name mapping, you will have to manually prefix the
 chaincode name in `config.json`, hence the default `ecc_auctioncc`.
 
 Both the frontend and fabric-gateway [expose ports](docker-compose.yml) and are
-accessible on the host machine. The frontend can be accessed at `localhost:5000`
-and the fabric-gateway can be accessed at `localhost:3000`.
+accessible on the host machine. The frontend can be accessed at [localhost:5000](http://localhost:5000)
+and the fabric-gateway can be accessed at [localhost:3000](http://localhost:3000).
 
 Below is the script's help text.
 
@@ -59,7 +59,9 @@ startFPCAuctionNetwork.sh [options]
    compliant auction chaincode($FPC_PATH/demo/chaincode/fpc), register auction users, and bring up
    both the fabric-gatway & frontend UI. If the fabric-gateway and frontend UI docker images have
    not previously been built it will build them, otherwise the script will reuse the images already
-   existing. The FPC chaincode will not be built unless specified by the flag --build-cc.
+   existing. The FPC chaincode will not be built unless specified by the flag --build-cc.  
+   By calling the script with both build options, you will be able to run the demo without having
+   to build the whole FPC project (e.g., by calling `make` in $FPC_PATH).
 
    options:
        --build-cc:
@@ -89,6 +91,31 @@ scripts/teardown.sh
 **NOTE** The script will run the [teardown script](../utils/docker-compose/scripts/teardown.sh)
 in the FPC Network scripts. If you run it with the `--clean-slate` flag the script
 will delete all the unused volumes and chaincode images.
+
+
+### Scripting
+
+To facilitate  demonstrations and also to help in testing, you can specify a scenario script defining the
+actions of the different parties and execute it using the command [scenario-run.sh](client/scripting/scenario-run.sh).  
+Below is the script's help text.
+```
+scenario-run.sh [--help|-h|-?] [--bootstrap|-b] [--dry-run|-d] [--non-interactive|-n] [--skip-delay|-s] [--mock-reset|-r] <script-file>
+    Run the demo scenario codified in the passed script file.
+    - If you pass option --bootstrap, it will also first bring up an FPC network
+      and tear it down at the end; otherwise it assumes you have already
+      a running setup ...
+    - option --dry-run/-d will just display all requests but not execute/submit
+      any of them
+    - option --non-interactive/-n will case _all_ requests to be submited even
+      requests from submit_manual.  This allows you to easily validate all
+      json files, even when some steps would be manual in an actual scenario
+    - option --skip-delay/-s allows you ignore all delays to speed-up demo
+    - option --mock-reset/-r will try reset the mock-server at the beginning
+      (obviously, this won't work if you run against the fabric-gateway backend;
+       to achieve the equivalent for fabric-gateway, use option --bootstrap)
+```
+
+An example of a scenario can be found in [demo/scenario](scenario).
 
 ## Manually Bring Up The Components
 

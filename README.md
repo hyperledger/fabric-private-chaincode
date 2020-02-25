@@ -110,34 +110,41 @@ your [development environment](https://hyperledger-fabric.readthedocs.io/en/rele
 
 Moreover, we assume that you are familiar with the Intel SGX SDK.
 
-### Intel SGX SDK and SSL
+### Intel SGX
 
-Fabric Private Chaincode requires the Intel [SGX SDK](https://github.com/intel/linux-sgx) and
-[SGX SSL](https://github.com/intel/intel-sgx-ssl) to build the main components of our framework and to develop and build
-your first private chaincode.     
+To run Fabric Private Chaincode in secure mode, you need an SGX-enabled
+hardware as well corresponding OS support.  However, even if you don't
+have SGX hardware available, you still can run FPC in simulation mode by
+setting `SGX_MODE=SIM` in your environment.
 
-Install the Intel SGX software stack for Linux (including the SGX driver, the SGX SDK, and the SGX Platform Software
-(PSW)) by following the official [documentation](https://github.com/intel/linux-sgx). Please make sure that you use the
-SDK version as denoted above in the list of requirements. 
-
-Moreover, if you don't have SGX hardware available you can also install the SGX SDK only and use simulation mode by
-setting `SGX_MODE=SIM` in your environment. In this case, also make sure that simulation mode is set when building
-and installing [SGX SSL](https://github.com/intel/intel-sgx-ssl#available-make-flags). Note that the simulation mode is
-for developing purpose only and does not provide any security guarantees. 
-
-Once you have installed the SGX SDK and SSL for SGX SDK please double check that ``SGX_SDK`` and ``SGX_SSL`` variables
-are set correctly in your environment. 
+Note that the simulation mode is for developing purpose only and does
+not provide any security guarantees.
 
 Notice: by default the project builds in hardware-mode SGX, ``SGX_MODE=HW`` as defined in `<absolute-project-path>/fabric-private-chaincode/config.mk` and you can
 explicitly opt for building in simulation-mode SGX, ``SGX_MODE=SIM``. In order to set non-default values for install
 location, or for building in simulation-mode SGX, you can create the file `<absolute-project-path>/fabric-private-chaincode/config.override.mk` and override the default
 values by defining the corresponding environment variable.
 
-#### Register with Intel Attestation Service (IAS) if using SGX_MODE=HW
+If you run SGX in __simulation mode only__, you can skip below
+sections and jump right away to [Setup your Development
+Environment](#setup-your-development-environment).
 
-We use Intel's Attestation Service to perform attestation with chaincode enclaves. If you run SGX in __simulation mode__
-only, you can skip this section and come back when you want setup with SGX hardware-mode.
- 
+Note that you can always come back here when you want a setup with SGX
+hardware-mode later after having tested with simulation mode.
+
+
+#### Install SGX Operation System Support
+
+Install the Intel SGX software stack for Linux (including the SGX
+driver and the SGX Platform Software (PSW)) by following the official
+[documentation](https://github.com/intel/linux-sgx).
+
+
+#### Register with Intel Attestation Service (IAS)
+
+We currently support EPID-based attestation and  use the Intel's
+Attestation Service to perform attestation with chaincode enclaves.
+
 What you need:
 
 * a Service Provider ID (SPID)
@@ -213,7 +220,7 @@ Optional: to do a clean build do the following within the container
 <docker-root>:project/src/github.com/hyperledger-labs/fabric-private-chaincode# make build
 ```
 Now you are ready to start development.  Go to the [Develop Your First Private Chaincode
-](#developing-your-first-private-chaincode) section.
+](#your-first-private-chaincode) section.
 
 ### Option 2: Setting up your system to do local development
 
@@ -242,6 +249,26 @@ Make sure that you have the following required dependencies installed:
 * Clang-format 6.x or higher
 
 * [PlantUML](http://plantuml.com/) including Graphviz (for building documentation only) 
+
+#### Intel SGX SDK and SSL
+
+Fabric Private Chaincode requires the Intel [SGX SDK](https://github.com/intel/linux-sgx) and
+[SGX SSL](https://github.com/intel/intel-sgx-ssl) to build the main components of our framework and to develop and build
+your first private chaincode.     
+
+Install the Intel SGX software stack for Linux by following the
+official [documentation](https://github.com/intel/linux-sgx). Please make sure that you use the
+SDK version as denoted above in the list of requirements. 
+
+For SGX SSL, just follow the instructions on the [corresponding
+github page](https://github.com/intel/intel-sgx-Sal). In case you are
+building for simulation mode only and do not have HW support, you
+might also want to make sure that [simulation mode is set](https://github.com/intel/intel-sgx-ssl#available-make-flags)
+when building and installing it.
+
+Once you have installed the SGX SDK and SSL for SGX SDK please double check that ``SGX_SDK`` and ``SGX_SSL`` variables
+are set correctly in your environment. 
+
 
 #### Protocol Buffers
 
@@ -330,14 +357,23 @@ Building the project requires docker. We do not recommend to run `sudo make`
 to resolve issues with mis-configured docker environments as this also changes your `$GOPATH`. Please see hints on
 [docker](#docker) installation above.
 
+The makefiles do not ensure that docker files are always rebuild to
+match the latest version of the code in the repo.  If you suspect you
+have an issue with outdated docker images, you can run `make clobber
+build` which forces a rebuild.  It also ensures that all other
+downlad, build or test artifacts are scrubbed from your repo and might
+help overcoming other problems. Be advised that that the rebuild can
+take a fair amount of time.
+
 ##### Working from behind a proxy
 
 The current code should work behind a proxy assuming
   * you have defined the corresponding environment variables (i.e.,
-  `http_proxy`, `https_proxy` and, potentially, `no_proxy`) properly
-  defined
+    `http_proxy`, `https_proxy` and, potentially, `no_proxy`) properly, and
   * docker (daemon & client) is properly set up for proxies as
-    outlined in the Docker documentation for [clients](https://docs.docker.com/network/proxy/) and the [daemon](https://docs.docker.com/config/daemon/systemd/#httphttps-proxy).
+    outlined in the Docker documentation for
+    [clients](https://docs.docker.com/network/proxy/) and the
+    [daemon](https://docs.docker.com/config/daemon/systemd/#httphttps-proxy).
 If you run Ubuntu 18.04, make sure you run docker 18.09 or later. Otherwise you will run into problems with DNS resolution inside the container.
 
 You will also require a recent version of docker-compose. In particular, the docker-compose from ubuntu 18.04
@@ -412,12 +448,14 @@ will create dummy files. In case you switch later to HW mode without
 configuring these files correctly for HW mode, this will result in
 above error.
 
-## Developing your first private chaincode
+## Developing with Fabric Private Chaincode
 
+### Your first private chaincode
 Create, build and test your first private chaincode with this [tutorial](examples/README.md).
 
 ### A Complete Application
 For an end-to-end application demonstrating the potential of FPC, check out our [Clock Auction Demo Application](demo/README.md).
+
 
 ## Documentation
 

@@ -32,7 +32,16 @@ is used. Otherwise it will use `core.yaml` and the regular peer image.
    scripts/start.sh
    ```
    This will create all necessary installation artifacts and start the
-   network. For more information in the steps involved, continue
+   network. 
+   If you set the environment variable `USE_EXPLORER` to `true`, the network will include
+   and start the [Hyperledger Explorer](https://www.hyperledger.org/projects/explorer) on 
+   [port 8090](http://localhost:8090). This will enable you to inspect the networks, 
+    e.g., processed transactions.
+   If you set the environment variable `USE_COUCHDB` to `true`, the peer will use couchdb
+   to store the local version of the ledger and you can inspect the peer's ledger state
+   on [port 5984](http://localhost:5984) (login as user `admin` with password `adminPassword`).
+
+   For more information in the steps involved, continue
    reading the following section. Otherwise, you can skip to the
    Section on [Chaincode Installation](#deploying-your-fpc-chaincode).
 
