@@ -55,16 +55,18 @@ for var in "$@"; do
     shift
 done
 
-export DEMO_SCRIPTS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-export FPC_PATH="${FPC_PATH:-${DEMO_SCRIPTS_DIR}/../..}"
-export DEMO_ROOT="${DEMO_SCRIPTS_DIR}/.."
+export DEMO_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+export DEMO_ROOT="${DEMO_SCRIPT_DIR}/.."
+DEMO_DOCKER_COMPOSE=${DEMO_SCRIPT_DIR}/../docker-compose.yml
+
+export FPC_PATH="${FPC_PATH:-${DEMO_SCRIPT_DIR}/../..}"
 
 # SCRIPT_DIR is the docker compose script dir that needs to be defined to source environment variables from the FPC Network
 export SCRIPT_DIR=${FPC_PATH}/utils/docker-compose/scripts
 . ${SCRIPT_DIR}/lib/common.sh
 
 # Cleanup any previous iterations of the demo
-"${SCRIPT_DIR}/teardown.sh"
+"${DEMO_SCRIPT_DIR}/teardown.sh"
 
 # Generate the necessary credentials and start the FPC network
 "${SCRIPT_DIR}/generate.sh"
@@ -80,7 +82,7 @@ fi
 if $BUILD_CLIENT; then
     echo ""
     echo "Building Fabric Gateway and Frontend UI"
-    COMPOSE_IGNORE_ORPHANS=true ${DOCKER_COMPOSE_CMD} -f ${DEMO_ROOT}/docker-compose.yml build
+    COMPOSE_IGNORE_ORPHANS=true ${DOCKER_COMPOSE_CMD} -f ${DEMO_DOCKER_COMPOSE} build
 fi
 
 # Start the FPC Network using utils/docker-compose scripts
@@ -88,7 +90,7 @@ echo "Starting the FPC Network"
 "${SCRIPT_DIR}/start.sh"
 
 # Install and Instantiate Auction Chaincode
-"${DEMO_SCRIPTS_DIR}/installCC.sh"
+"${DEMO_SCRIPT_DIR}/installCC.sh"
 
 # Register Users
 "${DEMO_ROOT}/client/backend/fabric-gateway/registerUsers.sh"
@@ -97,4 +99,4 @@ echo "Starting the FPC Network"
 # Since the new containers are going to use the same network as the FPC network, docker-compose
 # typically throws a warning as it sees containers using the network. To quiet the warning set
 # COMPOSE_IGNORE_ORPHANS to true.
-COMPOSE_IGNORE_ORPHANS=true ${DOCKER_COMPOSE_CMD} -f ${DEMO_ROOT}/docker-compose.yml up -d auction_client auction_frontend
+COMPOSE_IGNORE_ORPHANS=true ${DOCKER_COMPOSE_CMD} -f ${DEMO_DOCKER_COMPOSE} up -d auction_client auction_frontend

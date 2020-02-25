@@ -46,9 +46,9 @@ clobber:
 		dev-* \
 		dev_test-* \
 	        ${FPC_PEER_DOCKER_NAMESPACE} \
+		$(FPC_DOCKER_NAMESPACE)-cc-builder \
 		$(FPC_DOCKER_NAMESPACE)-dev \
 		$(FPC_DOCKER_NAMESPACE)-ccenv \
-		$(FPC_DOCKER_NAMESPACE)-cc-builder \
 		$(FPC_DOCKER_NAMESPACE)-base \
 	; do \
 		IMAGES=$$(${DOCKER} images $${imgs} -q); \
