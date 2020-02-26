@@ -5,8 +5,16 @@
 TOP = ../..
 include $(TOP)/build.mk
 
+HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
+
 FPC_DOCKER_NAMESPACE := hyperledger/fabric-private-chaincode
-FPC_PEER_DOCKER_NAMESPACE := hyperledger/fabric-peer-fpc
+FPC_DOCKER_CC_BUILDER_NAME = $(FPC_DOCKER_NAMESPACE)-cc-builder$(HW_EXTENSION)
+FPC_DOCKER_DEV_NAME = $(FPC_DOCKER_NAMESPACE)-dev
+FPC_DOCKER_CCENV_NAME = $(FPC_DOCKER_NAMESPACE)-ccenv
+FPC_DOCKER_BASE_NAME = $(FPC_DOCKER_NAMESPACE)-base
+
+FPC_DOCKER_PEER_NAMESPACE := hyperledger/fabric-peer-fpc
+FPC_DOCKER_PEER_NAME = $(FPC_DOCKER_PEER_NAMESPACE)$(HW_EXTENSION)
 
 DOCKER_DAEMON_SOCKET ?= /var/run/docker.sock
 FABRIC_PEER_DAEMON_CHAINCODE_PORT ?= 7052
@@ -45,11 +53,11 @@ clobber:
 	for imgs in \
 		dev-* \
 		dev_test-* \
-	        ${FPC_PEER_DOCKER_NAMESPACE} \
-		$(FPC_DOCKER_NAMESPACE)-cc-builder \
-		$(FPC_DOCKER_NAMESPACE)-dev \
-		$(FPC_DOCKER_NAMESPACE)-ccenv \
-		$(FPC_DOCKER_NAMESPACE)-base \
+	        ${FPC_DOCKER_PEER_NAME} \
+		$(FPC_DOCKER_CC_BUILDER_NAME) \
+		$(FPC_DOCKER_DEV_NAME) \
+		$(FPC_DOCKER_CCENV_NAME) \
+		$(FPC_DOCKER_BASE_NAME) \
 	; do \
 		IMAGES=$$(${DOCKER} images $${imgs} -q); \
 		if [ ! -z "$${IMAGES}" ]; then ${DOCKER} rmi -f $${IMAGES} || exit 1; fi \
@@ -71,25 +79,29 @@ endif
 
 
 base:
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_NAMESPACE)-base base
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_BASE_NAME) base
 
 ccenv: base
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_NAMESPACE)-ccenv ccenv
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CCENV_NAME) ccenv
 
 # Note: for overall consistency reasons we want the FPC code from the current repo
 # as this will rebuild each time and take a while, we don't add a dependency
 # to the build target above ...
 peer: base
 	(cd ${TOP}; \
-         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t ${FPC_PEER_DOCKER_NAMESPACE}\
+         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t ${FPC_DOCKER_PEER_NAME}\
          -f utils/docker/peer/Dockerfile\
          --build-arg FPC_REPO_URL=file:///tmp/build-src/.git\
          --build-arg FPC_REPO_BRANCH=$$(git rev-parse --abbrev-ref HEAD)\
+         --build-arg SGX_MODE=${SGX_MODE}\
          . )
 
 dev: base
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_NAMESPACE)-dev $(DOCKER_DEV_BUILD_OPTS) dev
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_DEV_NAME) $(DOCKER_DEV_BUILD_OPTS) dev
 
 cc-builder: dev
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_NAMESPACE)-cc-builder cc-builder
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
+		-t $(FPC_DOCKER_CC_BUILDER_NAME)\
+		--build-arg SGX_MODE=${SGX_MODE}\
+		cc-builder
 

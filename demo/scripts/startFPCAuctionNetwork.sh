@@ -11,24 +11,32 @@ set -e
 help(){
    echo "$(basename $0) [options]
 
-   This script, by default, will teardown possible previous iterations of this demo, generate new
-   crypto material for the network, start an FPC network as defined in \$FPC_PATH/utils/docker-compose,
-   install the mock golang auction chaincode(\$FPC_PATH/demo/chaincode/golang), install the FPC
-   compliant auction chaincode(\$FPC_PATH/demo/chaincode/fpc), register auction users, and bring up
-   both the fabric-gatway & frontend UI. If the fabric-gateway and frontend UI docker images have
-   not previously been built it will build them, otherwise the script will reuse the images already
-   existing. The FPC chaincode will not be built unless specified by the flag --build-cc.
+   This script, by default, will teardown possible previous iterations of this
+   demo, generate new crypto material for the network, start an FPC network as
+   defined in \$FPC_PATH/utils/docker-compose, install the mock golang auction
+   chaincode(\$FPC_PATH/demo/chaincode/golang), install the FPC compliant
+   auction chaincode(\$FPC_PATH/demo/chaincode/fpc), register auction users,
+   and bring up both the fabric-gatway & frontend UI.
+
+   If the fabric-gateway and frontend UI docker images have not previously been
+   built it will build them, otherwise the script will reuse the images already
+   existing.  You can force a rebuild, though, by specifying the flag
+   --build-client.  The FPC chaincode will not be built unless specified by the
+   flag --build-cc.  By calling the script with both build options, you will be
+   able to run the demo without having to build the whole FPC project (e.g., by
+   calling 'make' in \$FPC_PATH).
 
    options:
        --build-cc:
-           As part of bringing up the demo components, the auction cc in demo/chaincode/fpc will
-           be rebuilt using the docker-build make target.
+           As part of bringing up the demo components, the auction cc in
+           demo/chaincode/fpc will be rebuilt using the docker-build make target.
        --build-client:
-           As part of bringing up the demo components, the Fabric Gateway and the UI docker images
-           will be built or rebuilt using current source code.
+           As part of bringing up the demo components, the Fabric Gateway and
+           the UI docker images will be built or rebuilt using current source
+           code.
        --help,-h:
            Print this help screen.
-    "
+"
 }
 
 
@@ -75,7 +83,7 @@ if $BUILD_CHAINCODE; then
     echo ""
     echo "Building FPC Auction Chaincode"
     pushd ${DEMO_ROOT}/chaincode/fpc
-        make docker-build
+        make SGX_MODE=${SGX_MODE} docker-build
     popd
 fi
 

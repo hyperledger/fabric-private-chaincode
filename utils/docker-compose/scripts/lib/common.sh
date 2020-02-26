@@ -10,6 +10,10 @@ export PATH=${SCRIPT_DIR}/../bin:${PWD}:$PATH
 export FABRIC_CFG_PATH=${SCRIPT_DIR}/../network-config
 export FPC_PATH="${FPC_PATH:-${SCRIPT_DIR}/../../..}"
 
+# SGX mode: make sure it is set so we consistently use the same value also when we call make
+# Note: make might define in config*.mk its own value without necessarily it being an env variable
+export SGX_MODE=${SGX_MODE:=SIM}
+
 # Variables which we allow the caller override ..
 export FABRIC_VERSION=${FABRIC_VERSION:=1.4.3}
 export CHANNEL_NAME=${CHANNEL_NAME:=mychannel}
@@ -21,6 +25,7 @@ export MSYS_NO_PATHCONV=1
 
 # defaults for services used
 export USE_FPC=${USE_FPC:=true} 
+export USE_SGX_HW=$(if [ "${SGX_MODE}" = "HW" ]; then echo true; else echo false; fi)
 export USE_COUCHDB=${USE_COUCHDB:=false} 
 export USE_EXPLORER=${USE_EXPLORER:=false} 
 
@@ -40,10 +45,15 @@ export COMPOSE_PROJECT_NAME="fabric$(echo ${FPC_CONFIG} | sed 's/[^a-zA-Z0-9]//g
 
 export DOCKER_COMPOSE_CMD="docker-compose"
 export DOCKER_COMPOSE_OPTS="${DOCKER_COMPOSE_OPTS:+${DOCKER_COMPOSE_OPTS} }-f ${NETWORK_CONFIG}/docker-compose.yml"
-if $USE_COUCHDB; then
+if ${USE_COUCHDB}; then
 	export DOCKER_COMPOSE_OPTS="${DOCKER_COMPOSE_OPTS} -f ${NETWORK_CONFIG}/docker-compose-couchdb.yml"
 fi
-if $USE_EXPLORER; then
+if ${USE_EXPLORER}; then
 	export DOCKER_COMPOSE_OPTS="${DOCKER_COMPOSE_OPTS} -f ${NETWORK_CONFIG}/docker-compose-explorer.yml"
+fi
+if ${USE_SGX_HW}; then
+	SGX_DEVICE_PATH=$(if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx" ]; then echo "/dev/sgx"; else echo "ERROR: NO SGX DEVICE FOUND"; fi)
+	export DOCKER_COMPOSE_CMD="env SGX_DEVICE_PATH=${SGX_DEVICE_PATH} SGX_CONFIG_ROOT="${FPC_PATH}/config/ias" ${DOCKER_COMPOSE_CMD}"
+	export DOCKER_COMPOSE_OPTS="${DOCKER_COMPOSE_OPTS} -f ${NETWORK_CONFIG}/docker-compose-sgx-hw.yml"
 fi
 export DOCKER_COMPOSE="${DOCKER_COMPOSE_CMD} ${DOCKER_COMPOSE_OPTS}"

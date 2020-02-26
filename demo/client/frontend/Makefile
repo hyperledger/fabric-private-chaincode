@@ -66,7 +66,9 @@ public/img/users/c-mobile.svg:
 
 
 clobber:
+	RUNNING_IMAGE=$$(${DOCKER} ps -q --filter ancestor=${DOCKER_IMAGE}); \
+	if [ ! -z "$${RUNNING_IMAGE}" ]; then ${DOCKER} kill $${RUNNING_IMAGE}; fi
 	IMAGE=$$(${DOCKER} images ${DOCKER_IMAGE} -q); \
-	if [ ! -z "$${IMAGE}" ]; then ${DOCKER} rmi ${IMAGE}; fi
+	if [ ! -z "$${IMAGE}" ]; then ${DOCKER} rmi -f $${IMAGE}; fi
 	# make clobber in demo/ also would take care but better safe than sorry
 	-$(RM) $(AVATAR_FILES)

@@ -53,15 +53,20 @@ Below is the script's help text.
 ```
 startFPCAuctionNetwork.sh [options]
 
-   This script, by default, will teardown possible previous iterations of this demo, generate new
-   crypto material for the network, start an FPC network as defined in $FPC_PATH/utils/docker-compose,
-   install the mock golang auction chaincode($FPC_PATH/demo/chaincode/golang), install the FPC
-   compliant auction chaincode($FPC_PATH/demo/chaincode/fpc), register auction users, and bring up
-   both the fabric-gatway & frontend UI. If the fabric-gateway and frontend UI docker images have
-   not previously been built it will build them, otherwise the script will reuse the images already
-   existing. The FPC chaincode will not be built unless specified by the flag --build-cc.  
-   By calling the script with both build options, you will be able to run the demo without having
-   to build the whole FPC project (e.g., by calling `make` in $FPC_PATH).
+   This script, by default, will teardown possible previous iterations of this
+   demo, generate new crypto material for the network, start an FPC network as
+   defined in \$FPC_PATH/utils/docker-compose, install the mock golang auction
+   chaincode(\$FPC_PATH/demo/chaincode/golang), install the FPC compliant
+   auction chaincode(\$FPC_PATH/demo/chaincode/fpc), register auction users,
+   and bring up both the fabric-gatway & frontend UI.
+
+   If the fabric-gateway and frontend UI docker images have not previously been
+   built it will build them, otherwise the script will reuse the images already
+   existing.  You can force a rebuild, though, by specifying the flag
+   --build-client.  The FPC chaincode will not be built unless specified by the
+   flag --build-cc.  By calling the script with both build options, you will be
+   able to run the demo without having to build the whole FPC project (e.g., by
+   calling `make` in $FPC_PATH).
 
    options:
        --build-cc:
@@ -95,8 +100,10 @@ will delete all the unused volumes and chaincode images.
 
 ### Scripting
 
-To facilitate  demonstrations and also to help in testing, you can specify a scenario script defining the
-actions of the different parties and execute it using the command [scenario-run.sh](client/scripting/scenario-run.sh).  
+To facilitate demonstrations and also to help in testing, you can specify with a simple
+[DSL](client/scripting/lib/dsl.sh) a scenario script defining the
+actions of the different parties and execute it using the command
+[scenario-run.sh](client/scripting/scenario-run.sh).  
 Below is the script's help text.
 ```
 scenario-run.sh [--help|-h|-?] [--bootstrap|-b] [--dry-run|-d] [--non-interactive|-n] [--skip-delay|-s] [--mock-reset|-r] <script-file>
