@@ -33,6 +33,8 @@ is used. Otherwise it will use `core.yaml` and the regular peer image.
    ```
    This will create all necessary installation artifacts and start the
    network. 
+   If your environment variable `SGX_MODE` is set to hardware, the network will run
+   the peer also with SGX hardware mode enabled, otherwise it will run in SGX simulation mode.
    If you set the environment variable `USE_EXPLORER` to `true`, the network will include
    and start the [Hyperledger Explorer](https://www.hyperledger.org/projects/explorer) on 
    [port 8090](http://localhost:8090). This will enable you to inspect the networks, 

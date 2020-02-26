@@ -4,7 +4,7 @@
 #
 # docker-compose-"delta" to docker-compose.yaml to run peer with couchdb
 
-version: '2'
+version: '2.1'
 
 services:
   couchdb0.org1.example.com:

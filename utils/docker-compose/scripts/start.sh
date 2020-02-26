@@ -16,26 +16,26 @@ export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && p
 #
 if [[ ! $USE_FPC = false ]]; then
     # - existance of FPC peer
-    FPC_PEER_NAME="hyperledger/fabric-peer-fpc"
+    FPC_PEER_NAME="hyperledger/fabric-peer-fpc$(if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)" 
     if [ -z "$(docker images | grep ${FPC_PEER_NAME})" ]; then
 	echo "FPC peer container image '${FPC_PEER_NAME}' does not exist, try to build it ..."
 	# if it doesn't exist, build it: note this can take quite some time!!
 	pushd "${FPC_PATH}/utils/docker" || die "can't go to peer build location"
-	make peer || die "can't build peer"
+	make SGX_MODE=${SGX_MODE} peer || die "can't build peer"
 	popd
     fi
     # - existance of boilerplate
-    BOILERPLATE_NAME="hyperledger/fabric-private-chaincode-boilerplate-ecc"
+    BOILERPLATE_NAME="hyperledger/fabric-private-chaincode-boilerplate-ecc$(if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)"
     if [ -z "$(docker images | grep ${BOILERPLATE_NAME})" ]; then
 	echo "FPC boilerplate container image '${BOILERPLATE_NAME}' does not exist, try to build it ..."
 	pushd "${FPC_PATH}/" || die "can't go to fpc-sdk and boilerplate build location"
-	make fpc-sdk || die "can't build fpc sdk"
+	make SGX_MODE=${SGX_MODE} fpc-sdk || die "can't build fpc sdk"
 	popd
 	pushd "${FPC_PATH}/utils/docker" || die "can't go to docker build location"
-	make || die "can't build docker base images"
+	make SGX_MODE=${SGX_MODE} || die "can't build docker base images"
 	popd
 	pushd "${FPC_PATH}/ecc" || die "can't go to fpc-sdk and boilerplate build location"
-	make docker-boilerplate-ecc || die "can't build boilerplate"
+	make SGX_MODE=${SGX_MODE} docker-boilerplate-ecc || die "can't build boilerplate"
 	popd
     fi
 fi

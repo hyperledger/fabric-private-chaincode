@@ -2,7 +2,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FROM hyperledger/fabric-private-chaincode-boilerplate-ecc
+ARG BOILERPLATE_EXTENSION
+
+FROM hyperledger/fabric-private-chaincode-boilerplate-ecc${BOILERPLATE_EXTENSION}
 
 ARG enclave_so_path
 ARG CC_PATH="/usr/local/bin"

@@ -10,6 +10,7 @@ FPC_TOP_DIR="${SCRIPTDIR}/../../"
 FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 
 : ${FABRIC_CFG_PATH:=$(pwd)}
+: ${SGX_MODE:=SIM}
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
@@ -69,7 +70,7 @@ handle_chaincode_install() {
 	DOCKER_IMAGE_NAME=$(${FPC_DOCKER_NAME_CMD} --cc-name ${FPC_NAME} --cc-version ${CC_VERSION} --net-id ${NET_ID} --peer-id ${PEER_ID}) || die "could not get docker image name"
 
 	# install docker
-	try make ENCLAVE_SO_PATH=${CC_ENCLAVESOPATH} DOCKER_IMAGE=${DOCKER_IMAGE_NAME} -C ${FPC_TOP_DIR}/ecc docker-fpc-app
+	try make SGX_MODE=${SGX_MODE} ENCLAVE_SO_PATH=${CC_ENCLAVESOPATH} DOCKER_IMAGE=${DOCKER_IMAGE_NAME} -C ${FPC_TOP_DIR}/ecc docker-fpc-app
 
 	# eplace path and lang arg with dummy go chaincode
 	ARGS_EXEC=( 'chaincode' 'install' '-n' "${FPC_NAME}" '-v' "${CC_VERSION}" '-p' 'github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd' "${OTHER_ARGS[@]}" )

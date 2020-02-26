@@ -28,9 +28,21 @@ build: $(BUILD_DIR)
 clean:
 	-rm -rf $(BUILD_DIR)
 
+
+HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
+
+FPC_DOCKER_NAMESPACE := hyperledger/fabric-private-chaincode
+FPC_DOCKER_CC_BUILDER_NAME = $(FPC_DOCKER_NAMESPACE)-cc-builder$(HW_EXTENSION)
+
 docker-build: clean
-	$(DOCKER) image inspect hyperledger/fabric-private-chaincode-cc-builder > /dev/null 2>&1 || { cd $(TOP)/utils/docker && make cc-builder; }
-	$(DOCKER) run -u $$(id -u):$$(id -g) -v ${PWD}:/project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/fpc -w /project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/fpc hyperledger/fabric-private-chaincode-cc-builder sh -c 'make build'
+	$(DOCKER) image inspect $(FPC_DOCKER_CC_BUILDER_NAME) > /dev/null 2>&1 \
+		|| { cd $(TOP)/utils/docker && make cc-builder; }
+	$(DOCKER) run \
+		-u $$(id -u):$$(id -g)\
+		-v ${PWD}:/project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/fpc\
+		-w /project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/fpc\
+		$(FPC_DOCKER_CC_BUILDER_NAME)\
+		sh -c 'make build'
 
 test: build
 	./test.sh

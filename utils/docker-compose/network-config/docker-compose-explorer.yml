@@ -4,7 +4,7 @@
 # Note: this is a tweaked version of './docker-compose.yaml' in hyperledger/blockchain-explorer.git
 
 # SPDX-License-Identifier: Apache-2.0
-version: '2'
+version: '2.1'
 
 volumes:
   pgdata:

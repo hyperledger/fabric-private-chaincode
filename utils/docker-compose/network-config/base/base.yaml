@@ -16,7 +16,7 @@
 #                          `/project/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/bin/peer.sh`
 
 #
-version: '2'
+version: '2.1'
 
 services:
   peer-base:

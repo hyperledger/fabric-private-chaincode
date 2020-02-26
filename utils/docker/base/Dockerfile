@@ -47,6 +47,3 @@ ENV SGX_SDK=/opt/intel/sgxsdk
 ENV PATH=$PATH:$SGX_SDK/bin:$SGX_SDK/bin/x64
 ENV PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$SGX_SDK/pkgconfig
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SGX_SDK/sdk_libs
-
-# We set our default mode to SIM
-ENV SGX_MODE=SIM

@@ -14,7 +14,7 @@ ${GO_CMDS}: ${GO_CMDS:=.go}
 	$(GO) build $@.go
 
 test: build
-	./scenario-run.sh	--bootstrap --non-interactive ../../scenario/script
+	./scenario-run.sh --bootstrap --non-interactive ../../scenario/script
 
 clean: 
 	$(GO) $@
