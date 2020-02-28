@@ -156,6 +156,11 @@ This will open a shell inside the FPC development container, with
 environment variables like GOPATH appropriately defined and all
 dependencies like fabric built, ready to build and run FPC.
 
+Optional: to do a clean build do the following within the container
+```
+<docker-root>:project/src/github.com/hyperledger-labs/fabric-private-chaincode# make clean
+<docker-root>:project/src/github.com/hyperledger-labs/fabric-private-chaincode# make build
+```
 Now you are ready to start development.  Go to the [Develop Your First Private Chaincode
 ](#developing-your-first-private-chaincode) section.
 
