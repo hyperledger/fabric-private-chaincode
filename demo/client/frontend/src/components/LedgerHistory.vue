@@ -53,6 +53,7 @@ SPDX-License-Identifier: Apache-2.0
                   bordered
                   offset-y="18"
                   offset-x="18"
+                  :value="isLocked(item.func)"
                 >
                   <v-chip
                     class="ma-2"
@@ -146,6 +147,11 @@ export default {
   },
 
   methods: {
+    isLocked(f) {
+      const publicData = ["publishAssignmentResults"];
+      return !publicData.includes(f);
+    },
+
     ...mapActions({
       fetchUsers: "users/fetchUsers",
       fetchTransactions: "ledger/fetchTransactions"
