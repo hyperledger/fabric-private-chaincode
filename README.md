@@ -110,9 +110,64 @@ your [development environment](https://hyperledger-fabric.readthedocs.io/en/rele
 
 Moreover, we assume that you are familiar with the Intel SGX SDK.
 
+### **Initial Setup**
+
+#### 1. Intel SGX SDK and SSL
+
+Fabric Private Chaincode requires the Intel [SGX SDK](https://github.com/intel/linux-sgx) and
+[SGX SSL](https://github.com/intel/intel-sgx-ssl) to build the main components of our framework and to develop and build
+your first private chaincode.     
+
+Install the Intel SGX software stack for Linux (including the SGX driver, the SGX SDK, and the SGX Platform Software
+(PSW)) by following the official [documentation](https://github.com/intel/linux-sgx). Please make sure that you use the
+SDK version as denoted above in the list of requirements. 
+
+Moreover, if you don't have SGX hardware available you can also install the SGX SDK only and use simulation mode by
+setting `SGX_MODE=SIM` in your environment. In this case, also make sure that simulation mode is set when building
+and installing [SGX SSL](https://github.com/intel/intel-sgx-ssl#available-make-flags). Note that the simulation mode is
+for developing purpose only and does not provide any security guarantees. 
+
+Once you have installed the SGX SDK and SSL for SGX SDK please double check that ``SGX_SDK`` and ``SGX_SSL`` variables
+are set correctly in your environment. 
+
+Notice: by default the project builds in hardware-mode SGX, ``SGX_MODE=HW`` as defined in `<absolute-project-path>/fabric-private-chaincode/config.mk` and you can
+explicitly opt for building in simulation-mode SGX, ``SGX_MODE=SIM``. In order to set non-default values for install
+location, or for building in simulation-mode SGX, you can create the file `<absolute-project-path>/fabric-private-chaincode/config.override.mk` and override the default
+values by defining the corresponding environment variable.
+
+##### Register with Intel Attestation Service (IAS) if using SGX_MODE=HW
+
+We use Intel's Attestation Service to perform attestation with chaincode enclaves. If you run SGX in __simulation mode__
+only, you can skip this section and come back when you want setup with SGX hardware-mode.
+ 
+What you need:
+
+* a Service Provider ID (SPID)
+* the (primary) api-key associated with your SPID
+
+In order to use Intel's Attestation Service (IAS), you need to register
+with Intel. On the [IAS EPID registration page](https://api.portal.trustedservices.intel.com/EPID-attestation)
+you can find more details on how to register and obtain your SPID plus corresponding api-key.
+
+We currently support both `linkable` and `unlinkable` signatures for the attestation.
+The type of attestation used is selected based on the `FPC_ATTESTATION_TYPE` environment variable:
+`epid_unlinkable` for unlinkable or `epid_linkable` for linkable signatures. If you 
+do not define that environment variable, the chosen attestation method is `epid_unlinkable`.
+Note that a mismatch between your IAS credentials and the linkable setting
+will result in an (HTTP) error '400' visible in the log-files when the
+code tries to verify the attestation. (Another cause for such error '400'
+could a mismatch between provided SPID and api key as specified below).
+
+Place your ias api key and your SPID in the ``ias`` folder as follows:
+
+    echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/api_key.txt
+    echo 'YOUR_SPID' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/spid.txt
+
+### **Fabric Private Chaincode Development**
+
 There are 2 different ways to develop Fabric Private Chaincode. Using our preconfigured Docker container development environment or setting up your local system with all required software dependencies to build and develop chaincode locally. 
 
-### **Option 1: Using the Docker-based FPC Development Environment**
+### Option 1: Using the Docker-based FPC Development Environment
 
 As standard Fabric, we require docker to run chaincode.  We recommend
 to set privileges to manage docker as a non-root user. See the
@@ -126,21 +181,18 @@ First make sure your host has
 * A running Docker daemon compatible with docker provided by Ubuntu
   18.04, currently `Docker version 18.09`.  It also should use
   `/var/run/docker.sock` as socket to interact with the daemon (or you
-  will have to override in `./config.override.mk` the default
-  definition in make of `DOCKER_DAEMON_SOCKET`)
+  will have to override in `<absolute-project-path>/fabric-private-chaincode/config.override.mk` the default definition in make of `DOCKER_DAEMON_SOCKET`)
 * GNU make
 
 A few notes:
-* if your local host is SGX enabled, i.e., there is a device `/dev/sgx` or
-  `/dev/isgx` and your PSW daemon listens to `/var/run/aesmd`, then the docker image will be sgx-enabled and your settings from `./config/ias` will be used. You will have to manually set `SGX_MODE=HW` before building anything to use HW mode.
-* if you want additional apt packages in your container image, create a `./config.override.mk` file in the fabric-private-chaincode directory. In that file, define `DOCKER_DEV_IMAGE_APT_ADD__PKGS` with a
-  list of packages you want. They will then be automatically added to the docker image
-* Docker images do not persist between runs. Hence, you might
-  consider maintaining the FPC source directly on your local host and exporting it
-  as a volume mapped to `/project/src/github.com/hyperledger-labs/fabric-private-chaincode` within the docker container. To achieve this, add `DOCKER_DEV_RUN_OPTS= -v <project-path>/fabric-private-chaincode:/project/src/github.com/hyperledger-labs/fabric-private-chaincode` to your `./config.override.mk`, where <project-path> is where you have cloned the FPC project on your local machine.
 * if you run behind a proxy, you might have to configure the proxy,
   e.g., for docker (`~/.docker/config.json`).
-* Due to the way the peer's port for chaincode connection is managed,
+* if your local host is SGX enabled, i.e., there is a device `/dev/sgx` or
+  `/dev/isgx` and your PSW daemon listens to `/var/run/aesmd`, then the docker image will be sgx-enabled and your settings from `./config/ias` will be used. You will have to manually set `SGX_MODE=HW` before building anything to use HW mode.
+* if you want additional apt packages in your container image, add to the `<absolute-project-path>/fabric-private-chaincode/config.override.mk` file in the fabric-private-chaincode directory. In that file, define `DOCKER_DEV_IMAGE_APT_ADD__PKGS` with a
+  list of packages you want. They will then be automatically added to the docker image
+* docker images do not persist between runs and there are setup files that will be needed in the docker container. Therefore, map the local cloned filesystem as a volume to `/project/src/github.com/hyperledger-labs/fabric-private-chaincode` within the docker container. To achieve this, add `DOCKER_DEV_RUN_OPTS= -v <absolute-project-path>/fabric-private-chaincode:/project/src/github.com/hyperledger-labs/fabric-private-chaincode` to your `<absolute-project-path>/fabric-private-chaincode/config.override.mk`, where <absolute-project-path> is where you have cloned the FPC project on your local machine.
+* due to the way the peer's port for chaincode connection is managed,
   you will be able to run only a single FPC development container on a
   particular host.
 
@@ -164,7 +216,7 @@ Optional: to do a clean build do the following within the container
 Now you are ready to start development.  Go to the [Develop Your First Private Chaincode
 ](#developing-your-first-private-chaincode) section.
 
-### **Option 2: Setting up your system to do local development**
+### Option 2: Setting up your system to do local development
 
 #### Requirements
 
@@ -207,61 +259,9 @@ For more detailed information consult the official nanopb documentation http://g
 
 Make sure that you set `$NANOPB_PATH` as it is needed to build Fabric Private Chaincode.
 
-#### Intel SGX SDK and SSL
+#### Clone Fabric Private Chaincode
 
-Fabric Private Chaincode requires the Intel [SGX SDK](https://github.com/intel/linux-sgx) and
-[SGX SSL](https://github.com/intel/intel-sgx-ssl) to build the main components of our framework and to develop and build
-your first private chaincode.     
-
-Install the Intel SGX software stack for Linux (including the SGX driver, the SGX SDK, and the SGX Platform Software
-(PSW)) by following the official [documentation](https://github.com/intel/linux-sgx). Please make sure that you use the
-SDK version as denoted above in the list of requirements. 
-
-Moreover, if you don't have SGX hardware available you can also install the SGX SDK only and use simulation mode by
-setting `SGX_MODE=SIM` in your environment. In this case, also make sure that simulation mode is set when building
-and installing [SGX SSL](https://github.com/intel/intel-sgx-ssl#available-make-flags). Note that the simulation mode is
-for developing purpose only and does not provide any security guarantees. 
-
-Once you have installed the SGX SDK and SSL for SGX SDK please double check that ``SGX_SDK`` and ``SGX_SSL`` variables
-are set correctly in your environment. 
-
-Notice: by default the project builds in hardware-mode SGX, ``SGX_MODE=HW`` as defined in `config.mk` and you can
-explicitly opt for building in simulation-mode SGX, ``SGX_MODE=SIM``. In order to set non-default values for install
-location, or for building in simulation-mode SGX, you can create the file `config.override.mk` and override the default
-values by defining the corresponding environment variable.
-
-#### Intel Attestation Service (IAS)
-
-We use Intel's Attestation Service to perform attestation with chaincode enclaves. If you run SGX in __simulation mode__
-only, you can skip this section and come back when you want setup with SGX hardware-mode.
- 
-What you need:
-
-* a Service Provider ID (SPID)
-* the (primary) api-key associated with your SPID
-
-In order to use Intel's Attestation Service (IAS), you need to register
-with Intel. On the [IAS EPID registration page](https://api.portal.trustedservices.intel.com/EPID-attestation)
-you can find more details on how to register and obtain your SPID plus corresponding api-key.
-
-We currently support both `linkable` and `unlinkable` signatures for the attestation.
-The type of attestation used is selected based on the `FPC_ATTESTATION_TYPE` environment variable:
-`epid_unlinkable` for unlinkable or `epid_linkable` for linkable signatures. If you 
-do not define that environment variable, the chosen attestation method is `epid_unlinkable`.
-Note that a mismatch between your IAS credentials and the linkable setting
-will result in an (HTTP) error '400' visible in the log-files when the
-code tries to verify the attestation. (Another cause for such error '400'
-could a mismatch between provided SPID and api key as specified below).
-
-Place your ias api key and your SPID in the ``ias`` folder as follows:
-
-    echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/api_key.txt
-    echo 'YOUR_SPID' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/spid.txt
-
-#### Fabric Private Chaincode
-
-Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in this documentation and default
-configuration that your `$GOPATH` has a _single_ root-directoy!)
+Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in this documentation and default configuration that your `$GOPATH` has a _single_ root-directoy!)
 
     $ git clone https://github.com/hyperledger-labs/fabric-private-chaincode.git $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
 
