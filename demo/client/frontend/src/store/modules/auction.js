@@ -8,7 +8,7 @@ import axios from "axios";
 import auction from "@/api/auction";
 import helpers from "../helpers";
 
-const state = {
+const defaultsState = {
   id: "",
   name: "",
   activityRequirementPercentage: 0,
@@ -23,6 +23,8 @@ const state = {
   winner: "",
   results: ""
 };
+
+const state = defaultsState;
 
 const getters = {};
 
@@ -95,6 +97,10 @@ const actions = {
       .getAssignmentResults(auction_id)
       .then(resp => helpers.checkStatus(resp.data))
       .then(data => commit("SET_AUCTION_RESULT", data.result));
+  },
+
+  clear: ({ commit }) => {
+    commit("clearState");
   }
 };
 
@@ -131,6 +137,9 @@ const mutations = {
   },
   SET_AUCTION_RESULT: (state, auction_result) => {
     state.results = auction_result;
+  },
+  clearState: that => {
+    that.state = that.defaultState;
   }
 };
 

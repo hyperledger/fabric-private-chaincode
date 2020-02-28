@@ -93,9 +93,6 @@ export default {
         return defaultItems;
       }
 
-      if (this.isAuctionDone) {
-        items.shift(); // remove place bid from menu
-      }
       return items.concat(defaultItems);
     }
   }),

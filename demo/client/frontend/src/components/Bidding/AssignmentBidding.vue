@@ -140,7 +140,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import axios from "axios";
+// import axios from "axios";
 
 export default {
   name: "Dashboard",
@@ -207,15 +207,16 @@ export default {
     }
   },
   mounted() {
-    axios.get("http://localhost:3000/assignment").then(response => {
-      this.territories = response.data.territories;
-
-      this.territories.map(t => {
-        t.options = this.generateOptions(t.clockPrice, t.channels, t.licenses);
-      });
-
-      console.log(this.territories);
-    });
+    // TODO: below URL does not exist, so comment all the relevant
+    // code to suppress spurious errors in console.
+    // should also use process.env.VUE_APP_API_BASE_URL instead of localhost
+    // axios.get("http://localhost:3000/assignment").then(response => {
+    //   this.territories = response.data.territories;
+    //   this.territories.map(t => {
+    //     t.options = this.generateOptions(t.clockPrice, t.channels, t.licenses);
+    //   });
+    //   console.log(this.territories);
+    // });
   }
 };
 </script>

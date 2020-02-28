@@ -19,12 +19,20 @@ const actions = {
       .submitClockBid(bid)
       .then(response => helpers.checkStatus(response.data))
       .then(() => commit("pushBid", bid));
+  },
+
+  clear: ({ commit }) => {
+    commit("clearState");
   }
 };
 
 const mutations = {
   pushBid(state, payload) {
     state.submittedBids.push(payload);
+  },
+
+  clearState: that => {
+    that.submittedBids = [];
   }
 };
 
