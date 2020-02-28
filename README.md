@@ -185,8 +185,9 @@ First make sure your host has
 * GNU make
 
 A few notes:
-* if you run behind a proxy, you might have to configure the proxy,
-  e.g., for docker (`~/.docker/config.json`).
+* if you run behind a proxy, you will have to configure the proxy,
+  e.g., for docker (`~/.docker/config.json`). See
+  [Working from behind a proxy](#working-from-behind-a-proxy) below for more information.
 * if your local host is SGX enabled, i.e., there is a device `/dev/sgx` or
   `/dev/isgx` and your PSW daemon listens to `/var/run/aesmd`, then the docker image will be sgx-enabled and your settings from `./config/ias` will be used. You will have to manually set `SGX_MODE=HW` before building anything to use HW mode.
 * if you want additional apt packages in your container image, add to the `<absolute-project-path>/fabric-private-chaincode/config.override.mk` file in the fabric-private-chaincode directory. In that file, define `DOCKER_DEV_IMAGE_APT_ADD__PKGS` with a
@@ -279,7 +280,9 @@ Checkout Fabric 1.4.3 release and apply our patch using the following commands:
 Note that this patch does currently not work with the Fabric master branch, therefore make sure you use the Fabric
 v1.4.3 branch.
 
-Make sure Fabric is in your ``$GOPATH`` and you enable the plugin feature using `GO_TAGS=pluginsenabled`. Simply run"
+#### Build the entire project
+
+Make sure Fabric is in your ``$GOPATH`` and you enable the plugin feature using `GO_TAGS=pluginsenabled`. Simply run
 
     $ cd $FABRIC_PATH
     $ GO_TAGS=pluginsenabled make
@@ -289,10 +292,8 @@ just build the peer you can run the following command:
 ```
 $ GO_TAGS=pluginsenabled make peer
 ```
-Please make sure that the peer is _always_ built with GO_TAGS, otherwise our custom validation plugins will (silently!)
+Please make sure that the peer is _always_ built with GO_TAGS, otherwise our custom validation plugins will (silently!) be
 ignored by the peer, despite the settings in ``core.yaml``.
-
-#### Build the entire project
 
 Once you have setup your development environment including Intel SGX SDK and SSL, nanopb, and successfully patched and built Fabric you can build the Fabric Private Chaincode framework.  
 ```
@@ -334,10 +335,21 @@ to resolve issues with mis-configured docker environments as this also changes y
 The current code should work behind a proxy assuming
   * you have defined the corresponding environment variables (i.e.,
   `http_proxy`, `https_proxy` and, potentially, `no_proxy`) properly
-  defined, and
+  defined
   * docker (daemon & client) is properly set up for proxies as
     outlined in the Docker documentation for [clients](https://docs.docker.com/network/proxy/) and the [daemon](https://docs.docker.com/config/daemon/systemd/#httphttps-proxy).
 If you run Ubuntu 18.04, make sure you run docker 18.09 or later. Otherwise you will run into problems with DNS resolution inside the container.
+
+You will also require a recent version of docker-compose. In particular, the docker-compose from ubuntu 18.04
+(docker-compose 1.17) is _not_ recent enough to understand `~/.docker/config.js` and related proxy options.
+To upgrade, install a recent version following the instructions from [docker.com](https://docs.docker.com/compose/install/), e.g.,
+for version 1.25.4 execute
+```
+ sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+ sudo chmod +x /usr/local/bin/docker-compose
+```
+Furthermore, for docker-compose networks to work properly with proxies, the `noProxy`
+variable in your `~/.docker/config.json` should at least contain `127.0.0.1,127.0.1.1,localhost,.org1.example.com,.example.com`.
 
 Another problem you might encounter when running the integration tests 
 insofar that some '0.0.0.0' in ``integration/config/core.yaml`` used by
@@ -403,6 +415,9 @@ above error.
 ## Developing your first private chaincode
 
 Create, build and test your first private chaincode with this [tutorial](examples/README.md).
+
+### A Complete Application
+For an end-to-end application demonstrating the potential of FPC, check out our [Clock Auction Demo Application](demo/README.md).
 
 ## Documentation
 
