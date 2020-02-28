@@ -97,7 +97,6 @@ The system consists of the following components:
    ledger enclave, which crosschecks the decision before it finally commits
    the transaction to the ledger.
 
-
 ## Getting started
 
 The following steps guide you through the build phase and configuration, for
@@ -111,12 +110,60 @@ your [development environment](https://hyperledger-fabric.readthedocs.io/en/rele
 
 Moreover, we assume that you are familiar with the Intel SGX SDK.
 
-### Requirements
+There are 2 different ways to develop Fabric Private Chaincode. Using our preconfigured Docker container development environment or setting up your local system with all required software dependencies to build and develop chaincode locally. 
 
-Make sure that you have the following required dependencies installed
-(see also below [docker section](#docker) for a _pre-configured fpc developer
-docker image_ which handles the corresponding installs automatically
-for you):
+### **Option 1: Using the Docker-based FPC Development Environment**
+
+As standard Fabric, we require docker to run chaincode.  We recommend
+to set privileges to manage docker as a non-root user. See the
+official docker [documentation](https://docs.docker.com/install/linux/linux-postinstall/)
+for more details.
+
+We provide a docker image containing the FPC development environment. This will enable you to get a quick start to
+get FPC running.
+
+First make sure your host has
+* A running Docker daemon compatible with docker provided by Ubuntu
+  18.04, currently `Docker version 18.09`.  It also should use
+  `/var/run/docker.sock` as socket to interact with the daemon (or you
+  will have to override in `./config.override.mk` the default
+  definition in make of `DOCKER_DAEMON_SOCKET`)
+* GNU make
+
+A few notes:
+* if your local host is SGX enabled, i.e., there is a device `/dev/sgx` or
+  `/dev/isgx` and your PSW daemon listens to `/var/run/aesmd`, then the docker image will be sgx-enabled and your settings from `./config/ias` will be used. You will have to manually set `SGX_MODE=HW` before building anything to use HW mode.
+* if you want additional apt packages in your container image, create a `./config.override.mk` file in the fabric-private-chaincode directory. In that file, define `DOCKER_DEV_IMAGE_APT_ADD__PKGS` with a
+  list of packages you want. They will then be automatically added to the docker image
+* Docker images do not persist between runs. Hence, you might
+  consider maintaining the FPC source directly on your local host and exporting it
+  as a volume mapped to `/project/src/github.com/hyperledger-labs/fabric-private-chaincode` within the docker container. To achieve this, add `DOCKER_DEV_RUN_OPTS= -v <project-path>/fabric-private-chaincode:/project/src/github.com/hyperledger-labs/fabric-private-chaincode` to your `./config.override.mk`, where <project-path> is where you have cloned the FPC project on your local machine.
+* if you run behind a proxy, you might have to configure the proxy,
+  e.g., for docker (`~/.docker/config.json`).
+* Due to the way the peer's port for chaincode connection is managed,
+  you will be able to run only a single FPC development container on a
+  particular host.
+
+To build the docker image, run
+
+    $ cd utils/docker; make dev
+
+and then use it with
+
+    $ cd utils/docker; make run
+
+This will open a shell inside the FPC development container, with
+environment variables like GOPATH appropriately defined and all
+dependencies like fabric built, ready to build and run FPC.
+
+Now you are ready to start development.  Go to the [Develop Your First Private Chaincode
+](#developing-your-first-private-chaincode) section.
+
+### **Option 2: Setting up your system to do local development**
+
+#### Requirements
+
+Make sure that you have the following required dependencies installed:
 
 * Linux (OS) (we recommend Ubuntu 18.04, see [list](https://github.com/intel/linux-sgx#prerequisites) supported OS)
 
@@ -140,61 +187,6 @@ for you):
 
 * [PlantUML](http://plantuml.com/) including Graphviz (for building documentation only) 
 
-
-#### Docker
-
-As standard Fabric, we require docker to run chaincode.  We recommend
-to set privileges to manage docker as a non-root user. See the
-official docker [documentation](https://docs.docker.com/install/linux/linux-postinstall/)
-for more details.
-
-##### Docker-based FPC Development Environment
-
-Additionally, we also provide a docker image containing the FPC
-development environment. This will enable you to get a quick start to
-get FPC running.
-First make sure your host has
-* A running Docker daemon compatible with docker provided by Ubuntu
-  18.04, currently `Docker version 18.09`.  It also should use
-  `/var/run/docker.sock` as socket to interact with the daemon (or you
-  will have to override in `./config.override.mk` the default
-  definition in make of `DOCKER_DAEMON_SOCKET`)
-* GNU make
-
-To build the docker image, run
-
-    $ cd utils/docker; make dev
-
-and then use it with
-
-    $ cd utils/docker; make run
-
-This will open a shell inside the FPC development container, with
-environment variables like GOPATH appropriately defined and all
-dependencies like fabric built, ready to build and run FPC.
-
-A few notes:
-* if your host is SGX enabled, i.e., there is a device `/dev/sgx` or
-  `/dev/isgx` and your PSW daemon listens to `/var/run/aesmd`, then
-  the docker image will be sgx-enabled and your settings from
-  `./config/ias` will be used. You will, though, have to
-  manually set `SGX_MODE=HW` before building anything to use HW mode.
-* if you want additional apt packages in your container image, define
-  `DOCKER_DEV_IMAGE_APT_ADD__PKGS` in `./config.override.mk` with a
-  list of packages you want and they will be automatically added to
-  the docker image
-* Docker images do not persist between runs. Hence, you might also
-  consider maintaining the FPC source on your host and just export it
-  as a volume mapped to `/project/src/github.com/hyperledger-labs/fabric-private-chaincode`.
-  To achieve this, add `DOCKER_DEV_RUN_OPTS= -v ../..:/project/src/github.com/hyperledger-labs/fabric-private-chaincode`
-  to your `./config.override.mk`.
-* if you run behind a proxy, you might have to configure the proxy,
-  e.g., for docker (`~/.docker/config.json`).
-* Due to the way the peer's port for chaincode connection is managed,
-  you will be able to run only a single FPC development container on a
-  particular host.
-
-
 #### Protocol Buffers
 
 We use *nanopb*, a lightweight implementation of Protocol Buffers, inside the ledger enclave to parse blocks of 
@@ -209,7 +201,6 @@ For more detailed information consult the official nanopb documentation http://g
     $ cd generator/proto && make
 
 Make sure that you set `$NANOPB_PATH` as it is needed to build Fabric Private Chaincode.
-
 
 #### Intel SGX SDK and SSL
 
@@ -234,8 +225,7 @@ explicitly opt for building in simulation-mode SGX, ``SGX_MODE=SIM``. In order t
 location, or for building in simulation-mode SGX, you can create the file `config.override.mk` and override the default
 values by defining the corresponding environment variable.
 
-
-##### Intel Attestation Service (IAS)
+#### Intel Attestation Service (IAS)
 
 We use Intel's Attestation Service to perform attestation with chaincode enclaves. If you run SGX in __simulation mode__
 only, you can skip this section and come back when you want setup with SGX hardware-mode.
@@ -263,16 +253,14 @@ Place your ias api key and your SPID in the ``ias`` folder as follows:
     echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/api_key.txt
     echo 'YOUR_SPID' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/spid.txt
 
-
-### Fabric Private Chaincode
+#### Fabric Private Chaincode
 
 Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in this documentation and default
 configuration that your `$GOPATH` has a _single_ root-directoy!)
 
     $ git clone https://github.com/hyperledger-labs/fabric-private-chaincode.git $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
 
-
-#### Patch Fabric
+#### Patch Fabric 
 
 Next we need to patch the Fabric peer and rebuild it in order to enable Fabric Private Chaincode support. 
 
@@ -293,25 +281,22 @@ Make sure Fabric is in your ``$GOPATH`` and you enable the plugin feature using 
 
 Building Fabric may take a while and it's time to get a coffee. Also, be not surprised if unit tests fail. In order to
 just build the peer you can run the following command:
-
-    $ GO_TAGS=pluginsenabled make peer
-
+```
+$ GO_TAGS=pluginsenabled make peer
+```
 Please make sure that the peer is _always_ built with GO_TAGS, otherwise our custom validation plugins will (silently!)
 ignored by the peer, despite the settings in ``core.yaml``.
 
+#### Build the entire project
 
-#### Build the project
-
-Once you have setup your development environment including Intel SGX SDK and SSL, nanopb, and successfully patched and
-built Fabric we can build the Fabric Private Chaincode framework.  
-
-    $ cd $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
-    $ make
- 
+Once you have setup your development environment including Intel SGX SDK and SSL, nanopb, and successfully patched and built Fabric you can build the Fabric Private Chaincode framework.  
+```
+$ cd $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
+$ make
+ ```
 This will build all required components and run the integration tests.
 
-
-##### Building individual components
+#### Building individual components
 
 In [utils/fabric-ccenv-sgx/](utils/fabric-ccenv-sgx) you can find instructions
 to create a custom fabric-ccenv docker image that is required to execute a
@@ -331,17 +316,15 @@ registry. See [ercc/](ercc).
 Moreover, we provide a set of integration tests in [integration/](integration) to demonstrate Fabric Private Chaincode
 capabilities.
 
+#### Trouble shooting
 
-##### Trouble shooting
-
-###### Docker
+##### Docker
 
 Building the project requires docker. We do not recommend to run `sudo make`
 to resolve issues with mis-configured docker environments as this also changes your `$GOPATH`. Please see hints on
 [docker](#docker) installation above.
 
-
-###### Working from behind a proxy
+##### Working from behind a proxy
 
 The current code should work behind a proxy assuming
   * you have defined the corresponding environment variables (i.e.,
@@ -361,7 +344,7 @@ In that case, you will have to replace the '0.0.0.0' with a concrete
 ip address such as '127.0.0.1'.
 
 
-###### Environment settings
+##### Environment settings
 
 Our build system requires a few variables to be set in your environment. Missing variables may cause `make` to fail. 
 Below you find a summary of all variables which you should carefully check and add to your environment. 
@@ -389,16 +372,13 @@ export FPC_ATTESTATION_TYPE = epid_unlinkable
 export FPC_ATTESTATION_TYPE = epid_linkable
 
 ```
-
-
-###### Clang-format
+##### Clang-format
 
 Some users may experience problems with clang-format. In particular, the error `command not found: clang-format` 
 appears even after installing it via `apt-get install clang-format`. See [here](https://askubuntu.com/questions/1034996/vim-clang-format-clang-format-is-not-found)
 for how to fix this.  
 
-
-###### ERCC setup failurs
+##### ERCC setup failures
 
 If, e.g., running the integration tests executed when you run `make`,
 you get errors of following form:
@@ -415,12 +395,11 @@ will create dummy files. In case you switch later to HW mode without
 configuring these files correctly for HW mode, this will result in
 above error.
 
-
-### Your first private chaincode
+## Developing your first private chaincode
 
 Create, build and test your first private chaincode with this [tutorial](examples/README.md).
 
-### Documentation
+## Documentation
 
 To build documentation, you will have to install `java` and download `plantuml.jar`. Either put `plantuml.jar` into
 in your `CLASSPATH` environment variable or override `PLANTUML_JAR` or `PLANTUML_CMD` in `config.override.mk`
