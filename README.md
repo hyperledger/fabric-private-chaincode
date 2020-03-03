@@ -110,9 +110,7 @@ your [development environment](https://hyperledger-fabric.readthedocs.io/en/rele
 
 Moreover, we assume that you are familiar with the Intel SGX SDK.
 
-### **Initial Setup**
-
-#### 1. Intel SGX SDK and SSL
+### Intel SGX SDK and SSL
 
 Fabric Private Chaincode requires the Intel [SGX SDK](https://github.com/intel/linux-sgx) and
 [SGX SSL](https://github.com/intel/intel-sgx-ssl) to build the main components of our framework and to develop and build
@@ -135,7 +133,7 @@ explicitly opt for building in simulation-mode SGX, ``SGX_MODE=SIM``. In order t
 location, or for building in simulation-mode SGX, you can create the file `<absolute-project-path>/fabric-private-chaincode/config.override.mk` and override the default
 values by defining the corresponding environment variable.
 
-##### Register with Intel Attestation Service (IAS) if using SGX_MODE=HW
+#### Register with Intel Attestation Service (IAS) if using SGX_MODE=HW
 
 We use Intel's Attestation Service to perform attestation with chaincode enclaves. If you run SGX in __simulation mode__
 only, you can skip this section and come back when you want setup with SGX hardware-mode.
@@ -163,7 +161,7 @@ Place your ias api key and your SPID in the ``ias`` folder as follows:
     echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/api_key.txt
     echo 'YOUR_SPID' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/spid.txt
 
-### **Fabric Private Chaincode Development**
+### Setup your Development Environment
 
 There are 2 different ways to develop Fabric Private Chaincode. Using our preconfigured Docker container development environment or setting up your local system with all required software dependencies to build and develop chaincode locally. 
 
@@ -280,7 +278,9 @@ Checkout Fabric 1.4.3 release and apply our patch using the following commands:
 Note that this patch does currently not work with the Fabric master branch, therefore make sure you use the Fabric
 v1.4.3 branch.
 
-#### Build the entire project
+### Build Fabric Private Chaincode
+
+Once you have your development environment up and running (i.e., using our docker-based setup or install all all dependencies on your machine) you can build FPC and start developing your own FPC application.
 
 Make sure Fabric is in your ``$GOPATH`` and you enable the plugin feature using `GO_TAGS=pluginsenabled`. Simply run
 
