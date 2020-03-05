@@ -474,7 +474,7 @@ By running the following command you can generate the documentation.
 ## Getting Help
 
 Found a bug? Need help to fix an issue? You have a great idea for a new feature? Talk to us! You can reach us on
-[RocketChat](https://chat.hyperledger.org/) in #private-data-objects. 
+[RocketChat](https://chat.hyperledger.org/) in #fabric-private-chaincode. 
 
 We also have a weekly meeting every Tuesday at 3 pm GMT on [Zoom](https://zoom.us/my/hyperledger.community.3). Please
 see the Hyperledger [community calendar](https://wiki.hyperledger.org/display/HYP/Calendar+of+Public+Meetings) for
