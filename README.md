@@ -419,10 +419,10 @@ export SGX_MODE=HW
 # The attestation type is ignored when SGX_MODE=SIM is set.
 
 # IAS attestation (unlinkable)
-export FPC_ATTESTATION_TYPE = epid_unlinkable
+export FPC_ATTESTATION_TYPE=epid_unlinkable
 
 # IAS attestation (linkable)
-export FPC_ATTESTATION_TYPE = epid_linkable
+export FPC_ATTESTATION_TYPE=epid_linkable
 
 ```
 ##### Clang-format
