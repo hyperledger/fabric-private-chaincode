@@ -377,7 +377,7 @@ The current code should work behind a proxy assuming
 If you run Ubuntu 18.04, make sure you run docker 18.09 or later. Otherwise you will run into problems with DNS resolution inside the container.
 
 You will also require a recent version of docker-compose. In particular, the docker-compose from ubuntu 18.04
-(docker-compose 1.17) is _not_ recent enough to understand `~/.docker/config.js` and related proxy options.
+(docker-compose 1.17) is _not_ recent enough to understand `~/.docker/config.json` and related proxy options.
 To upgrade, install a recent version following the instructions from [docker.com](https://docs.docker.com/compose/install/), e.g.,
 for version 1.25.4 execute
 ```
