@@ -13,9 +13,9 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric/common/flogging"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
-	pb_utils "github.com/hyperledger/fabric/protos/utils"
+	"github.com/hyperledger/fabric/protoutil"
 )
 
 var logger = flogging.MustGetLogger("enclave_stub")
@@ -100,14 +100,15 @@ func getChaincodeName(stub shim.ChaincodeStubInterface) (string, error) {
 		return "", fmt.Errorf("error while getting signed proposal: %s", err.Error())
 	}
 
-	prop, err := pb_utils.GetProposal(signedProp.ProposalBytes)
+	prop, err := protoutil.UnmarshalProposal(signedProp.ProposalBytes)
 	if err != nil {
 		return "", fmt.Errorf("error while unrwapping signed proposal: %s", err.Error())
 	}
 
-	hdr, err := pb_utils.GetHeader(prop.Header)
+	hdr, err := protoutil.UnmarshalHeader(prop.Header)
+	chdr, err := protoutil.UnmarshalChannelHeader(hdr.ChannelHeader)
 
-	chaincodeHdrExt, err := pb_utils.GetChaincodeHeaderExtension(hdr)
+	chaincodeHdrExt, err := protoutil.UnmarshalChaincodeHeaderExtension(chdr.Extension)
 	if err != nil {
 		return "", errors.New("invalid header extension for type CHAINCODE")
 	}

@@ -8,8 +8,8 @@ package main
 
 import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric/common/flogging"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
 var logger = flogging.MustGetLogger("ecc")

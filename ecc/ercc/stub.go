@@ -9,7 +9,7 @@ package ercc
 import (
 	"errors"
 
-	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
 )
 
 // EnclaveRegistryStub interface

@@ -8,10 +8,11 @@ package main
 
 import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/ercc"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric/common/flogging"
 )
 
-var logger = shim.NewLogger("ercc")
+var logger = flogging.MustGetLogger("ercc")
 
 func main() {
 	// start chaincode

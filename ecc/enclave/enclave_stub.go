@@ -15,24 +15,22 @@ package enclave
 import (
 	"bytes"
 	"context"
+	"crypto/x509"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"sync"
 	"unsafe"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/tlcc"
 	sgx_utils "github.com/hyperledger-labs/fabric-private-chaincode/utils"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-protos-go/msp"
 	"github.com/hyperledger/fabric/common/flogging"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"golang.org/x/sync/semaphore"
-
-	"crypto/x509"
-	"encoding/pem"
-
-	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric/protos/msp"
 )
 
 // #cgo CFLAGS: -I${SRCDIR}/ecc-enclave-include -I${SRCDIR}/../../common/sgxcclib

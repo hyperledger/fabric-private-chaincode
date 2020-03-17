@@ -4,7 +4,7 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+package tlcc
 
 import (
 	"encoding/base64"
@@ -14,7 +14,8 @@ import (
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/tlcc/enclave"
 	. "github.com/hyperledger-labs/fabric-private-chaincode/utils"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/shimtest"
 	"github.com/hyperledger/fabric/core/peer"
 	"github.com/spf13/viper"
 )
@@ -27,7 +28,7 @@ func setupTestLedger(chainid string) {
 
 func TestTrustedLedgerCC_Init(t *testing.T) {
 	tlcc := createTlcc()
-	stub := shim.NewMockStub("tlcc", tlcc)
+	stub := shimtest.NewMockStub("tlcc", tlcc)
 	stub.ChannelID = "mychannel"
 	setupTestLedger("mychannel")
 	CheckInit(t, stub, [][]byte{})
@@ -35,7 +36,7 @@ func TestTrustedLedgerCC_Init(t *testing.T) {
 
 func TestTrustedLedgerCC_JoinChannel(t *testing.T) {
 	tlcc := createTlcc()
-	stub := shim.NewMockStub("tlcc", tlcc)
+	stub := shimtest.NewMockStub("tlcc", tlcc)
 	stub.ChannelID = "mychannel"
 
 	setupTestLedger("mychannel")
@@ -45,7 +46,7 @@ func TestTrustedLedgerCC_JoinChannel(t *testing.T) {
 
 func TestTrustedLedgerCC_GetReport(t *testing.T) {
 	tlcc := createTlcc()
-	stub := shim.NewMockStub("tlcc", tlcc)
+	stub := shimtest.NewMockStub("tlcc", tlcc)
 	stub.ChannelID = "mychannel"
 
 	setupTestLedger("mychannel")
@@ -65,7 +66,7 @@ func TestTrustedLedgerCC_GetReport(t *testing.T) {
 
 func TestTrustedLedgerCC_GetStateCMAC(t *testing.T) {
 	tlcc := createTlcc()
-	stub := shim.NewMockStub("tlcc", tlcc)
+	stub := shimtest.NewMockStub("tlcc", tlcc)
 	stub.ChannelID = "mychannel"
 
 	setupTestLedger("mychannel")

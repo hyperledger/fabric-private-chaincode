@@ -20,8 +20,8 @@ import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/eval/benchmark/executor"
 	th "github.com/hyperledger-labs/fabric-private-chaincode/utils"
-
-	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/shimtest"
 )
 
 func createArgs(stringArgs []string, pk string) [][]byte {
@@ -32,7 +32,7 @@ func createArgs(stringArgs []string, pk string) [][]byte {
 // my tests
 func TestEnclaveChaincode_Init(t *testing.T) {
 	ecc := CreateMockedECC()
-	stub := shim.NewMockStub("ecc", ecc)
+	stub := shimtest.NewMockStub("ecc", ecc)
 
 	th.CheckInit(t, stub, nil)
 	// th.CheckState(t, stub, th.MrEnclaveStateKey, enc.MrEnclave)
@@ -40,7 +40,7 @@ func TestEnclaveChaincode_Init(t *testing.T) {
 
 func TestEnclaveChaincode_Setup(t *testing.T) {
 	ecc := CreateMockedECC()
-	stub := shim.NewMockStub("ecc", ecc)
+	stub := shimtest.NewMockStub("ecc", ecc)
 
 	th.CheckInit(t, stub, nil)
 	th.CheckInvoke(t, stub, [][]byte{[]byte("__setup"), []byte("ercc"), []byte("mychannel"), []byte("tlcc")})
@@ -48,7 +48,7 @@ func TestEnclaveChaincode_Setup(t *testing.T) {
 
 func TestEnclaveChaincode_Invoke(t *testing.T) {
 	ecc := CreateMockedECC()
-	stub := shim.NewMockStub("ecc", ecc)
+	stub := shimtest.NewMockStub("ecc", ecc)
 
 	th.CheckInit(t, stub, nil)
 	th.CheckInvoke(t, stub, [][]byte{[]byte("__setup"), []byte("ercc"), []byte("mychannel"), []byte("tlcc")})
@@ -64,7 +64,7 @@ func TestEnclaveChaincode_Invoke(t *testing.T) {
 type Task struct {
 	name     string
 	taskID   int
-	stub     *shim.MockStub
+	stub     *shimtest.MockStub
 	args     [][]byte
 	callback func(err error)
 }
@@ -87,7 +87,7 @@ func (t *Task) doInvoke() error {
 
 func TestEnclaveChaincode_Invoke_Auction(t *testing.T) {
 	ecc := CreateMockedECC()
-	stub := shim.NewMockStub("ecc", ecc)
+	stub := shimtest.NewMockStub("ecc", ecc)
 
 	pk := ""
 
@@ -190,7 +190,7 @@ func TestEnclaveChaincode_Invoke_Auction(t *testing.T) {
 
 func TestEnclaveChaincode_EncryptedInvoke(t *testing.T) {
 	ecc := CreateMockedECC()
-	stub := shim.NewMockStub("ecc", ecc)
+	stub := shimtest.NewMockStub("ecc", ecc)
 
 	th.CheckInit(t, stub, nil)
 	th.CheckInvoke(t, stub, [][]byte{[]byte("__setup"), []byte("ercc"), []byte("mychannel"), []byte("tlcc")})

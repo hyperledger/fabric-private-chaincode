@@ -10,12 +10,12 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/hyperledger/fabric-protos-go/common"
 	commonerrors "github.com/hyperledger/fabric/common/errors"
 	validation "github.com/hyperledger/fabric/core/handlers/validation/api"
 	. "github.com/hyperledger/fabric/core/handlers/validation/api/policies"
 	. "github.com/hyperledger/fabric/core/handlers/validation/api/state"
 	defaultvscc "github.com/hyperledger/fabric/core/handlers/validation/builtin"
-	"github.com/hyperledger/fabric/protos/common"
 	"github.com/pkg/errors"
 )
 

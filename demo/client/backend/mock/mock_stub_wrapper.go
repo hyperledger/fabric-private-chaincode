@@ -14,13 +14,12 @@ import (
 	"sync"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/demo/client/backend/mock/api"
-
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc"
-
 	"github.com/hyperledger-labs/fabric-private-chaincode/utils"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"github.com/hyperledger/fabric/protos/peer"
-	pb "github.com/hyperledger/fabric/protos/peer"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/shimtest"
+	"github.com/hyperledger/fabric-protos-go/peer"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 )
 
 type Transaction struct {
@@ -35,7 +34,7 @@ type Transaction struct {
 
 type MockStubWrapper struct {
 	sync.RWMutex
-	MockStub     *shim.MockStub
+	MockStub     *shimtest.MockStub
 	Creator      string
 	Seq          int
 	Transactions []*Transaction
@@ -44,7 +43,7 @@ type MockStubWrapper struct {
 }
 
 func NewWrapper(name string, cc shim.Chaincode, notifier *Notifier) *MockStubWrapper {
-	stub := shim.NewMockStub(name, cc)
+	stub := shimtest.NewMockStub(name, cc)
 	return &MockStubWrapper{MockStub: stub, Seq: 0, notifier: notifier, cc: cc}
 }
 

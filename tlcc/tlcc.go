@@ -4,7 +4,7 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+package tlcc
 
 import (
 	"encoding/base64"
@@ -12,27 +12,33 @@ import (
 	"strconv"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger-labs/fabric-private-chaincode/tlcc/enclave"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-protos-go/common"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/common/ledger"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/core/config"
 	"github.com/hyperledger/fabric/core/peer"
-	"github.com/hyperledger/fabric/protos/common"
-	pb "github.com/hyperledger/fabric/protos/peer"
-
-	"github.com/hyperledger-labs/fabric-private-chaincode/tlcc/enclave"
 )
 
-var logger = shim.NewLogger("tlcc")
+var logger = flogging.MustGetLogger("tlcc")
 
 type TrustedLedgerCC struct {
 	enclave enclave.Stub
+	peer    *peer.Peer
 }
 
-func New() shim.Chaincode {
+func New(p *peer.Peer) *TrustedLedgerCC {
 	return &TrustedLedgerCC{
-		enclave: &enclave.StubImpl{},
+		//enclave: &enclave.StubImpl{},
+		enclave: nil,
+		peer:    p,
 	}
 }
+
+func (t *TrustedLedgerCC) Name() string              { return "tlcc" }
+func (t *TrustedLedgerCC) Chaincode() shim.Chaincode { return t }
 
 func (t *TrustedLedgerCC) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Success(nil)
@@ -102,12 +108,12 @@ func (t *TrustedLedgerCC) getStateMetadata(stub shim.ChaincodeStubInterface) pb.
 func (t *TrustedLedgerCC) joinChannel(stub shim.ChaincodeStubInterface) pb.Response {
 	channelName := stub.GetChannelID()
 
-	ledger := peer.GetLedger(channelName)
-	if ledger == nil {
+	peerLedger := t.peer.GetLedger(channelName)
+	if peerLedger == nil {
 		return shim.Error(fmt.Sprintf("Cannot open %s ledger", channelName))
 	}
 
-	iter, err := ledger.GetBlocksIterator(0)
+	iter, err := peerLedger.GetBlocksIterator(0)
 	if err != nil {
 		return shim.Error(fmt.Sprintf("Error while getting block iterator, error: %s", err))
 	}
@@ -166,12 +172,4 @@ func (t *TrustedLedgerCC) initNewEnclave(genesis []byte) error {
 	}
 
 	return nil
-}
-
-func main() {
-	// start chaincode
-	err := shim.Start(New())
-	if err != nil {
-		logger.Errorf("Error starting tlcc: %s", err)
-	}
 }

@@ -44,6 +44,8 @@ godeps: gotools
 	$(GO) get github.com/gin-contrib/cors
 	$(GO) get github.com/gin-gonic/gin
 	$(GO) get github.com/dustin/go-broadcast
+	$(GO) get github.com/hyperledger/fabric-chaincode-go/shim
+	$(GO) get github.com/hyperledger/fabric-protos-go/peer
 
 plugins:
 	$(foreach DIR, $(PLUGINS), $(MAKE) -C $(DIR) build || exit;)

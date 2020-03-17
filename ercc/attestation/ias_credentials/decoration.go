@@ -12,15 +12,15 @@ import (
 	"io/ioutil"
 	"strings"
 
+	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/core/config"
 	"github.com/hyperledger/fabric/core/handlers/decoration"
-	"github.com/hyperledger/fabric/peer/common"
-	"github.com/hyperledger/fabric/protos/peer"
 )
 
 // NewDecorator creates a new decorator
 func NewDecorator() decoration.Decorator {
-	common.InitConfig("core")
+	// TODO bring back init core config
+	//common.InitConfig("core")
 
 	// fabric/core/config.GetPath()
 	apiKeyFile := config.GetPath("sgx.ias.apiKey.file")

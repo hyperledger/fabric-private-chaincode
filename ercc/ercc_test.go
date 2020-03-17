@@ -11,7 +11,8 @@ import (
 	"testing"
 
 	. "github.com/hyperledger-labs/fabric-private-chaincode/ercc"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/shimtest"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -32,12 +33,12 @@ var _ = Describe("ERCC", func() {
 
 	var (
 		ercc *EnclaveRegistryCC
-		stub *shim.MockStub
+		stub *shimtest.MockStub
 	)
 
 	BeforeEach(func() {
 		ercc = NewTestErcc()
-		stub = shim.NewMockStub("ercc", ercc)
+		stub = shimtest.NewMockStub("ercc", ercc)
 		stub.Decorations["test"] = []byte("AAA")
 	})
 

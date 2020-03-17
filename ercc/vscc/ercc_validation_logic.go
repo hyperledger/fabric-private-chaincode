@@ -16,17 +16,16 @@ import (
 	"strings"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ercc"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
+	sgxutil "github.com/hyperledger-labs/fabric-private-chaincode/utils"
+	"github.com/hyperledger/fabric-protos-go/peer"
 	commonerrors "github.com/hyperledger/fabric/common/errors"
 	"github.com/hyperledger/fabric/common/flogging"
 	. "github.com/hyperledger/fabric/core/handlers/validation/api/state"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/rwsetutil"
-	"github.com/hyperledger/fabric/protos/peer"
-	"github.com/hyperledger/fabric/protos/utils"
+	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
-
-	"github.com/hyperledger-labs/fabric-private-chaincode/ercc"
-	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
-	sgxutil "github.com/hyperledger-labs/fabric-private-chaincode/utils"
 )
 
 var logger = flogging.MustGetLogger("vscc")
@@ -50,21 +49,21 @@ type VSCCERCC struct {
 // policy as given in its serialized form
 func (vscc *VSCCERCC) Validate(envelopeBytes []byte, policyBytes []byte) commonerrors.TxValidationError {
 	// get the envelope...
-	env, err := utils.GetEnvelopeFromBlock(envelopeBytes)
+	env, err := protoutil.GetEnvelopeFromBlock(envelopeBytes)
 	if err != nil {
 		logger.Errorf("ERCC-VSCC error: GetEnvelope failed, err %s", err)
 		return policyErr(err)
 	}
 
 	// ...and the payload...
-	payl, err := utils.GetPayload(env)
+	payl, err := protoutil.UnmarshalPayload(env.Payload)
 	if err != nil {
 		logger.Errorf("ERCC-VSCC error: GetPayload failed, err %s", err)
 		return policyErr(err)
 	}
 
 	// ...and the transaction...
-	tx, err := utils.GetTransaction(payl.Data)
+	tx, err := protoutil.UnmarshalTransaction(payl.Data)
 	if err != nil {
 		logger.Errorf("VSCC error: GetTransaction failed, err %s", err)
 		return policyErr(err)
@@ -72,13 +71,13 @@ func (vscc *VSCCERCC) Validate(envelopeBytes []byte, policyBytes []byte) commone
 
 	// loop through each of the actions within
 	for _, act := range tx.Actions {
-		cap, err := utils.GetChaincodeActionPayload(act.Payload)
+		cap, err := protoutil.UnmarshalChaincodeActionPayload(act.Payload)
 		if err != nil {
 			logger.Errorf("VSCC error: GetChaincodeActionPayload failed, err %s", err)
 			return policyErr(err)
 		}
 
-		pRespPayload, err := utils.GetProposalResponsePayload(cap.Action.ProposalResponsePayload)
+		pRespPayload, err := protoutil.UnmarshalProposalResponsePayload(cap.Action.ProposalResponsePayload)
 		if err != nil {
 			logger.Errorf("VSCC error: GetProposalResponsePayload failed, err %s", err)
 			return policyErr(err)
