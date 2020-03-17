@@ -30,7 +30,7 @@ env:
     - NANOPB_VERSION=0.3.9.2
     - NANOPB_PATH=${HOME}/nanopb
     # FABRIC
-    - FABRIC_VERSION=1.4.3
+    - FABRIC_VERSION=v2.0.1
     - FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
     # FPC
     - FPC_PATH=$GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
@@ -59,9 +59,9 @@ before_install:
   - git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH}
   - pushd ${NANOPB_PATH} && git checkout nanopb-${NANOPB_VERSION} && cd generator/proto && make && popd
   # Fabric
-  - git clone --branch v$FABRIC_VERSION https://github.com/hyperledger/fabric.git $FABRIC_PATH
+  - git clone --branch $FABRIC_VERSION https://github.com/hyperledger/fabric.git $FABRIC_PATH
   - pushd $FABRIC_PATH
-  - git am $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/*.patch
+  # - git am $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/*.patch
   - GO_TAGS=pluginsenabled make peer orderer cryptogen configtxgen && popd
 
 script:

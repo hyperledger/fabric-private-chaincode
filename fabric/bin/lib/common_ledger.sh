@@ -12,7 +12,7 @@
 [ -d "${FPC_TOP_DIR}" ] || (echo "FPC_TOP_DIR not properly defined in '${FPC_TOP_DIR}'"; exit 1; )
 
 : ${FABRIC_PATH:="${FPC_TOP_DIR}/../../hyperledger/fabric/"}
-: ${FABRIC_BIN_DIR:="${FABRIC_PATH}/.build/bin"}
+: ${FABRIC_BIN_DIR:="${FABRIC_PATH}/build/bin"}
 
 FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 
