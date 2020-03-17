@@ -115,8 +115,8 @@ deploying and running an example private chaincode.
 We assume that you are familiar with building Fabric manually; otherwise we highly recommend to spend some time to build
 Fabric and run a simple network with a few peers and a ordering service. We recommend the Fabric documentation as your
 starting point. You should start with
-[installing](https://hyperledger-fabric.readthedocs.io/en/release-1.4/prereqs.html) Fabric dependencies and setting up
-your [development environment](https://hyperledger-fabric.readthedocs.io/en/release-1.4/dev-setup/build.html).
+[installing](https://hyperledger-fabric.readthedocs.io/en/release-2.0/prereqs.html) Fabric dependencies and setting up
+your [development environment](https://hyperledger-fabric.readthedocs.io/en/release-2.0/dev-setup/build.html).
 
 Moreover, we assume that you are familiar with the Intel SGX SDK.
 
@@ -254,7 +254,7 @@ Make sure that you have the following required dependencies installed:
 
 * [SSL](https://github.com/intel/intel-sgx-ssl)  for SGX SDK v2.4.1 (we recommend using OpenSSL 1.1.0j) 
 
-* Hyperledger [Fabric](https://github.com/hyperledger/fabric) v1.4.3
+* Hyperledger [Fabric](https://github.com/hyperledger/fabric/tree/v2.0.1) v2.0.1
 
 * Clang-format 6.x or higher
 
@@ -305,15 +305,15 @@ Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in t
 
 Next we need to patch the Fabric peer and rebuild it in order to enable Fabric Private Chaincode support. 
 
-Checkout Fabric 1.4.3 release and apply our patch using the following commands:
+Checkout Fabric 2.0.1 release and apply our patch using the following commands:
 
     $ export FABRIC_PATH=${GOPATH}/src/github.com/hyperledger/fabric
-    $ git clone --branch v1.4.3 https://github.com/hyperledger/fabric.git $FABRIC_PATH
+    $ git clone --branch v2.0.1 https://github.com/hyperledger/fabric.git $FABRIC_PATH
     $ cd $FABRIC_PATH
     $ git am ../../hyperledger-labs/fabric-private-chaincode/fabric/*.patch
     
 Note that this patch does currently not work with the Fabric master branch, therefore make sure you use the Fabric
-v1.4.3 branch.
+v2.0.1 branch.
 
 ### Build Fabric Private Chaincode
 

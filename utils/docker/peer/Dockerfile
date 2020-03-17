@@ -8,7 +8,7 @@ ARG GO_VERSION=go1.13
 ARG GO_TAR=$GO_VERSION.linux-amd64.tar.gz
 ARG NANOPB_VERSION=0.3.9.2
 ARG FABRIC_REPO=https://github.com/hyperledger/fabric.git
-ARG FABRIC_VERSION=v1.4.3
+ARG FABRIC_VERSION=v2.0.1
 ARG FPC_REPO_URL=https://github.com/hyperledger-labs/fabric-private-chaincode.git
 ARG FPC_REPO_BRANCH=master
 ARG OPENSSL_VERSION=1.1.0j
@@ -90,14 +90,15 @@ RUN git clone --branch $FPC_REPO_BRANCH $FPC_REPO_URL $FPC_PATH
 #   To not commit an id, just do it only temporarily and only locally ...
 RUN cd $FABRIC_PATH \
  && git config user.email "FPC" \
- && git am $FPC_PATH/fabric/*patch \
+# TODO temorarly disabled as patches are not working with Fabric v2 and also maybe not needed; need to resolve this separately. See https://github.com/hyperledger-labs/fabric-private-chaincode/issues/246
+# && git am $FPC_PATH/fabric/*patch \
  && git config --unset user.email \
  && GO_TAGS=pluginsenabled make peer orderer cryptogen configtxgen
 
 # Build FPC plugins for peer
 RUN cd $FPC_PATH \
  && make plugins \
- && make -C $FPC_PATH/utils/fabric 
+ && make -C $FPC_PATH/utils/fabric
 
 ENV FABRIC_BIN_DIR=$FABRIC_PATH/.build/bin
 ENV FPC_CMDS=/project/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/bin
