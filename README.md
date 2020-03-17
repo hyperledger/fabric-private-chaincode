@@ -97,6 +97,16 @@ The system consists of the following components:
    ledger enclave, which crosschecks the decision before it finally commits
    the transaction to the ledger.
 
+## Releases
+
+- [Concept Release - March 2, 2020](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/concept-release)
+
+*WARNING: This project is in continous development and the `master`
+ branch will not always be stable. Unless you want to actively
+ contribute to the project itself, we advice you to use one of above releases*
+
+
+
 ## Getting started
 
 The following steps guide you through the build phase and configuration, for
