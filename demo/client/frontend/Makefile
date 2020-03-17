@@ -8,6 +8,7 @@ include $(TOP)/build.mk
 DOCKER_IMAGE = auction_frontend
 APP_SRC = ${PWD}
 
+
 # Note:
 # - docker images are not necessarily rebuild if they exist but are outdated.
 #   To force rebuild you have two options
@@ -41,6 +42,10 @@ cli:
 		$(DOCKER_IMAGE) \
 		/bin/sh
 
+# Note: the avatar service is a bit unreliable, so we do
+# (a) ignore download errors below, but also
+# (b) do a bit more patient retries
+CURL = curl --retry 5  --retry-connrefused
 
 AVATARS = auctioneer a-telecom b-net c-mobile
 AVATAR_DIR = public/img/users
@@ -52,16 +57,16 @@ $(AVATAR_DIR):
 	mkdir $@
 
 public/img/users/auctioneer.svg:
-	wget -O $@ "https://avataaars.io/?avatarStyle=Circle&topType=LongHairStraight&accessoriesType=Blank&hairColor=BrownDark&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light"
+	-${CURL} -o $@ -f "https://avataaars.io/?avatarStyle=Circle&topType=LongHairStraight&accessoriesType=Blank&hairColor=BrownDark&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light"
 
 public/img/users/a-telecom.svg:
-	wget -O $@ "https://avataaars.io/?avatarStyle=Circle&topType=LongHairFrida&accessoriesType=Kurt&hairColor=Red&facialHairType=BeardLight&facialHairColor=BrownDark&clotheType=GraphicShirt&clotheColor=Gray01&graphicType=Skull&eyeType=Wink&eyebrowType=RaisedExcitedNatural&mouthType=Disbelief&skinColor=Brown"
+	-${CURL} -o $@ -f "https://avataaars.io/?avatarStyle=Circle&topType=LongHairFrida&accessoriesType=Kurt&hairColor=Red&facialHairType=BeardLight&facialHairColor=BrownDark&clotheType=GraphicShirt&clotheColor=Gray01&graphicType=Skull&eyeType=Wink&eyebrowType=RaisedExcitedNatural&mouthType=Disbelief&skinColor=Brown"
 
 public/img/users/b-net.svg:
-	wget -O $@ "https://avataaars.io/?avatarStyle=Circle&topType=ShortHairFrizzle&accessoriesType=Prescription02&hairColor=Black&facialHairType=MoustacheMagnum&facialHairColor=BrownDark&clotheType=BlazerSweater&clotheColor=Black&eyeType=Default&eyebrowType=FlatNatural&mouthType=Default&skinColor=Tanned"
+	-${CURL} -o $@ -f "https://avataaars.io/?avatarStyle=Circle&topType=ShortHairFrizzle&accessoriesType=Prescription02&hairColor=Black&facialHairType=MoustacheMagnum&facialHairColor=BrownDark&clotheType=BlazerSweater&clotheColor=Black&eyeType=Default&eyebrowType=FlatNatural&mouthType=Default&skinColor=Tanned"
 
 public/img/users/c-mobile.svg:
-	wget -O $@ "https://avataaars.io/?avatarStyle=Circle&topType=LongHairMiaWallace&accessoriesType=Sunglasses&hairColor=BlondeGolden&facialHairType=Blank&clotheType=BlazerSweater&eyeType=Surprised&eyebrowType=RaisedExcited&mouthType=Smile&skinColor=Pale"
+	-${CURL} -o $@ -f "https://avataaars.io/?avatarStyle=Circle&topType=LongHairMiaWallace&accessoriesType=Sunglasses&hairColor=BlondeGolden&facialHairType=Blank&clotheType=BlazerSweater&eyeType=Surprised&eyebrowType=RaisedExcited&mouthType=Smile&skinColor=Pale"
 
 
 
