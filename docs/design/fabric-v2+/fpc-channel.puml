@@ -1,0 +1,34 @@
+' FPC Class Definition related to Channels
+' (only ProtocolMessage and LedgerState Classes, so no methods, just fields)
+'===========================================================================
+
+@startuml
+
+hide empty methods
+hide empty fields
+
+' Channel definition on ledger
+'------------------------------
+
+' Current Fabric Class
+
+class ChannelDefinition {
+	orgRootOfTrust: MSP[]
+	ordererRootOfTrust: MSP
+	chainCodeLifecyclePolicy: Policy
+}
+note right
+  Paraphrased definition, explicitly mentioned only information we care.
+  Protobuf definitions mostly in ""protos/peer/lifecycle/"", e.g., ""chaincode_definition.proto"",
+  ""lifecycle.proto"", but also in ""protos/msp"".
+end note
+
+
+' Necessary Extensions for FPC
+ChannelDefinition <|-- FPCChannelDefinition
+class FPCChannelDefinition {
+	iasRootOfTrust: MSP
+	tlcc: MREnclave
+}
+
+@enduml

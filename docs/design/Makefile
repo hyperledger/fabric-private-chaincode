@@ -2,10 +2,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-TOP = ..
+TOP = ../..
 include $(TOP)/build.mk
 
-SUB_DIRS = design
+SUB_DIRS = concept-release fabric-v2+
 
 build test clean clobber:
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)

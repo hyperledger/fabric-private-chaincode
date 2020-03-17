@@ -1,0 +1,79 @@
+@startuml
+
+'- force wrapping of longer text
+'skinparam wrapWidth 400
+
+!pragma teoz true
+
+
+title Fabric (New) Lifecycle
+
+actor	Client1
+entity	Peer1
+entity	Peer2
+entity CC@Peer1 as ecc1
+entity CC@Peer2 as ecc2
+database Ledger@Peer1 as tlcc1
+database Ledger@Peer2 as tlcc2
+entity	Orderer
+
+group System setup
+
+   Client1 -> Peer1 : initialize & start monitoring
+   Client1 -> Peer2 : initialize & start monitoring
+
+   Client1 -> Peer1 : channel create
+
+   Client1 -> Peer1 : channel join
+   Peer1 -> tlcc1 : start
+   activate tlcc1
+
+   Client1 -> Peer2 : channel join
+   Peer2 -> tlcc2 : start
+   activate tlcc2
+end
+
+
+group Per FPC chaincode FCC
+
+   Client1 -> Client1: chaincode package FPC
+
+   Client1 -> Peer1 : chaincode approveformyorg FPC
+   Client1 -> Peer2 : chaincode approveformyorg FPC
+
+   Client1 -> Peer1 : chaincode commit FPC
+   Peer1 <-> Peer2
+   & Peer2 <-> ecc1 
+   & ecc1 <-> ecc2
+   activate ecc1
+   activate ecc2
+
+   loop
+     alt query
+        Client1 -> Peer1 : chaincode query FPC
+        Peer1 -> ecc1
+        ecc1 <-> tlcc1: inspect ledger state
+        Peer1 <- ecc1
+        & Client1 <- Peer1 : result
+
+     else transactions
+        Client1 -> Peer1 : chaincode invoke FPC
+        & Peer1 -> ecc1
+        ecc1 <-> tlcc1: inspect ledger state
+        Peer1 <- ecc1
+        & Client1 <- Peer1 : endorsement Peer1 & result
+
+        Client1 -> Peer2 : chaincode invoke FPC
+        & Peer2 -> ecc2
+        ecc2 <-> tlcc2: inspect ledger state
+        Peer2 <- ecc2
+        & Client1 <- Peer2 : endorsement Peer2 & result
+        Client1 -> Orderer : {endorsement Peer1, endorsement Peer2}
+        Peer1 <- Orderer : ordered {endorsement Peer1, endorsement Peer2}
+        Peer2 <- Orderer : ordered {endorsement Peer1, endorsement Peer2}
+     end
+   end
+
+end
+
+@enduml
