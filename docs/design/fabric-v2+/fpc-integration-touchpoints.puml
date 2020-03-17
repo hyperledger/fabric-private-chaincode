@@ -1,0 +1,115 @@
+@startuml
+
+'- force wrapping of longer text
+'skinparam wrapWidth 400
+
+!pragma teoz true
+
+
+title Fabric Private Chaincode Integration Touchpoints
+
+actor	Client1
+entity	Peer1
+entity	Peer2
+entity ecc1
+entity ecc2
+database tlcc1
+database tlcc2
+'entity	Orderer
+'database Ledger
+
+group System setup
+
+   Client1 -> Peer1 : start
+   Client1 -> Peer2 : start
+
+   Client1 -> Peer1 : channel create
+   note over Client1
+      Includes additional FPC metadata to genesis block (enclave registry, trusted ledger code-identity)
+   end note
+
+   Client1 -> Peer1 : channel join
+   Peer1 -> tlcc1 : start
+   activate tlcc1
+   note over tlcc1
+     attach to channel
+   end note
+
+   Client1 -> Peer2 : channel join
+   Peer2 -> tlcc2 : start
+   activate tlcc2
+   /'
+    ' note over tlcc2
+    '   attach to channel
+    ' end note
+    '/
+
+end
+
+
+group Per FPC chaincode FCC
+
+   Client1 -> Client1: chaincode package FPC
+   note over Client1
+     extend CC definition with additional meta-data
+   end note
+
+   Client1 -> Peer1 : chaincode approveformyorg FPC
+   Client1 -> Peer2 : chaincode approveformyorg FPC
+
+   Client1 -> Peer1 : chaincode commit FPC
+   note over Peer1
+     trigger preparation of execution enclaves & key-distribute for all peers
+   end note
+   Peer1 <-> Peer2
+   & Peer2 <-> ecc1 
+   & ecc1 <-> ecc2
+   activate ecc1
+   activate ecc2
+
+   loop
+     alt query
+        Client1 -> Peer1 : chaincode query FPC
+          note over Client1
+            retrieve encryption-keys from enclave registry
+          end note
+          note over Peer1
+            FPC-specific sgx-enabled docker-image with FPC-specific runtime & shim
+          end note
+        Peer1 -> ecc1
+        ecc1 <-> tlcc1: inspect ledger state
+          note over tlcc1
+            any state must be validated via trusted ledger enclave
+          end note
+        Peer1 <- ecc1
+        & Client1 <- Peer1 : result
+
+     else transactions
+        Client1 -> Peer1 : chaincode invoke FPC
+        & Peer1 -> ecc1
+        ecc1 <-> tlcc1: inspect ledger state
+        note over ecc1
+  	  encrypted rw-set
+  	  enclave signatures as endorsement
+        end note
+        Peer1 <- ecc1
+        & Client1 <- Peer1 : endorsement Peer1 & result
+
+        Client1 -> Peer2 : chaincode invoke FPC
+        & Peer2 -> ecc2
+        ecc2 <-> tlcc2: inspect ledger state
+        Peer2 <- ecc2
+        & Client1 <- Peer2 : endorsement Peer2 & result
+        Client1 -> Orderer : {endorsement Peer1, endorsement Peer2}
+        Peer1 <- Orderer : ordered {endorsement Peer1, endorsement Peer2}
+        note over Peer1
+  	  Validate enclave signatures, endorsement policies evaluated
+          over enclave signatures, not peer signatures!
+        end note
+        Peer2 <- Orderer : ordered {endorsement Peer1, endorsement Peer2}
+     end
+   end
+
+end
+
+@enduml
