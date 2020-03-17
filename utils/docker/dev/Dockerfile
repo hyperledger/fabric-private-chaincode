@@ -4,7 +4,7 @@
 
 FROM hyperledger/fabric-private-chaincode-base:latest
 
-ARG GO_VERSION=go1.13
+ARG GO_VERSION=go1.14
 ARG GO_TAR=$GO_VERSION.linux-amd64.tar.gz
 ARG NANOPB_VERSION=0.3.9.2
 ARG FABRIC_REPO=https://github.com/hyperledger/fabric.git

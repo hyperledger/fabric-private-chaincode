@@ -5,6 +5,9 @@
 dist: bionic
 language: go
 
+go:
+  - 1.14
+
 sudo: required
 services:
   docker
