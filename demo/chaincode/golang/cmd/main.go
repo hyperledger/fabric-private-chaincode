@@ -8,8 +8,8 @@ package main
 
 import (
 	cc "github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/golang"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric/common/flogging"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
 var logger = flogging.MustGetLogger("go_mock_auction")

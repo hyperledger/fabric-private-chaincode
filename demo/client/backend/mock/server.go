@@ -34,14 +34,14 @@ import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/demo/client/backend/mock/api"
 	"github.com/hyperledger-labs/fabric-private-chaincode/demo/client/backend/mock/chaincode"
 	"github.com/hyperledger-labs/fabric-private-chaincode/utils"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"github.com/hyperledger/fabric/protos/peer"
+	"github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric/common/flogging"
 )
 
 var flagPort string
 var flagDebug bool
 var stub *MockStubWrapper
-var logger = shim.NewLogger("server")
+var logger = flogging.MustGetLogger("server")
 var notifier = NewNotifier()
 
 const ccName = "FPCAuction"
@@ -59,7 +59,8 @@ func main() {
 	flag.Parse()
 
 	if flagDebug {
-		logger.SetLevel(shim.LogDebug)
+		// TODO find a way to set flogger log level to debug
+		//logger.SetLevel(shim.LogDebug)
 	}
 
 	// deploy

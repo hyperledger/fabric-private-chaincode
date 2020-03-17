@@ -7,19 +7,19 @@ SPDX-License-Identifier: Apache-2.0
 package ercc
 
 import (
-	"strings"
-
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"strings"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation/mock"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
-	pb "github.com/hyperledger/fabric/protos/peer"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric/common/flogging"
 )
 
-var logger = shim.NewLogger("ercc")
+var logger = flogging.MustGetLogger("ercc")
 
 // EnclaveRegistryCC ...
 type EnclaveRegistryCC struct {

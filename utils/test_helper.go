@@ -11,7 +11,8 @@ import (
 	"plugin"
 	"testing"
 
-	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/shimtest"
 )
 
 func CheckLoadPlugin(t *testing.T, path string) {
@@ -34,7 +35,7 @@ func CheckLoadPlugin(t *testing.T, path string) {
 }
 
 // helper methods
-func CheckInit(t *testing.T, stub *shim.MockStub, args [][]byte) {
+func CheckInit(t *testing.T, stub *shimtest.MockStub, args [][]byte) {
 	res := stub.MockInit("1", args)
 	if res.Status != shim.OK {
 		fmt.Println("Init failed:", string(res.Message))
@@ -42,7 +43,7 @@ func CheckInit(t *testing.T, stub *shim.MockStub, args [][]byte) {
 	}
 }
 
-func CheckInvoke(t *testing.T, stub *shim.MockStub, args [][]byte) {
+func CheckInvoke(t *testing.T, stub *shimtest.MockStub, args [][]byte) {
 	res := stub.MockInvoke("1", args)
 	if res.Status != shim.OK {
 		fmt.Println("Invoke", args, "failed:", string(res.Message))
@@ -50,7 +51,7 @@ func CheckInvoke(t *testing.T, stub *shim.MockStub, args [][]byte) {
 	}
 }
 
-func CheckState(t *testing.T, stub *shim.MockStub, name string, value string) {
+func CheckState(t *testing.T, stub *shimtest.MockStub, name string, value string) {
 	bytes := stub.State[name]
 	if bytes == nil {
 		fmt.Println("State", name, "failed to get value")
@@ -62,7 +63,7 @@ func CheckState(t *testing.T, stub *shim.MockStub, name string, value string) {
 	}
 }
 
-func CheckQuery(t *testing.T, stub *shim.MockStub, args [][]byte, value string) {
+func CheckQuery(t *testing.T, stub *shimtest.MockStub, args [][]byte, value string) {
 	res := stub.MockInvoke("1", args)
 	if res.Status != shim.OK {
 		t.Fatalf("Query %s failed! Reason: %s", args, string(res.Message))
@@ -75,7 +76,7 @@ func CheckQuery(t *testing.T, stub *shim.MockStub, args [][]byte, value string) 
 	}
 }
 
-func CheckQueryNotNull(t *testing.T, stub *shim.MockStub, args [][]byte) {
+func CheckQueryNotNull(t *testing.T, stub *shimtest.MockStub, args [][]byte) {
 	res := stub.MockInvoke("1", args)
 	if res.Status != shim.OK {
 		t.Fatalf("Query %s failed! Reason: %s", args, string(res.Message))
@@ -85,7 +86,7 @@ func CheckQueryNotNull(t *testing.T, stub *shim.MockStub, args [][]byte) {
 	}
 }
 
-func CheckStateNotNull(t *testing.T, stub *shim.MockStub, name string) {
+func CheckStateNotNull(t *testing.T, stub *shimtest.MockStub, name string) {
 	bytes := stub.State[name]
 	if bytes == nil {
 		t.Fatalf("State %s failed to get value", name)

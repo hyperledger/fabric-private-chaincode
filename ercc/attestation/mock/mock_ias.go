@@ -8,13 +8,13 @@ package mock
 
 import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric/common/flogging"
 )
 
 type MockIAS struct {
 }
 
-var logger = shim.NewLogger("ercc.ias")
+var logger = flogging.MustGetLogger("ercc.ias")
 
 func (ias *MockIAS) RequestAttestationReport(apiKey string, quoteAsBytes []byte) (attestation.IASAttestationReport, error) {
 	report := attestation.IASAttestationReport{

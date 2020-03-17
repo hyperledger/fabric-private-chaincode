@@ -16,13 +16,14 @@ import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/ercc"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/tlcc"
 	"github.com/hyperledger-labs/fabric-private-chaincode/utils"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
-	pb "github.com/hyperledger/fabric/protos/peer"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric/common/flogging"
 )
 
 const enclaveLibFile = "enclave/lib/enclave.signed.so"
 
-var logger = shim.NewLogger("ecc")
+var logger = flogging.MustGetLogger("ecc")
 
 // EnclaveChaincode struct
 type EnclaveChaincode struct {

@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric/common/flogging"
 )
 
 // intel verification key
@@ -36,7 +36,7 @@ tQIDAQAB
 
 const iasURL = "https://api.trustedservices.intel.com/sgx/dev/attestation/v3/report"
 
-var logger = shim.NewLogger("ercc.ias")
+var logger = flogging.MustGetLogger("ercc.ias")
 
 // IASReportBody received from IAS (Intel attestation service)
 type IASReportBody struct {

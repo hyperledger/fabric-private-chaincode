@@ -10,7 +10,7 @@ package chaincode
 
 import (
 	cc "github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/golang"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
 )
 
 func NewMockAuction() shim.Chaincode {
