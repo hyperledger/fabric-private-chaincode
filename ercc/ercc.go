@@ -4,7 +4,7 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package ercc
+package main
 
 import (
 	"crypto/sha256"
@@ -20,6 +20,15 @@ import (
 )
 
 var logger = flogging.MustGetLogger("ercc")
+
+func main() {
+	// start chaincode
+	// err := shim.Start(NewTestErcc())
+	err := shim.Start(NewErcc())
+	if err != nil {
+		logger.Errorf("Error starting registry chaincode: %s", err)
+	}
+}
 
 // EnclaveRegistryCC ...
 type EnclaveRegistryCC struct {

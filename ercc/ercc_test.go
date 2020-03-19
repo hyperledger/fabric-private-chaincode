@@ -4,13 +4,13 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package ercc_test
+package main_test
 
 import (
 	"fmt"
 	"testing"
 
-	. "github.com/hyperledger-labs/fabric-private-chaincode/ercc"
+	main "github.com/hyperledger-labs/fabric-private-chaincode/ercc"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-chaincode-go/shimtest"
 	. "github.com/onsi/ginkgo"
@@ -32,12 +32,12 @@ func TestErcc(t *testing.T) {
 var _ = Describe("ERCC", func() {
 
 	var (
-		ercc *EnclaveRegistryCC
+		ercc *main.EnclaveRegistryCC
 		stub *shimtest.MockStub
 	)
 
 	BeforeEach(func() {
-		ercc = NewTestErcc()
+		ercc = main.NewTestErcc()
 		stub = shimtest.NewMockStub("ercc", ercc)
 		stub.Decorations["test"] = []byte("AAA")
 	})
