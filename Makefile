@@ -6,8 +6,10 @@
 TOP = .
 include $(TOP)/build.mk
 
-SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc examples integration demo # docs
-PLUGINS = ercc ecc_enclave ecc tlcc_enclave tlcc
+# TODO bring TLCC back
+# SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc examples integration demo # docs
+SUB_DIRS = utils ercc ecc_enclave ecc examples integration demo # docs
+# PLUGINS = ercc ecc_enclave ecc tlcc_enclave tlcc
 FPC_SDK = utils/fabric ecc_enclave ecc
 
 .PHONY: license
@@ -47,8 +49,9 @@ godeps: gotools
 	$(GO) get github.com/hyperledger/fabric-chaincode-go/shim
 	$(GO) get github.com/hyperledger/fabric-protos-go/peer
 
-plugins:
-	$(foreach DIR, $(PLUGINS), $(MAKE) -C $(DIR) build || exit;)
+# TODO enable plugins again
+# plugins:
+	# $(foreach DIR, $(PLUGINS), $(MAKE) -C $(DIR) build || exit;)
 
 fpc-sdk: godeps
 	$(foreach DIR, $(FPC_SDK), $(MAKE) -C $(DIR) build || exit;)
