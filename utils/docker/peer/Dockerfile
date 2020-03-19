@@ -86,8 +86,7 @@ RUN git clone --branch $FPC_REPO_BRANCH $FPC_REPO_URL $FPC_PATH
 #   To not commit an id, just do it only temporarily and only locally ...
 RUN cd $FABRIC_PATH \
  && git config user.email "FPC" \
-# TODO temorarly disabled as patches are not working with Fabric v2 and also maybe not needed; need to resolve this separately. See https://github.com/hyperledger-labs/fabric-private-chaincode/issues/246
-# && git am $FPC_PATH/fabric/*patch \
+ && git am $FPC_PATH/fabric/*patch \
  && git config --unset user.email \
  && GO_TAGS=pluginsenabled make peer orderer cryptogen configtxgen
 
