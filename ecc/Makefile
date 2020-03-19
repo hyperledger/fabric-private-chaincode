@@ -41,8 +41,9 @@ sym-links:
 ecc: ecc_enclave
 	$(GO) build -o ecc cmd/main.go
 
+# TODO disabled until we fix #242
 vscc-plugin: $(VSCC_SRC)
-	$(GO) build -o $(VSCC_OUT) -buildmode=plugin $^
+#	$(GO) build -o $(VSCC_OUT) -buildmode=plugin $^
 
 #test:
 #	$(LD_LIBRARY_PATH) $(GO) $@ -test.v ./...
@@ -94,7 +95,7 @@ docker-run:
 	fi;\
 	$(DOCKER) run \
 		-it \
-		$${DOCKER_SGX_ARGS} \	
+		$${DOCKER_SGX_ARGS} \
 		--name $(CC_NAME) \
 		-e "CORE_CHAINCODE_LOGGING_LEVEL=DEBUG" \
 		-e "CORE_CHAINCODE_LOGGING_SHIM=INFO" \
