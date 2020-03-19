@@ -7,8 +7,10 @@ TOP = .
 include $(TOP)/build.mk
 
 # TODO bring TLCC back
+# TODO bring back demo
+# TODO bring back Integration test with #256
 # SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc examples integration demo # docs
-SUB_DIRS = utils ercc ecc_enclave ecc examples integration demo # docs
+SUB_DIRS = utils ercc ecc_enclave ecc examples
 # PLUGINS = ercc ecc_enclave ecc tlcc_enclave tlcc
 FPC_SDK = utils/fabric ecc_enclave ecc
 
