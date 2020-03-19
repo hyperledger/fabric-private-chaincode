@@ -16,7 +16,6 @@ import (
 	"strings"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger-labs/fabric-private-chaincode/ercc"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
 	sgxutil "github.com/hyperledger-labs/fabric-private-chaincode/utils"
 	"github.com/hyperledger/fabric-protos-go/peer"

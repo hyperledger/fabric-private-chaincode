@@ -11,7 +11,8 @@ VSCC_OUT = ercc-vscc.so
 DECO_SRC = attestation/ias_credentials/decoration.go
 DECO_OUT = ercc-decorator.so
 
-build: ias-keys provider ercc vscc-plugin decorator-plugin
+# TODO: re-enable/port plugins
+build: ias-keys provider ercc # vscc-plugin decorator-plugin
 
 .PHONY: .sgx_mode
 
@@ -48,9 +49,9 @@ $(GO_TARGETS): $(SGX_MODE_DEPENDENCY) $(GO_TEMPLATES)
 	$(CC) -E -P $(IAS_GO_DEFINES) - < $@$(TEMPLATE_SUFFIX) > $@
 	gofmt -w $@ && goimports -w $@
 
-
 ercc:
 	$(GO) build
+	rm ercc # validating a successful build, ercc not meant to be run directly
 
 vscc-plugin: $(VSCC_SRC)
 	$(GO) build -o $(VSCC_OUT) -buildmode=plugin $^
