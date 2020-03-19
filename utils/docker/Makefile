@@ -99,9 +99,10 @@ peer: base
 dev: base
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_DEV_NAME) $(DOCKER_DEV_BUILD_OPTS) dev
 
+# TODO bring cc-builder back
 cc-builder: dev
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
-		-t $(FPC_DOCKER_CC_BUILDER_NAME)\
-		--build-arg SGX_MODE=${SGX_MODE}\
-		cc-builder
+#	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
+#		-t $(FPC_DOCKER_CC_BUILDER_NAME)\
+#		--build-arg SGX_MODE=${SGX_MODE}\
+#		cc-builder
 
