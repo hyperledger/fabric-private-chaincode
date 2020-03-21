@@ -8,24 +8,36 @@ assignees: ''
 ---
 
 **Describe the bug**
-A clear and concise description of what the bug is.
+<--! 
+  Add a clear and concise description of what the bug is. 
+-->
 
 **To Reproduce**
-Steps to reproduce the behavior:
+<--! 
+Add steps to reproduce the behavior, e.g.
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
 4. See error
+-->
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
+<--! 
+  Add a clear and concise description of what you expected to happen. 
+-->
 
 **Log-filesScreenshots**
-If applicable, add screenshots to help explain your problem.
+<--! 
+ If applicable, add screenshots to help explain your problem. 
+-->
 
 **Environment (please complete the following information):**
+<!--
  - OS (distro+version): [e.g. Ubuntu 18.04]
  - FPC Version (tag or commit-id) [e.g. 'concept-release']
+-->
 
 **Additional context**
-Add any other context about the problem here.
+<--!
+  Add any other context about the problem here.
+-->
