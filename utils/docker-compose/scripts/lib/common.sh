@@ -36,7 +36,7 @@ else
     export FPC_CONFIG="-fpc"
     export PEER_CMD=/project/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/bin/peer.sh
     # FABRIC_BIN_DIR needs to be set for FPC Peer CMD
-    export FABRIC_BIN_DIR=/project/src/github.com/hyperledger/fabric/.build/bin
+    export FABRIC_BIN_DIR=/project/src/github.com/hyperledger/fabric/build/bin
 fi
 
 export NETWORK_CONFIG=${SCRIPT_DIR}/../network-config
