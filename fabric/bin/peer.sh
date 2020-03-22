@@ -331,25 +331,45 @@ handle_channel_join() {
     try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
 
     # - handle ercc
-    say "Installing & Instantiating ercc on channel '${CHAN_ID}' ..."
-    #   - install ercc
-    try $RUN ${FABRIC_BIN_DIR}/peer chaincode install -n ${ERCC_ID} -v ${ERCC_VERSION} -p github.com/hyperledger-labs/fabric-private-chaincode/ercc/cmd
-    sleep 1
-    #   - instantiate ercc iff "channel creation" peer
-    if [ -e "${FABRIC_STATE_DIR}/${CHAN_ID}.creator" ]; then
-	try $RUN ${FABRIC_BIN_DIR}/peer chaincode instantiate -n ${ERCC_ID} -v ${ERCC_VERSION} -c '{"args":["init"]}' -C ${CHAN_ID} -V ercc-vscc
-	sleep 4
-	try rm "${FABRIC_STATE_DIR}/${CHAN_ID}.creator"
-    fi
-    #   - get SPID (mostly as debug output)
-    try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -n ${ERCC_ID} -c '{"args":["getSPID"]}' -C ${CHAN_ID}
+    say "Installing ercc on channel '${CHAN_ID}' ..."
+    say "Packaging chaincode ..."
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode package ${FABRIC_STATE_DIR}/ercc.tar.gz -p ../../ercc --lang golang --label erccv1 
+    para
+    sleep 3
+    say "In installing chaincode ..."
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode install ${FABRIC_STATE_DIR}/ercc.tar.gz 
+    para
+    sleep 3
+    say "Query installed chaincodes.."
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode queryinstalled >&log.txt
+    para
+    PACKAGE_ID=$(awk '/Package ID:/{print}' log.txt | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
+    say "Approve for my org"
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --package-id ${PACKAGE_ID} --sequence ${ERCC_SEQUENCE} # -V ercc-vscc   # TODO: re-add validation plugin once they are enabled in peer ... 
+    para
+    sleep 3
+    say "Check for commit readiness"
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode checkcommitreadiness --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --sequence ${ERCC_SEQUENCE} --output json # -V ercc-vscc   # TODO: re-add validation plugin once they are enabled in peer ...
+    para
+    sleep 3
+    say "Commit chaincode definition...."
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode commit -o ${ORDERER_ADDR} --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --sequence ${ERCC_SEQUENCE} # -V ercc-vscc   # TODO: re-add validation plugin once they are enabled in peer ...
+    para
+    sleep 3
+    say "Query commited chaincodes on the channel"
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode querycommitted --channelID ${CHAN_ID} 
+    para
+    sleep 3
+    say "call chaincode invoke..."
+    try $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke -n ${ERCC_ID} -c '{"function":"getSPID","args":[]}' -C ${CHAN_ID} 
     sleep 3
 
-    # - ask tlcc to join channel
-    #   IMPORTANT: right now a join is _not_ persistant, so on restart of peer,
-    #   it will re-join old channels but tlcc will not!
-    say "Attaching TLCC to channel '${CHAN_ID}' ..."
-    try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -n tlcc -c '{"Args": ["JOIN_CHANNEL"]}' -C ${CHAN_ID}
+
+    ## - ask tlcc to join channel
+    ##   IMPORTANT: right now a join is _not_ persistant, so on restart of peer,
+    ##   it will re-join old channels but tlcc will not!
+    #say "Attaching TLCC to channel '${CHAN_ID}' ..." # TODO: Enable once tlcc is integrated.....
+    #try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -n tlcc -c '{"Args": ["JOIN_CHANNEL"]}' -C ${CHAN_ID} # TODO: Enable once tlcc is integrated
 
     # - exit
     exit 0

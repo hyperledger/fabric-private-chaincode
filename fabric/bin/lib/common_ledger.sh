@@ -48,6 +48,7 @@ define_common_vars() {
     : ${CHAN_ID:="mychannel"}
     : ${ERCC_ID:="ercc"}
     : ${ERCC_VERSION:="0"}
+    : ${ERCC_SEQUENCE:="1"}
 
     ORDERER_PID_FILE="${FABRIC_STATE_DIR}/orderer.pid"
     ORDERER_LOG_OUT="${FABRIC_STATE_DIR}/orderer.out"
@@ -112,6 +113,9 @@ ledger_init() {
     try rm -rf ${FABRIC_STATE_DIR}/*
 
     # 2. start orderer
+    # - Creating a genesisblock for orderer-system-channel......."
+    try ${CONFIGTXGEN_CMD} -outputBlock ${FABRIC_STATE_DIR}/genesisblock -profile SampleDevModeSolo -channelID orderer-system-channel
+    sleep 1
     ORDERER_GENERAL_GENESISPROFILE=SampleDevModeSolo ${ORDERER_CMD} 1>${ORDERER_LOG_OUT} 2>${ORDERER_LOG_ERR} &
     export ORDERER_PID=$!
     echo "${ORDERER_PID}" > ${ORDERER_PID_FILE}
