@@ -100,7 +100,7 @@ RUN cd $FPC_PATH \
  && make plugins \
  && make -C $FPC_PATH/utils/fabric
 
-ENV FABRIC_BIN_DIR=$FABRIC_PATH/.build/bin
+ENV FABRIC_BIN_DIR=$FABRIC_PATH/build/bin
 ENV FPC_CMDS=/project/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/bin
 
 CMD [$FPC_CMDS/peer.sh node start]
