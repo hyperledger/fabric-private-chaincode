@@ -63,12 +63,8 @@ RUN git clone https://github.com/nanopb/nanopb.git $NANOPB_PATH \
  && cd generator/proto \
  && make
 
-# Go repos we need (and pre-load them here rather than later in make)
-RUN go get github.com/golang/protobuf/proto \
- && go get github.com/pkg/errors \
- && go get golang.org/x/tools/cmd/goimports \
- && go get golang.org/x/sync/semaphore \
- && go get github.com/spf13/viper
+# Go tools we need
+RUN go get golang.org/x/tools/cmd/goimports 
 
 # Get Fabric
 ENV FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
