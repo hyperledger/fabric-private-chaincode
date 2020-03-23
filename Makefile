@@ -40,17 +40,7 @@ gotools:
 	$(GO) get golang.org/x/tools/cmd/goimports
 
 godeps: gotools
-	$(GO) get github.com/spf13/viper
-	$(GO) get golang.org/x/sync/semaphore
-	$(GO) get github.com/pkg/errors
-	$(GO) get github.com/golang/protobuf/proto
-	$(GO) get github.com/onsi/ginkgo
-	$(GO) get github.com/onsi/gomega
-	$(GO) get github.com/gin-contrib/cors
-	$(GO) get github.com/gin-gonic/gin
-	$(GO) get github.com/dustin/go-broadcast
-	$(GO) get github.com/hyperledger/fabric-chaincode-go/shim
-	$(GO) get github.com/hyperledger/fabric-protos-go/peer
+	$(GO) mod download
 
 # TODO enable plugins again
 # plugins:
