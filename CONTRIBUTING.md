@@ -21,6 +21,6 @@ Note that we follow the Hyperledger [Charter](https://www.hyperledger.org/about/
 all new inbound code contributions to Fabric Private Chaincode shall be made under the Apache License, Version 2.0.
 All outbound code will be made available under the Apache License, Version 2.0.
 
-You can also reach us on [RocketChat](https://chat.hyperledger.org/) in #private-data-objects.
+You can also reach us on [RocketChat](https://chat.hyperledger.org/) in #fabric-private-chaincode.
 
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
