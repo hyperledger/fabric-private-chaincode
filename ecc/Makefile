@@ -41,9 +41,8 @@ sym-links:
 ecc: ecc_enclave
 	$(GO) build -o ecc cmd/main.go
 
-# TODO disabled until we fix #242
 vscc-plugin: $(VSCC_SRC)
-#	$(GO) build -o $(VSCC_OUT) -buildmode=plugin $^
+	$(GO) build -o $(VSCC_OUT) -buildmode=plugin $^
 
 #test:
 #	$(LD_LIBRARY_PATH) $(GO) $@ -test.v ./...
