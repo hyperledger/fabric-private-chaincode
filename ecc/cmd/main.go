@@ -15,6 +15,11 @@ import (
 var logger = flogging.MustGetLogger("ecc")
 
 func main() {
+
+	// we can control logging via FABRIC_LOGGING_SPEC, the default is FABRIC_LOGGING_SPEC=INFO
+	// For more fine grained logging we could also use different log level for loggers.
+	// For example: FABRIC_LOGGING_SPEC=ecc=DEBUG:ecc_enclave=ERROR
+
 	// create enclave chaincode
 	t := ecc.NewEcc()
 	defer t.Destroy()
