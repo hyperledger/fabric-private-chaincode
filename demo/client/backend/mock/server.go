@@ -59,8 +59,11 @@ func main() {
 	flag.Parse()
 
 	if flagDebug {
-		// TODO find a way to set flogger log level to debug
-		//logger.SetLevel(shim.LogDebug)
+		// We activate our log level here, note that we can also directly control
+		// log level via FABRIC_LOGGING_SPEC. For more fine grained logging we could
+		// also use different log level for loggers.
+		// For example: FABRIC_LOGGING_SPEC=server=INFO:ecc=DEBUG:ecc_enclave=ERROR
+		flogging.ActivateSpec("DEBUG")
 	}
 
 	// deploy
