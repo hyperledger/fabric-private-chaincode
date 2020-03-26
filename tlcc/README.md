@@ -37,7 +37,7 @@ chaincode:
 
 When starting the peer make sure that `LD_LIBRARY_PATH` points to the enclave lib.
 
-    $ LD_LIBRARY_PATH=/path-to/fabric-private-chaincode/tlcc/enclave/lib .build/bin/node start
+    $ LD_LIBRARY_PATH=/path-to/fabric-private-chaincode/tlcc/enclave/lib build/bin/peer node start
 
 ## Join the channel
 

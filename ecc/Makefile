@@ -22,7 +22,7 @@ INSTALLED_DOCKER_BOILERPLATE_ECC_IMAGE ?= $$(docker images | grep -- ${DOCKER_BO
 DOCKER_ENCLAVE_SO_PATH ?= $(ENCLAVE_SO_PATH)
 
 all: build
-# test target disable because it requires revision
+# TODO test target disable because it requires revision
 #all: build test
 
 build: vscc-plugin sym-links

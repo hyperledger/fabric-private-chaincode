@@ -1,5 +1,8 @@
 # Clock Auction Demo Application
 
+## Background
+See [Sepectrum Auction Demo](https://docs.google.com/document/d/1YUF4mzzuybzWk3fbXbTANWO8-tr757BP85qcwE7gQdk).
+
 ##  Prerequisites
 - It is assumed that Fabric Private Chaincode repository on your machine is installed in $FPC_PATH.
 - JSON processor, jq is installed.

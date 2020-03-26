@@ -64,12 +64,8 @@ RUN git clone https://github.com/nanopb/nanopb.git $NANOPB_PATH \
  && cd generator/proto \
  && make
 
-# Go repos we need (and pre-load them here rather than later in make)
-RUN go get github.com/golang/protobuf/proto \
- && go get github.com/pkg/errors \
- && go get golang.org/x/tools/cmd/goimports \
- && go get golang.org/x/sync/semaphore \
- && go get github.com/spf13/viper
+# Go tools we need
+RUN go get golang.org/x/tools/cmd/goimports
 
 # Get Fabric
 ENV FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
@@ -100,7 +96,7 @@ RUN cd $FPC_PATH \
  && make plugins \
  && make -C $FPC_PATH/utils/fabric
 
-ENV FABRIC_BIN_DIR=$FABRIC_PATH/.build/bin
+ENV FABRIC_BIN_DIR=$FABRIC_PATH/build/bin
 ENV FPC_CMDS=/project/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/bin
 
 CMD [$FPC_CMDS/peer.sh node start]
