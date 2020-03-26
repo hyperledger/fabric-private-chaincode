@@ -10,9 +10,6 @@ CC_NAME ?= ecc
 NET_ID ?=dev
 PEER_ID ?=jdoe
 
-VSCC_SRC = vscc/ecc_validation_plugin.go vscc/ecc_validation_logic.go
-VSCC_OUT = ecc-vscc.so
-
 DOCKER_CONTAINER_ID?=$$(docker ps | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
 # the following are the required docker build parameters
 DOCKER_IMAGE ?= $$(docker images | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
@@ -25,7 +22,7 @@ all: build
 # TODO test target disable because it requires revision
 #all: build test
 
-build: ecc vscc-plugin sym-links
+build: ecc sym-links
 
 ECC_ENCLAVE_BUILD = ../ecc_enclave/_build
 ERR_MSG = "ecc_enclave build does not exist!"
@@ -40,10 +37,6 @@ sym-links:
 
 ecc: ecc_enclave
 	$(GO) build -o ecc cmd/main.go
-
-# TODO disabled until we fix #242
-vscc-plugin: $(VSCC_SRC)
-#	$(GO) build -o $(VSCC_OUT) -buildmode=plugin $^
 
 #test:
 #	$(LD_LIBRARY_PATH) $(GO) $@ -test.v ./...

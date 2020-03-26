@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
-	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation/mock"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/common/flogging"
@@ -40,15 +39,15 @@ type EnclaveRegistryCC struct {
 func NewErcc() *EnclaveRegistryCC {
 	logger.Debug("NewErcc called")
 	return &EnclaveRegistryCC{
-		ra:  GetVerifier(),
-		ias: GetIAS(),
+		ra:  attestation.GetVerifier(),
+		ias: attestation.GetIAS(),
 	}
 }
 
 func NewTestErcc() *EnclaveRegistryCC {
 	return &EnclaveRegistryCC{
-		ra:  &mock.MockVerifier{},
-		ias: &mock.MockIAS{},
+		ra:  &attestation.MockVerifier{},
+		ias: &attestation.MockIAS{},
 	}
 }
 

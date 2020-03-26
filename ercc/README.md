@@ -13,10 +13,10 @@ attestation of a chaincode enclave before invoking chaincode operations or
 committing state changes.
 
 The enclave registry is implemented as a normal chaincode and comes with a
-custom validation plugin. Before you can install ercc at a peer you have to
-build the vscc plugin by running the following.
-
-    $ make
+custom validation plugin. Additionally, we use a chaincode decorator to supply
+peer specific attestation metadata to the ercc chaincode when performing
+attestation. Before you can install and use ercc at a peer, you have to build the
+custom-vscc and decorator plugin. See more details in [/plugins/](../plugins/). 
 
 As Fabric creates a docker image for every installed chaincode, it sometimes
 could be useful to delete the ercc docker image as follows.  In particular,

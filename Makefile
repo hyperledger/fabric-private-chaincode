@@ -10,13 +10,12 @@ include $(TOP)/build.mk
 # TODO bring back demo
 # TODO bring back Integration test with #256
 # SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc examples integration demo # docs
-SUB_DIRS = utils ercc ecc_enclave ecc examples
-# PLUGINS = ercc ecc_enclave ecc tlcc_enclave tlcc
+SUB_DIRS = utils ercc ecc_enclave ecc plugins examples
 FPC_SDK = utils/fabric ecc_enclave ecc
 
 .PHONY: license
 
-build : godeps
+build: godeps
 
 build test clean clobber:
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)
@@ -41,10 +40,6 @@ gotools:
 
 godeps: gotools
 	$(GO) mod download
-
-# TODO enable plugins again
-# plugins:
-	# $(foreach DIR, $(PLUGINS), $(MAKE) -C $(DIR) build || exit;)
 
 fpc-sdk: godeps
 	$(foreach DIR, $(FPC_SDK), $(MAKE) -C $(DIR) build || exit;)

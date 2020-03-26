@@ -20,7 +20,7 @@ import (
 	"github.com/hyperledger/fabric-protos-go/peer"
 	commonerrors "github.com/hyperledger/fabric/common/errors"
 	"github.com/hyperledger/fabric/common/flogging"
-	. "github.com/hyperledger/fabric/core/handlers/validation/api/state"
+	validation "github.com/hyperledger/fabric/core/handlers/validation/api/state"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/rwsetutil"
 	"github.com/hyperledger/fabric/protoutil"
 )
@@ -29,7 +29,7 @@ var logger = flogging.MustGetLogger("vscc")
 
 // New creates a new instance of the ercc VSCC
 // Typically this will only be invoked once per peer
-func New(stateFetcher StateFetcher) *VSCCECC {
+func New(stateFetcher validation.StateFetcher) *VSCCECC {
 	return &VSCCECC{
 		verifier: &crypto.ECDSAVerifier{},
 		sf:       stateFetcher,
@@ -38,7 +38,7 @@ func New(stateFetcher StateFetcher) *VSCCECC {
 
 type VSCCECC struct {
 	verifier crypto.Verifier
-	sf       StateFetcher
+	sf       validation.StateFetcher
 }
 
 // Validate validates the given envelope corresponding to a transaction with an endorsement
@@ -240,7 +240,7 @@ func (vscc *VSCCECC) checkEnclaveEndorsement(cis *peer.ChaincodeInvocationSpec, 
 }
 
 type state struct {
-	State
+	validation.State
 }
 
 // GetState retrieves the value for the given key in the given namespace
