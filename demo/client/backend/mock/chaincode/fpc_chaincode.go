@@ -1,5 +1,3 @@
-// +build fpc
-
 /*
 Copyright IBM Corp. All Rights Reserved.
 

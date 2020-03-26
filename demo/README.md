@@ -24,8 +24,7 @@ scripts/startFPCAuctionNetwork.sh --build-cc
 ```
 
 The channel `mychannel` will be created and used to install and instantiate
-all chaincodes. The [golang mock chaincode](chaincode/golang) will be
-instantiated as `mockcc` and the [FPC auction chaincode](chaincode/fpc) will be
+all chaincodes. The [FPC auction chaincode](chaincode/fpc) will be
 instantiated as `ecc_auctioncc`.  If you do not need to build
 the FPC Auction CC, omit the `--build-cc` flag. If you do pass the `--build-cc`
 flag, the script assumes that the docker image
@@ -58,8 +57,7 @@ startFPCAuctionNetwork.sh [options]
 
    This script, by default, will teardown possible previous iterations of this
    demo, generate new crypto material for the network, start an FPC network as
-   defined in \$FPC_PATH/utils/docker-compose, install the mock golang auction
-   chaincode(\$FPC_PATH/demo/chaincode/golang), install the FPC compliant
+   defined in \$FPC_PATH/utils/docker-compose, install the FPC compliant
    auction chaincode(\$FPC_PATH/demo/chaincode/fpc), register auction users,
    and bring up both the fabric-gatway & frontend UI.
 
@@ -154,7 +152,6 @@ make build
 ```
 
 #### Install the FPC Auction Chaincode
-Install the mock golang chaincode for the demo.
 
 To install the chaincode you can run [installCC script](scripts/installCC.sh)
 ```
@@ -184,31 +181,6 @@ ${PEER_CMD} chaincode instantiate -n auctioncc -v 1.0 --channelID mychannel -c '
 ```
 
 4. Exit the peer container
-```
-ctrl + d
-```
-
-#### Install Mock Chaincode
-
-1. Exec into the peer container. There are environment variables already set in
-the peer container that will be convenient for next set of steps. Please refer
-to the FPC Network Setup [documentation](../utils/docker-compose/README.md#Deploying-your-FPC-Chaincode)
-for details on what environment variables exist and how to see their values.
-```
-docker exec -it peer0.org1.example.com bash
-```
-
-2. Install the mockcc.
-```
-${PEER_CMD} chaincode install -n mockcc -v 1.0 --path github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/golang/cmd -l golang
-```
-
-3. Instantiate the mockcc
-```
-${PEER_CMD} chaincode instantiate -n mockcc -v 1.0 --channelID mychannel -c '{"Args":[]}'
-```
-
-4. Exit the container
 ```
 ctrl + d
 ```

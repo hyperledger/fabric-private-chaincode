@@ -5,10 +5,6 @@ This mock server allows to run a FPC chaincode without a Fabric peer and exposes
 The goal of this tool is to simplify FPC chaincode development and enabled quick testing of FPC chaincodes without
 deploying on Fabric network. 
 
-## Start with go chaincode
-
-    $ make run-go
-
 ## Start with fpc chaincode
 
 The mock server uses ECC to load and interact with an FPC chaincode. First make sure you have build FPC.  
