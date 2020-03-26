@@ -16,7 +16,7 @@ FPC_SDK = utils/fabric ecc_enclave ecc
 
 .PHONY: license
 
-build : godeps
+build: gotools
 
 build test clean clobber:
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)
@@ -39,12 +39,9 @@ gotools:
 	# install goimports if not present
 	$(GO) get golang.org/x/tools/cmd/goimports
 
-godeps: gotools
-	$(GO) mod download
-
 # TODO enable plugins again
 # plugins:
 	# $(foreach DIR, $(PLUGINS), $(MAKE) -C $(DIR) build || exit;)
 
-fpc-sdk: godeps
+fpc-sdk:
 	$(foreach DIR, $(FPC_SDK), $(MAKE) -C $(DIR) build || exit;)

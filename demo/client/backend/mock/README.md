@@ -33,10 +33,6 @@ Finally, we can build the mock server running our FPC chaincode
       
     $ make run-fpc
 
-### Additional notes
-
-When running inside FPC dev docker container, please make sure that you run `make godeps` in `$FPC_PATH` before starting the mock server.
-
 ### Building manually
 
 In case you want to build and start the mock server by hand you can do that easily by following these instructions. 
