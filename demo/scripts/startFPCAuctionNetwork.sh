@@ -13,8 +13,7 @@ help(){
 
    This script, by default, will teardown possible previous iterations of this
    demo, generate new crypto material for the network, start an FPC network as
-   defined in \$FPC_PATH/utils/docker-compose, install the mock golang auction
-   chaincode(\$FPC_PATH/demo/chaincode/golang), install the FPC compliant
+   defined in \$FPC_PATH/utils/docker-compose, install the FPC compliant
    auction chaincode(\$FPC_PATH/demo/chaincode/fpc), register auction users,
    and bring up both the fabric-gatway & frontend UI.
 

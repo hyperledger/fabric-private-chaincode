@@ -5,7 +5,7 @@
 TOP = ../..
 include $(TOP)/build.mk
 
-SUB_DIRS = fpc # golang 
+SUB_DIRS = fpc
 
 build test clean clobber:
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)
