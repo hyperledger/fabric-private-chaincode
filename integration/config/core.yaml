@@ -393,10 +393,10 @@ peer:
         decorators:
           -
             name: DefaultDecorator
-          #  -
-          # FPC Addition:1
-          #  name: ERCCDecorator
-          #  library: ../../ercc/ercc-decorator.so
+          -
+            # FPC Addition:1
+            name: ERCCDecorator
+            library: ../../plugins/ercc-decorator.so
         endorsers:
           escc:
             name: DefaultEndorsement

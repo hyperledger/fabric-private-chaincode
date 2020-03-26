@@ -4,20 +4,13 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package mock
-
-import (
-	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
-	"github.com/hyperledger/fabric/common/flogging"
-)
+package attestation
 
 type MockIAS struct {
 }
 
-var logger = flogging.MustGetLogger("ercc.ias")
-
-func (ias *MockIAS) RequestAttestationReport(apiKey string, quoteAsBytes []byte) (attestation.IASAttestationReport, error) {
-	report := attestation.IASAttestationReport{
+func (ias *MockIAS) RequestAttestationReport(apiKey string, quoteAsBytes []byte) (IASAttestationReport, error) {
+	report := IASAttestationReport{
 		IASReportSignature:          "some X-IASReport-Signature",
 		IASReportSigningCertificate: "some X-IASReport-Signing-Certificate",
 		IASReportBody:               []byte("Some report body"),
@@ -27,5 +20,5 @@ func (ias *MockIAS) RequestAttestationReport(apiKey string, quoteAsBytes []byte)
 }
 
 func (ias *MockIAS) GetIntelVerificationKey() (interface{}, error) {
-	return attestation.PublicKeyFromPem([]byte(attestation.IntelPubPEM))
+	return PublicKeyFromPem([]byte(IntelPubPEM))
 }

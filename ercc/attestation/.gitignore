@@ -3,9 +3,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-ercc
-ercc-decorator.so
-ercc-vscc.so
 tags
 provider.go
 .sgx_mode

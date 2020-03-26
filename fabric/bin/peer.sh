@@ -202,11 +202,7 @@ handle_lifecycle_chaincode_commit() {
     # [ -f ${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_ID}.${CC_VERSION} ] || exit 0
 
     # - setup internal ecc state, e.g., register chaincode
-    ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__setup", "'${ERCC_ID}'"]}' --waitForEvent
-    # TODO: prefix with 'try' above once we have decorators. Without decorators
-    #   '__setup' will fail but is also necessary that the enclave key is
-    #   generated for (stateless) tx/queries to work. Stateful queries require
-    #   in addition to above decorators also re-inclusion of tlcc.
+    try ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__setup", "'${ERCC_ID}'"]}' --waitForEvent
 
     # - retrieve public-key (just for fun of it ...)
     try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__getEnclavePk"]}'

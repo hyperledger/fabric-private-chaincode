@@ -17,31 +17,31 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
-	sgxutil "github.com/hyperledger-labs/fabric-private-chaincode/utils"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	commonerrors "github.com/hyperledger/fabric/common/errors"
 	"github.com/hyperledger/fabric/common/flogging"
-	. "github.com/hyperledger/fabric/core/handlers/validation/api/state"
+	validation "github.com/hyperledger/fabric/core/handlers/validation/api/state"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/rwsetutil"
 	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
 )
 
+const MrEnclaveStateKey = "MRENCLAVE"
+
 var logger = flogging.MustGetLogger("vscc")
 
 // New creates a new instance of the ercc VSCC
 // Typically this will only be invoked once per peer
-func New(stateFetcher StateFetcher) *VSCCERCC {
+func New(stateFetcher validation.StateFetcher) *VSCCERCC {
 	return &VSCCERCC{
-		// ra: &mock.MockVerifier{},
-		ra: ercc.GetVerifier(),
+		ra: attestation.GetVerifier(),
 		sf: stateFetcher,
 	}
 }
 
 type VSCCERCC struct {
 	ra attestation.Verifier
-	sf StateFetcher
+	sf validation.StateFetcher
 }
 
 // Validate validates the given envelope corresponding to a transaction with an endorsement
@@ -181,7 +181,7 @@ func (t *VSCCERCC) checkAttestation(respPayload *peer.ChaincodeAction) error {
 
 		state := &state{channelState}
 		// get mrenclave from ledger
-		mrenclave, err := state.GetState(eccNamespace, sgxutil.MrEnclaveStateKey)
+		mrenclave, err := state.GetState(eccNamespace, MrEnclaveStateKey)
 		if err != nil {
 			return errors.New("mrenclave does not exist")
 		}
@@ -206,7 +206,7 @@ func (t *VSCCERCC) checkAttestation(respPayload *peer.ChaincodeAction) error {
 }
 
 type state struct {
-	State
+	validation.State
 }
 
 // GetState retrieves the value for the given key in the given namespace
@@ -232,7 +232,7 @@ func getEccNamespace(txRWSet *rwsetutil.TxRwSet) (string, error) {
 	eccNamespace := ""
 	for _, ns := range txRWSet.NsRwSets {
 		for _, read := range ns.KvRwSet.Reads {
-			if read.Key == sgxutil.MrEnclaveStateKey && strings.HasPrefix(ns.NameSpace, "ecc_") {
+			if read.Key == MrEnclaveStateKey && strings.HasPrefix(ns.NameSpace, "ecc_") {
 				if eccNamespace != "" {
 					return "", fmt.Errorf("mutiple namespaces for ecc found")
 				}
