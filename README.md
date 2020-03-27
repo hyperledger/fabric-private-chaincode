@@ -207,7 +207,6 @@ A few notes:
   `/dev/isgx` and your PSW daemon listens to `/var/run/aesmd`, then the docker image will be sgx-enabled and your settings from `./config/ias` will be used. You will have to manually set `SGX_MODE=HW` before building anything to use HW mode.
 * if you want additional apt packages in your container image, add to the `<absolute-project-path>/fabric-private-chaincode/config.override.mk` file in the fabric-private-chaincode directory. In that file, define `DOCKER_DEV_IMAGE_APT_ADD__PKGS` with a
   list of packages you want. They will then be automatically added to the docker image
-* docker images do not persist between runs and there are setup files that will be needed in the docker container. Therefore, map the local cloned filesystem as a volume to `/project/src/github.com/hyperledger-labs/fabric-private-chaincode` within the docker container. To achieve this, add `DOCKER_DEV_RUN_OPTS= -v <absolute-project-path>/fabric-private-chaincode:/project/src/github.com/hyperledger-labs/fabric-private-chaincode` to your `<absolute-project-path>/fabric-private-chaincode/config.override.mk`, where <absolute-project-path> is where you have cloned the FPC project on your local machine.
 * due to the way the peer's port for chaincode connection is managed,
   you will be able to run only a single FPC development container on a
   particular host.
@@ -223,6 +222,9 @@ and then use it with
 This will open a shell inside the FPC development container, with
 environment variables like GOPATH appropriately defined and all
 dependencies like fabric built, ready to build and run FPC.
+
+Note that by default the dev container mounts your local cloned FPC project as a volume to `/project/src/github.com/hyperledger-labs/fabric-private-chaincode` within the docker container.
+This allows you to edit the content of the repository using your favorite editor in your system and the changes inside the docker container. Additionally, you are also not loosing changes inside the container when you reboot or the container gets stopped for other reasons.
 
 Optional: to do a clean build do the following within the container
 ```
