@@ -27,6 +27,8 @@ endif
 
 DOCKER_DEV_RUN_OPTS ?=
 DOCKER_DEV_RUN_OPTS += -p $(FABRIC_PEER_DAEMON_CHAINCODE_PORT):$(FABRIC_PEER_DAEMON_CHAINCODE_PORT) -v $(DOCKER_DAEMON_SOCKET):$(DOCKER_DAEMON_SOCKET)
+DOCKER_DEV_RUN_OPTS += -v $(PWD)/../../:/project/src/github.com/hyperledger-labs/fabric-private-chaincode
+
 DOCKER_GOPATH=/project
 DOKER_FPCPATH=$(DOCKER_GOPATH)/src/github.com/hyperledger-labs/fabric-private-chaincode
 SGX_DEVICE_PATH ?= $(shell if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx" ]; then echo "/dev/sgx"; fi)
