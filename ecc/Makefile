@@ -25,7 +25,7 @@ all: build
 # TODO test target disable because it requires revision
 #all: build test
 
-build: vscc-plugin sym-links
+build: ecc vscc-plugin sym-links
 
 ECC_ENCLAVE_BUILD = ../ecc_enclave/_build
 ERR_MSG = "ecc_enclave build does not exist!"

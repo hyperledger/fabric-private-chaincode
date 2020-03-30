@@ -3,6 +3,18 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+# NOTES:
+# - multi-peer support: In the earlier v1.4 version, this peer wrapper should
+#   have worked with multiple peers, with the channel-creator being the one how
+#   instantiates ercc and no additional sync needed beyond peers as already
+#   necessary in vanilla Fabric (one peer creates channel, then everybody
+#   joins). This pattern does not work anymore with the new lifecycle where ercc
+#   instantation requires tighter synchronization due to the new approval process.
+#   Hence, as of now, this peer wrapper does _not_ support multi-peer anymore!
+# - multi-channel support: Currently FPC supports only a single channel. This
+#   script doesn't prevent you, though, configuring ercc on multiple-channels,
+#   so make sure externally than 'channel join' is called only for a single channel.
+
 #RUN=echo # uncomment to dry-run peer call
 
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
@@ -17,205 +29,151 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 
 FPC_DOCKER_NAME_CMD="${FPC_TOP_DIR}/utils/fabric/get-fabric-container-name"
 
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/tlcc/enclave/lib 
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/tlcc/enclave/lib
 
 
-get_fpc_name() {
-    echo "ecc_${1}"
-}
+# Lifecycle Chaincode command wrappers
+#--------------------------------------------
 
-
-# Chaincode command wrappers
-#----------------------------
-
-handle_chaincode_install() {
+handle_lifecycle_chaincode_package() {
     OTHER_ARGS=()
     while [[ $# > 0 ]]; do
 	case "$1" in
-	    -n|--name)
-		CC_NAME=$2;
-		shift; shift
-		;;
-	    -v|--version)
-		CC_VERSION=$2
+	    --label)
+		CC_LABEL="$2"
 		shift; shift
 		;;
 	    -p|--path)
-		CC_ENCLAVESOPATH=$2
+		CC_ENCLAVESOPATH="$2"
 		shift; shift
 		;;
 	    -l|--lang)
-		CC_LANG=$2
+		CC_LANG="$2"
 		shift;shift
 		;;
-	    *)
+	    -s|--sgx-mode)
+		# Note: this is a new parameter not existing in the 'vanilla' peer.
+		# If the SGX_MODE environment variable exists, it will also be used
+		# (unless overriden by this flag)
+		SGX_MODE="$2"
+		shift;shift
+		;;
+	    # Above is the flags we really care, but we need also the outputfile
+	    # which doesn't have a flag. So let's enumerate the known no-arg
+	    # flags (i.e., --tls -h/--help), assume all other flags have exactly
+	    # one arg (true as of v2.0.1) and then the remaining one is the
+	    # output file ...
+	    -h|--help)
 		OTHER_ARGS+=( "$1" )
+		shift
+		;;
+
+	    --tls)
+		OTHER_ARGS+=( "$1" )
+		shift
+		;;
+
+	    -*)
+		OTHER_ARGS+=( "$1" "$2" )
+		shift; shift
+		;;
+	    *)
+		# Note: we require it later to be an absolute path!!
+		OUTPUTFILE=$(readlink -f "$1")
 		shift
 		;;
 	    esac
     done
-    if [ "${CC_LANG}" = "fpc-c" ]; then
-	if [ -z ${CC_NAME+x} ] || [ -z ${CC_VERSION+x} ] || [ -z ${CC_ENCLAVESOPATH+x} ] ; then
-	    # missing params, don't do anything and let real peer report errors
-	    return
-	fi
-	yell "Found valid FPC Chaincode Install!"
-	# get net-id and peer-id from core.yaml, for now just use defaults ...
-	parse_fabric_config ${FABRIC_CFG_PATH}
-
-	# add private chaincode name prefix
-	FPC_NAME=$(get_fpc_name ${CC_NAME})
-
-	# get docker name for this chaincode
-	DOCKER_IMAGE_NAME=$(${FPC_DOCKER_NAME_CMD} --cc-name ${FPC_NAME} --cc-version ${CC_VERSION} --net-id ${NET_ID} --peer-id ${PEER_ID}) || die "could not get docker image name"
-
-	# install docker
-	try make SGX_MODE=${SGX_MODE} ENCLAVE_SO_PATH=${CC_ENCLAVESOPATH} DOCKER_IMAGE=${DOCKER_IMAGE_NAME} -C ${FPC_TOP_DIR}/ecc docker-fpc-app
-
-	# eplace path and lang arg with dummy go chaincode
-	ARGS_EXEC=( 'chaincode' 'install' '-n' "${FPC_NAME}" '-v' "${CC_VERSION}" '-p' 'github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd' "${OTHER_ARGS[@]}" )
+    if [ ! "${CC_LANG}" = "fpc-c" ]; then
+	# Nothing special to do for non-fpc chaincode, just forward to real peer
+	return
     fi
-    return
+
+    # check required parameters
+    [ ! -z "${OUTPUTFILE}" ]     || die "no or ill-defined outputfile provided"
+    [ ! -z "${CC_LABEL}" ]       || die "undefined parameter '--label'"
+    [ -d "${CC_ENCLAVESOPATH}" ] || die "undefined or non-existing '-p'/'--path' parameter '${CC_ENCLAVESOPATH}'"
+
+    # Note: normal fabric package format & layout:
+    # Overall the package is a gzipped tar-file containing files
+    # - 'metadata.json', a json object with 'path', 'type' and 'label' string fields
+    # - 'code.tar.gz' a gzipped tar-fil containing files
+    #    - 'src/...'
+    # as for fpc for now we will package already built artifacts 'enclave.signed.so' and
+    # 'mrenclave', we will skip 'src' and directly place the built artifacts into
+    # the root of 'code.tar.gz'. (Eventually we might add reproducible build to the
+    # external builder, in which case we would stuff the related source into 'src/...'
+    # for metadata.json use the params passed to us, i.e., in particular type 'fpc-c'.
+
+    FPC_PKG_SANDBOX="$(mktemp -d -t  fpc-pkg-sandbox.XXX)" || die "mktemp failed"
+
+    # - create code.tar.gz
+    ENCLAVE_FILE="enclave.signed.so"
+    MRENCLAVE_FILE="mrenclave"
+    try cd "${CC_ENCLAVESOPATH}"
+    [ -f "${ENCLAVE_FILE}" ]   || die "no enclave file '${ENCLAVE_FILE}' in '${CC_ENCLAVESOPATH}'"
+    [ -f "${MRENCLAVE_FILE}" ] || die "no enclave file '${MRENCLAVE_FILE}' in '${CC_ENCLAVESOPATH}'"
+    try tar -zcf "${FPC_PKG_SANDBOX}/code.tar.gz" \
+	"${ENCLAVE_FILE}" \
+	"${MRENCLAVE_FILE}"
+
+    # - create metadata.json
+    [ ! -z "${SGX_MODE}" ] || die "SGX_MODE not correctly specified either via environment variable or -s/--sgx-mode argument"
+    cat <<EOF >"${FPC_PKG_SANDBOX}/metadata.json"
+{
+  "path":"${CC_ENCLAVESOPATH}",
+  "type":"${CC_LANG}",
+  "label":"${CC_LABEL}",
+  "sgx_mode":"${SGX_MODE}"
 }
+EOF
+    # note:
+    # - in addition to standard fields we also add the SGX_MODE to be used
+    # - for golang path is a normalized go package. In our case we do need
+    #   path but just pass it along as it might be useful in debugging
 
-handle_chaincode_upgrade() {
-    OTHER_ARGS=()
-    while [[ $# > 0 ]]; do
-        case "$1" in
-            -n|--name)
-                CC_NAME=$2;
-                shift; shift
-                ;;
-            -v|--version)
-                CC_VERSION=$2
-                shift; shift
-                ;;
-            -p|--path)
-                CC_ENCLAVESOPATH=$2
-                shift; shift
-                ;;
-            -l|--lang)                                                                                                                            CC_LANG=$2
-                shift;shift
-                ;;
-            *)
-                OTHER_ARGS+=( "$1" )
-                shift
-                ;;
-            esac
-    done
-    # accept only if original install is of same "type" (fpc vs vanilla)
-    $(is_fpc_cc ${CC_NAME} ${CC_VERSION})
-    FPC_INSTALLED=$?
-    [ "${CC_LANG}" = "fpc-c" ];
-    FPC_UPGRADE=$?
-    if [ ${FPC_INSTALLED} != ${FPC_UPGRADE} ]; then
-	die "cannot change frpm FPC to non-FPC or vice-versa in chaincode upgrade"
-    fi
+    # - tar it
+    try cd "${FPC_PKG_SANDBOX}"
+    try tar -zcf "${OUTPUTFILE}" *
+    # Note: the
+    # - for bizare reason, fabric peer refuses to accept the tar if you tar
+    #   as . which also creates a ./ directory entry?!!
+    # - file is absolute, so the various cd's do not hurt ..
 
-    # if fpc, do same switcheroo and docker-build as done by install
-    if [ "${CC_LANG}" = "fpc-c" ]; then                                                                                                   if [ -z ${CC_NAME+x} ] || [ -z ${CC_VERSION+x} ] || [ -z ${CC_ENCLAVESOPATH+x} ] ; then
-            # missing params, don't do anything and let real peer report errors
-            return
-        fi
-        yell "Found valid FPC Chaincode Install!"
-        # get net-id and peer-id from core.yaml, for now just use defaults ...
-        parse_fabric_config .
+    # - cleanup
+    try rm -rf "${FPC_PKG_SANDBOX}"
 
-        # add private chaincode name prefix
-        FPC_NAME=$(get_fpc_name ${CC_NAME})
-
-        # get docker name for this chaincode
-        DOCKER_IMAGE_NAME=$(${FPC_DOCKER_NAME_CMD} --cc-name ${FPC_NAME} --cc-version ${CC_VERSION} --net-id ${NET_ID} --peer-id ${PEER_ID}) || die "could not get docker image name"
-
-        # install docker
-        try make ENCLAVE_SO_PATH=${CC_ENCLAVESOPATH} DOCKER_IMAGE=${DOCKER_IMAGE_NAME} -C ${FPC_TOP_DIR}/ecc docker-fpc-app
-
-        # replace path and lang arg with dummy go chaincode
-        ARGS_EXEC=( 'chaincode' 'upgrade' '-n' "${FPC_NAME}" '-v' "${CC_VERSION}" '-p' 'github.com/hyperledger/fabric/examples/cha
-incode/go/example02/cmd' "${OTHER_ARGS[@]}" )
-    fi
-    return
-}
-
-
-handle_chaincode_instantiate() {
-    handle_chaincode_call_with_mapped_name "instantiate" "$@"
-    # Note: we rely on above to analyze args and assign (& translate) CC_NAME for -n and -c init-args CC_MSG and IS_FPC_CC
-
-    # - instantiate chaincode
-    try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
-    # Note: the -c init-args which ultimately have to go to the enclave are also passed here: ecc just ignores them, so no point to filter them. Besides we need it if CC is _not_ FPC ..
-    sleep 3 # unfortunately, no --waitForEvent equivalent, so do heuristic sleep ...
-
-    ondemand_setup
-
-    # - call enclave init function iff FPC
-    if [ ${IS_FPC_CC} -eq 1 ]; then
-	# Note: we count that for init client is _not_ using "function", but 'trust but verify' ...
-	if echo ${CC_MSG} | egrep -i '.*\"function\":.*'; then
-	    die "'function' not supported for init arguments, put all arguments in the 'Args' list instead .."
-	fi
-        init_args=$(echo ${CC_MSG} | sed 's/^\s*{\s*\("Args"\s*:.*\)$/{"Function":"__init", \1/i')
-        try $RUN  ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c "${init_args}" --waitForEvent
-    fi
-
-    # - exit
     exit 0
 }
 
-handle_chaincode_invoke() {
-    handle_chaincode_call_with_mapped_name "invoke" "$@"
-    ondemand_setup
+
+handle_lifecycle_chaincode_install() {
+    # TODO: to allow non-fpc CC, we will have to keep track here of FPC chaincode
+    # - do normal install (and exit if not successfull)
+    # - inspect metadata.json from package tar
+    # - iff type is fpc-c
+    #   - get label from metadata.json
+    #   - extract package id PKG_ID via queryinstalled
+    #   - remember this via 'touch ${FABRIC_STATE_DIR}/is-fpc-c-package.${PKG_ID}'
+    # - exit (instead of below return)
     return
 }
 
-handle_chaincode_query() {
-    handle_chaincode_call_with_mapped_name "query" "$@"
-    ondemand_setup
+handle_lifecycle_chaincode_approveformyorg() {
+    # TODO: to allow non-fpc CC, we will have to keep track here of pkg to name.version
+    # mapping for fpc-c-code
+    # - do normal approve (and exit if not successfull)
+    # - extract package-id PKG_ID, name CC_ID and version CC_VERSION from args
+    # - iff it is fpc pkg, i.e., [ -f ${FABRIC_STATE_DIR}/is-fpc-c-package.${PKG_ID} ]
+    #   remember mapping 'touch ${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_ID}.${CC_VERSION}'
+    # - exit (instead of below return)
     return
 }
 
-handle_chaincode_list() {
-    OUT=$(${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}")
-    rc=$?
-    if [ $rc = 0 ]; then
-	echo "${OUT}" | sed 's/Name: ecc_/Name: /g';
-    fi
-    exit $rc
-}
+handle_lifecycle_chaincode_commit() {
+    # - call real peer so channel is joined
+    try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
 
-
-# chaincode cmd utility functions
-
-ondemand_setup() {
-    if [ ${IS_FPC_CC} -eq 1 ]; then
-	if [ -z ${CC_VERSION} ]; then
-	    # an invoke or query: we don't get version on command-line and have to first query for it ...
-	    CC_VERSION=$(${FABRIC_BIN_DIR}/peer chaincode list -C ${CHAN_ID} --instantiated | awk "/Name: ${CC_NAME}/ "'{ print $4 }' | sed 's/,$//')
-	fi
-
-	setup_file="${FABRIC_STATE_DIR}/${CHAN_ID}.${CC_NAME}.${CC_VERSION}.setup"
-
-	# - do not do anything iff we are already setup for this chaincode on this peer
-	if [ -e "${setup_file}" ]; then
-	    return
-	fi
-
-        # - setup internal ecc state, e.g., register chaincode
-        try $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__setup", "'${ERCC_ID}'"]}' --waitForEvent
-
-	# - remember we setup this chaincode on this peer ..
-	try touch ${setup_file}
-
-        # - retrieve public-key (just for fun of it ...)
-        try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__getEnclavePk"]}'
-    fi
-}
-
-handle_chaincode_call_with_mapped_name() {
-    CMD=$1; shift
-
-    OTHER_ARGS=()
     while [[ $# > 0 ]]; do
 	case "$1" in
 	    -n|--name)
@@ -223,77 +181,10 @@ handle_chaincode_call_with_mapped_name() {
 		shift; shift
 		;;
 	    -v|--version)
-		# Note: this exists only for instantiate, not invoke or query;
-		# will handle the case of undefined CC_VERSION inside
-		# translate_fpc_name, though  ..
-		CC_VERSION=$2
-		OTHER_ARGS+=( "$1" "$2" )
+		CC_VERSION=$2;
 		shift; shift
 		;;
-	    -c|--ctor)
-		CC_MSG=$2;
-		# Note: we need this only for special case of instantiate
-		# by doing it here we have to parse args only once ...
-		OTHER_ARGS+=( "$1" "$2" )
-		shift; shift
-		;;
-	    *)
-		OTHER_ARGS+=( "$1" )
-		shift
-		;;
-	    esac
-    done
-
-    OLD_CC_NAME=${CC_NAME}
-    CC_NAME=$(translate_fpc_name ${CC_NAME}  ${CC_VERSION})
-    if [ "${OLD_CC_NAME}" == "${CC_NAME}" ]; then
-	IS_FPC_CC=0
-    else
-	IS_FPC_CC=1
-    fi
-    ARGS_EXEC=( 'chaincode' "${CMD}" '-n' "${CC_NAME}" "${OTHER_ARGS[@]}" )
-}
-
-translate_fpc_name() {
-    CC_NAME=$1
-    CC_VERSION=$2
-
-    if $(is_fpc_cc ${CC_NAME} ${CC_VERSION}); then
-        get_fpc_name ${CC_NAME}
-    else
-        echo "${CC_NAME}"
-    fi
-}
-
-is_fpc_cc() {
-    CC_NAME=$1
-    CC_VERSION=$2
-    FPC_NAME=$(get_fpc_name ${CC_NAME})
-
-    # if we don't have a version in our invocation ...
-    if [ -z ${CC_VERSION} ]; then
-	# it must be an instantiated version, so let's
-	# check whether a FPC-named one exists
-	FPC_VERSION=$(${FABRIC_BIN_DIR}/peer chaincode list -C ${CHAN_ID} --instantiated | awk "/Name: ${FPC_NAME}/ "'{ print $4 }' | sed 's/,$//')
-	[ ! -z "${FPC_VERSION}" ];
-	return $?
-    else
-	# otherwise, there should be at least a corresponding docker image
-	DOCKER_IMAGE_NAME=$(${FPC_DOCKER_NAME_CMD} --cc-name ${FPC_NAME} --cc-version ${CC_VERSION} --net-id ${NET_ID} --peer-id ${PEER_ID}) || die "could not get docker image name"
-
-	[ ! -z "$(docker images | grep "${DOCKER_IMAGE_NAME}")" ];
-	return $?
-    fi
-}
-
-# Channel command wrappers
-#--------------------------
-
-handle_channel_create() {
-    # - get channel name
-    while [[ $# > 0 ]]; do
-	case "$1" in
-	    -c|--channelID)
+	    -C|--channelID)
 		CHAN_ID=$2;
 		shift; shift
 		;;
@@ -302,12 +193,45 @@ handle_channel_create() {
 		;;
 	    esac
     done
-    # - remember that we are "channel creation" peer
-    try touch "${FABRIC_STATE_DIR}/${CHAN_ID}.creator"
-    # fall through to "real" peer ...
-    # (Note: we didn't modify args, so we can use original ones already storeed in ARGS_EXEC)
+
+    # TODO: below we really should do only if this is FPC chaincode. However, we cannot learn that directly
+    # from argument but have to backtrack it via `approveformyorg` which gives packageid and then `install`
+    # which maps to actual package (and hence the type of metadata.json ...).
+    # Assuming above above TODOs in handle_lifecycle_chaincode_{install,approveformyorg} are implemented
+    # it would be simple
+    # [ -f ${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_ID}.${CC_VERSION} ] || exit 0
+
+    # - setup internal ecc state, e.g., register chaincode
+    ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__setup", "'${ERCC_ID}'"]}' --waitForEvent
+    # TODO: prefix with 'try' above once we have decorators. Without decorators
+    #   '__setup' will fail but is also necessary that the enclave key is
+    #   generated for (stateless) tx/queries to work. Stateful queries require
+    #   in addition to above decorators also re-inclusion of tlcc.
+
+    # - retrieve public-key (just for fun of it ...)
+    try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__getEnclavePk"]}'
+
+    # - exit (otherwise main function will invoke operation again!)
+    exit 0
+}
+
+
+# Chaincode command wrappers
+#--------------------------------------------
+
+handle_chaincode_invoke() {
+    # TODO: eventually add client-side encryption/decryption
     return
 }
+
+handle_chaincode_query() {
+    # TODO: eventually add client-side encryption/decryption
+    return
+}
+
+
+# Channel command wrappers
+#--------------------------
 
 handle_channel_join() {
     # - get channel name
@@ -331,72 +255,101 @@ handle_channel_join() {
     try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
 
     # - handle ercc
+    ERCC_LABEL="${ERCC_ID}_${ERCC_VERSION}"
+    ERCC_PACKAGE=${FABRIC_STATE_DIR}/ercc.tar.gz
+    ERCC_QUERY_INSTALL_LOG=${FABRIC_STATE_DIR}/ercc-query-install.$$.log
     say "Installing ercc on channel '${CHAN_ID}' ..."
     say "Packaging chaincode ..."
-    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode package ${FABRIC_STATE_DIR}/ercc.tar.gz -p ../../ercc --lang golang --label erccv1 
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode package ${ERCC_PACKAGE} -p ../../ercc --lang golang --label ${ERCC_LABEL}
     para
     sleep 3
-    say "In installing chaincode ..."
-    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode install ${FABRIC_STATE_DIR}/ercc.tar.gz 
+    say "Installing chaincode ..."
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode install ${ERCC_PACKAGE}
     para
     sleep 3
-    say "Query installed chaincodes.."
-    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode queryinstalled >&log.txt
+    say "Querying installed chaincodes to find package id.."
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode queryinstalled >& ${ERCC_QUERY_INSTALL_LOG}
     para
-    PACKAGE_ID=$(awk '/Package ID:/{print}' log.txt | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
+    ERCC_PACKAGE_ID=$(awk "/Package ID: ${ERCC_LABEL}/{print}" ${ERCC_QUERY_INSTALL_LOG} | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
+    [ ! -z "${ERCC_PACKAGE_ID}" ] || die "Could not extract package id"
     say "Approve for my org"
-    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --package-id ${PACKAGE_ID} --sequence ${ERCC_SEQUENCE} # -V ercc-vscc   # TODO: re-add validation plugin once they are enabled in peer ... 
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --package-id ${ERCC_PACKAGE_ID} --sequence ${ERCC_SEQUENCE} # -V ercc-vscc   # TODO: re-add validation plugin once they are enabled in peer ...
     para
     sleep 3
-    say "Check for commit readiness"
+    say "Checking for commit readiness"
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode checkcommitreadiness --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --sequence ${ERCC_SEQUENCE} --output json # -V ercc-vscc   # TODO: re-add validation plugin once they are enabled in peer ...
     para
     sleep 3
-    say "Commit chaincode definition...."
+    say "Committing chaincode definition...."
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode commit -o ${ORDERER_ADDR} --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --sequence ${ERCC_SEQUENCE} # -V ercc-vscc   # TODO: re-add validation plugin once they are enabled in peer ...
     para
     sleep 3
+    # Note: Below is not crucial but they do display potentially useful info and the second also is liveness-test for ercc
     say "Query commited chaincodes on the channel"
-    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode querycommitted --channelID ${CHAN_ID} 
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode querycommitted --channelID ${CHAN_ID}
     para
     sleep 3
     say "call chaincode invoke..."
-    try $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke -n ${ERCC_ID} -c '{"function":"getSPID","args":[]}' -C ${CHAN_ID} 
+    try $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke -n ${ERCC_ID} -c '{"function":"getSPID","args":[]}' -C ${CHAN_ID}
     sleep 3
 
 
-    ## - ask tlcc to join channel
-    ##   IMPORTANT: right now a join is _not_ persistant, so on restart of peer,
-    ##   it will re-join old channels but tlcc will not!
+    # - ask tlcc to join channel
+    #   IMPORTANT: right now a join is _not_ persistant, so on restart of peer,
+    #   it will re-join old channels but tlcc will not!
     #say "Attaching TLCC to channel '${CHAN_ID}' ..." # TODO: Enable once tlcc is integrated.....
     #try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -n tlcc -c '{"Args": ["JOIN_CHANNEL"]}' -C ${CHAN_ID} # TODO: Enable once tlcc is integrated
 
-    # - exit
+    # - exit (otherwise main function will invoke operation again!)
     exit 0
 }
 
 
 # - check whether it is a command which we have to intercept
-#   - chaincode install
-#   - channel create
 #   - channel join
+#   - lifecycle chaincode package
+#   - lifecycle chaincode commit
+#   - chaincode invoke
+#   - chaincode query
 ARGS_EXEC=( "$@" ) # params to eventually pass to real peer /default: just pass all original args ..
 case "$1" in
+    lifecycle)
+	shift
+	case "$1" in
+	    chaincode)
+		shift
+		case "$1" in
+		    package)
+			shift
+			handle_lifecycle_chaincode_package "$@"
+			;;
+		    install)
+			shift
+			handle_lifecycle_chaincode_install "$@"
+			;;
+		    approveformyorg)
+			shift
+			handle_lifecycle_chaincode_approveformyorg "$@"
+			;;
+		    commit)
+			shift
+			handle_lifecycle_chaincode_commit "$@"
+			;;
+		    *)
+			# fall through, nothing to do
+			;;
+		esac
+		;;
+
+	    *)
+		# fall through, nothing to do
+		;;
+	esac
+	;;
+
     chaincode)
 	shift
 	case "$1" in
-	    install)
-		shift
-		handle_chaincode_install "$@"
-		;;
-	    upgrade)
-		shift
-		handle_chaincode_upgrade "$@"
-		;;
-	    instantiate)
-		shift
-		handle_chaincode_instantiate "$@"
-		;;
 	    invoke)
 		shift
 		handle_chaincode_invoke "$@"
@@ -405,23 +358,16 @@ case "$1" in
 		shift
 		handle_chaincode_query "$@"
 		;;
-	    list)
-		shift
-		handle_chaincode_list "$@"
-		;;
 	    *)
 		# fall through, nothing to do
-		# TODO: is this really safe? should we do anything with 'package' and/or 'signpackage'?
+		# Note: old lifecycle commands (e.g.,install, instantiate, upgrade, list)
+		# are not supported anymore in v2 channel! So no need to wrap
 	esac
 	;;
 
     channel)
 	shift
 	case "$1" in
-	    create)
-		shift
-		handle_channel_create "$@"
-		;;
 	    join)
 		shift
 		handle_channel_join "$@"
@@ -431,7 +377,7 @@ case "$1" in
 	esac
 	;;
 
-    *) 
+    *)
 	# fall through, nothing to do
 	;;
 esac

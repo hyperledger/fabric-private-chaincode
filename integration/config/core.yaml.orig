@@ -1,9 +1,9 @@
 # Copyright IBM Corp. All Rights Reserved.
-# Copyright 2020 Intel Corporation
+# Copyright Intel Corp. All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# Based on sampleconfig from github.com/hyperledger/fabric.git tagged with v2.0.1 
+# Based on sampleconfig from github.com/hyperledger/fabric.git tagged with v2.0.1
 
 ###############################################################################
 #
@@ -22,12 +22,12 @@ peer:
 
     # The Address at local network interface this Peer will listen on.
     # By default, it will listen on all network interfaces
-    # FPC change: the original 0.0.0.0 didn't always work in some settings and we need it only for localhost
-    listenAddress: 127.0.0.1:7051
+    listenAddress: 0.0.0.0:7051
 
     # The endpoint this peer uses to listen for inbound chaincode connections.
     # If this is commented-out, the listen address is selected to be
     # the peer's address (see below) with port 7052
+    # chaincodeListenAddress: 0.0.0.0:7052
     chaincodeListenAddress: 0.0.0.0:7052 # Note: we uncommented it to make working with our dev docker image
 
     # The endpoint the chaincode for this peer uses to connect to the peer.
@@ -40,8 +40,7 @@ peer:
     # in the same organization. For peers in other organization, see
     # gossip.externalEndpoint for more info.
     # When used as CLI config, this means the peer's endpoint to interact with
-    # FPC change: see comment above listenAddress above ..
-    address: 127.0.0.1:7051
+    address: 0.0.0.0:7051
 
     # Whether the Peer should programmatically determine its address
     # This case is useful for docker containers.
@@ -539,28 +538,12 @@ chaincode:
     # List of directories to treat as external builders and launchers for
     # chaincode. The external builder detection processing will iterate over the
     # builders in the order specified below.
-    # externalBuilders: []
+    externalBuilders: []
         # - path: /path/to/directory
         #   name: descriptive-builder-name
         #   environmentWhitelist:
         #      - ENVVAR_NAME_TO_PROPAGATE_FROM_PEER
         #      - GOPROXY
-    externalBuilders:
-        # FPC Addition 0: external builder for fpc-c chaincode
-        - path: ../../fabric/externalBuilder
-          name: fpc-c
-          environmentWhitelist:
-              - FPC_HOSTING_MODE
-              - FABRIC_LOGGING_SPEC
-              - ftp_proxy
-              - http_proxy
-              - https_proxy
-              - no_proxy
-              # Notes:
-              # - FPC_HOSTING_MODE will determine whether chaincode is executed
-              #   directly on host or inside a container
-              # - for go builds, we also would have to define HOME and/or GOCACHE
-
 
     # The maximum duration to wait for the chaincode build and install process
     # to complete.
@@ -607,9 +590,11 @@ chaincode:
     # Logging section for the chaincode container
     logging:
       # Default level for all loggers within the chaincode container
+      #level:  info
       level:  debug
       # Override default level for the 'shim' logger
-      shim:   info
+      #shim:   warning
+      shim:  info 
       # Format for the chaincode container logs
       format: '%{color}%{time:2006-01-02 15:04:05.000 MST} [%{module}] %{shortfunc} -> %{level:.4s} %{id:03x}%{color:reset} %{message}'
 
@@ -747,7 +732,7 @@ metrics:
 ###############################################################################
 #
 #    SGX section - includes configuration for the Intel Attestation service
-#    FPC Addition:5
+#    FPC Addition:6  (FPC Addition:5 no longer supported)
 #
 ###############################################################################
 sgx:

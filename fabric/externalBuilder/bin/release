@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# Copyright Intel Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+set -uo pipefail
+
+SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
+
+. ${SCRIPTDIR}/lib/common.sh
+
+
+[ "$#" -eq 2 ] || die "Expected 2 directories got $#"
+
+CC_BUILD_DIR="$1"
+CC_RELEASE_DIR="$2"
+
+if [ -d "${CC_BUILD_DIR}/META-INF" ] ; then
+   cp -a "${CC_BUILD_DIR}/META-INF"/* "$RELEASE"
+fi
+
+# TODO (eventually): figure out what has to change (if at all) for CCaaS to work
+yell "release/CCaaS is not yet a supported/tested version for FPC" 
+exit 0
+
+
+

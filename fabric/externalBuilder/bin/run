@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# Copyright Intel Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+set -uo pipefail
+
+SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
+
+. ${SCRIPTDIR}/lib/common.sh
+
+
+[ "$#" -eq 2 ] || die "Expected 2 directories got $#"
+
+CC_BUILD_DIR="$1"
+CC_RT_METADATA_DIR="$2"
+
+cc_run
