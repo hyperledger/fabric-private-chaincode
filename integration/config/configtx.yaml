@@ -3,7 +3,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# Based on hyperledger/fabric/sampleconfig
+# Based on sampleconfig from github.com/hyperledger/fabric.git tagged with v2.0.1
+
 ---
 ################################################################################
 #
