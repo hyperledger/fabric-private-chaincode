@@ -45,7 +45,9 @@ ENV PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 
 # Install SGX SSL
 ENV SGX_SSL /opt/intel/sgxssl
-RUN wget https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
+RUN \
+    OPENSSL_MAJOR_VERSION=$(echo ${OPENSSL_VERSION} | sed 's/\([^0-9.]\)*//g') \
+ && wget https://www.openssl.org/source/old/${OPENSSL_MAJOR_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz \
  && git clone  --branch ${SGXSSL_VERSION} https://github.com/intel/intel-sgx-ssl.git \
  && . $SGX_SDK/environment \
  && (cd intel-sgx-ssl/openssl_source; mv /tmp/openssl-${OPENSSL_VERSION}.tar.gz . ) \
