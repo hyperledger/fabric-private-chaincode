@@ -55,7 +55,7 @@ before_install:
   - sudo sh -c "echo 'yes' | ./${SGX_SDK_BIN}"; popd
   # SGX SSL
   - pushd $HOME; git clone --branch ${SGXSSL_VERSION} https://github.com/intel/intel-sgx-ssl.git
-  - OPENSSL_MAJOR_VERSION=$(echo ${OPENSSL_VERSION} | sed 's/\([^0-9.]\)*//g'); wget https://www.openssl.org/source/openssl/old/${OPENSSL_MAJOR_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz; mv openssl-${OPENSSL_VERSION}.tar.gz intel-sgx-ssl/openssl_source
+  - OPENSSL_MAJOR_VERSION=$(echo ${OPENSSL_VERSION} | sed 's/\([^0-9.]\)*//g'); wget https://www.openssl.org/source/old/${OPENSSL_MAJOR_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz; mv openssl-${OPENSSL_VERSION}.tar.gz intel-sgx-ssl/openssl_source
   - cd intel-sgx-ssl/Linux; make SGX_MODE=SIM DESTDIR=$SGXSSL all test
   - cd intel-sgx-ssl/Linux; make install; popd
   # NANOPB
