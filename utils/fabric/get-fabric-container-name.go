@@ -1,5 +1,5 @@
 /*
-* Copyright Intel Corp. 2019 All Rights Reserved.
+* Copyright 2019 Intel Corporation
 *
 * SPDX-License-Identifier: Apache-2.0
  */

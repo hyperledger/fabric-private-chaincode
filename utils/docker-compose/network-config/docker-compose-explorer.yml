@@ -1,5 +1,5 @@
 # Copyright IBM Corp. All Rights Reserved.
-# Copyright Intel Corp. All Rights Reserved.
+# Copyright 2020 Intel Corporation
 
 # Note: this is a tweaked version of './docker-compose.yaml' in hyperledger/blockchain-explorer.git
 
