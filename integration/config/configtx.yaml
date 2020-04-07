@@ -327,19 +327,21 @@ Orderer: &OrdererDefaults
         # implementation, we expect every replica to also be an OSN. Therefore,
         # a subset of the host:port items enumerated in this list should be
         # replicated under the Orderer.Addresses key above.
+        #
+        # NOTE: we define raft-raft port on a different port (rather than standard 7050) so we can exclusively define TLS (mandatory for raft node to raft node communication) on that port but not on the order-client port 7050 (and hence do not need client certificates)
         Consenters:
-            - Host: raft0.example.com
-              Port: 7050
-              ClientTLSCert: path/to/ClientTLSCert0
-              ServerTLSCert: path/to/ServerTLSCert0
-            - Host: raft1.example.com
-              Port: 7050
-              ClientTLSCert: path/to/ClientTLSCert1
-              ServerTLSCert: path/to/ServerTLSCert1
-            - Host: raft2.example.com
-              Port: 7050
-              ClientTLSCert: path/to/ClientTLSCert2
-              ServerTLSCert: path/to/ServerTLSCert2
+            - Host: 127.0.0.1
+              Port: 7059
+              ClientTLSCert: /tmp/hyperledger/test/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
+              ServerTLSCert: /tmp/hyperledger/test/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
+              #- Host: raft1.example.com
+              #  Port: 7050
+              #  ClientTLSCert: path/to/ClientTLSCert1
+              #  ServerTLSCert: path/to/ServerTLSCert1
+              #- Host: raft2.example.com
+              #  Port: 7050
+              #  ClientTLSCert: path/to/ClientTLSCert2
+              #  ServerTLSCert: path/to/ServerTLSCert2
 
         # Options to be specified for all the etcd/raft nodes. The values here
         # are the defaults for all new channels and can be modified on a
