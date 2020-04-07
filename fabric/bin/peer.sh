@@ -378,8 +378,8 @@ handle_channel_join() {
     # - ask tlcc to join channel
     #   IMPORTANT: right now a join is _not_ persistant, so on restart of peer,
     #   it will re-join old channels but tlcc will not!
-    #say "Attaching TLCC to channel '${CHAN_ID}' ..." # TODO: Enable once tlcc is integrated.....
-    #try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -n tlcc -c '{"Args": ["JOIN_CHANNEL"]}' -C ${CHAN_ID} # TODO: Enable once tlcc is integrated
+    say "Attaching TLCC to channel '${CHAN_ID}' ..."
+    try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -n tlcc -c '{"Args": ["JOIN_CHANNEL"]}' -C ${CHAN_ID}
 
     # - exit (otherwise main function will invoke operation again!)
     exit 0

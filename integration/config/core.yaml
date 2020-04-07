@@ -602,7 +602,7 @@ chaincode:
         escc: enable
         vscc: enable
         qscc: enable
-        #tlcc: enable  # FPC Addition:4
+        tlcc: enable  # FPC Addition:4
 
     # Logging section for the chaincode container
     logging:

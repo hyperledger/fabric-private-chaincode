@@ -52,6 +52,9 @@ env:
     - PROTOC_CMD=${PROTO_DIR}/bin/protoc
 
 before_install:
+  # git settings
+  - git config --global user.email "fpc_tester@fpc"
+  - git config --global user.name "fpc_tester"
   # SGX SDK
   - mkdir -p /opt/intel && mkdir -p /etc/init
   - pushd /opt/intel; wget ${SGX_REPO}/${SGX_LIB_COMMON}
@@ -70,10 +73,8 @@ before_install:
   # Newer Protobuf
   - wget ${PROTO_REPO}/v${PROTO_VERSION}/${PROTO_ZIP}; sudo unzip ${PROTO_ZIP} -d ${PROTO_DIR}
   # Fabric
-  - git clone --branch $FABRIC_VERSION https://github.com/hyperledger/fabric.git $FABRIC_PATH
-  - pushd $FABRIC_PATH
-  - git am $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/*.patch
-  - GO_TAGS=pluginsenabled make peer orderer cryptogen configtxgen && popd
+  - git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
+  - pushd $FABRIC_PATH; git checkout tags/$FABRIC_VERSION -b "$FABRIC_VERSION-fpc"; popd;
 
 script:
   # travis doesn't check out the branch itself but for our make to work we

@@ -31,8 +31,7 @@ type TrustedLedgerCC struct {
 
 func New(p *peer.Peer) *TrustedLedgerCC {
 	return &TrustedLedgerCC{
-		//enclave: &enclave.StubImpl{},
-		enclave: nil,
+		enclave: &enclave.StubImpl{},
 		peer:    p,
 	}
 }

@@ -17,6 +17,9 @@ ARG SGX_MODE=SIM
 
 ARG APT_ADD_PKGS=
 
+ARG GIT_USER_NAME=tester
+ARG GIT_USER_EMAIL=tester@fpc
+
 ENV NANOPB_VERSION=${NANOPB_VERSION}
 ENV FABRIC_VERSION=${FABRIC_VERSION}
 ENV OPENSSL_VERSION=${OPENSSL_VERSION}
@@ -25,6 +28,9 @@ ENV SGX_MODE=${SGX_MODE}
 
 
 WORKDIR /tmp
+
+RUN git config --global user.name $GIT_USER_NAME \
+ && git config --global user.email $GIT_USER_EMAIL
 
 # we need docker commands (even though we use docker daemon from "outside")
 RUN apt-get update \
@@ -80,21 +86,14 @@ ENV FPC_PATH=$GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
 RUN mkdir /tmp/build-src
 COPY . /tmp/build-src
 # RUN mkdir -p $FPC_PATH
-RUN git clone --branch $FPC_REPO_BRANCH $FPC_REPO_URL $FPC_PATH
+RUN git clone $FPC_REPO_URL $FPC_PATH \
 # Note: could add --single-branch to below to speed-up and keep size smaller. But for now for a dev-image better keep complete repo
+ && cd $FABRIC_PATH \
+ && git checkout tags/$FABRIC_VERSION -b "$FABRIC_VERSION-fpc"
 
-# Build Fabric (after FPC as we need the FPC patches!)
-# Note: the git config shouldn't really be necessary for a git am but that fails without it.
-#   To not commit an id, just do it only temporarily and only locally ...
-RUN cd $FABRIC_PATH \
- && git config user.email "FPC" \
- && git am $FPC_PATH/fabric/*patch \
- && git config --unset user.email \
- && GO_TAGS=pluginsenabled make peer orderer cryptogen configtxgen
-
-# Build FPC plugins for peer
+# Build FPC peer including plugins and tlcc support
 RUN cd $FPC_PATH \
- && make plugins \
+ && make plugins tlcc_enclave tlcc fabric \
  && make -C $FPC_PATH/utils/fabric
 
 ENV FABRIC_BIN_DIR=$FABRIC_PATH/build/bin

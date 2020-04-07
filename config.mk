@@ -15,6 +15,11 @@ export SGX_BUILD ?= PRERELEASE
 
 export FABRIC_PATH ?= ${GOPATH}/src/github.com/hyperledger/fabric
 
+# Give the option to overload by custom protoc
+# e.g. this is overloaded by travis and docker dev as we use protoc 3.11.4 to build
+# protos in tlcc_enclave but use protoc 3.0.x to build SGX SDK and SSL
+export PROTOC_CMD ?= protoc
+
 JAVA ?= java
 PLANTUML_JAR ?= plantuml.jar
 PLANTUML_CMD ?= $(JAVA) -jar $(PLANTUML_JAR)

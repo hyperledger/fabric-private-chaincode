@@ -313,38 +313,24 @@ Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in t
 
     $ git clone --recursive https://github.com/hyperledger-labs/fabric-private-chaincode.git $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
 
-#### Patch Fabric 
+#### Prepare Fabric
 
-Next we need to patch the Fabric peer and rebuild it in order to enable Fabric Private Chaincode support. 
+Fabric Private Chaincode support requires to re-build the Fabric peer. 
 
-Checkout Fabric 2.0.1 release and apply our patch using the following commands:
+Checkout Fabric 2.0.1 release using the following commands:
 
     $ export FABRIC_PATH=${GOPATH}/src/github.com/hyperledger/fabric
-    $ git clone --branch v2.0.1 https://github.com/hyperledger/fabric.git $FABRIC_PATH
-    $ cd $FABRIC_PATH
-    $ git am ../../hyperledger-labs/fabric-private-chaincode/fabric/*.patch
+    $ git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
+    $ cd $FABRIC_PATH; git checkout tags/v2.0.1 -b v2.0.1-fpc
     
-Note that this patch does currently not work with the Fabric master branch, therefore make sure you use the Fabric
-v2.0.1 branch.
+Note that Fabric Private Chaincode currently does not work with the Fabric `master` branch, therefore make sure you use the Fabric
+`v2.0.1` branch and create a local branch named `v2.0.1-fpc`. This is important as our build script applies some patches
+to the fabric peer to enable FPC support. Make sure the source of Fabric is in your ``$GOPATH``.
 
 ### Build Fabric Private Chaincode
 
-Once you have your development environment up and running (i.e., using our docker-based setup or install all all dependencies on your machine) you can build FPC and start developing your own FPC application.
+Once you have your development environment up and running (i.e., using our docker-based setup or install all dependencies on your machine) you can build FPC and start developing your own FPC application.
 
-Make sure Fabric is in your ``$GOPATH`` and you enable the plugin feature using `GO_TAGS=pluginsenabled`. Simply run
-
-    $ cd $FABRIC_PATH
-    $ GO_TAGS=pluginsenabled make
-
-Building Fabric may take a while and it's time to get a coffee. Also, be not surprised if unit tests fail. In order to
-just build the peer you can run the following command:
-```
-$ GO_TAGS=pluginsenabled make peer
-```
-Please make sure that the peer is _always_ built with GO_TAGS, otherwise our custom validation plugins will (silently!) be
-ignored by the peer, despite the settings in ``core.yaml``.
-
-Once you have setup your development environment including Intel SGX SDK and SSL, nanopb, and successfully patched and built Fabric you can build the Fabric Private Chaincode framework.  
 ```
 $ cd $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
 $ make

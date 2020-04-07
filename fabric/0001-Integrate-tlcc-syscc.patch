@@ -1,0 +1,47 @@
+From 0b29c14088c10e64ecaf918c9a96e5444d106e47 Mon Sep 17 00:00:00 2001
+From: Marcus Brandenburger <bur@zurich.ibm.com>
+Date: Tue, 7 Apr 2020 15:07:09 +0200
+Subject: [PATCH] Integrate tlcc syscc
+
+Loads tlcc system chaincode on peer startup.
+
+Signed-off-by: Marcus Brandenburger <bur@zurich.ibm.com>
+---
+ internal/peer/node/start.go | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/internal/peer/node/start.go b/internal/peer/node/start.go
+index 340d6da26..909708e3c 100644
+--- a/internal/peer/node/start.go
++++ b/internal/peer/node/start.go
+@@ -74,6 +74,7 @@ import (
+ 	"github.com/hyperledger/fabric/core/scc/cscc"
+ 	"github.com/hyperledger/fabric/core/scc/lscc"
+ 	"github.com/hyperledger/fabric/core/scc/qscc"
++	"github.com/hyperledger/fabric/core/scc/tlcc"
+ 	"github.com/hyperledger/fabric/core/transientstore"
+ 	"github.com/hyperledger/fabric/discovery"
+ 	"github.com/hyperledger/fabric/discovery/endorsement"
+@@ -566,6 +567,7 @@ func serve(args []string) error {
+ 		"qscc":       {},
+ 		"cscc":       {},
+ 		"_lifecycle": {},
++		"tlcc":       {},
+ 	}
+ 
+ 	lsccInst := &lscc.SCC{
+@@ -719,8 +721,10 @@ func serve(args []string) error {
+ 		Metrics:                endorser.NewMetrics(metricsProvider),
+ 	}
+ 
++	tlccInst := tlcc.New(peerInstance)
++
+ 	// deploy system chaincodes
+-	for _, cc := range []scc.SelfDescribingSysCC{lsccInst, csccInst, qsccInst, lifecycleSCC} {
++	for _, cc := range []scc.SelfDescribingSysCC{lsccInst, csccInst, qsccInst, lifecycleSCC, tlccInst} {
+ 		if enabled, ok := chaincodeConfig.SCCWhitelist[cc.Name()]; !ok || !enabled {
+ 			logger.Infof("not deploying chaincode %s as it is not enabled", cc.Name())
+ 			continue
+-- 
+2.26.0
+

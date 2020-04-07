@@ -23,7 +23,8 @@ DOCKER_DEV_BUILD_OPTS ?=
 ifdef DOCKER_DEV_IMAGE_APT_ADD__PKGS
 	DOCKER_DEV_BUILD_OPTS += --build-arg APT_ADD_PKGS=$(DOCKER_DEV_IMAGE_APT_ADD__PKGS)
 endif
-
+# needed because we're doing the apply of fabric patches inside of docker, where git is unconfigured
+DOCKER_DEV_BUILD_OPTS += --build-arg GIT_USER_NAME="$(shell git config user.name)" --build-arg GIT_USER_EMAIL="$(shell git config user.email)"
 
 DOCKER_DEV_RUN_OPTS ?=
 DOCKER_DEV_RUN_OPTS += -p $(FABRIC_PEER_DAEMON_CHAINCODE_PORT):$(FABRIC_PEER_DAEMON_CHAINCODE_PORT) -v $(DOCKER_DAEMON_SOCKET):$(DOCKER_DAEMON_SOCKET)

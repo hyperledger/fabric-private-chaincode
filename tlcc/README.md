@@ -7,37 +7,16 @@ https://creativecommons.org/licenses/by/4.0/
 Before your continue here make sure you have built ``tlcc_enclave``.
 We refer to [tlcc_enclave/README.md](../tlcc_enclave).
 
-First we build tlcc as system chaincode plugin. What is that?
-See [here](https://hyperledger-fabric.readthedocs.io/en/release-1.4/systemchaincode.html).
-
-    $ make
-
-This builds `tlcc.so`. Using this plugin when running the peer inside
-Docker most probably will not work out-of-the-box, thus, not supported
-right now.
-
 ## Integrate with Fabric
 
-Add `tlcc` as system chaincode plugin to your `core.yaml`. Example:
-
-```
-chaincode:
-    system:
-        tlcc: enable
-
-    systemPlugins:
-        - enabled: true
-        name: tlcc
-        path: /path-to/fabric-private-chaincode/tlcc/tlcc.so
-        invokableExternal: true
-        invokableCC2CC: true
-```
+TLCC is integrated into a fabric peer as system chaincode and thus must be built into the peer binary.
+We provide a peer target in [fabric/](../fabric) that builds the peer with tlcc integration.
 
 ## Starting the peer
 
 When starting the peer make sure that `LD_LIBRARY_PATH` points to the enclave lib.
 
-    $ LD_LIBRARY_PATH=/path-to/fabric-private-chaincode/tlcc/enclave/lib build/bin/peer node start
+    $ LD_LIBRARY_PATH=$FPC_PATH/tlcc/enclave/lib build/bin/peer node start
 
 ## Join the channel
 

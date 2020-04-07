@@ -38,9 +38,7 @@ func NewEcc() *EnclaveChaincode {
 	logger.Debug("NewEcc")
 	return &EnclaveChaincode{
 		erccStub: &ercc.EnclaveRegistryStubImpl{},
-		// TODO disable TLCC for the moment
-		//tlccStub: &tlcc.TLCCStubImpl{},
-		tlccStub: &tlcc.MockTLCCStub{},
+		tlccStub: &tlcc.TLCCStubImpl{},
 		enclave:  enclave.NewEnclave(),
 		verifier: &crypto.ECDSAVerifier{},
 	}
