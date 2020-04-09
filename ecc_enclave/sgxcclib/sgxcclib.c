@@ -50,26 +50,6 @@ int sgxcc_bind(enclave_id_t eid, report_t* report, ec256_public_t* pubkey)
     return SGX_SUCCESS;
 }
 
-int sgxcc_init(enclave_id_t eid,
-    const char* encoded_args,
-    uint8_t* response,
-    uint32_t response_len_in,
-    uint32_t* response_len_out,
-    ec256_signature_t* signature,
-    void* ctx)
-{
-    int enclave_ret = SGX_ERROR_UNEXPECTED;
-    int ret = ecall_cc_init(eid, &enclave_ret,
-        encoded_args,                                 // args (encoded and potentially encrypted)
-        response, response_len_in, response_len_out,  // response
-        (sgx_ec256_signature_t*)signature,            // signature
-        ctx);                                         // context for callback
-
-    CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(ret)
-    CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(enclave_ret)
-    return SGX_SUCCESS;
-}
-
 int sgxcc_invoke(enclave_id_t eid,
     const char* encoded_args,
     const char* pk,

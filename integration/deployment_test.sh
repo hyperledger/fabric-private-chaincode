@@ -24,7 +24,11 @@ run_test() {
 
     try ${PEER_CMD} chaincode install -l golang -n example02 -v ${CC_VERS} -p github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd
 
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -v ${CC_VERS} -c '{"Args":["My Auction"]}' -V ecc-vscc
+    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -v ${CC_VERS} -c '{"Args":[]}' -V ecc-vscc
+    sleep 3
+
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"init", "Args": ["MyAuctionHouse"]}' --waitForEvent
+    check_result "OK"
     sleep 3
 
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["create", "MyAuction"]}' --waitForEvent

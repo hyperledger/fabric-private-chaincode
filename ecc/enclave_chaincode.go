@@ -79,8 +79,6 @@ func (t *EnclaveChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response 
 		// so if you change here you also will have to change there ...
 		// If/when we refactor we should define such stuff somewhere as constants..
 		return t.setup(stub)
-	} else if function == "__init" { // pass CC init to chaincode
-		return t.init(stub)
 	} else if function == "__getEnclavePk" { //get Enclave PK
 		return t.getEnclavePk(stub)
 	}
@@ -164,64 +162,6 @@ func (t *EnclaveChaincode) setup(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 
 	return shim.Success([]byte(enclavePkBase64))
-}
-
-// ============================================================
-// init -
-// ============================================================
-func (t *EnclaveChaincode) init(stub shim.ChaincodeStubInterface) pb.Response {
-	// check if we have an enclave already
-	if t.enclave == nil {
-		return shim.Error("ecc: Enclave not initialized! Run setup first!")
-	}
-
-	// get and json encode parameters
-	_, argss := stub.GetFunctionAndParameters() // ignore function-name == __init
-	jsonArgs, err := json.Marshal(argss)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	// call enclave
-	var errMsg string
-	responseData, signature, errInit := t.enclave.Init(jsonArgs, stub, t.tlccStub)
-	if errInit != nil {
-		errMsg = fmt.Sprintf("t.enclave.Init failed: %s", errInit)
-		logger.Errorf(errMsg)
-		// likely a chaincode error, so we stil want response go back ...
-	}
-
-	enclavePk, errPk := t.enclave.GetPublicKey()
-	if errPk != nil {
-		errMsg = fmt.Sprintf("init t.enclave.GetPublicKey failed. Reason: %s", err)
-		logger.Errorf(errMsg)
-		// return (and ignore any potential response) as this is a more systematic error
-		return shim.Error(errMsg)
-	}
-
-	fpcResponse := &utils.Response{
-		ResponseData: responseData,
-		Signature:    signature,
-		PublicKey:    enclavePk,
-	}
-	responseBytes, _ := json.Marshal(fpcResponse)
-
-	var response pb.Response
-	if errInit == nil {
-		response = pb.Response{
-			Status:  shim.OK,
-			Payload: responseBytes,
-			Message: errMsg,
-		}
-	} else {
-		response = pb.Response{
-			Status:  shim.ERROR,
-			Payload: responseBytes,
-			Message: errMsg,
-		}
-	}
-	logger.Debugf("init response: %v", response)
-	return response
 }
 
 // ============================================================

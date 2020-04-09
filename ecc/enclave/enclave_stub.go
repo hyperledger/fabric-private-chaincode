@@ -276,8 +276,6 @@ type Stub interface {
 	GetRemoteAttestationReport(spid []byte, sig_rl []byte, sig_rl_size uint) ([]byte, []byte, error)
 	// Return report and enclave PK in DER-encoded PKIX format
 	GetLocalAttestationReport(targetInfo []byte) ([]byte, []byte, error)
-	// Init chaincode
-	Init(args []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error)
 	// Invoke chaincode
 	Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error)
 	// Returns enclave PK in DER-encoded PKIX formatk
@@ -361,59 +359,6 @@ func (e *StubImpl) GetLocalAttestationReport(spid []byte) ([]byte, []byte, error
 	return nil, nil, nil
 }
 
-// invoke calls the enclave for processing of (cc) init , takes arguments
-// and the current chaincode state as input and returns a new chaincode state
-func (e *StubImpl) Init(args []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error) {
-	if shimStub == nil {
-		return nil, nil, errors.New("Need shim")
-	}
-
-	// index := Register(Stubs{shimStub, tlccStub})
-	index := registry.Register(&Stubs{shimStub, tlccStub})
-	defer registry.Release(index)
-	// defer Release(index)
-	ctx := unsafe.Pointer(&index)
-
-	// args
-	argsPtr := C.CString(string(args))
-	defer C.free(unsafe.Pointer(argsPtr))
-
-	// response
-	responseLenOut := C.uint32_t(0) // We pass maximal length separatedly; set to zero so we can detect valid responses
-	responsePtr := C.malloc(MAX_RESPONSE_SIZE)
-	defer C.free(responsePtr)
-
-	// signature
-	signaturePtr := C.malloc(SIGNATURE_SIZE)
-	defer C.free(signaturePtr)
-
-	e.sem.Acquire(context.Background(), 1)
-	// invoke (init) enclave
-	init_ret := C.sgxcc_init(e.eid,
-		argsPtr,
-		(*C.uint8_t)(responsePtr), C.uint32_t(MAX_RESPONSE_SIZE), &responseLenOut,
-		(*C.ec256_signature_t)(signaturePtr),
-		ctx)
-	e.sem.Release(1)
-	// Note: we do try to return the response in all cases, even then there is an error ...
-	var sig []byte = nil
-	var err error
-	if init_ret == 0 {
-		sig, err = crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
-		if err != nil {
-			sig = nil
-		}
-	} else {
-		err = fmt.Errorf("Init failed. Reason: %d", int(init_ret))
-		// TODO: ideally we would also sign error messages but would
-		// require including the error into the signature itself
-		// which has involves a rathole of changes, so defer to the
-		// time which design & refactor everything to be end-to-end
-		// secure ...
-	}
-	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, err
-}
-
 // invoke calls the enclave for transaction processing, takes arguments
 // and the current chaincode state as input and returns a new chaincode state
 func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error) {
@@ -463,7 +408,11 @@ func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInt
 		}
 	} else {
 		err = fmt.Errorf("Invoke failed. Reason: %d", int(invoke_ret))
-		// TODO: (see above Init for comment applying also here)
+		// TODO: ideally we would also sign error messages but would
+		// require including the error into the signature itself
+		// which has involves a rathole of changes, so defer to the
+		// time which design & refactor everything to be end-to-end
+		// secure ...
 	}
 	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, err
 }
