@@ -360,19 +360,20 @@ Add the following content to the function, `helloworld_test()` in test.sh.  Plea
 ```
 helloworld_test() {
     say "- do hello world"
-    # install and instantiate helloworld  chaincode
 
-    # builds the docker image; creates the docker container and enclave;
+    # install helloworld  chaincode
     # input:  CC_ID:chaincode name; CC_VERS:chaincode version;
     #         ENCLAVE_SO_PATH:path to build artifacts
     say "- install helloworld chaincode"
-    try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p ${ENCLAVE_SO_PATH}
-    sleep 3
+    PKG=/tmp/${CC_ID}.tar.gz
+    try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label ${CC_ID} --path ${CC_PATH} ${PKG}
+    try ${PEER_CMD} lifecycle chaincode install ${PKG}
 
-    # instantiate helloworld chaincode
-    say "- instantiate helloworld chaincode"
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":[]}' -V ecc-vscc
-    sleep 3
+    PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_ID}/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
+
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VERS}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS}
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS}
 
     # store the value of 100 in asset1
     say "- invoke storeAsset transaction to store value 100 in asset1"
@@ -402,26 +403,26 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 CC_ID=helloworld_test
 
 #this is the path that will be used for the docker build of the chaincode enclave
-ENCLAVE_SO_PATH=examples/helloworld/_build/lib/
+CC_PATH=examples/helloworld/_build/lib/
 
 CC_VERS=0
 
 helloworld_test() {
     say "- do hello world"
-    # install and instantiate helloworld  chaincode
 
-    # builds the docker image; creates the docker container and enclave;
+    # install helloworld  chaincode
     # input:  CC_ID:chaincode name; CC_VERS:chaincode version;
     #         ENCLAVE_SO_PATH:path to build artifacts
-
     say "- install helloworld chaincode"
-    try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p ${ENCLAVE_SO_PATH}
-    sleep 3
+    PKG=/tmp/${CC_ID}.tar.gz
+    try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label ${CC_ID} --path ${CC_PATH} ${PKG}
+    try ${PEER_CMD} lifecycle chaincode install ${PKG}
 
-    # instantiate helloworld chaincode
-    say "- instantiate helloworld chaincode"
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":[""]}' -V ecc-vscc
-    sleep 3
+    PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_ID}/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
+
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VERS}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS}
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS}
 
     # store the value of 100 in asset1
     say "- invoke storeAsset transaction to store value 100 in asset1"

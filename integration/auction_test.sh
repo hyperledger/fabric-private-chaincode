@@ -14,22 +14,27 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 CC_ID=auction_test
+CC_PATH=${FPC_TOP_DIR}/examples/auction/_build/lib/
+CC_LANG=fpc-c
+CC_VER=0
 
-#this is the path that will be used for the docker build of the chaincode enclave
-ENCLAVE_SO_PATH=examples/auction/_build/lib/
-
-CC_VERS=0
 num_rounds=3
 num_clients=10
 FAILURES=0
 
 auction_test() {
-    # install, init, and register (auction) chaincode
-    try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p ${ENCLAVE_SO_PATH}
-    sleep 3
+    PKG=/tmp/${CC_ID}.tar.gz
 
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"Args":[]}' -V ecc-vscc
-    sleep 3
+    try ${PEER_CMD} lifecycle chaincode package --lang ${CC_LANG} --label ${CC_ID} --path ${CC_PATH} ${PKG}
+    try ${PEER_CMD} lifecycle chaincode install ${PKG}
+
+    PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_ID}/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
+
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER}
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER}
+
+    try ${PEER_CMD} lifecycle chaincode querycommitted -C ${CHAN_ID}
 
     # Scenario 1
     becho ">>>> Close and evaluate non existing auction. Response should be AUCTION_NOT_EXISTING"
@@ -113,7 +118,6 @@ para
 say "Preparing Auction Test ..."
 # - clean up relevant docker images
 docker_clean ${ERCC_ID}
-docker_clean ${CC_ID}
 
 trap ledger_shutdown EXIT
 

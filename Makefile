@@ -8,9 +8,8 @@ include $(TOP)/build.mk
 
 # TODO bring TLCC back
 # TODO bring back demo
-# TODO bring back Integration test with #256
 # SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc examples integration demo # docs
-SUB_DIRS = utils ercc ecc_enclave ecc plugins examples
+SUB_DIRS = utils ercc ecc_enclave ecc plugins examples integration
 FPC_SDK = utils/fabric ecc_enclave ecc
 
 .PHONY: license
