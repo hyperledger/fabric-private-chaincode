@@ -248,7 +248,9 @@ Make sure that you have the following required dependencies installed:
 
 * Docker 18.x
 
-* Protocol Buffers 3.5.x or higher and [Nanopb](http://github.com/nanopb/nanopb) 0.3.9.2
+* Protocol Buffers 
+    - Protocol Buffers 3.0.x needed for the Intel SGX SDK
+    - Protocol Buffers 3.11.x or higher and [Nanopb](http://github.com/nanopb/nanopb) 0.3.9.2
 
 * SGX SDK v2.6 for [Linux](https://github.com/intel/linux-sgx)
 
@@ -296,6 +298,14 @@ For more detailed information consult the official nanopb documentation http://g
     $ cd generator/proto && make
 
 Make sure that you set `$NANOPB_PATH` as it is needed to build Fabric Private Chaincode.
+
+Moreover, in order to build Fabric protobufs we also require a newer Protobuf compiler than what is provided as standard ubuntu package and is used to build the
+Intel SGX SDK. For this reason you will have to download and install another version and use it together with Nanopb. Do not install the new protobuf, though, such that it is not found in your standard PATH but instead define the `PROTOC_CMD`, either as environment variable or via `config.override.mk` to point to the new `protoc` binary
+
+    $ wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.4/protoc-3.11.4-linux-x86_64.zip
+    $ unzip protoc-3.11.4-linux-x86_64.zip -d /usr/local/proto3
+    $ export PROTOC_CMD=/usr/local/proto3/bin/protoc
+
 
 #### Clone Fabric Private Chaincode
 

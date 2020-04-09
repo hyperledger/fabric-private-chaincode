@@ -15,7 +15,6 @@ services:
 addons:
   apt:
     packages:
-      # TODO upgrade to protobuf 3.5 or higher
       - protobuf-compiler
       - python-protobuf
 
@@ -45,6 +44,12 @@ env:
     - SGX_REPO=https://download.01.org/intel-sgx/linux-2.6/ubuntu18.04-server
     - SGX_LIB_COMMON=libsgx-enclave-common_2.6.100.51363-bionic1_amd64.deb
     - SGX_SDK_BIN=sgx_linux_x64_sdk_2.6.100.51363.bin
+    # new protobuf
+    - PROTO_VERSION=3.11.4
+    - PROTO_ZIP=protoc-${PROTO_VERSION}-linux-x86_64.zip
+    - PROTO_REPO=https://github.com/google/protobuf/releases/download
+    - PROTO_DIR=/usr/local/proto3
+    - PROTOC_CMD=${PROTO_DIR}/bin/protoc
 
 before_install:
   # SGX SDK
@@ -62,6 +67,8 @@ before_install:
   # NANOPB
   - git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH}
   - pushd ${NANOPB_PATH} && git checkout nanopb-${NANOPB_VERSION} && cd generator/proto && make && popd
+  # Newer Protobuf
+  - wget ${PROTO_REPO}/v${PROTO_VERSION}/${PROTO_ZIP}; sudo unzip ${PROTO_ZIP} -d ${PROTO_DIR}
   # Fabric
   - git clone --branch $FABRIC_VERSION https://github.com/hyperledger/fabric.git $FABRIC_PATH
   - pushd $FABRIC_PATH
