@@ -248,7 +248,7 @@ Make sure that you have the following required dependencies installed:
 
 * Docker 18.x
 
-* Protocol Buffers 3.x and [Nanopb](http://github.com/nanopb/nanopb) 0.3.9.2
+* Protocol Buffers 3.5.x or higher and [Nanopb](http://github.com/nanopb/nanopb) 0.3.9.2
 
 * SGX SDK v2.6 for [Linux](https://github.com/intel/linux-sgx)
 
@@ -301,7 +301,7 @@ Make sure that you set `$NANOPB_PATH` as it is needed to build Fabric Private Ch
 
 Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in this documentation and default configuration that your `$GOPATH` has a _single_ root-directoy!)
 
-    $ git clone https://github.com/hyperledger-labs/fabric-private-chaincode.git $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
+    $ git clone --recursive https://github.com/hyperledger-labs/fabric-private-chaincode.git $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
 
 #### Patch Fabric 
 

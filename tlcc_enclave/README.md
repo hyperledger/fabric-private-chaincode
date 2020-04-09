@@ -16,9 +16,8 @@ the blockchain state.
 ## Protos
 
 We use nanopb for proto buffers inside the trusted ledger enclave.
-We can generate the proto files by using ``make protos``. Check that
-you export the environment variables `NANOPB_PATH` and
-`FABRIC_PATH` pointing to Fabric source.
+We can generate the proto files by using ``make protos``. Fabric proto files
+are located in `protos/fabric` and fetched from https://github.com/hyperledger/fabric-protos.
 
 ## Build
 

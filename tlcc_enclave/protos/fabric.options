@@ -51,6 +51,8 @@ common.ConfigGroupSchema.GroupsEntry.key type:FT_POINTER
 common.ConfigGroupSchema.PoliciesEntry.key type:FT_POINTER
 common.ConfigGroupSchema.ValuesEntry.key type:FT_POINTER
 
+common.ApplicationPolicy.channel_config_policy_reference type:FT_POINTER
+
 protos.Event.register type:FT_IGNORE
 
 protos.Transaction.actions type:FT_POINTER
@@ -82,6 +84,7 @@ protos.ProposalResponsePayload.extension type:FT_POINTER
 protos.Response.message type:FT_POINTER
 protos.Response.payload type:FT_POINTER
 
+protos.ApplicationPolicy.channel_config_policy_reference type:FT_POINTER
 
 rwset.TxReadWriteSet.ns_rwset type:FT_POINTER
 
@@ -102,3 +105,6 @@ kvrwset.KVWrite.key type:FT_POINTER
 kvrwset.KVWrite.value type:FT_POINTER
 
 kvrwset.KVRead.key type:FT_POINTER
+
+lifecycle.StateData.Bytes type:FT_POINTER
+lifecycle.StateData.String type:FT_POINTER

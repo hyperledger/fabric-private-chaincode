@@ -35,7 +35,6 @@ set(PROTO_SOURCE_FILES
     protos/msp/identities.pb.c
     protos/msp/msp_config.pb.c
     protos/msp/msp_principal.pb.c
-    protos/peer/admin.pb.c
     protos/peer/chaincode.pb.c
     protos/peer/chaincode_event.pb.c
     protos/peer/chaincode_shim.pb.c
@@ -47,8 +46,6 @@ set(PROTO_SOURCE_FILES
     protos/peer/query.pb.c
     protos/peer/signed_cc_dep_spec.pb.c
     protos/peer/transaction.pb.c
-    protos/token/expectations.pb.c
-    protos/token/transaction.pb.c
 )
 
 add_definitions(-DENCLAVE_CODE)

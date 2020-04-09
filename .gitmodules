@@ -1,0 +1,4 @@
+[submodule "tlcc_enclave/protos/fabric"]
+	path = tlcc_enclave/protos/fabric
+	url = https://github.com/hyperledger/fabric-protos.git
+	branch = release-2.0

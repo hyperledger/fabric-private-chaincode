@@ -6,12 +6,13 @@ TOP = ..
 include $(TOP)/build.mk
 
 PROTO_BUILD_DIR := enclave/protos
+FABRIC_PROTOS := protos/fabric
 BUILD_DIR := _build
 
 .PHONY: protos
 protos: $(PROTO_BUILD_DIR)
 
-$(PROTO_BUILD_DIR):
+$(PROTO_BUILD_DIR): $(FABRIC_PROTOS)
 	./generate_protos.sh $@
 
 .PHONY: protos-clean

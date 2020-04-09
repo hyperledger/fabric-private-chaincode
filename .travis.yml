@@ -15,6 +15,7 @@ services:
 addons:
   apt:
     packages:
+      # TODO upgrade to protobuf 3.5 or higher
       - protobuf-compiler
       - python-protobuf
 

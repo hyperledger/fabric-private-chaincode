@@ -11,6 +11,7 @@ RUN apt-get update \
     git \
     build-essential \
     ca-certificates \
+    # TODO upgrade to protobuf 3.5 or higher
     protobuf-compiler \
     python-protobuf \
     libprotobuf-dev \
