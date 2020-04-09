@@ -20,30 +20,41 @@ CC_VERS=0
 FAILURES=0
 
 run_test() {
-    try ${PEER_CMD} chaincode install -l fpc-c -n auction_test -v ${CC_VERS} -p examples/auction/_build/lib
 
-    try ${PEER_CMD} chaincode install -l golang -n example02 -v ${CC_VERS} -p github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd
+    # install examples/auction
+    PKG=/tmp/auction_test.tar.gz
+    try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label auction_test --path ${FPC_TOP_DIR}/examples/auction/_build/lib/ ${PKG}
+    try ${PEER_CMD} lifecycle chaincode install ${PKG}
+    PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: auction_test/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VERS}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VERS}
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VERS}
 
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -v ${CC_VERS} -c '{"Args":[]}' -V ecc-vscc
-    sleep 3
+    # install something non-fpc
+    PKG=/tmp/marbles02.tar.gz
+    try ${PEER_CMD} lifecycle chaincode package --lang golang --label marbles02 --path github.com/hyperledger/fabric-samples/chaincode/marbles02/go ${PKG}
+    try ${PEER_CMD} lifecycle chaincode install ${PKG}
+    PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: marbles02/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name marbles02 --version ${CC_VERS}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name marbles02 --version ${CC_VERS}
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name marbles02 --version ${CC_VERS}
 
-    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"init", "Args": ["MyAuctionHouse"]}' --waitForEvent
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["init", "MyAuctionHouse"]}' --waitForEvent
     check_result "OK"
-    sleep 3
 
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["create", "MyAuction"]}' --waitForEvent
     check_result "OK"
 
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n example02 -v ${CC_VERS} -c '{"Args":["init", "bob", "100", "alice", "200"]}'
-    sleep 3
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n marbles02 -c '{"Args":["initMarble","marble1","blue","35","tom"]}' --waitForEvent
 
-    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n example02 -c '{"Args": ["invoke", "bob", "alice", "99"]}' --waitForEvent
-
-    try ${PEER_CMD} chaincode install -l fpc-c -n echo_test -v ${CC_VERS} -p examples/echo/_build/lib
-    sleep 3
-
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -v ${CC_VERS} -c '{"Args":[]}' -V ecc-vscc
-    sleep 3
+    # install examples/echo
+    PKG=/tmp/auction_test.tar.gz
+    try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label echo_test --path ${FPC_TOP_DIR}/examples/echo/_build/lib ${PKG}
+    try ${PEER_CMD} lifecycle chaincode install ${PKG}
+    PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: echo_test/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name echo_test --version ${CC_VERS}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name echo_test --version ${CC_VERS}
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name echo_test --version ${CC_VERS}
 
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -c '{"Args": ["moin"]}' --waitForEvent
     check_result "moin"
@@ -51,7 +62,7 @@ run_test() {
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["submit", "MyAuction", "JohnnyCash0", "0"]}' --waitForEvent
     check_result "OK"
 
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n example02 -c '{"args": ["query", "bob"]}' --waitForEvent
+    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n marbles02 -c '{"Args":["readMarble","marble1"]}' --waitForEvent
 
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -c '{"Args": ["bonjour"]}' --waitForEvent
     check_result "bonjour"
@@ -62,8 +73,7 @@ para
 say "Preparing Test with mixed concurrent chaincodes, FPC and non-FPC ..."
 # - clean up relevant docker images
 docker_clean ${ERCC_ID}
-docker_clean auction_test
-docker_clean echo_test
+docker_clean example02
 
 trap ledger_shutdown EXIT
 
