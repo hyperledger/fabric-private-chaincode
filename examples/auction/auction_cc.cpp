@@ -29,37 +29,6 @@ const std::string SEP = ".";
 const std::string PREFIX = SEP + "somePrefix" + SEP;
 
 // implements chaincode logic for invoke
-int init(
-    uint8_t* response, uint32_t max_response_len, uint32_t* actual_response_len, shim_ctx_ptr_t ctx)
-{
-    // Note: we could have got here not only during instatiation but also due to an upgrade.
-    // we do allow this, so don't check status of _initialized here
-
-    LOG_DEBUG("AuctionCC: +++ Executing auction chaincode init+++");
-    std::vector<std::string> argss;
-
-    get_string_args(argss, ctx);
-
-    LOG_DEBUG("AuctionCC: Args: %s",
-        (argss.size() < 1
-                ? "(none)"
-                : std::accumulate(std::next(argss.begin()), argss.end(), argss[0],
-                      [](std::string a, std::string b) { return (a + std::string(", ") + b); })
-                      .c_str()));
-
-    const char* _auction_house_name = argss[0].c_str();
-    put_state(
-        AUCTION_HOUSE_NAME_KEY, (uint8_t*)_auction_house_name, strlen(_auction_house_name), ctx);
-
-    bool _initialized = true;
-    put_state(INITIALIZED_KEY, (uint8_t*)&_initialized, sizeof(_initialized), ctx);
-
-    *actual_response_len = 0;
-    LOG_DEBUG("AuctionCC: +++ Initialization done +++");
-    return 0;
-}
-
-// implements chaincode logic for invoke
 int invoke(
     uint8_t* response, uint32_t max_response_len, uint32_t* actual_response_len, shim_ctx_ptr_t ctx)
 {
@@ -93,12 +62,6 @@ int invoke(
     LOG_DEBUG(
         "AuctionCC: +++ Executing '%s' auction chaincode invocation +++", _auction_house_name);
 
-    if (!_initialized)
-    {
-        LOG_ERROR("AuctionCC: Invoke called before initialization");
-        *actual_response_len = 0;
-        return -1;
-    }
 
     std::string function_name;
     std::vector<std::string> params;
@@ -114,7 +77,18 @@ int invoke(
     std::string auction_name = params[0];
     std::string result;
 
-    if (function_name == "create")
+    if (!_initialized && function_name != "init")
+    {
+        LOG_ERROR("AuctionCC: Auction not yet initialized / No re-initialized allowed");
+        *actual_response_len = 0;
+        return -1;
+    }
+
+    if (function_name == "init")
+    {
+        result = init_auction_house(params[0], ctx);
+    }
+    else if (function_name == "create")
     {
         result = auction_create(auction_name, ctx);
     }
@@ -167,6 +141,16 @@ int invoke(
 
     LOG_DEBUG("AuctionCC: +++ Executing done +++");
     return 0;
+}
+
+std::string init_auction_house(std::string auction_house_name, shim_ctx_ptr_t ctx)
+{
+    put_state(AUCTION_HOUSE_NAME_KEY, (uint8_t*)auction_house_name.c_str(), auction_house_name.size(), ctx);
+
+    bool _initialized = true;
+    put_state(INITIALIZED_KEY, (uint8_t*)&_initialized, sizeof(_initialized), ctx);
+
+    return OK;
 }
 
 std::string auction_create(std::string auction_name, shim_ctx_ptr_t ctx)

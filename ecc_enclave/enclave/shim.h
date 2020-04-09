@@ -15,12 +15,6 @@ typedef struct t_shim_ctx* shim_ctx_ptr_t;
 
 // Function which FPC chaincode has to implement
 // ==================================================
-// - init, called when the chaincode is instantiated
-int init(uint8_t* response,
-    uint32_t max_response_len,
-    uint32_t* actual_response_len,
-    shim_ctx_ptr_t ctx);
-
 // - invoke, called when a transaction query or invocation is executed
 int invoke(uint8_t* response,
     uint32_t max_response_len,
@@ -148,7 +142,7 @@ int get_func_and_params(
     std::string& func_name, std::vector<std::string>& params, shim_ctx_ptr_t ctx);
 // Note: both functions should work interchangely, also regardless whether used
 // the '{ "args": [ ..] }' or the '{ "function": "name", "args": [ ..] }' syntax  with
-// the '--ctor'/'-c' parameter of peer cli command for option 'chaincode [instantiate|invoke|query].
+// the '--ctor'/'-c' parameter of peer cli command for option 'chaincode [invoke|query].
 // Behind the scenes the two variants are always treated as a list of args, with the first
 // one being the function.
 

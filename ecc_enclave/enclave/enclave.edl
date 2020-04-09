@@ -13,13 +13,6 @@ enclave {
                 [in] const sgx_report_t *report,
                 [in, size=64] const uint8_t *pubkey);
 
-        public int ecall_cc_init(
-                [in, string] const char *encoded_args,
-                [out, size=response_len_in] uint8_t *response, uint32_t response_len_in,
-                [out] uint32_t *response_len_out,
-                [out] sgx_ec256_signature_t *signature,
-                [user_check] void *u_shim_ctx);
-
         public int ecall_cc_invoke(
                 [in, string] const char *encoded_args,
                 [in, string] const char *pk,

@@ -9,12 +9,6 @@
 #include "dispatcher.h"
 #include "json/parson.h"
 
-int init(
-    uint8_t* response, uint32_t max_response_len, uint32_t* actual_response_len, shim_ctx_ptr_t ctx)
-{
-    return 0;
-}
-
 int invoke(
     uint8_t* response, uint32_t max_response_len, uint32_t* actual_response_len, shim_ctx_ptr_t ctx)
 {

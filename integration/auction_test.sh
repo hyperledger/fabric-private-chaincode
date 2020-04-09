@@ -28,11 +28,13 @@ auction_test() {
     try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p ${ENCLAVE_SO_PATH}
     sleep 3
 
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"Args":["My Auction"]}' -V ecc-vscc
+    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"Args":[]}' -V ecc-vscc
     sleep 3
 
     # Scenario 1
     becho ">>>> Close and evaluate non existing auction. Response should be AUCTION_NOT_EXISTING"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"init", "Args": ["MyAuctionHouse"]}' --waitForEvent
+    check_result "OK"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"close", "Args": ["MyAuction"]}' --waitForEvent
     check_result "AUCTION_NOT_EXISTING"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"eval", "Args": ["MyAuction0"]}' # Don't do --waitForEvent, so potentially there is some parallelism here ..
@@ -40,6 +42,8 @@ auction_test() {
 
     # Scenario 2
     becho ">>>> Create an auction. Response should be OK"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"init", "Args": ["MyAuctionHouse"]}' --waitForEvent
+    check_result "OK"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"create", "Args": ["MyAuction1"]}' --waitForEvent
     check_result "OK"
     becho ">>>> Create two equivalent bids. Response should be OK"
@@ -59,6 +63,8 @@ auction_test() {
 
     # Scenario 3
     becho ">>>> Create an auction. Response should be OK"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"init", "Args": ["MyAuctionHouse"]}' --waitForEvent
+    check_result "OK"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"create", "Args": ["MyAuction2"]}' --waitForEvent
     check_result "OK"
     for (( i=0; i<=$num_rounds; i++ ))
@@ -77,6 +83,8 @@ auction_test() {
 
     # Scenario 4
     becho ">>>> Create a new auction. Response should be OK"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"init", "Args": ["MyAuctionHouse"]}' --waitForEvent
+    check_result "OK"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"create", "Args": ["MyAuction3"]}' --waitForEvent
     check_result "OK"
     becho  ">>>> Create a duplicate auction. Response should be AUCTION_ALREADY_EXISTING"
@@ -94,6 +102,8 @@ auction_test() {
 
     # Code below is used to test bug in issue #42
     becho ">>>> Create a new auction. Response should be OK"
+    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"init", "Args": ["MyAuctionHouse"]}' --waitForEvent
+    check_result "OK"
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"create", "Args": ["MyAuction4"]}' --waitForEvent
     check_result "OK"
 }

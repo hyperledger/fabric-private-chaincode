@@ -81,7 +81,7 @@ int gen_response(const char* txType,
     // - ecc/crypto/ecdsa.go::Verify (for VSCC)
     // - tlcc_enclave/enclave/ledger.cpp::int parse_endorser_transaction (for TLCC)
 
-    // create Hash <- H(txType in {"init", "invoke"} || encoded_args || result || read set || write
+    // create Hash <- H(txType in {"invoke"} || encoded_args || result || read set || write
     // set)
     // TODO: we should encode the hash below in an unambiguous fashion (which is not true with
     //    simple concatenation as done below!)
@@ -143,37 +143,6 @@ int gen_response(const char* txType,
     std::string base64_pk =
         base64_encode((const unsigned char*)&enclave_pk, sizeof(sgx_ec256_public_t));
     LOG_DEBUG("ecc sig pk (base64): %s", base64_pk.c_str());
-
-    return ret;
-}
-
-// chaincode initialization
-// output, response <- F(args, input)
-// signature <- sign (hash,sk)
-int ecall_cc_init(const char* encoded_args,
-    uint8_t* response,
-    uint32_t response_len_in,
-    uint32_t* response_len_out,
-    sgx_ec256_signature_t* signature,
-    void* u_shim_ctx)
-{
-    LOG_DEBUG("ecall_cc_init: \tArgs: %s", encoded_args);
-
-    t_shim_ctx_t ctx;
-    ctx.u_shim_ctx = u_shim_ctx;
-    ctx.encoded_args = encoded_args;
-    ctx.json_args = encoded_args;  // no encryption involved, so same as encoded_args ..
-
-    // call chaincode invoke logic: creates output and response
-    // output, response <- F(args, input)
-    int ret;
-    ret = init(response, response_len_in, response_len_out, &ctx);
-    if (ret != 0)
-    {
-        return SGX_ERROR_UNEXPECTED;
-    }
-
-    ret = gen_response("init", response, response_len_out, signature, &ctx);
 
     return ret;
 }

@@ -8,7 +8,6 @@ This example illustrates a simple usecase where the chaincode is used to store a
 * Develop chaincode
 * Launch Fabric network
 * Install and instantiate chaincode on the peer
-* Init transaction
 * Invoke transactions (`storeAsset` and `retrieveAsset`)
 * Shut down the network
 
@@ -28,31 +27,11 @@ cd helloworld
 touch helloworld_cc.cpp
 ```
 
-* Add the necessary includes and a preliminary version of `init` function.  A chaincode has to implement the `init` method which the peer calls when the chaincode is instantiated. The result of the transaction is returned in `response`.  `ctx` represents the transaction context.  The function body also illustrates the use of context, e.g., it allows us to retrieve the invocation arguments as defined, e.g., with `--ctor` parameter of `chaincode instantiate` peer cli command.
-
+* Add the necessary includes and a preliminary version of `invoke` function. The result of the transaction is returned in `response`. `ctx` represents the transaction context. The function body illustrates another way to get invocation parameters, similar to functions provided in go shim.
 ```
 #include "shim.h"
 #include "logging.h"
 #include <string>
-
-// implements chaincode logic for init
-int init(
-    uint8_t* response,
-    uint32_t max_response_len,
-    uint32_t* actual_response_len,
-    shim_ctx_ptr_t ctx)
-{
-    std::vector<std::string> argss;
-    get_string_args(argss, ctx);
-
-    return 0;
-}
-```
-
-* Add preliminary version of `invoke` function.  The arguments have the same semantics as for `init`. The function body illustrates another way to get invocation parameters, similar to functions provided in go shim.
-
-
-```
 
 // implements chaincode logic for invoke
 int invoke(
@@ -174,27 +153,6 @@ int invoke(
 }
 ```
 
-Let us also modify `init` method to retrieve and log who triggered the transaction.
-```
-// implements chaincode logic for init
-int init(
-    uint8_t* response,
-    uint32_t max_response_len,
-    uint32_t* actual_response_len,
-    shim_ctx_ptr_t ctx)
-{
-    char real_bidder_name_msp_id[1024];
-    char real_bidder_name_dn[1024];
-    get_creator_name(real_bidder_name_msp_id, sizeof(real_bidder_name_msp_id),
-        real_bidder_name_dn, sizeof(real_bidder_name_dn), ctx);
-
-    LOG_DEBUG("HelloworldCC: +++ Chaincode is initialized by (msp_id: %s, dn: %s) +++",
-        real_bidder_name_msp_id, real_bidder_name_dn);
-
-    return 0;
-}
-```
-
 Here is the complete file, `helloworld_cc.cpp`:
 ```
 #include "shim.h"
@@ -205,25 +163,6 @@ Here is the complete file, `helloworld_cc.cpp`:
 #define NOT_FOUND "Asset not found"
 
 #define MAX_VALUE_SIZE 1024
-
-
-// implements chaincode logic for init
-int init(
-    uint8_t* response,
-    uint32_t max_response_len,
-    uint32_t* actual_response_len,
-    shim_ctx_ptr_t ctx)
-{
-    char real_bidder_name_msp_id[1024];
-    char real_bidder_name_dn[1024];
-    get_creator_name(real_bidder_name_msp_id, sizeof(real_bidder_name_msp_id),
-        real_bidder_name_dn, sizeof(real_bidder_name_dn), ctx);
-
-    LOG_DEBUG("HelloworldCC: +++ Chaincode is initialized by (msp_id: %s, dn: %s) +++",
-        real_bidder_name_msp_id, real_bidder_name_dn);
-
-    return 0;
-}
 
 //  Add asset_name, value to ledger
 std::string storeAsset(std::string asset_name, int value, shim_ctx_ptr_t ctx)
@@ -432,7 +371,7 @@ helloworld_test() {
 
     # instantiate helloworld chaincode
     say "- instantiate helloworld chaincode"
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":["init"]}' -V ecc-vscc
+    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":[]}' -V ecc-vscc
     sleep 3
 
     # store the value of 100 in asset1
@@ -481,7 +420,7 @@ helloworld_test() {
 
     # instantiate helloworld chaincode
     say "- instantiate helloworld chaincode"
-    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":["init"]}' -V ecc-vscc
+    try ${PEER_CMD} chaincode instantiate -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -v ${CC_VERS} -c '{"args":[""]}' -V ecc-vscc
     sleep 3
 
     # store the value of 100 in asset1
