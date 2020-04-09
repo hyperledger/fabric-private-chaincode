@@ -62,14 +62,15 @@ General:
         # client-facing and the intra-cluster listeners.
 
         # ListenPort defines the port on which the cluster listens to connections.
-        ListenPort:
+        # FPC Change: see related comment in 'configtx.yml' in 'Orderer: &OrdererDefaults' section
+        ListenPort: 7059
         # ListenAddress defines the IP on which to listen to intra-cluster communication.
-        ListenAddress:
+        ListenAddress: 127.0.0.1
         # ServerCertificate defines the file location of the server TLS certificate used for intra-cluster
         # communication.
-        ServerCertificate:
+        ServerCertificate: /tmp/hyperledger/test/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
         # ServerPrivateKey defines the file location of the private key of the TLS certificate.
-        ServerPrivateKey:
+        ServerPrivateKey: /tmp/hyperledger/test/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.key
 
     # Bootstrap method: The method by which to obtain the bootstrap block
     # system channel is specified. The option can be one of:
