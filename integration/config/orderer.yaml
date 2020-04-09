@@ -62,6 +62,7 @@ General:
         # client-facing and the intra-cluster listeners.
 
         # ListenPort defines the port on which the cluster listens to connections.
+        # FPC Change: see related comment in 'configtx.yml' in 'Orderer: &OrdererDefaults' section
         ListenPort: 7059
         # ListenAddress defines the IP on which to listen to intra-cluster communication.
         ListenAddress: 127.0.0.1
