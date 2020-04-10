@@ -64,6 +64,16 @@ handle_lifecycle_chaincode_package() {
 	    # one arg (true as of v2.0.1) and then the remaining one is the
 	    # output file ...
 	    -h|--help)
+		# with help, no point to continue but run it right here ..
+		try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
+		# .. as well as augment it with additiona -s/--sgx-mode arg
+		echo ""
+		echo "Flags for fpc-c chaincode:"
+		echo "  -s, --sgx-mode string                SGX-mode to run with"
+		exit 0 
+		;;
+
+	    --clientauth)
 		OTHER_ARGS+=( "$1" )
 		shift
 		;;
@@ -148,32 +158,108 @@ EOF
 
 
 handle_lifecycle_chaincode_install() {
-    # TODO: to allow non-fpc CC, we will have to keep track here of FPC chaincode
+    # to allow non-fpc CC, we will have to keep track of installed pkg-ids
+    # corresponding to fpc-c chaincode
+
+    # parse args to find package name
+    while [[ $# > 0 ]]; do
+	case "$1" in
+	    # we care only about package file name but this is not prefixed
+	    # with a flag.  So let's enumerate the known no-arg flags (i.e.,
+	    # --tls -h/--help), assume all other flags have exactly
+	    # one arg (true as of v2.0.1) and then the remaining one is the
+	    # output file ...
+	    -h|--help)
+		# with help, no point to continue but run it right here ..
+		try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
+		exit 0 
+		;;
+
+	    --clientauth)
+		OTHER_ARGS+=( "$1" )
+		shift
+		;;
+
+	    --tls)
+		OTHER_ARGS+=( "$1" )
+		shift
+		;;
+
+	    -*)
+		OTHER_ARGS+=( "$1" "$2" )
+		shift; shift
+		;;
+	    *)
+		PKG_FILE="$1"
+		shift
+		;;
+	    esac
+    done
+
     # - do normal install (and exit if not successfull)
-    # - inspect metadata.json from package tar
+    try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
+
+    # - inspect metadata.json from package tar & get type
+    CC_LANG=$(tar -zvxf "${PKG_FILE}" --to-stdout metadata.json | jq .type | tr -d '"' | tr '[:upper:]' '[:lower:]') || die "could not extract cc language type from package file '${PKG_FILE}'"
+
     # - iff type is fpc-c
-    #   - get label from metadata.json
-    #   - extract package id PKG_ID via queryinstalled
-    #   - remember this via 'touch ${FABRIC_STATE_DIR}/is-fpc-c-package.${PKG_ID}'
-    # - exit (instead of below return)
-    return
+    if [ "${CC_LANG}" = "fpc-c" ]; then
+	#   - get label from metadata.json
+	CC_LABEL=$(tar -zvxf "${PKG_FILE}" --to-stdout metadata.json | jq .label | tr -d '"') || die "could not extract label from package file '${PKG_FILE}'"
+	#   - extract package id PKG_ID via queryinstalled
+	PKG_ID=$(${FABRIC_BIN_DIR}/peer lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_LABEL}:/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
+	[ ! -z "${PKG_ID}" ] || die "Could not extract package id"
+	#   - remember this 
+	try touch "${FABRIC_STATE_DIR}/is-fpc-c-package.${PKG_ID}"
+    fi
+
+    # - exit (instead of below return, which would re-execute install)
+    exit 0
 }
 
 handle_lifecycle_chaincode_approveformyorg() {
-    # TODO: to allow non-fpc CC, we will have to keep track here of pkg to name.version
+    # to allow non-fpc CC, we will have to keep track here of pkg to name.version
     # mapping for fpc-c-code
-    # - do normal approve (and exit if not successfull)
+
     # - extract package-id PKG_ID, name CC_ID and version CC_VERSION from args
-    # - iff it is fpc pkg, i.e., [ -f ${FABRIC_STATE_DIR}/is-fpc-c-package.${PKG_ID} ]
-    #   remember mapping 'touch ${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_ID}.${CC_VERSION}'
-    # - exit (instead of below return)
-    return
+    while [[ $# > 0 ]]; do
+	case "$1" in
+	    --package-id)
+		PKG_ID=$2;
+		shift; shift
+		;;
+	    -n|--name)
+		CC_NAME=$2;
+		shift; shift
+		;;
+	    -v|--version)
+		CC_VERSION=$2;
+		shift; shift
+		;;
+	    -C|--channelID)
+		CHAN_ID=$2;
+		shift; shift
+		;;
+	    *)
+		shift
+		;;
+	    esac
+    done
+
+    # - do normal approve (and exit if not successfull)
+    try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
+
+    # - iff it is fpc pkg
+    if [ -f "${FABRIC_STATE_DIR}/is-fpc-c-package.${PKG_ID}" ]; then
+	#  remember mapping
+	try touch "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.${CC_VERSION}"
+    fi
+    # - exit (instead of below return, which would re-execute install)
+    exit 0
 }
 
 handle_lifecycle_chaincode_commit() {
-    # - call real peer so channel is joined
-    try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
-
+    # - remember variables we might need later
     while [[ $# > 0 ]]; do
 	case "$1" in
 	    -n|--name)
@@ -194,12 +280,11 @@ handle_lifecycle_chaincode_commit() {
 	    esac
     done
 
-    # TODO: below we really should do only if this is FPC chaincode. However, we cannot learn that directly
-    # from argument but have to backtrack it via `approveformyorg` which gives packageid and then `install`
-    # which maps to actual package (and hence the type of metadata.json ...).
-    # Assuming above above TODOs in handle_lifecycle_chaincode_{install,approveformyorg} are implemented
-    # it would be simple
-    # [ -f ${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_ID}.${CC_VERSION} ] || exit 0
+    # - call real peer so channel is joined
+    try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
+
+    # below setup function we should do only if this is FPC chaincode, so exit otherwise
+    [ -f ${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.${CC_VERSION} ] || exit 0
 
     # - setup internal ecc state, e.g., register chaincode
     try ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__setup", "'${ERCC_ID}'"]}' --waitForEvent
