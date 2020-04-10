@@ -1,13 +1,65 @@
-From 0d9a0a7954c79d17d48e4ba0fee881027b6ec25b Mon Sep 17 00:00:00 2001
+From ffabe25186d43af74bf8dd351d5237865cadc68c Mon Sep 17 00:00:00 2001
 From: Michael Steiner <michael.steiner@intel.com>
 Date: Wed, 18 Mar 2020 19:42:55 -0700
 Subject: [PATCH] add proxy support for docker in peer
 
 Signed-off-by: Michael Steiner <michael.steiner@intel.com>
 ---
+ core/chaincode/platforms/util/utils.go        | 26 +++++++++++++++++-
  .../dockercontroller/dockercontroller.go      | 27 +++++++++++++++++++
- 1 file changed, 27 insertions(+)
+ 2 files changed, 52 insertions(+), 1 deletion(-)
 
+diff --git a/core/chaincode/platforms/util/utils.go b/core/chaincode/platforms/util/utils.go
+index 2e54e86ba..07fabf965 100644
+--- a/core/chaincode/platforms/util/utils.go
++++ b/core/chaincode/platforms/util/utils.go
+@@ -10,6 +10,7 @@ import (
+ 	"bytes"
+ 	"fmt"
+ 	"io"
++        "os"
+ 	"runtime"
+ 	"strings"
+ 
+@@ -52,6 +53,29 @@ type DockerBuildOptions struct {
+ //      - OutputStream: A tarball of files that will be gathered from /chaincode/output
+ //                      after successful execution of Cmd.
+ //-------------------------------------------------------------------------------------------
++func getProxyEnv()[]string {
++        proxyEnv := []string{}
++        proxyEnvVarNames := []string{
++                "http_proxy",
++                "https_proxy",
++                "no_proxy",
++                "HTTP_PROXY",
++                "HTTPS_PROXY",
++                "NO_PROXY",
++        }
++        for _, name := range proxyEnvVarNames {
++                if val, found := os.LookupEnv(name); found {
++                        proxyEnv = append(proxyEnv, name+"="+val)
++                }
++        }
++        logger.Debugf("Util Proxy config used for docker: %v", proxyEnv)
++        return proxyEnv
++}
++
++var (
++        proxyEnv = getProxyEnv()
++)
++
+ func DockerBuild(opts DockerBuildOptions, client *docker.Client) error {
+ 	if opts.Image == "" {
+ 		opts.Image = GetDockerImageFromConfig("chaincode.builder")
+@@ -82,7 +106,7 @@ func DockerBuild(opts DockerBuildOptions, client *docker.Client) error {
+ 		Config: &docker.Config{
+ 			Image:        opts.Image,
+ 			Cmd:          []string{"/bin/sh", "-c", opts.Cmd},
+-			Env:          opts.Env,
++			Env:          append(opts.Env, proxyEnv...),
+ 			AttachStdout: true,
+ 			AttachStderr: true,
+ 		},
 diff --git a/core/container/dockercontroller/dockercontroller.go b/core/container/dockercontroller/dockercontroller.go
 index 1194ff7dc..497eee369 100644
 --- a/core/container/dockercontroller/dockercontroller.go
