@@ -611,6 +611,19 @@ int parse_endorser_transaction(
                         LOG_ERROR("Ledger: ercc expects only a single write ");
                         valid_tx = false;
                     }
+
+                    // TODO get MRENCLAVE from read/writeset to perform attestation validation once enabled.
+                    // This code worked before as we wrote mrenclave during chaincode init transaction and made it
+                    // thereby accessible from state; now with PR 330 we write mrenclave during setup transaction and
+                    // thus mrenclave is part of fpc chaincode writeset. Note that here in the code we try to access
+                    // mrenclave from updates and state, however, updates nor state contain at this time mrenclave.
+                    // When writing mrenclave during _setup transaction, it will end up in the fpc namespace writeset.
+                    // Another issue is, that the current code requires a ecc_ prefix which was removed with PR 320.
+                    // Se more detailed discussion on PR 323
+                    //
+                    // TODO This code needs some refactoring to resolve this issue;
+                    // quick and dirty fix to prevent tlcc crashing for now is commented out this code
+                    /*
                     std::string mrenclave_key = ecc_namespace + ".MRENCLAVE";
 
                     // get mrenclave from updates
@@ -630,6 +643,7 @@ int parse_endorser_transaction(
                     mrenclave_t mrenclave;
                     std::string _mrenclave = base64_decode(it->second.first);
                     memcpy(&mrenclave, _mrenclave.c_str(), _mrenclave.size());
+                    */
 
                     // TODO enable verification here!!!!
                     /* if
@@ -646,6 +660,7 @@ int parse_endorser_transaction(
                     version_t version = {tx_version->block_num, tx_version->tx_num};
                     updates->insert(kvs_item_t(key, kvs_value_t(val, version)));
                 }
+                // TODO fpc chaincode does not come with ecc prefix anymore! see PR 320 this needs to be changed
                 else if (ns.compare(0, 3, "ecc") == 0)
                 {
                     for (int i = 0; i < kvrwset.writes_count; i++)

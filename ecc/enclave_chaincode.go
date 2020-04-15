@@ -57,14 +57,6 @@ func CreateMockedECC() *EnclaveChaincode {
 
 // Init sets the chaincode state to "init"
 func (t *EnclaveChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
-	mrenclave, err := t.enclave.MrEnclave()
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-	logger.Debugf("Init: chaincode [mrenclave=%s]", mrenclave)
-	if err := stub.PutState(utils.MrEnclaveStateKey, []byte(mrenclave)); err != nil {
-		return shim.Error(err.Error())
-	}
 	return shim.Success(nil)
 }
 
@@ -112,6 +104,32 @@ func (t *EnclaveChaincode) setup(stub shim.ChaincodeStubInterface) pb.Response {
 		return shim.Error(errMsg)
 	}
 
+	// write mrenclave to ledger
+	mrenclave, err := t.enclave.MrEnclave()
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	// TODO this will change in the future; we will need to fetch MRENCLAVE from the chaincode definition
+	// check if MRENCLAVE is already on the ledger; if not, write it; if exists compare with enclave;
+	exists, err := stub.GetState(utils.MrEnclaveStateKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	if len(exists) == 0 {
+		logger.Debugf("Set chaincode with mrenclave=%s", mrenclave)
+		if err := stub.PutState(utils.MrEnclaveStateKey, []byte(mrenclave)); err != nil {
+			return shim.Error(err.Error())
+		}
+	} else {
+		if mrenclave != string(exists) {
+			errMsg := fmt.Sprintf("ecc: MRENCLAVE has already been defined for this chaincode. Expected %s but got %s", string(exists), mrenclave)
+			logger.Errorf(errMsg)
+			return shim.Error(errMsg)
+		}
+	}
+
 	//get spid from ercc
 	spid, err := t.erccStub.GetSPID(stub, erccName, channelName)
 	if err != nil {
@@ -129,12 +147,6 @@ func (t *EnclaveChaincode) setup(stub shim.ChaincodeStubInterface) pb.Response {
 
 	enclavePkBase64 := base64.StdEncoding.EncodeToString(enclavePk)
 	quoteBase64 := base64.StdEncoding.EncodeToString(quoteAsBytes)
-
-	// we just add mrenclave to the proposal readset
-	_, err = stub.GetState(utils.MrEnclaveStateKey)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
 
 	// register enclave at ercc
 	if err = t.erccStub.RegisterEnclave(stub, erccName, channelName, []byte(enclavePkBase64), []byte(quoteBase64)); err != nil {
