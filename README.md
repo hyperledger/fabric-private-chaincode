@@ -321,10 +321,10 @@ Checkout Fabric 2.0.1 release using the following commands:
 
     $ export FABRIC_PATH=${GOPATH}/src/github.com/hyperledger/fabric
     $ git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
-    $ cd $FABRIC_PATH; git checkout tags/v2.0.1 -b v2.0.1-fpc
+    $ cd $FABRIC_PATH; git checkout tags/v2.0.1
     
 Note that Fabric Private Chaincode currently does not work with the Fabric `master` branch, therefore make sure you use the Fabric
-`v2.0.1` branch and create a local branch named `v2.0.1-fpc`. This is important as our build script applies some patches
+`v2.0.1` tag. This is important as our build script applies some patches
 to the fabric peer to enable FPC support. Make sure the source of Fabric is in your ``$GOPATH``.
 
 ### Build Fabric Private Chaincode

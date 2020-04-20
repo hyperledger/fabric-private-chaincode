@@ -28,10 +28,10 @@ Try to run `pushd $FPC_PATH/tlcc_enclave; make; popd;` followed by `make` again.
 
 ### Wrong Fabric version
 ```
-Patch Fabric ...
-Aborting! Current branch is master but want v2.0.1-fpc
-Makefile:22: recipe for target '/project/src/github.com/hyperledger/fabric/.fpc_patched' failed
+Patching Fabric ...
+Aborting! Tag on current HEAD () does not match expected tag/v2.0.1!
+...
 ```
 
 Seems that your Fabric is on the wrong branch.
-Try to run `pushd $FABRIC_PATH; git checkout tags/v2.0.1 -b v2.0.1-fpc; popd;` followed by `make` again.
+Try to run `pushd $FABRIC_PATH; git checkout tags/v2.0.1; popd;` followed by `make` again.

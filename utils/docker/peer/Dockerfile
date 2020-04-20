@@ -89,7 +89,7 @@ COPY . /tmp/build-src
 RUN git clone $FPC_REPO_URL $FPC_PATH \
 # Note: could add --single-branch to below to speed-up and keep size smaller. But for now for a dev-image better keep complete repo
  && cd $FABRIC_PATH \
- && git checkout tags/$FABRIC_VERSION -b "$FABRIC_VERSION-fpc"
+ && git checkout tags/$FABRIC_VERSION
 
 # Build FPC peer including plugins and tlcc support
 RUN cd $FPC_PATH \

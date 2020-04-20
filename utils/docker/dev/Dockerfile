@@ -79,7 +79,7 @@ ENV FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
 RUN git clone $FABRIC_REPO $FABRIC_PATH \
 # Note: could add --single-branch to below to speed-up and keep size smaller. But for now for a dev-image better keep complete repo
  && cd $FABRIC_PATH \
- && git checkout tags/$FABRIC_VERSION -b "$FABRIC_VERSION-fpc"
+ && git checkout tags/$FABRIC_VERSION
 
 # Get FPC
 ENV FPC_PATH=$GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode

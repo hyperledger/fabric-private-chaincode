@@ -74,7 +74,7 @@ before_install:
   - wget ${PROTO_REPO}/v${PROTO_VERSION}/${PROTO_ZIP}; sudo unzip ${PROTO_ZIP} -d ${PROTO_DIR}
   # Fabric
   - git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
-  - pushd $FABRIC_PATH; git checkout tags/$FABRIC_VERSION -b "$FABRIC_VERSION-fpc"; popd;
+  - pushd $FABRIC_PATH; git checkout tags/$FABRIC_VERSION; popd;
 
 script:
   # travis doesn't check out the branch itself but for our make to work we

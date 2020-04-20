@@ -9,64 +9,58 @@ FABRIC_VERSION ?= v2.0.1
 FABRIC_PEER_BIN = $(FABRIC_PATH)/build/bin/peer
 FABRIC_TLCC = $(FABRIC_PATH)/core/scc/tlcc
 
-FABRIC_CURRENT_BRANCH = $(shell cd $(FABRIC_PATH); git rev-parse --abbrev-ref HEAD)
-FABRIC_CURRENT_TAG = $(shell cd $(FABRIC_PATH); git describe --tags)
-FABRIC_PATCHED_BRANCH = $(FABRIC_VERSION)-fpc
+FABRIC_CURRENT_TAG = $(shell cd $(FABRIC_PATH); git tag --points-at HEAD)
 FABRIC_PATCHED = $(FABRIC_PATH)/.fpc_patched
 FABRIC_TRACKED_CHANGES = $(shell cd $(FABRIC_PATH); git status -s | grep -v '\?')
-FABRIC_COMMITS = $(shell cd $(FABRIC_PATH); git log $(FABRIC_VERSION)..HEAD --oneline)
-FABRIC_LOG_DIFF = $(shell diff $(FABRIC_PATCHED) <(FABRIC_COMMITS))
+FABRIC_CURRENT_DIFF_COMMITS_CMD = git log $(FABRIC_VERSION)..HEAD --oneline
 
 build: native
 
 patch: $(FABRIC_PATCHED)
 
 $(FABRIC_PATCHED):
-	@echo "Patching Fabric ..."
-	@if [ "$(FABRIC_CURRENT_BRANCH)" != "$(FABRIC_PATCHED_BRANCH)" ]; then \
-		echo "Aborting! Current branch is $(FABRIC_CURRENT_BRANCH) but want $(FABRIC_PATCHED_BRANCH)"; exit 1; \
-	fi
-
-	@if [ "$(FABRIC_CURRENT_TAG)" != "$(FABRIC_VERSION)" ]; then \
-		echo "Aborting! Current branch HEAD does not match tag/$(FABRIC_VERSION)! $(FABRIC_CURRENT_TAG) but want $(FABRIC_VERSION)"; exit 1; \
-	fi
-
-	cd $(FABRIC_PATH) && \
-	git am $(FPC_PATH)/fabric/*.patch && \
-	git log $(FABRIC_VERSION)..HEAD --oneline > $@
-
-clean-patch:
-	@echo "Cleaning Fabric patches ..."
-	@if [ "$(FABRIC_CURRENT_BRANCH)" != "$(FABRIC_PATCHED_BRANCH)" ]; then \
-		echo "Aborting! Current branch is $(FABRIC_CURRENT_BRANCH) but want $(FABRIC_PATCHED_BRANCH)"; \
-		echo "Please checkout $(FABRIC_PATCHED_BRANCH) and come back."; \
+	@echo "Patching Fabric ..."; \
+	if [ "$(FABRIC_CURRENT_TAG)" != "$(FABRIC_VERSION)" ]; then \
+		echo "Aborting! Tag on current HEAD ($(FABRIC_CURRENT_TAG)) does not match expected tag/$(FABRIC_VERSION)!"; \
 		exit 1; \
 	fi
+ 
+	cd $(FABRIC_PATH) && \
+	git am $(FPC_PATH)/fabric/*.patch && \
+	$(FABRIC_CURRENT_DIFF_COMMITS_CMD) > $@
 
-	@if [ "$(FABRIC_CURRENT_TAG)" = "$(FABRIC_VERSION)" ]; then \
-		echo "Aborting! Nothing to do here ... it seems you haven't applied the patches yet"; exit 1; \
-	fi
-
-	@if [ ! -z "$(FABRIC_TRACKED_CHANGES)" ]; then \
-		echo "Aborting! It seems you have some changes in your branch:"; \
+clean-patch:
+	# Note: for below to work with exit 0, this has to be a single shell command!
+	@echo "Cleaning Fabric patches ..."; \
+	if [ "$(FABRIC_CURRENT_TAG)" = "$(FABRIC_VERSION)" ]; then \
+		echo "Nothing to do here ... it seems you haven't applied the patches yet"; \
+		exit 0; \
+	fi; \
+	if [ ! -z "$(FABRIC_TRACKED_CHANGES)" ]; then \
+		echo "Aborting! It seems you have some changes in your repo:"; \
 		echo \\t$(FABRIC_TRACKED_CHANGES); \
 		echo "Please clean/stash your changes and try again."; \
 		exit 1; \
-	fi
-
-	@cd $(FABRIC_PATH) && git log $(FABRIC_VERSION)..HEAD --oneline > $(FABRIC_PATCHED).tmp
-	@if [ "$(diff $(FABRIC_PATCHED) $(FABRIC_PATCHED).tmp)" ]; then \
+	fi; \
+	if [ ! -f $(FABRIC_PATCHED) ]; then \
+		echo "You didn't apply patches automatically. Please manually reset to ${FABRIC_VERSION}"; \
+		exit 1; \
+	fi; \
+	cd $(FABRIC_PATH); \
+	$(FABRIC_CURRENT_DIFF_COMMITS_CMD) > $(FABRIC_PATCHED).tmp; \
+	if [ ! -z "$$(diff $(FABRIC_PATCHED) $(FABRIC_PATCHED).tmp)" ]; then \
   		echo "You have other commits than the patches:"; \
-   		cd $(FABRIC_PATH) && git log $(FABRIC_VERSION)..HEAD --oneline; \
+		echo "- expected: "; cat $(FABRIC_PATCHED); \
+		echo "- found: "; cat $(FABRIC_PATCHED).tmp; \
    		echo "Please check and resolve manually!"; \
    		exit 1; \
-  	fi
-
-	@echo "Removing the following commits on branch ${FABRIC_PATCHED_BRANCH} in $(FABRIC_PATH)"
-	@cd $(FABRIC_PATH) && git log $(FABRIC_VERSION)..HEAD --oneline
-
-	cd $(FABRIC_PATH) && \
-	git reset --hard $(FABRIC_VERSION)
+  	fi; \
+	\
+	echo "Removing the following fpc commits in $(FABRIC_PATH)"; \
+	$(FABRIC_CURRENT_DIFF_COMMITS_CMD); \
+	set -x; \
+	cd $(FABRIC_PATH); \
+	git reset --hard $(FABRIC_VERSION) && \
 	rm -f $(FABRIC_PATCHED) $(FABRIC_PATCHED).tmp
 
 $(FABRIC_TLCC):
