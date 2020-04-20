@@ -262,7 +262,7 @@ Make sure that you have the following required dependencies installed:
 
 * Clang-format 6.x or higher
 
-* [PlantUML](http://plantuml.com/) including Graphviz (for building documentation only) 
+* A recent version of [PlantUML](http://plantuml.com/), including Graphviz, for building documentation. See [Documentation](#Documentation) for our recommendations on installing. The version available in common package repositories may be out of date.
 
 #### Intel SGX SDK and SSL
 
