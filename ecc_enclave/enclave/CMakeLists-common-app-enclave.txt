@@ -38,8 +38,9 @@ add_definitions(-DENCLAVE_CODE)
 set_target_properties(enclave PROPERTIES PREFIX "")
 
 target_link_libraries(enclave "${SGX_COMMON_CFLAGS} -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles \
+-L${COMMON_SOURCE_DIR}/crypto/_build \
 -L${ECC_ENCLAVE_DIR}/_build/lib \
--l${SHIM_LIB_NAME} \
+-Wl,--start-group -l${T_PDO_CRYPTO_LIB_NAME} -l${SHIM_LIB_NAME} -Wl,--end-group \
 -L${SGX_SSL_LIBRARY_PATH} \
 -Wl,--whole-archive -lsgx_tsgxssl -Wl,--no-whole-archive -lsgx_tsgxssl_crypto \
 -L${SGX_LIBRARY_PATH} \
