@@ -2,3 +2,6 @@
 	path = tlcc_enclave/protos/fabric
 	url = https://github.com/hyperledger/fabric-protos.git
 	branch = release-2.0
+[submodule "common/crypto/pdo"]
+	path = common/crypto/pdo
+	url = https://github.com/hyperledger-labs/private-data-objects
