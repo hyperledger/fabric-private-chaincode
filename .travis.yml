@@ -28,7 +28,7 @@ env:
     # SGX SSL
     - OPENSSL_VERSION=1.1.0j
     - SGXSSL_VERSION=v2.4.1
-    - SGXSSL=/opt/intel/sgxssl
+    - SGX_SSL=/opt/intel/sgxssl
     # NANOPB
     - NANOPB_VERSION=0.3.9.2
     - NANOPB_PATH=${HOME}/nanopb
@@ -65,7 +65,7 @@ before_install:
   # SGX SSL
   - pushd $HOME; git clone --branch ${SGXSSL_VERSION} https://github.com/intel/intel-sgx-ssl.git
   - OPENSSL_MAJOR_VERSION=$(echo ${OPENSSL_VERSION} | sed 's/\([^0-9.]\)*//g'); wget https://www.openssl.org/source/old/${OPENSSL_MAJOR_VERSION}/openssl-${OPENSSL_VERSION}.tar.gz; mv openssl-${OPENSSL_VERSION}.tar.gz intel-sgx-ssl/openssl_source
-  - cd intel-sgx-ssl/Linux; make SGX_MODE=SIM DESTDIR=$SGXSSL all test
+  - cd intel-sgx-ssl/Linux; make SGX_MODE=SIM DESTDIR=$SGX_SSL all test
   - cd intel-sgx-ssl/Linux; make install; popd
   # NANOPB
   - git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH}
