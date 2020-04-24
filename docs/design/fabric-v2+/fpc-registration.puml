@@ -25,10 +25,18 @@ participant "ERCC Peer1_Org2" as ERCC2 order 50
 
 entity IAS order 1
 
-ref over ERCC1, ERCC2
+note over ERCC1, ERCC2 #FFaa00
   It is assumed that: channel has already been created; ERCC has been installed.
   Also: ERCC contains hard-coded the TLCC_MRenclave and the IAS Root Certificate.
-end ref
+end note
+note over ERCC1, ERCC2 #FFaa00
+  Recall that ERCC
+  - has been approved by the participating organizations
+  - has an Endorsement Policy that requires signatures from a majority of orgs,
+    for security reasons -- namely to avoid unilateral modifications and preserve
+    integrity. As a result, changes to chaincode enclave info stored in ERCC will
+    be dependent on such policy.
+end note
 
 group enclave creation
   note over Admin #FFaa00
@@ -37,10 +45,23 @@ group enclave creation
     might or might not want to re-use enclaves?
   end note
 
+  activate Admin
+
+  note over Admin #FFaa00
+  The following Admin operations do not necessarily need to be performed manually.
+  These could be, for example, scripted or embedded in the peer process.
+  end note
+  note over Admin #FFaa00
+  These operations are assumed to be performed once the chaincode definition is
+  committed on the channel for two reasons:
+  1) chaincode invocation may not be available before the definition is committed,
+  2) enclave registration should be feasible only for committed chaincodes
+  end note
+
   Admin -> ECC1 ++: invoke create(SPID)
 
   'ECC1 -> TLCC1 ++: getInfo
-  'note over TLCC1
+  'note over TLCC1 #FFaa00
   '  This information could also be retrieved elsewhere if easier. At this point in time
   '  it does not have to be authenticated (and is anyway passed through untrusted ECC),
   '  consistency will be verified later in registration (Remember that TLCC_MR is defined
@@ -63,28 +84,28 @@ group enclave creation
   end group
 
   Enclave1 -> Enclave1 : keyGen
-  note left
+  note left #FFaa00
     keyGen generates the keys stored in the key ring,
     and described in the Credential protobuf
   end note
 
-  group Org-Enclave binding (to be discussed)
+  group Org-Enclave binding (to be discussed -- not implemented)
   Enclave1  -> ECC1 ++: binding (ECC_VK)
   ECC1 -> ECC1 : SIG_Org_1 <- create signature
-  note left
+  note left #FFaa00
     Org_1 takes "ownership" of this enclave
   end note
   return SIG_Org_1
   end group
 
   Enclave1 -> Enclave1 : generate quote
-  note left
+  note left #FFaa00
     quote is defined with reportbody =
     Hash(<CC_Id, CC_Version, MSPID, Enclave_VK, Enclave_EK, CC_EK, TLCC_MR, Channel_Id>)
   end note
 
   Enclave1 -> Enclave1 : populate protobuf
-  note left
+  note left #FFaa00
     attestation and (public) keys are inserted in
     the Credentials protobuf
   end note
@@ -139,10 +160,30 @@ group enclave registration
   end ref
   activate ERCC2
 
-  ERCC1 -> ERCC1 : check verification report (through hard-coded certificate)
+  ERCC1 -> ERCC1 : check verification report (through hard-coded IAS certificate)
   ERCC1 -> ERCC1 : check TLCC_MREnclave match (through hard-coded id)
   ERCC1 -> ERCC1 : check Channel_Id match (through shim)
-  ERCC1 -> ERCC1 : check Credentials.MSPID matches Admin.MSPID (though shim)
+  ERCC1 -> ERCC1 : check Credentials.MSPID matches Admin.MSPID (through shim)
+
+  group check credential consistency (TBD)
+    note over ERCC1 #FFaa00
+        The interaction with TLCC is not relevant. Rather, it is convenient to
+        access the chaincode definition.
+    end note
+    create entity "TLCC Peer1_Org1" as TLCC1 order 45
+    ERCC1 -> TLCC1  ++: approve_consistency(Credentials)
+    TLCC1 -> TLCC1    : check parameters against chaincode definition
+    note over TLCC1 #FFaa00
+        This check ensures that:
+        1) the chaincode version (i.e., the MREnclave) matches the version of the
+            approved chaincode.
+        2) the chaincode is registered
+        Note that (1) is security-critical and saves the client from verifying the
+        chaincode version/MREnclave.
+        Note that (2) merely prevents spurious chaincode enclaves from being registered.
+    end note
+    return true/false
+  end group
 
   group deployment validation (unclear, TBD)
     ERCC1 -> ERCC1 : validate FPC deployment (restriction) policy
@@ -160,6 +201,8 @@ group enclave registration
   ref over Admin
     submit transaction
   end ref
+
+  deactivate Admin
 
 end
 
