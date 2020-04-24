@@ -30,7 +30,7 @@ endif()
 
 set(SGX_SSL "$ENV{SGX_SSL}")
 if("${SGX_SSL} " STREQUAL " ")
-       set(SGX_SSL /opt/intel/sgxssl)
+    message(FATAL_ERROR "SGX_SSL: undefined environment variable")
 endif()
 
 set(SGX_COMMON_CFLAGS -m64)

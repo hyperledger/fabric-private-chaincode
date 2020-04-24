@@ -4,6 +4,8 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.2 FATAL_ERROR)
 
+INCLUDE(../../cmake/ConfigSGX.cmake)
+
 SET(U_CRYPTO_ADAPT_LIB_NAME updo-crypto-adapt)
 SET(T_CRYPTO_ADAPT_LIB_NAME tpdo-crypto-adapt)
 
