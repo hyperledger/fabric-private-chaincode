@@ -13,6 +13,25 @@
  * limitations under the License.
  */
 
+/* NOTE ***********************************************************************
+ *
+ * This file has been copied from the Private Data Objects repo and slightly
+ * modified. This file provides types (and type casts), including encoding and
+ * decoding of base64 strings. As PDO uses different function signatures for
+ * base64 features with respect to FPC, the respective function calls have been
+ * updated.
+ *
+ * Recommendation for future improvement: import PDO's base64 package in FPC.
+ * 
+ * PDO has modified the base64 package for performance reasons -- namely to
+ * reduce copies of data in memory.
+ * So by importing the package, FPC can:
+ *  - benefit from the performance improvements,
+ *  - and drop this modified `types.cpp` file.
+ *
+ * ****************************************************************************
+ */
+
 #include <algorithm>
 #include <string>
 #include <vector>
