@@ -13,6 +13,9 @@ PROJECT_NAME=fabric-private-chaincode
 export SGX_MODE ?= HW
 export SGX_BUILD ?= PRERELEASE
 export SGX_SSL ?= /opt/intel/sgxssl
+export SGX_SDK ?= /opt/intel/sgxsdk
+export SGX_ARCH ?= x64
+
 
 export FABRIC_PATH ?= ${GOPATH}/src/github.com/hyperledger/fabric
 
