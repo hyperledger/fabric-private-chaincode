@@ -10,22 +10,22 @@ execute_process(COMMAND getconf LONG_BIT OUTPUT_VARIABLE VAR_LONG_BIT)
 # set them to the usual defaults.
 set(SGX_SDK "$ENV{SGX_SDK}")
 if("${SGX_SDK} " STREQUAL " ")
-       set(SGX_SDK /opt/intel/sgxsdk)
+    message(FATAL_ERROR "SGX_SDK: undefined environment variable")
 endif()
 
 set(SGX_ARCH "$ENV{SGX_ARCH}")
 if("${SGX_ARCH} " STREQUAL " ")
-       set(SGX_ARCH x64)
+    message(FATAL_ERROR "SGX_ARCH: undefined environment variable")
 endif()
 
 set(SGX_MODE "$ENV{SGX_MODE}")
 if("${SGX_MODE} " STREQUAL " ")
-       set(SGX_MODE HW) # SGX mode: sim, hw
+    message(FATAL_ERROR "SGX_MODE: undefined environment variable")
 endif()
 
 set(SGX_BUILD "$ENV{SGX_BUILD}")
 if("${SGX_BUILD} " STREQUAL " ")
-       set(SGX_BUILD PRERELEASE)
+    message(FATAL_ERROR "SGX_BUILD: undefined environment variable")
 endif()
 
 set(SGX_SSL "$ENV{SGX_SSL}")
