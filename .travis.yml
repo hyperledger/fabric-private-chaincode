@@ -77,7 +77,6 @@ before_install:
   - pushd $FABRIC_PATH; git checkout tags/$FABRIC_VERSION; popd;
 
 script:
-  # travis doesn't check out the branch itself but for our make to work we
-  # need a branch or alike. So check create a local one ...
-  - git checkout -b we-need-a-branch-for-below-to-work
-  - make
+  - make all clobber
+  # Note: travis of couse does an implicit clobber but adding it here makes sure
+  # it works properly
