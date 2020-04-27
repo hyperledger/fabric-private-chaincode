@@ -86,18 +86,28 @@ ccenv: base
 
 # Note: for overall consistency reasons we want the FPC code from the current repo
 # as this will rebuild each time and take a while, we don't add a dependency
-# to the build target above ...
+# to the build target above for peer and dev ...
+# To enable docker to maximize build sharing between dev and peer
+# we add DOCKER_DEV_BUILD_OPTS (e.g., to get additional packages) also to peer
 peer: base
 	(cd ${TOP}; \
          $(DOCKER) build $(DOCKER_BUILD_OPTS) -t ${FPC_DOCKER_PEER_NAME}\
+         $(DOCKER_DEV_BUILD_OPTS)\
          -f utils/docker/peer/Dockerfile\
-         --build-arg FPC_REPO_URL=file:///tmp/build-src/.git\
-         --build-arg FPC_REPO_BRANCH=$$(git rev-parse --abbrev-ref HEAD)\
+         --build-arg FPC_REPO_URL=file:///tmp/cloned-local-fpc-git-repo\
+         --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
          . )
 
 dev: base
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_DEV_NAME) $(DOCKER_DEV_BUILD_OPTS) dev
+	(cd ${TOP}; \
+         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_DEV_NAME)\
+         $(DOCKER_DEV_BUILD_OPTS)\
+         -f utils/docker/dev/Dockerfile\
+         --build-arg FPC_REPO_URL=file:///tmp/cloned-local-fpc-git-repo\
+         --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
+         --build-arg SGX_MODE=${SGX_MODE}\
+         . )
 
 cc-builder: dev
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
