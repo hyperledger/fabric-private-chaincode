@@ -7,14 +7,6 @@
 
 @startuml
 
-'- force wrapping of longer text
-'skinparam wrapWidth 400
-
-!pragma teoz true
-
-'hide footbox
-'title Foot Box removed
-
 title FPC Enclave Registration \n ***** DOCUMENT IN PROGRESS ******
 
 actor "Admin Org1" as Admin order 10
@@ -40,7 +32,7 @@ end note
 
 group enclave creation
   note over Admin #FFaa00
-    **MST**: we might want to replace (here and elsewhere) CC_VER with the sequence
+    **MST**: we might want to replace (here and elsewhere) CC_Version with the sequence
     number from chain code definition as versions can be re-used in downgrades yet we
     might or might not want to re-use enclaves?
   end note
@@ -48,18 +40,21 @@ group enclave creation
   activate Admin
 
   note over Admin #FFaa00
-  The following Admin operations do not necessarily need to be performed manually.
-  These could be, for example, scripted or embedded in the peer process.
-  end note
-  note over Admin #FFaa00
   These operations are assumed to be performed once the chaincode definition is
   committed on the channel for two reasons:
   1) chaincode invocation may not be available before the definition is committed,
   2) enclave registration should be feasible only for committed chaincodes
   end note
 
-  Admin -> ECC1 ++: invoke create(SPID)
+  create E_Manager order 15
 
+  note over Admin, E_Manager #FFaa00
+  The E_Manager component hides some operations that do not necessarily need to be
+  performed by the Admin -- they could be scripted or embedded in the peer process.
+  end note
+
+  Admin -> E_Manager ++: create CC_Id
+  E_Manager -> ECC1 ++: create
   'ECC1 -> TLCC1 ++: getInfo
   'note over TLCC1 #FFaa00
   '  This information could also be retrieved elsewhere if easier. At this point in time
@@ -69,25 +64,19 @@ group enclave creation
   'end note
   'return TLCC_MR, CH_id
 
-  ECC1 -> Enclave1 ++: invoke create(SPID)
+  ECC1 -> Enclave1 ++: create
 
-  Enclave1 -> ECC1 ++: get_signed_proposal
-  return Signed_Proposal
-  Enclave1 -> Enclave1 : CC_Id, CC_Version <- extract_cc_info(Signed_Proposal) 
-  Enclave1 -> ECC1 ++: get_mspid
-  return MSPID
-  Enclave1 -> ECC1 ++: get_channel_id
-  return Channel_Id
-  group fpc-cc-tlcc binding (to be discussed)
-  Enclave1 -> ERCC1 ++: get_tlcc_mrenclave()
-  return TLCC_MREnclave
-  end group
+  Enclave1 -> Enclave1: CC_Parameters <- retrieve CC_Id, CC_Version, MSPID, Channel_Id, TLCC_MREnclave
 
-  Enclave1 -> Enclave1 : keyGen
-  note left #FFaa00
-    keyGen generates the keys stored in the key ring,
-    and described in the Credential protobuf
-  end note
+  'group fpc-cc-tlcc binding (to be discussed)
+  'Enclave1 -> ERCC1 ++: get_tlcc_mrenclave()
+  'return TLCC_MREnclave
+  'end group
+
+  Enclave1 -> Enclave1 : generate Private_Keys <- <Enclave_SK, Enclave_DK, CC_DK>
+  Enclave1 -> Enclave1 : Public_Keys <- Public(Private_Keys)
+
+  Enclave1 -> Enclave1 : Credentials <- <CC_Parameters, Public_Keys>
 
   group Org-Enclave binding (to be discussed -- not implemented)
   Enclave1  -> ECC1 ++: binding (ECC_VK)
@@ -98,16 +87,9 @@ group enclave creation
   return SIG_Org_1
   end group
 
-  Enclave1 -> Enclave1 : generate quote
+  Enclave1 -> Enclave1 : Attestation <- attest(Credentials)
   note left #FFaa00
-    quote is defined with reportbody =
-    Hash(<CC_Id, CC_Version, MSPID, Enclave_VK, Enclave_EK, CC_EK, TLCC_MR, Channel_Id>)
-  end note
-
-  Enclave1 -> Enclave1 : populate protobuf
-  note left #FFaa00
-    attestation and (public) keys are inserted in
-    the Credentials protobuf
+    quote is defined with reportbody = Hash(<Credentials>)
   end note
 
   group Persistent Credentials (to be discussed)
@@ -121,14 +103,16 @@ group enclave creation
   end note
   end group
 
-  return Credentials protobuf
+  return Credentials, Attestation
 
-  return Credentials protobuf
+  return Credentials, Attestation
 
-  Admin -> IAS ++: send quote
+  E_Manager -> IAS ++: Attestation
   return Verification_Report
-  Admin -> Admin: insert Verification_Report in Credentials
 
+  return result /' Admin -> E_Manager '/
+
+  deactivate Admin
 
 '  note over Admin1 #FFaa00
 '    **MST**: From an attestation generalization perspective i think there should be just a single
@@ -152,27 +136,26 @@ group enclave creation
 end
 
 group enclave registration
-  Admin -> ERCC1 ++: invoke register (Credentials)
-  Admin -> ERCC2 : invoke register (Credentials)
+  activate Admin
+  Admin -> E_Manager ++: register CC_Id
+  E_Manager -> ERCC1 ++: register Credentials, Attestation, Verification_Report
+  E_Manager -> ERCC2 : register Credentials, Attestation, Verification_Report
 
   ref over ERCC2
     (same as ERCC1)
   end ref
   activate ERCC2
 
-  ERCC1 -> ERCC1 : check verification report (through hard-coded IAS certificate)
-  ERCC1 -> ERCC1 : check TLCC_MREnclave match (through hard-coded id)
-  ERCC1 -> ERCC1 : check Channel_Id match (through shim)
-  ERCC1 -> ERCC1 : check Credentials.MSPID matches Admin.MSPID (through shim)
+  ERCC1 -> ERCC1 : check Credentials
 
-  group check credential consistency (TBD)
+  group check consistency of Credentials (TBD)
     note over ERCC1 #FFaa00
         The interaction with TLCC is not relevant. Rather, it is convenient to
         access the chaincode definition.
     end note
-    create entity "TLCC Peer1_Org1" as TLCC1 order 45
-    ERCC1 -> TLCC1  ++: approve_consistency(Credentials)
-    TLCC1 -> TLCC1    : check parameters against chaincode definition
+    create "TLCC Peer1_Org1" as TLCC1 order 45
+    ERCC1 -> TLCC1  ++: approve consistency of Credentials
+    TLCC1 -> TLCC1    : check Credentials against chaincode definition
     note over TLCC1 #FFaa00
         This check ensures that:
         1) the chaincode version (i.e., the MREnclave) matches the version of the
@@ -182,7 +165,7 @@ group enclave registration
         chaincode version/MREnclave.
         Note that (2) merely prevents spurious chaincode enclaves from being registered.
     end note
-    return true/false
+    return result
   end group
 
   group deployment validation (unclear, TBD)
@@ -192,15 +175,20 @@ group enclave registration
     end note
   end group
 
-  ERCC1 -> ERCC1 : putState(key=Credentials.CC_Id, value=Credentials)
+  ERCC1 -> ERCC1 : store Credentials on the ledger
+  note over ERCC1 #FFaa00
+  E.g., putState(key=Credentials.CC_Id, value=Credentials)
+  end note
 
   return register endorsement
 
   return register endorsement
 
-  ref over Admin
+  ref over E_Manager
     submit transaction
   end ref
+
+  return result
 
   deactivate Admin
 
