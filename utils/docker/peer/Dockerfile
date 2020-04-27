@@ -10,7 +10,7 @@ ARG NANOPB_VERSION=0.3.9.2
 ARG FABRIC_REPO=https://github.com/hyperledger/fabric.git
 ARG FABRIC_VERSION=v2.1.0
 ARG FPC_REPO_URL=https://github.com/hyperledger-labs/fabric-private-chaincode.git
-ARG FPC_REPO_BRANCH=master
+ARG FPC_REPO_BRANCH_TAG_OR_COMMIT=master
 ARG OPENSSL_VERSION=1.1.0j
 ARG SGXSSL_VERSION=v2.4.1
 ARG SGX_MODE=SIM
@@ -83,13 +83,11 @@ RUN git clone --branch $FABRIC_VERSION $FABRIC_REPO $FABRIC_PATH
 # Get FPC
 ENV FPC_PATH=$GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
 # We copy context so we can use that to potentially get local .git as repo ...
-RUN mkdir /tmp/build-src
-COPY . /tmp/build-src
-# RUN mkdir -p $FPC_PATH
-RUN git clone $FPC_REPO_URL $FPC_PATH \
+COPY .git /tmp/cloned-local-fpc-git-repo
+RUN git clone --recurse $FPC_REPO_URL $FPC_PATH \
+  && cd $FPC_PATH \
+  && git checkout --recurse $FPC_REPO_BRANCH_TAG_OR_COMMIT
 # Note: could add --single-branch to below to speed-up and keep size smaller. But for now for a dev-image better keep complete repo
- && cd $FABRIC_PATH \
- && git checkout tags/$FABRIC_VERSION
 
 # Build FPC peer including plugins and tlcc support
 RUN cd $FPC_PATH \

@@ -63,10 +63,10 @@ is used. Otherwise it will use `core.yaml` and the regular peer image.
    By default the image will clone the master branch on
    https://github.com/hyperledger-labs/fabric-private-chaincode. If you want to use
    a different fork of the repo or a different branch you provide
-   `FPC_REPO_URL` and `FPC_REPO_BRANCH` as build args.
+   `FPC_REPO_URL` and `FPC_REPO_BRANCH_TAG_OR_COMMIT` as build args.
    ```
    cd $FPC_PATH/utils/docker/peer
-   docker build -t hyperledger/fabric-peer-fpc --build-arg FPC_REPO_URL=<repo-url> --build-arg FPC_REPO_BRANCH=<repo-branch> .
+   docker build -t hyperledger/fabric-peer-fpc --build-arg FPC_REPO_URL=<repo-url> --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=<repo-branch> .
    ```
    If you want to build the peer image using your local copy of your repo you can
    use the same build args, but specify `file:///tmp/build-src/.git` as the
@@ -74,7 +74,7 @@ is used. Otherwise it will use `core.yaml` and the regular peer image.
    so that the local repo will be in the build context for the docker daemon.
    ```
    cd $FPC_PATH
-   docker build -t hyperledger/fabric-peer-fpc -f utils/docker/peer/Dockerfile --build-arg FPC_REPO_URL=file:///tmp/build-src/.git --build-arg FPC_REPO_BRANCH=$(git rev-parse --abbrev-ref HEAD) .
+   docker build -t hyperledger/fabric-peer-fpc -f utils/docker/peer/Dockerfile --build-arg FPC_REPO_URL=file:///tmp/build-src/.git --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$(git rev-parse HEAD) .
    ```
    Note: as this last scenario might be a common development action, it is defined as
    a makefile target `peer` in `$FPC_PATH/utils/docker/Makefile`.
