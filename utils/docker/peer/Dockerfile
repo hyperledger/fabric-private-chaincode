@@ -2,7 +2,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FROM hyperledger/fabric-private-chaincode-base:latest
+ARG FPC_VERSION=latest
+
+FROM hyperledger/fabric-private-chaincode-base:${FPC_VERSION}
 
 ARG GO_VERSION=go1.13
 ARG GO_TAR=$GO_VERSION.linux-amd64.tar.gz

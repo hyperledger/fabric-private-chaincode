@@ -16,6 +16,7 @@ export SGX_MODE=${SGX_MODE:=SIM}
 
 # Variables which we allow the caller override ..
 export FABRIC_VERSION=${FABRIC_VERSION:=1.4.3}
+export FPC_VERSION=${FPC_VERSION:=latest}
 export CHANNEL_NAME=${CHANNEL_NAME:=mychannel}
 export NODE_WALLETS=${NODE_WALLETS:=${SCRIPT_DIR}/../node-sdk/wallet}
 export DOCKER_COMPOSE_OPTS=${DOCKER_COMPOSE_OPTS:=}

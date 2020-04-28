@@ -42,7 +42,7 @@ endif
 build: base ccenv cc-builder
 
 run: dev
-	$(DOCKER) run $(DOCKER_DEV_RUN_OPTS) -it $(FPC_DOCKER_NAMESPACE)-dev
+	$(DOCKER) run $(DOCKER_DEV_RUN_OPTS) -it $(FPC_DOCKER_NAMESPACE)-dev:${FPC_VERSION}
 
 clobber:
 	# first clean-up dangling images as that might prevent some of the later cleans
@@ -76,13 +76,16 @@ DOCKER_BUILD_OPTS ?=
 ifdef FORCE_REBUILD
 	DOCKER_BUILD_OPTS += --no-cache
 endif
+DOCKER_BUILD_OPTS += --build-arg FPC_VERSION=$(FPC_VERSION)
 
 
 base:
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_BASE_NAME) base
+	$(DOCKER) tag $(FPC_DOCKER_BASE_NAME) $(FPC_DOCKER_BASE_NAME):${FPC_VERSION}
 
 ccenv: base
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CCENV_NAME) ccenv
+	$(DOCKER) tag $(FPC_DOCKER_CCENV_NAME) $(FPC_DOCKER_CCENV_NAME):${FPC_VERSION}
 
 # Note: for overall consistency reasons we want the FPC code from the current repo
 # as this will rebuild each time and take a while, we don't add a dependency
@@ -98,6 +101,7 @@ peer: base
          --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
          . )
+	$(DOCKER) tag $(FPC_DOCKER_PEER_NAME) $(FPC_DOCKER_PEER_NAME):${FPC_VERSION}
 
 dev: base
 	(cd ${TOP}; \
@@ -108,10 +112,12 @@ dev: base
          --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
          . )
+	$(DOCKER) tag $(FPC_DOCKER_DEV_NAME) $(FPC_DOCKER_DEV_NAME):${FPC_VERSION}
 
 cc-builder: dev
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
 		-t $(FPC_DOCKER_CC_BUILDER_NAME)\
 		--build-arg SGX_MODE=${SGX_MODE}\
 		cc-builder
+	$(DOCKER) tag $(FPC_DOCKER_CC_BUILDER_NAME) $(FPC_DOCKER_CC_BUILDER_NAME):${FPC_VERSION}
 

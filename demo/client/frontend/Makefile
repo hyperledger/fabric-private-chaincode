@@ -5,7 +5,8 @@
 TOP = ../../..
 include $(TOP)/build.mk
 
-DOCKER_IMAGE = auction_frontend
+FPC_DOCKER_NAMESPACE := hyperledger/fabric-private-chaincode
+DOCKER_IMAGE = ${FPC_DOCKER_NAMESPACE}-auction_frontend
 APP_SRC = ${PWD}
 
 
@@ -26,6 +27,7 @@ docker:
 	# this image is usually built by docker-compose but we still add a
 	# convenience target ere until proxy issues with docker-compose are resolved
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_IMAGE) .
+	$(DOCKER) tag $(DOCKER_IMAGE) $(DOCKER_IMAGE):${FPC_VERSION}
 
 run:
 	$(DOCKER) run \
@@ -33,13 +35,13 @@ run:
 		-v ${APP_SRC}:/usr/src/app \
 		-v /usr/src/app/node_modules \
 		-p 5000:5000 \
-		$(DOCKER_IMAGE)
+		$(DOCKER_IMAGE):${FPC_VERSION}
 
 cli:
 	$(DOCKER) run \
 		-it \
 		-v ${APP_SRC}:/usr/src/app \
-		$(DOCKER_IMAGE) \
+		$(DOCKER_IMAGE):${FPC_VERSION} \
 		/bin/sh
 
 # Note: the avatar service is a bit unreliable, so we do
