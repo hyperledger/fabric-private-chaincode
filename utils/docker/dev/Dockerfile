@@ -34,8 +34,10 @@ RUN git config --global user.name $GIT_USER_NAME \
 RUN apt-get update \
  && apt-get install -y \
     docker.io \
+    docker-compose \
     clang-format \
     jq \
+    psmisc \
     $APT_ADD_PKGS
 
 # Install go
