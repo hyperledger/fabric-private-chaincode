@@ -64,11 +64,13 @@ DOCKER_BUILD_OPTS ?=
 ifdef FORCE_REBUILD
 	DOCKER_BUILD_OPTS += --no-cache
 endif
+DOCKER_BUILD_OPTS += --build-arg FPC_VERSION=$(FPC_VERSION)
 
 docker-boilerplate-ecc: ecc
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_BOILERPLATE_ECC_IMAGE) -f Dockerfile.boilerplate-ecc\
 		--build-arg SGX_MODE=$(SGX_MODE)\
 		..
+	$(DOCKER) tag $(DOCKER_BOILERPLATE_ECC_IMAGE) $(DOCKER_BOILERPLATE_ECC_IMAGE):${FPC_VERSION}
 
 docker-fpc-app: docker-boilerplate-ecc
 	if [ -z "$(DOCKER_IMAGE)" ]; then\

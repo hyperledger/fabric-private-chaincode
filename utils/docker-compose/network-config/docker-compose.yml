@@ -64,7 +64,7 @@ services:
     extends:
       file: base/base.yaml
       service: peer-base
-    image: hyperledger/fabric-peer${FPC_CONFIG}
+    image: hyperledger/fabric-peer${FPC_CONFIG}:${FPC_VERSION}
     container_name: peer0.org1.example.com
     environment:
       - CORE_PEER_ID=peer0.org1.example.com

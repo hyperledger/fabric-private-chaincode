@@ -2,13 +2,15 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FROM hyperledger/fabric-private-chaincode-base:latest
+ARG FPC_VERSION=latest
+
+FROM hyperledger/fabric-private-chaincode-base:${FPC_VERSION}
 
 ARG GO_VERSION=go1.14.1
 ARG GO_TAR=$GO_VERSION.linux-amd64.tar.gz
 ARG NANOPB_VERSION=0.3.9.2
 ARG FABRIC_REPO=https://github.com/hyperledger/fabric.git
-ARG FABRIC_VERSION=v2.1.0
+ARG FABRIC_VERSION=2.1.0
 ARG FPC_REPO_URL=https://github.com/hyperledger-labs/fabric-private-chaincode.git
 ARG FPC_REPO_BRANCH_TAG_OR_COMMIT=master
 ARG OPENSSL_VERSION=1.1.0j
@@ -77,7 +79,7 @@ RUN go get golang.org/x/tools/cmd/goimports
 
 # Get Fabric
 ENV FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
-RUN git clone --branch $FABRIC_VERSION $FABRIC_REPO $FABRIC_PATH
+RUN git clone --branch v$FABRIC_VERSION $FABRIC_REPO $FABRIC_PATH
 # Note: could add --single-branch to below to speed-up and keep size smaller. But for now for a dev-image better keep complete repo
 
 # Get FPC
