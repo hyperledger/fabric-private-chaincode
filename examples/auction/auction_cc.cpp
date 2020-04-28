@@ -62,7 +62,6 @@ int invoke(
     LOG_DEBUG(
         "AuctionCC: +++ Executing '%s' auction chaincode invocation +++", _auction_house_name);
 
-
     std::string function_name;
     std::vector<std::string> params;
     get_func_and_params(function_name, params, ctx);
@@ -145,7 +144,8 @@ int invoke(
 
 std::string init_auction_house(std::string auction_house_name, shim_ctx_ptr_t ctx)
 {
-    put_state(AUCTION_HOUSE_NAME_KEY, (uint8_t*)auction_house_name.c_str(), auction_house_name.size(), ctx);
+    put_state(AUCTION_HOUSE_NAME_KEY, (uint8_t*)auction_house_name.c_str(),
+        auction_house_name.size(), ctx);
 
     bool _initialized = true;
     put_state(INITIALIZED_KEY, (uint8_t*)&_initialized, sizeof(_initialized), ctx);
