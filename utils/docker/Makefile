@@ -50,17 +50,26 @@ clobber:
 	# then clean-up docker-compose network and demo related artifacts
 	(cd ../docker-compose; ${MAKE} clobber)
 	# delete locally created docker images and left-over peer artifacts
-	for imgs in \
+	for img in \
 		dev-* \
 		dev_test-* \
+	; do \
+		IMAGES=$$(${DOCKER} images $${img} -q); \
+		if [ ! -z "$${IMAGES}" ]; then ${DOCKER} rmi -f $${IMAGES} || exit 1; fi \
+	done; \
+	for tag in \
+	    ${FPC_VERSION} \
+	    latest \
+	; do \
+	    for img in \
 	        ${FPC_DOCKER_PEER_NAME} \
 		$(FPC_DOCKER_CC_BUILDER_NAME) \
 		$(FPC_DOCKER_DEV_NAME) \
 		$(FPC_DOCKER_CCENV_NAME) \
 		$(FPC_DOCKER_BASE_NAME) \
-	; do \
-		IMAGES=$$(${DOCKER} images $${imgs} -q); \
-		if [ ! -z "$${IMAGES}" ]; then ${DOCKER} rmi -f $${IMAGES} || exit 1; fi \
+	    ; do \
+		if [ ! -z "$$(docker images -q $${img}:$${tag})" ]; then ${DOCKER} rmi $${img}:$${tag} || exit 1; fi \
+	done; \
 	done
 
 

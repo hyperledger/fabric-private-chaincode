@@ -18,7 +18,6 @@ DOCKER_CONTAINER_ID?=$$(docker ps | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | a
 DOCKER_IMAGE ?= $$(docker images | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
 BOILERPLATE_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
 DOCKER_BOILERPLATE_ECC_IMAGE ?= hyperledger/$(PROJECT_NAME)-boilerplate-ecc$(BOILERPLATE_EXTENSION)
-INSTALLED_DOCKER_BOILERPLATE_ECC_IMAGE ?= $$(docker images | grep -- ${DOCKER_BOILERPLATE_ECC_IMAGE} | awk '{print $$1;}')
 DOCKER_ENCLAVE_SO_PATH ?= $(ENCLAVE_SO_PATH)
 
 all: build
@@ -111,6 +110,13 @@ docker-stop:
 
 docker-clean: docker-stop
 	-if [ ! -z "$(DOCKER_IMAGE)" ]; then docker rmi -f $(DOCKER_IMAGE); fi
-	-if [ ! -z "$(INSTALLED_DOCKER_BOILERPLATE_ECC_IMAGE)" ]; then echo "Remove boilerplate image"; docker rmi $(INSTALLED_DOCKER_BOILERPLATE_ECC_IMAGE); fi
+	for tag in \
+	    ${FPC_VERSION} \
+	    latest \
+	; do \
+	    if [ ! -z "$$(docker images -q ${DOCKER_BOILERPLATE_ECC_IMAGE}:$${tag})" ]; then \
+		docker rmi $(DOCKER_BOILERPLATE_ECC_IMAGE):$${tag}; \
+	    fi \
+	done
 
 clobber: docker-clean
