@@ -75,7 +75,13 @@ public/img/users/c-mobile.svg:
 clobber:
 	RUNNING_IMAGE=$$(${DOCKER} ps -q --filter ancestor=${DOCKER_IMAGE}); \
 	if [ ! -z "$${RUNNING_IMAGE}" ]; then ${DOCKER} kill $${RUNNING_IMAGE}; fi
-	IMAGE=$$(${DOCKER} images ${DOCKER_IMAGE} -q); \
-	if [ ! -z "$${IMAGE}" ]; then ${DOCKER} rmi -f $${IMAGE}; fi
+	for tag in \
+	    ${FPC_VERSION} \
+	    latest \
+	; do \
+	    if [ ! -z "$$(docker images -q ${DOCKER_IMAGE}:$${tag})" ]; then \
+		docker rmi $(DOCKER_IMAGE):$${tag}; \
+	    fi \
+	done
 	# make clobber in demo/ also would take care but better safe than sorry
 	-$(RM) $(AVATAR_FILES)
