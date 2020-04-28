@@ -28,3 +28,5 @@ require (
 	google.golang.org/grpc v1.28.0 // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
 )
+
+replace github.com/hyperledger-labs/fabric-private-chaincode/ercc => ./ercc
