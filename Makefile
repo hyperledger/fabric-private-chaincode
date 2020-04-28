@@ -24,12 +24,11 @@ license:
 	@echo "License: Running licence checks.."
 	@scripts/check_license.sh
 
-linter: gotools build
-	# TODO enable linter again
+linter: gotools
 	@echo "LINT: Running code checks for Go files..."
 	@cd $$(/bin/pwd) && ./scripts/golinter.sh
-	#@echo "LINT: Running code checks for Cpp/header files..."
-	#@cd $$(/bin/pwd) && ./scripts/cpplinter.sh
+	@echo "LINT: Running code checks for Cpp/header files..."
+	@cd $$(/bin/pwd) && ./scripts/cpplinter.sh
 	@echo "LINT completed."
 
 gotools:
