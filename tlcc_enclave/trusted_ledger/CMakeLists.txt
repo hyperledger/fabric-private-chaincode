@@ -61,7 +61,7 @@ add_custom_command(TARGET libtl
     POST_BUILD
     COMMAND mkdir -p ${CMAKE_BINARY_DIR}/include
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/trusted_ledger.h ${CMAKE_BINARY_DIR}/include
-    COMMAND cp ${COMMON_SOURCE_DIR}/types.h ${CMAKE_BINARY_DIR}/include
+    COMMAND cp ${COMMON_SOURCE_DIR}/fpc-types.h ${CMAKE_BINARY_DIR}/include
     COMMAND cp ${CMAKE_BINARY_DIR}/libtl.so ${CMAKE_BINARY_DIR}/lib
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Add include to build")
