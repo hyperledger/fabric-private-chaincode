@@ -17,6 +17,9 @@ export SGX_MODE=${SGX_MODE:=SIM}
 # Variables which we allow the caller override ..
 export FABRIC_VERSION=${FABRIC_VERSION:=1.4.3}
 export FPC_VERSION=${FPC_VERSION:=latest}
+export NET_ID=${NET_ID:=dev}
+# above should correspond to 'peer->networkId' in ../network-config/core.yaml. when refactoring, we might
+# consider auto-extracting as done in ../../fabric/bin/lib/common_ledger.sh ...
 export CHANNEL_NAME=${CHANNEL_NAME:=mychannel}
 export NODE_WALLETS=${NODE_WALLETS:=${SCRIPT_DIR}/../node-sdk/wallet}
 export DOCKER_COMPOSE_OPTS=${DOCKER_COMPOSE_OPTS:=}
