@@ -10,6 +10,8 @@ DOCKER := docker $(DOCKERFLAGS)
 
 PROJECT_NAME=fabric-private-chaincode
 
+export FPC_VERSION := master
+
 export SGX_MODE ?= HW
 export SGX_BUILD ?= PRERELEASE
 export SGX_SSL ?= /opt/intel/sgxssl

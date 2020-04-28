@@ -23,7 +23,7 @@ networks:
 services:
   auction_client:
     container_name: auction_client
-    image: auction_client_backend
+    image: hyperledger/fabric-private-chaincode-auction_client_backend:${FPC_VERSION}
     build:
       context: client/backend/fabric-gateway
     ports:
@@ -36,7 +36,7 @@ services:
 
   auction_frontend:
     container_name: auction_frontend
-    image: auction_frontend
+    image: hyperledger/fabric-private-chaincode-auction_frontend:${FPC_VERSION}
     build:
       context: client/frontend
     ports:
