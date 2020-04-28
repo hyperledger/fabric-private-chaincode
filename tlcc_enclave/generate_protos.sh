@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-# set -eux
+set -e
 
 if [[ -z "${NANOPB_PATH}"  ]]; then
     echo "Error: NANOPB_PATH not set"
