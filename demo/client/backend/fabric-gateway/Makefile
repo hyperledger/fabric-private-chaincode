@@ -29,7 +29,13 @@ docker:
 	$(DOCKER) tag $(DOCKER_IMAGE) $(DOCKER_IMAGE):${FPC_VERSION}
 
 clobber:
-	IMAGE=$$(${DOCKER} images ${DOCKER_IMAGE} -q); \
-        if [ ! -z "$${IMAGE}" ]; then ${DOCKER} rmi ${IMAGE}; fi
+	for tag in \
+	    ${FPC_VERSION} \
+	    latest \
+	; do \
+	    if [ ! -z "$$(docker images -q ${DOCKER_IMAGE}:$${tag} 2> /dev/null)" ]; then \
+		docker rmi $(DOCKER_IMAGE):$${tag}; \
+	    fi \
+	done
 	# make clobber in demo/ also would take care but better safe than sorry
 
