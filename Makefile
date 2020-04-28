@@ -33,7 +33,7 @@ linter: gotools
 
 gotools:
 	# install goimports if not present
-	cd utils/tools && $(GO) install golang.org/x/tools/cmd/goimports
+	cd utils && $(GO) install golang.org/x/tools/cmd/goimports
 
 godeps: gotools
 	$(GO) mod download
