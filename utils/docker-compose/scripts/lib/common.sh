@@ -56,7 +56,13 @@ if ${USE_EXPLORER}; then
 	export DOCKER_COMPOSE_OPTS="${DOCKER_COMPOSE_OPTS} -f ${NETWORK_CONFIG}/docker-compose-explorer.yml"
 fi
 if ${USE_SGX_HW}; then
-	SGX_DEVICE_PATH=$(if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx" ]; then echo "/dev/sgx"; else echo "ERROR: NO SGX DEVICE FOUND"; fi)
+	SGX_DEVICE_PATH=$(if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx" ]; then echo "/dev/sgx"; else echo "none"; fi)
+	if [ "${SGX_DEVICE_PATH}" = "none" ]; then 
+		echo "ERROR: SGX_MODE is HW but no sgx device found";
+		exit 1;
+	fi	
+	# Note: the echo is hack to get an error with error message back. The _ make
+	# sure the whole message surfaces to the console
 	export DOCKER_COMPOSE_CMD="env SGX_DEVICE_PATH=${SGX_DEVICE_PATH} SGX_CONFIG_ROOT="${FPC_PATH}/config/ias" ${DOCKER_COMPOSE_CMD}"
 	export DOCKER_COMPOSE_OPTS="${DOCKER_COMPOSE_OPTS} -f ${NETWORK_CONFIG}/docker-compose-sgx-hw.yml"
 fi

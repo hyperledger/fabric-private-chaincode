@@ -12,7 +12,7 @@ PROJECT_NAME=fabric-private-chaincode
 
 export FPC_VERSION := cr1.0.1
 
-export SGX_MODE ?= HW
+export SGX_MODE ?= SIM
 export SGX_BUILD ?= PRERELEASE
 
 export FABRIC_PATH ?= ${GOPATH}/src/github.com/hyperledger/fabric
