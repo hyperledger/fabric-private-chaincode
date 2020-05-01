@@ -229,13 +229,13 @@ int ecall_cc_invoke(const char* encoded_args,
     LOG_DEBUG("ecall_cc_invoke: \tArgs: %s", encoded_args);
 
     // NOTE/TODO: this crypto part will be removed
-    if(!crypto_created)
+    if (!crypto_created)
     {
         pdo::crypto::sig::PublicKey verification_key_;
         pdo::crypto::sig::PrivateKey signature_key_;
-        signature_key_.Generate(); //private key
+        signature_key_.Generate();  // private key
         verification_key_ = signature_key_.GetPublicKey();
-        //debug
+        // debug
         std::string s = verification_key_.Serialize();
         LOG_DEBUG("enclave verification key: %s", s.c_str());
         crypto_created = true;
