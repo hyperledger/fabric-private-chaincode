@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef _TYPES_H_
-#define _TYPES_H_
+#ifndef _FPC_TYPES_H_
+#define _FPC_TYPES_H_
 
 #include <stdarg.h>
 #include <stdint.h>
