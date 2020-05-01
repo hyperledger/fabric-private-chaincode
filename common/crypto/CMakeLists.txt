@@ -16,7 +16,7 @@ FILE(GLOB PROJECT_SOURCES
     "${PDO_CRYPTO_DIR}/../c11_support.cpp"
     "${PDO_CRYPTO_DIR}/../hex_string.cpp"
     "${PDO_CRYPTO_DIR}/../log.cpp"
-    "types.cpp"
+    "pdo-types.cpp"
     )
 
 ###################################################################################################
