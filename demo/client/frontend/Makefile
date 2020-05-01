@@ -7,7 +7,7 @@ include $(TOP)/build.mk
 
 FPC_DOCKER_NAMESPACE := hyperledger/fabric-private-chaincode
 DOCKER_IMAGE = ${FPC_DOCKER_NAMESPACE}-auction_frontend
-APP_SRC = ${PWD}
+APP_SRC = "$(shell readlink -f .)"
 
 
 # Note:
@@ -32,7 +32,7 @@ docker:
 run:
 	$(DOCKER) run \
 		-it \
-		-v ${APP_SRC}:/usr/src/app \
+		-v "${APP_SRC}":/usr/src/app \
 		-v /usr/src/app/node_modules \
 		-p 5000:5000 \
 		$(DOCKER_IMAGE):${FPC_VERSION}
@@ -40,7 +40,7 @@ run:
 cli:
 	$(DOCKER) run \
 		-it \
-		-v ${APP_SRC}:/usr/src/app \
+		-v "${APP_SRC}":/usr/src/app \
 		$(DOCKER_IMAGE):${FPC_VERSION} \
 		/bin/sh
 
