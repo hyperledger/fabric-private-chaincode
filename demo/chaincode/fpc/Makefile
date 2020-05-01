@@ -39,7 +39,7 @@ docker-build: clean
 		|| { cd $(TOP)/utils/docker && make cc-builder; }
 	$(DOCKER) run \
 		-u $$(id -u):$$(id -g)\
-		-v ${PWD}:/project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/fpc\
+		-v "$(shell readlink -f .)":/project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/fpc\
 		-w /project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/fpc\
 		$(FPC_DOCKER_CC_BUILDER_NAME)\
 		sh -c 'make build'
