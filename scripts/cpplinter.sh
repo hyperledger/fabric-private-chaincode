@@ -23,6 +23,7 @@ EXCLUDED_PATTERNS="\
     enclave_t.h \
     /_build \
     .pb. \
+    /node_modules \
     "
 for FILE in $FILES_TO_PARSE; do
 
