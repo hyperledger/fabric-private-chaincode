@@ -8,7 +8,7 @@
 #ifndef _COMMON_SGXCCLIB_H_
 #define _COMMON_SGXCCLIB_H_
 
-#include "types.h"
+#include "fpc-types.h"
 
 #ifdef __cplusplus
 extern "C" {

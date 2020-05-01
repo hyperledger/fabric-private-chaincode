@@ -8,7 +8,7 @@ include $(TOP)/build.mk
 
 # TODO bring back demo
 # SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc examples integration demo # docs
-SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc plugins fabric examples integration
+SUB_DIRS = common utils ercc ecc_enclave ecc tlcc_enclave tlcc plugins fabric examples integration
 FPC_SDK = utils/fabric ecc_enclave ecc
 
 .PHONY: license

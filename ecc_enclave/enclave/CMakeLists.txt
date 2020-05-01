@@ -1,4 +1,5 @@
 # Copyright IBM Corp. All Rights Reserved.
+# Copyright 2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -46,6 +47,8 @@ include_directories(
     ${SGX_SDK}/include/tlibc
     ${SGX_SDK}/include/libcxx
     ${SGX_SSL}/include
+    ${FPC_PATH}/common/crypto
+    ${FPC_PATH}/common/crypto/pdo/common
     )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -nostdinc -fno-builtin -fvisibility=hidden -fpie -fstack-protector -std=c11")

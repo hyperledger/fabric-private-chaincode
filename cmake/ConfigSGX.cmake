@@ -5,32 +5,31 @@
 # get arch information
 execute_process(COMMAND getconf LONG_BIT OUTPUT_VARIABLE VAR_LONG_BIT)
 
-# Set variables for common SGX variables.
-# if they are defined in the environment, take them from there, otherwise
-# set them to the usual defaults.
+# Check for the existence of common required SGX variables,
+# and fail if these are not defined. Note global build defaults are defined `../config.mk`.
 set(SGX_SDK "$ENV{SGX_SDK}")
 if("${SGX_SDK} " STREQUAL " ")
-       set(SGX_SDK /opt/intel/sgxsdk)
+    message(FATAL_ERROR "SGX_SDK: undefined environment variable")
 endif()
 
 set(SGX_ARCH "$ENV{SGX_ARCH}")
 if("${SGX_ARCH} " STREQUAL " ")
-       set(SGX_ARCH x64)
+    message(FATAL_ERROR "SGX_ARCH: undefined environment variable")
 endif()
 
 set(SGX_MODE "$ENV{SGX_MODE}")
 if("${SGX_MODE} " STREQUAL " ")
-       set(SGX_MODE HW) # SGX mode: sim, hw
+    message(FATAL_ERROR "SGX_MODE: undefined environment variable")
 endif()
 
 set(SGX_BUILD "$ENV{SGX_BUILD}")
 if("${SGX_BUILD} " STREQUAL " ")
-       set(SGX_BUILD PRERELEASE)
+    message(FATAL_ERROR "SGX_BUILD: undefined environment variable")
 endif()
 
 set(SGX_SSL "$ENV{SGX_SSL}")
 if("${SGX_SSL} " STREQUAL " ")
-       set(SGX_SSL /opt/intel/sgxssl)
+    message(FATAL_ERROR "SGX_SSL: undefined environment variable")
 endif()
 
 set(SGX_COMMON_CFLAGS -m64)

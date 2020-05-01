@@ -8,7 +8,7 @@
 #ifndef _TRUSTED_LEDGER_H_
 #define _TRUSTED_LEDGER_H_
 
-#include "types.h"
+#include "fpc-types.h"
 
 #ifdef __cplusplus
 extern "C" {
