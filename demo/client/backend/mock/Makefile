@@ -7,7 +7,6 @@ include $(TOP)/build.mk
 
 CC_NAME = auction_mock_chaincode
 DOCKER_IMAGE = auction_mock_backend
-APP_SRC = ${PWD}
 
 run-go:
 	env LD_LIBRARY_PATH=../../../../ecc_enclave/_build/lib:${LD_LIBRARY_PATH} $(GO) run .
