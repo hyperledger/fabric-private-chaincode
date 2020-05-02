@@ -13,7 +13,7 @@ all: build
 build : $(PLANTUML_IMGS)
 
 clean :
-	-rm $(PLANTUML_IMGS)
+	rm $(PLANTUML_IMGS)
 
 %.$(PLANTUML_IMG_FORMAT): %.puml
 	PLANTUML_LIMIT_SIZE=8192 $(PLANTUML_CMD) -t$(PLANTUML_IMG_FORMAT) $<

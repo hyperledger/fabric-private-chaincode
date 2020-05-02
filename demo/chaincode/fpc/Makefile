@@ -26,7 +26,7 @@ build: $(BUILD_DIR)
 	$(MAKE) --directory=$<
 
 clean:
-	-rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)
 
 
 HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)

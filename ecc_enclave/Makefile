@@ -18,6 +18,6 @@ build: $(BUILD_DIR)
 	$(MAKE) --directory=$<
 
 clean:
-	-rm -rf $(BUILD_DIR)
-	-rm -f enclave/*_t.*
-	-rm -f sgxcclib/*_u.*
+	rm -rf $(BUILD_DIR)
+	rm -f enclave/*_t.*
+	rm -f sgxcclib/*_u.*
