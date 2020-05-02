@@ -16,7 +16,7 @@ $(PROTO_BUILD_DIR):
 
 .PHONY: protos-clean
 protos-clean:
-	-rm -rf $(PROTO_BUILD_DIR)
+	rm -rf $(PROTO_BUILD_DIR)
 
 $(BUILD_DIR): protos
 	mkdir -p $(BUILD_DIR) && \
@@ -35,8 +35,8 @@ gen_testcases:
 
 .PHONY: enclave-clean
 enclave-clean:
-	-rm -rf $(BUILD_DIR)
-	-rm -f enclave/*_t.*
-	-rm -f trusted_ledger/*_u.*
+	rm -rf $(BUILD_DIR)
+	rm -f enclave/*_t.*
+	rm -f trusted_ledger/*_u.*
 
 clean: enclave-clean protos-clean
