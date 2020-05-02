@@ -31,8 +31,8 @@ services:
     working_dir: /usr/src/app
     command: npm start
     # volumes:
-      # - ./client/backend/fabric-gateway/src:/usr/src/app/src
-      # - ./client/backend/fabric-gateway/config.json:/usr/src/app/config.json
+      # - ${DOCKERD_FPC_PATH}/demo/client/backend/fabric-gateway/src:/usr/src/app/src
+      # - ${DOCKERD_FPC_PATH}/demo/client/backend/fabric-gateway/config.json:/usr/src/app/config.json
 
   auction_frontend:
     container_name: auction_frontend
@@ -42,7 +42,7 @@ services:
     ports:
       - "5000:5000"
     # volumes:
-    #   - ./client/frontend/src:/usr/src/app/src
+    #   - ${DOCKERD_FPC_PATH}/demo/client/frontend/src:/usr/src/app/src
     depends_on:
       - auction_client
 

@@ -25,17 +25,28 @@ ifdef DOCKER_DEV_IMAGE_APT_ADD__PKGS
 	DOCKER_DEV_BUILD_OPTS += --build-arg APT_ADD_PKGS=$(DOCKER_DEV_IMAGE_APT_ADD__PKGS)
 endif
 
-
-DOCKER_DEV_RUN_OPTS ?=
-DOCKER_DEV_RUN_OPTS += -p $(FABRIC_PEER_DAEMON_CHAINCODE_PORT):$(FABRIC_PEER_DAEMON_CHAINCODE_PORT) -v $(DOCKER_DAEMON_SOCKET):$(DOCKER_DAEMON_SOCKET)
-DOCKER_DEV_RUN_OPTS += -v "$(shell readlink -f ${TOP})":/project/src/github.com/hyperledger-labs/fabric-private-chaincode
+DOCKER_DEV_OPTIONAL_CMD= 
 
 DOCKER_GOPATH=/project
-DOKER_FPCPATH=$(DOCKER_GOPATH)/src/github.com/hyperledger-labs/fabric-private-chaincode
+DOCKER_FPC_PATH=$(DOCKER_GOPATH)/src/github.com/hyperledger-labs/fabric-private-chaincode
+
+DOCKER_DEV_RUN_OPTS ?=
+# - import docker daemon socket (so dev container can run docker)
+DOCKER_DEV_RUN_OPTS += -v $(DOCKER_DAEMON_SOCKET):$(DOCKER_DAEMON_SOCKET)
+# - mount local fpc repo into the dev container so development inside container is
+#   persistant (and also can be done from outside with whatever favorite IDE ...)
+DOCKER_DEV_RUN_OPTS += -v "$(abspath ${TOP})":$(DOCKER_FPC_PATH)
+# - inject into dev containers environment the path of the hosts FPC_PATH to enable
+#   volume mounts inside the container
+DOCKER_DEV_RUN_OPTS += --env DOCKERD_FPC_PATH=$(FPC_PATH)/
+# - to make it possible to easily access docker-compose exposed ports accessible as localhost
+#   inside dev container as you would outside, we map the host network stack into the container
+DOCKER_DEV_RUN_OPTS += --net=host
+# - if sgx exists, pass also the corresponding device and aesmd socket to dev container
 SGX_DEVICE_PATH ?= $(shell if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx" ]; then echo "/dev/sgx"; fi)
 SGX_PSW_SOCKET ?= /var/run/aesmd
 ifneq ($(SGX_DEVICE_PATH),)
-	DOCKER_DEV_RUN_OPTS += -v "$(shell readlink -f ${TOP})/config/ias/":$(DOKER_FPCPATH)/config/ias/ -v $(SGX_PSW_SOCKET):$(SGX_PSW_SOCKET) --device $(SGX_DEVICE_PATH)
+	DOCKER_DEV_RUN_OPTS += -v "$(DOCKERD_FPC_PATH)/config/ias/":$(DOCKER_FPC_PATH)/config/ias/ -v $(SGX_PSW_SOCKET):$(SGX_PSW_SOCKET) --device $(SGX_DEVICE_PATH)
 endif
 
 .PHONY: base ccenv dev peer cc-builder
@@ -49,7 +60,7 @@ run: dev
 	dev_container_id=$$(docker ps -a | grep ${DOCKER_DEV_CONTAINER_NAME} | awk '{ print $$1 }'); \
 	   [ -z  "$${dev_container_id}" ] || ${DOCKER} rm "$${dev_container_id}"
 	# Now run a new instance
-	$(DOCKER) run $(DOCKER_DEV_RUN_OPTS) --name ${DOCKER_DEV_CONTAINER_NAME} -it $(FPC_DOCKER_NAMESPACE)-dev:${FPC_VERSION}
+	$(DOCKER) run $(DOCKER_DEV_RUN_OPTS) --name ${DOCKER_DEV_CONTAINER_NAME} -it $(FPC_DOCKER_NAMESPACE)-dev:${FPC_VERSION} ${DOCKER_DEV_OPTIONAL_CMD}
 
 clobber:
 	# first clean-up dangling images as that might prevent some of the later cleans
