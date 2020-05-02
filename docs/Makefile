@@ -13,7 +13,7 @@ all: build
 build : $(PLANTUML_IMGS)
 
 clean :
-	-rm $(PLANTUML_IMGS)
+	rm -f $(PLANTUML_IMGS)
 
 %.$(PLANTUML_IMG_FORMAT): %.puml
 	$(PLANTUML_CMD) -t$(PLANTUML_IMG_FORMAT) $<
