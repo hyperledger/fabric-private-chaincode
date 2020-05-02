@@ -7,7 +7,7 @@ include $(TOP)/build.mk
 
 FPC_DOCKER_NAMESPACE := hyperledger/fabric-private-chaincode
 DOCKER_IMAGE = ${FPC_DOCKER_NAMESPACE}-auction_frontend
-APP_SRC = "$(shell readlink -f .)"
+APP_SRC = "$(DOCKERD_FPC_PATH)/demo/client/frontend"
 
 
 # Note:
