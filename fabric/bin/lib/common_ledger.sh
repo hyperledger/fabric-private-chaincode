@@ -108,9 +108,21 @@ ledger_init() {
     pushd ${FABRIC_CFG_PATH}
 
     # 1. clean up any prior state
+    #     - ledger state and log files from peer & orderer
     [ ! -z "${FABRIC_STATE_DIR}" ] || die "FABRIC_STATE_DIR not defined" # just in case ..
     try mkdir -p ${FABRIC_STATE_DIR}
     try rm -rf ${FABRIC_STATE_DIR}/*
+    #     - external builder artifacts
+    #       Note: FABRIC_STATE_DIR which will be ledger specific and allows for
+    #         multiple concurrent ledgers (assuming their core.yaml have 
+    #         different fileSsystemPaths) these artifacts are also shared 
+    #         _across_ ledger definitions (core.yaml).
+    #         Contrary to that, external builder are ledger instance agnostic, hence we also
+    #         provide an opt-out for the wiping to allow running current ledgers by
+    #         defining an environment variable FPC_SKIP_EXTBUILDER_CLEANUP ..
+    if [ -z ${FPC_SKIP_EXTBUILDER_CLEANUP+x} ]; then
+    	try rm -rf /tmp/fpc-extbuilder.*
+    fi
 
     try ${FABRIC_BIN_DIR}/cryptogen generate --config=./crypto-config.yaml --output="${FABRIC_STATE_DIR}/organizations"
     # 2. start orderer

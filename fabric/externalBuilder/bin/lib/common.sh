@@ -17,7 +17,6 @@ METADATA_FILE="metadata.json"
 ENCLAVE_FILE="enclave.signed.so"
 MRENCLAVE_FILE="mrenclave"
 
-
 # assumes CC_SOURCE_DIR & CC_METADATA_DIR: / provides: REQUEST_CC_TYPE
 check_pkg_meta(){
     [ -f "${CC_METADATA_DIR}/${METADATA_FILE}" ] || die "no metadata file '${METADATA_FILE}'"
@@ -68,23 +67,25 @@ cc_build_for_docker() {
 }
 
 # assumes CC_BUILD_DIR & CC_RT_METADATA_DIR
-# provides: SGX_MODE, PEER_ADDRESS, TLS_ARTIFACTS_DIR & all env-vars expected by shim
+# provides: SGX_MODE, PEER_ADDRESS, RUN_STATE_DIR & all env-vars expected by shim
 process_runtime_metadata() {
-    # Note: while the sample scripts re-use ${CC_RT_METADATA_DIR} to extract the
-    # artifacts from chaincode.json, the docu explicitly says one should treat
-    # that dir as read-only. So we create a separate tmp directory to store
-    # extracted artifacts.
-
-    TLS_ARTIFACTS_DIR="/tmp/fpc-extbuilder.$$"
-    try mkdir -p "${TLS_ARTIFACTS_DIR}"
-
-
     [ -f "${CC_BUILD_DIR}/${METADATA_FILE}" ] || die "no metadata file '${METADATA_FILE}'"
     SGX_MODE="$(jq -r .sgx_mode "${CC_BUILD_DIR}/metadata.json")"
     [ ! -z "${SGX_MODE}" ]                       || die "SGX mode not specified in metadata file"
 
     [ -f "${CC_RT_METADATA_DIR}/chaincode.json" ] || die "chaincode.jsaon does not exist"
     export CORE_CHAINCODE_ID_NAME="$(jq -r .chaincode_id "${CC_RT_METADATA_DIR}/chaincode.json")" || die "could not extract chaincode-id"
+
+	
+    SHORT_CHAINCODE_ID_NAME=$(echo ${CORE_CHAINCODE_ID_NAME} | sed 's/\(.*:.\{5\}\).*/\1/')
+    TIMESTAMP=$(date '+%Y-%m-%d_%H:%M:%s')
+    RUN_STATE_DIR="/tmp/fpc-extbuilder.${TIMESTAMP}.${SHORT_CHAINCODE_ID_NAME}"
+    # Note: while the sample scripts re-use ${CC_RT_METADATA_DIR} to extract the
+    # artifacts from chaincode.json, the docu explicitly says one should treat
+    # that dir as read-only. So we create a separate tmp directory to store
+    # extracted artifacts.
+    try mkdir -p "${RUN_STATE_DIR}"
+
     PEER_ADDRESS=$(jq -r .peer_address "${CC_RT_METADATA_DIR}/chaincode.json") || die "could not extract peer address"
 
     export CORE_PEER_LOCALMSPID="$(jq -r .mspid "${CC_RT_METADATA_DIR}/chaincode.json")" || die "could not extract peer MSPID"
@@ -93,17 +94,17 @@ process_runtime_metadata() {
 	export CORE_PEER_TLS_ENABLED="false"
     else
 	export CORE_PEER_TLS_ENABLED="true"
-	export CORE_TLS_CLIENT_CERT_FILE="${TLS_ARTIFACTS_DIR}/client.crt"
+	export CORE_TLS_CLIENT_CERT_FILE="${RUN_STATE_DIR}/client.crt"
 	try jq -r .client_cert "${CC_RT_METADATA_DIR}/chaincode.json" > "${CORE_TLS_CLIENT_CERT_FILE}"
-	export CORE_TLS_CLIENT_KEY_FILE="${TLS_ARTIFACTS_DIR}/client.key"
+	export CORE_TLS_CLIENT_KEY_FILE="${RUN_STATE_DIR}/client.key"
 	try jq -r .client_key  "${CC_RT_METADATA_DIR}/chaincode.json" > "${CORE_TLS_CLIENT_KEY_FILE}"
-	export CORE_PEER_TLS_ROOTCERT_FILE="${TLS_ARTIFACTS_DIR}/root.crt"
+	export CORE_PEER_TLS_ROOTCERT_FILE="${RUN_STATE_DIR}/root.crt"
 	try jq -r .root_cert   "${CC_RT_METADATA_DIR}/chaincode.json" > "${CORE_PEER_TLS_ROOTCERT_FILE}"
     fi
 
     # For debugging purposes, we also symlink the source metadata & build artifacts
-    try ln -s "${CC_BUILD_DIR}/" "${TLS_ARTIFACTS_DIR}/build"
-    try ln -s "${CC_RT_METADATA_DIR}/" "${TLS_ARTIFACTS_DIR}/rt-metadata"
+    try ln -s "${CC_BUILD_DIR}/" "${RUN_STATE_DIR}/build"
+    try ln -s "${CC_RT_METADATA_DIR}/" "${RUN_STATE_DIR}/rt-metadata"
 }
 
 # expects CC_BUILD_DIR and variables set in 'process_runtime_metadata'
@@ -123,10 +124,10 @@ cc_run_on_host() {
     #   later have to block on the termination of the chaincode,
     #   hence remembering the CC_PID
     try cd "${CC_BUILD_DIR}"
-    ./chaincode -peer.address="${PEER_ADDRESS}" 2>&1 | tee "${TLS_ARTIFACTS_DIR}/chaincode.log" &
+    ./chaincode -peer.address="${PEER_ADDRESS}" 2>&1 | tee "${RUN_STATE_DIR}/chaincode.log" &
     CC_PID=$!
     sleep 1
-    kill -0 ${CC_PID} || die "Chaincode quit too quickly: (for log see '${TLS_ARTIFACTS_DIR}/chaincode.log')"
+    kill -0 ${CC_PID} || die "Chaincode quit too quickly: (for log see '${RUN_STATE_DIR}/chaincode.log')"
 }
 
 # expects CC_BUILD_DIR and variables set in 'process_runtime_metadata'
