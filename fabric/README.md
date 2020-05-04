@@ -29,9 +29,9 @@ Try to run `pushd $FPC_PATH/tlcc_enclave; make; popd;` followed by `make` again.
 ### Wrong Fabric version
 ```
 Patching Fabric ...
-Aborting! Tag on current HEAD () does not match expected tag/v2.0.1!
+Aborting! Tag on current HEAD () does not match expected tag/v2.1.0!
 ...
 ```
 
 Seems that your Fabric is on the wrong branch.
-Try to run `pushd $FABRIC_PATH; git checkout tags/v2.0.1; popd;` followed by `make` again.
+Try to run `pushd $FABRIC_PATH; git checkout tags/v2.1.0; popd;` followed by `make` again.
