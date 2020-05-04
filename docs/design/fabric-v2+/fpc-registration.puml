@@ -18,16 +18,14 @@ participant "ERCC Peer1_Org2" as ERCC2 order 50
 entity IAS order 1
 
 note over ERCC1, ERCC2 #FFaa00
-  It is assumed that: channel has already been created; ERCC has been installed.
-  Also: ERCC contains hard-coded the TLCC_MRenclave and the IAS Root Certificate.
-end note
-note over ERCC1, ERCC2 #FFaa00
-  Recall that ERCC
-  - has been approved by the participating organizations
-  - has an Endorsement Policy that requires signatures from a majority of orgs,
-    for security reasons -- namely to avoid unilateral modifications and preserve
-    integrity. As a result, changes to chaincode enclave info stored in ERCC will
-    be dependent on such policy.
+  It is assumed that:
+    -channel has already been created;
+    -ERCC has been installed -- approved by the participating organizations, see lifecycle;
+    -ERCC contains hard-coded the TLCC_MRenclave and the IAS Root Certificate;
+    -ERCC has an Endorsement Policy that requires signatures from a majority of orgs,
+     for security reasons -- namely to avoid unilateral modifications and preserve
+     integrity. As a result, changes to chaincode enclave info stored in ERCC will
+     be dependent on such policy.
 end note
 
 group enclave creation
@@ -39,76 +37,70 @@ group enclave creation
 
   activate Admin
 
-  note over Admin #FFaa00
-  These operations are assumed to be performed once the chaincode definition is
-  committed on the channel for two reasons:
-  1) chaincode invocation may not be available before the definition is committed,
-  2) enclave registration should be feasible only for committed chaincodes
+  note over Admin, Enclave1 #FFaa00
+    These operations are assumed to be performed once the chaincode definition is
+    committed on the channel for two reasons:
+    1) chaincode invocation may not be available before the definition is committed,
+    2) enclave registration should be feasible only for committed chaincodes
   end note
 
   create E_Manager order 15
 
   note over Admin, E_Manager #FFaa00
-  The E_Manager component hides some operations that do not necessarily need to be
-  performed by the Admin -- they could be scripted or embedded in the peer process.
+    The E_Manager component hides some operations that do not necessarily need to be
+    performed by the Admin -- they could be scripted or embedded in the peer process.
   end note
 
-  Admin -> E_Manager ++: create CC_Id
-  E_Manager -> ECC1 ++: create
-  'ECC1 -> TLCC1 ++: getInfo
-  'note over TLCC1 #FFaa00
-  '  This information could also be retrieved elsewhere if easier. At this point in time
-  '  it does not have to be authenticated (and is anyway passed through untrusted ECC),
-  '  consistency will be verified later in registration (Remember that TLCC_MR is defined
-  '  and agreed by human consensus in the ERCC chaincode definition)
-  'end note
-  'return TLCC_MR, CH_id
+  Admin -> E_Manager ++: create(CC_Id)
 
-  ECC1 -> Enclave1 ++: create
+  note over E_Manager #FFaa00
+    As the EPID attestation requires the SPID, we let the E_Manager handle it.
+    For convenience, the E_Manager explicitly sends the SPID to ECC_Enclave.
+    In the future, the SPID can be made an optional argument within an Aux_Data field.
+    This allows for the generalization of the attestation, useful when DCAP is used instead.
+  end note
+  E_Manager -> ECC1 ++: create(SPID)
 
+  ECC1 -> Enclave1 ++: create(SPID)
+
+  note over Enclave1 #FFaa00
+    The retrieval of CC_Paramenters can be realized in practice as follows:
+    cc id, version, MSPID and channel id can be retrieved through Fabric shim functions;
+    tlcc mrenclave can be retrieved through ercc;
+    the validation of these parameters occurs when the registration tx is processed by ercc;
+    if necessary, a pre-validation can be performed through tlcc.
+  end note
   Enclave1 -> Enclave1: CC_Parameters <- retrieve CC_Id, CC_Version, MSPID, Channel_Id, TLCC_MREnclave
 
-  'group fpc-cc-tlcc binding (to be discussed)
-  'Enclave1 -> ERCC1 ++: get_tlcc_mrenclave()
-  'return TLCC_MREnclave
-  'end group
-
-  Enclave1 -> Enclave1 : generate Private_Keys <- <Enclave_SK, Enclave_DK, CC_DK>
+  Enclave1 -> Enclave1 : generate Private_Keys <- <Enclave_SK, Enclave_DK>
   Enclave1 -> Enclave1 : Public_Keys <- Public(Private_Keys)
 
   Enclave1 -> Enclave1 : Credentials <- <CC_Parameters, Public_Keys>
-
-  group Org-Enclave binding (to be discussed -- not implemented)
-  Enclave1  -> ECC1 ++: binding (ECC_VK)
-  ECC1 -> ECC1 : SIG_Org_1 <- create signature
-  note left #FFaa00
-    Org_1 takes "ownership" of this enclave
-  end note
-  return SIG_Org_1
-  end group
 
   Enclave1 -> Enclave1 : Attestation <- attest(Credentials)
   note left #FFaa00
     quote is defined with reportbody = Hash(<Credentials>)
   end note
 
-  group Persistent Credentials (to be discussed)
-  Enclave1 -> Enclave1 : seal state
-  note left
-    sealed state includes: ...
-    CC_Id, CC_Version,
-    MSPID, Channel_Id,
-    Enclave_SK, Enclave_DK, CC_DK,
-    TLCC_MR
+  note over Enclave1 #FFaa00
+    Ideally the enclave itself is able to retrieve the verifiable evidence
+    (i.e., the verification report, using EPID) and return it.
+    This additionally requires some ocalls and helper code in untrusted environment.
+    For convenience, the enclave now returns the attestation, and the evidence
+    (i.e., the verification report) is retrieved from untrusted environment.
   end note
+  Enclave1 -> IAS ++: Attestation
+  return Evidence <- Verification_Report
+
+  group Persistent Credentials (to be implemented)
+    Enclave1 -> Enclave1 : Sealed_Credentials <- seal(Credentials)
   end group
 
-  return Credentials, Attestation
+  return Credentials, Evidence, Sealed_Credentials
 
-  return Credentials, Attestation
+  return Credentials, Evidence, Sealed_Credentials
 
-  E_Manager -> IAS ++: Attestation
-  return Verification_Report
+  E_Manager -> E_Manager : store Sealed_Credentials
 
   return result /' Admin -> E_Manager '/
 
@@ -118,11 +110,6 @@ group enclave creation
 '    **MST**: From an attestation generalization perspective i think there should be just a single
 '    call ""GetAttestationProof"" or alike rather than a separate place where you get quote
 '    and another where you get the registration report which requires some re-organization of calls.
-'    A few observations on this:
-'    - we do not strictly have to call the enclave via ECC. ECCManager could also directly call
-'      enclave.so. this would make this creation and key-management potentially easier?
-'    - the quote generation is not driven from within the enclave as currently shown above but from
-'      the outside!
 '    I think from a high-level there should be following three high-level calls either in
 '    ECC or ECCMAnager depending on above:
 '    - EnclaveCreate (key-gen & imprint of context, i.e., current create/binding flows
@@ -135,17 +122,33 @@ group enclave creation
 
 end
 
+group Org-Enclave binding/certification (to be implemented)
+  Admin -> E_Manager ++: certify(CC_Id, Cert_Parameters)
+  E_Manager -> ECC1 ++: getCSR(Cert_Parameters)
+  ECC1 -> Enclave1 ++: getCSR(Cert_Parameters)
+  return csr /' ECC1 -> Enclave1 '/
+  return csr /' E_Manager -> ECC1 '/
+  E_Manager -> E_Manager : generate enclave certificate (certified by Org_1)
+  return certificate
+  note over Admin, E_Manager #FFaa00
+    -Org_1 takes "ownership" of this enclave,
+    -the certificate should be made available to the chaincode endorsement plugin,
+     so to include it in the responses (for eventual validation) 
+  end note
+end group
+
 group enclave registration
   activate Admin
   Admin -> E_Manager ++: register CC_Id
-  E_Manager -> ERCC1 ++: register Credentials, Attestation, Verification_Report
-  E_Manager -> ERCC2 : register Credentials, Attestation, Verification_Report
+  E_Manager -> ERCC1 ++: register Credentials, Evidence
+  E_Manager -> ERCC2 : register Credentials, Evidence
 
   ref over ERCC2
     (same as ERCC1)
   end ref
   activate ERCC2
 
+  ERCC1 -> ERCC1 : check Evidence
   ERCC1 -> ERCC1 : check Credentials
 
   group check consistency of Credentials (TBD)
@@ -180,9 +183,9 @@ group enclave registration
   E.g., putState(key=Credentials.CC_Id, value=Credentials)
   end note
 
-  return register endorsement
+  return register endorsement /' E_Manager -> ERCC2 '/
 
-  return register endorsement
+  return register endorsement /' E_Manager -> ERCC1 '/
 
   ref over E_Manager
     submit transaction
