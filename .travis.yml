@@ -33,7 +33,7 @@ env:
     - NANOPB_VERSION=0.3.9.2
     - NANOPB_PATH=${HOME}/nanopb
     # FABRIC
-    - FABRIC_VERSION=v2.1.0
+    - FABRIC_VERSION=2.1.0
     - FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
     # FPC
     - FPC_PATH=$GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
@@ -74,12 +74,15 @@ before_install:
   - wget ${PROTO_REPO}/v${PROTO_VERSION}/${PROTO_ZIP}; sudo unzip ${PROTO_ZIP} -d ${PROTO_DIR}
   # Fabric
   - git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
-  - pushd $FABRIC_PATH; git checkout tags/$FABRIC_VERSION; popd;
+  - pushd $FABRIC_PATH; git checkout v${FABRIC_VERSION}; popd;
 
 script:
-  # - test directly on host
-  - make all clobber
+  # * test directly on host
+  # - make all clobber
+  # NOTE: disabled as it will reach the 50 min limits. Testing inside dev container
+  # hopefully/presumably should hopefully be a super-set of the host build/test
+  #
+  # * test that it also runs properly in dev container  
+  - make -C utils/docker run DOCKER_DEV_OPTIONAL_CMD='make all clobber'
   #   Note: travis of couse does an implicit clobber but adding it here makes sure
   #   it works properly, also to make sure below is clean-slate
-  # - test that it also runs properly in dev container  
-  - make -C utils/docker run DOCKER_DEV_OPTIONAL_CMD='make'
