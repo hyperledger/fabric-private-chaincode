@@ -65,9 +65,12 @@ before_install:
   - GO_TAGS=pluginsenabled make peer orderer cryptogen configtxgen && popd
 
 script:
-  # - test directly on host
-  - make all clobber
+  # * test directly on host
+  # - make all clobber
+  # NOTE: disabled as it will reach the 50 min limits. Testing inside dev container
+  # hopefully/presumably should hopefully be a super-set of the host build/test
+  #
+  # * test that it also runs properly in dev container  
+  - make -C utils/docker run DOCKER_DEV_OPTIONAL_CMD='make all clobber'
   #   Note: travis of couse does an implicit clobber but adding it here makes sure
   #   it works properly, also to make sure below is clean-slate
-  # - test that it also runs properly in dev container  
-  - make -C utils/docker run DOCKER_DEV_OPTIONAL_CMD='make'
