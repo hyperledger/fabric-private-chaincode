@@ -36,9 +36,11 @@ services:
     command: ${PEER_CMD} node start
     volumes:
         - /var/run/:/host/var/run/
-        - ../config:/etc/hyperledger/configtx
-        - ../../../../examples:/project/src/github.com/hyperledger-labs/fabric-private-chaincode/examples
-        - ../../../../demo:/project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo
+        # Note: var run is required for docker daemon socket, see above DOCKER_HOST 
+        # and CORE_VM_ENDPOINT
+        - ${DOCKERD_NETWORK_CONFIG}/config:/etc/hyperledger/configtx
+        - ${DOCKERD_FPC_PATH}/examples:/project/src/github.com/hyperledger-labs/fabric-private-chaincode/examples
+        - ${DOCKERD_FPC_PATH}/demo:/project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo
 
 
   ca-base:

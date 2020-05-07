@@ -97,6 +97,16 @@ The system consists of the following components:
    ledger enclave, which crosschecks the decision before it finally commits
    the transaction to the ledger.
 
+## Releases
+
+- [Concept Release - March 2, 2020](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/concept-release-1.0)
+
+*WARNING: This project is in continous development and the `master`
+ branch will not always be stable. Unless you want to actively
+ contribute to the project itself, we advice you to use one of above releases*
+
+
+
 ## Getting started
 
 The following steps guide you through the build phase and configuration, for
@@ -197,7 +207,6 @@ A few notes:
   `/dev/isgx` and your PSW daemon listens to `/var/run/aesmd`, then the docker image will be sgx-enabled and your settings from `./config/ias` will be used. You will have to manually set `SGX_MODE=HW` before building anything to use HW mode.
 * if you want additional apt packages in your container image, add to the `<absolute-project-path>/fabric-private-chaincode/config.override.mk` file in the fabric-private-chaincode directory. In that file, define `DOCKER_DEV_IMAGE_APT_ADD__PKGS` with a
   list of packages you want. They will then be automatically added to the docker image
-* docker images do not persist between runs and there are setup files that will be needed in the docker container. Therefore, map the local cloned filesystem as a volume to `/project/src/github.com/hyperledger-labs/fabric-private-chaincode` within the docker container. To achieve this, add `DOCKER_DEV_RUN_OPTS= -v <absolute-project-path>/fabric-private-chaincode:/project/src/github.com/hyperledger-labs/fabric-private-chaincode` to your `<absolute-project-path>/fabric-private-chaincode/config.override.mk`, where <absolute-project-path> is where you have cloned the FPC project on your local machine.
 * due to the way the peer's port for chaincode connection is managed,
   you will be able to run only a single FPC development container on a
   particular host.
@@ -213,6 +222,9 @@ and then use it with
 This will open a shell inside the FPC development container, with
 environment variables like GOPATH appropriately defined and all
 dependencies like fabric built, ready to build and run FPC.
+
+Note that by default the dev container mounts your local cloned FPC project as a volume to `/project/src/github.com/hyperledger-labs/fabric-private-chaincode` within the docker container.
+This allows you to edit the content of the repository using your favorite editor in your system and the changes inside the docker container. Additionally, you are also not loosing changes inside the container when you reboot or the container gets stopped for other reasons.
 
 Optional: to do a clean build do the following within the container
 ```
@@ -377,7 +389,7 @@ The current code should work behind a proxy assuming
 If you run Ubuntu 18.04, make sure you run docker 18.09 or later. Otherwise you will run into problems with DNS resolution inside the container.
 
 You will also require a recent version of docker-compose. In particular, the docker-compose from ubuntu 18.04
-(docker-compose 1.17) is _not_ recent enough to understand `~/.docker/config.js` and related proxy options.
+(docker-compose 1.17) is _not_ recent enough to understand `~/.docker/config.json` and related proxy options.
 To upgrade, install a recent version following the instructions from [docker.com](https://docs.docker.com/compose/install/), e.g.,
 for version 1.25.4 execute
 ```
@@ -419,10 +431,10 @@ export SGX_MODE=HW
 # The attestation type is ignored when SGX_MODE=SIM is set.
 
 # IAS attestation (unlinkable)
-export FPC_ATTESTATION_TYPE = epid_unlinkable
+export FPC_ATTESTATION_TYPE=epid_unlinkable
 
 # IAS attestation (linkable)
-export FPC_ATTESTATION_TYPE = epid_linkable
+export FPC_ATTESTATION_TYPE=epid_linkable
 
 ```
 ##### Clang-format
@@ -474,7 +486,7 @@ By running the following command you can generate the documentation.
 ## Getting Help
 
 Found a bug? Need help to fix an issue? You have a great idea for a new feature? Talk to us! You can reach us on
-[RocketChat](https://chat.hyperledger.org/) in #private-data-objects. 
+[RocketChat](https://chat.hyperledger.org/) in #fabric-private-chaincode. 
 
 We also have a weekly meeting every Tuesday at 3 pm GMT on [Zoom](https://zoom.us/my/hyperledger.community.3). Please
 see the Hyperledger [community calendar](https://wiki.hyperledger.org/display/HYP/Calendar+of+Public+Meetings) for

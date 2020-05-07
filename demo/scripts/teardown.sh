@@ -42,6 +42,8 @@ done
 DEMO_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 DEMO_DOCKER_COMPOSE=${DEMO_SCRIPT_DIR}/../docker-compose.yml
 
+export FPC_VERSION=${FPC_VERSION:=latest}
+
 # SCRIPT_DIR is the docker compose script dir that needs to be defined to source environment variables from the FPC Network
 SCRIPT_DIR=${DEMO_SCRIPT_DIR}/../../utils/docker-compose/scripts
 . ${SCRIPT_DIR}/lib/common.sh

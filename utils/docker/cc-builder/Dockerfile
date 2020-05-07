@@ -2,7 +2,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FROM hyperledger/fabric-private-chaincode-dev:latest
+ARG FPC_VERSION=latest
+
+FROM hyperledger/fabric-private-chaincode-dev:${FPC_VERSION}
 
 ARG SGX_MODE=SIM
 ENV SGX_MODE=${SGX_MODE}
