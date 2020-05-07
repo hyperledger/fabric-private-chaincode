@@ -31,7 +31,7 @@ ARG SGX_SDK_BIN=sgx_linux_x64_sdk_2.6.100.51363.bin
 ARG PROTO_VERSION=3.11.4
 ARG PROTO_ZIP=protoc-${PROTO_VERSION}-linux-x86_64.zip
 ARG PROTO_REPO=https://github.com/google/protobuf/releases/download
-ARG PROTO_DIR=/usr/local/protoc3
+ARG PROTO_DIR=/usr/local/proto3
 
 # Create a place for our SGX SDK
 RUN mkdir -p /opt/intel \
