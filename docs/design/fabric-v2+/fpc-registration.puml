@@ -51,17 +51,11 @@ group enclave creation
     performed by the Admin -- they could be scripted or embedded in the peer process.
   end note
 
-  Admin -> E_Manager ++: create(CC_Id)
+  Admin -> E_Manager ++: create
 
-  note over E_Manager #FFaa00
-    As the EPID attestation requires the SPID, we let the E_Manager handle it.
-    For convenience, the E_Manager explicitly sends the SPID to ECC_Enclave.
-    In the future, the SPID can be made an optional argument within an Aux_Data field.
-    This allows for the generalization of the attestation, useful when DCAP is used instead.
-  end note
-  E_Manager -> ECC1 ++: create(SPID)
+  E_Manager -> ECC1 ++: create
 
-  ECC1 -> Enclave1 ++: create(SPID)
+  ECC1 -> Enclave1 ++: create
 
   note over Enclave1 #FFaa00
     The retrieval of CC_Paramenters can be realized in practice as follows:
@@ -77,7 +71,17 @@ group enclave creation
 
   Enclave1 -> Enclave1 : Attested_Data <- <CC_Parameters, Public_Keys>
 
-  Enclave1 -> Enclave1 : Attestation <- attest(Attested_Data)
+group enclave attestation
+  note over E_Manager #FFaa00
+    As the EPID attestation requires the SPID, we let the E_Manager provide it.
+    In a concrete implementation, the E_Manager could explicitly send the SPID to ECC_Enclave.
+    Also, the SPID could be made an optional argument within an Aux_Data field.
+    This would allow for the generalization of the attestation, to enable DCAP.
+  end note
+  Enclave1-> E_Manager ++: getSPID
+  return SPID
+
+  Enclave1 -> Enclave1 : Attestation <- attest(SPID, Attested_Data)
   note left #FFaa00
     quote is defined with reportbody = Hash(<Attested_Data>)
   end note
@@ -91,9 +95,10 @@ group enclave creation
   end note
   Enclave1 -> IAS ++: Attestation
   return Evidence <- Verification_Report
+end group
 
   group Persistent Credentials (to be implemented)
-    Enclave1 -> Enclave1 : Sealed_Credentials <- seal(Credentials)
+    Enclave1 -> Enclave1 : Sealed_Credentials <- seal(CC_Parameters, Private_Keys)
   end group
 
   Enclave1 -> Enclave1 : Credentials <- <Verb="CREATE", Attested_Data, Evidence>
@@ -140,7 +145,7 @@ end group
 
 group enclave registration
   activate Admin
-  Admin -> E_Manager ++: register CC_Id
+  Admin -> E_Manager ++: register
   E_Manager -> ERCC1 ++: register Credentials
   E_Manager -> ERCC2 : register Credentials
 
