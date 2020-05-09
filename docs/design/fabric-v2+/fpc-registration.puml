@@ -75,11 +75,11 @@ group enclave creation
   Enclave1 -> Enclave1 : generate Private_Keys <- <Enclave_SK, Enclave_DK>
   Enclave1 -> Enclave1 : Public_Keys <- Public(Private_Keys)
 
-  Enclave1 -> Enclave1 : Credentials <- <CC_Parameters, Public_Keys>
+  Enclave1 -> Enclave1 : Attested_Data <- <CC_Parameters, Public_Keys>
 
-  Enclave1 -> Enclave1 : Attestation <- attest(Credentials)
+  Enclave1 -> Enclave1 : Attestation <- attest(Attested_Data)
   note left #FFaa00
-    quote is defined with reportbody = Hash(<Credentials>)
+    quote is defined with reportbody = Hash(<Attested_Data>)
   end note
 
   note over Enclave1 #FFaa00
@@ -96,9 +96,10 @@ group enclave creation
     Enclave1 -> Enclave1 : Sealed_Credentials <- seal(Credentials)
   end group
 
-  return Credentials, Evidence, Sealed_Credentials
+  Enclave1 -> Enclave1 : Credentials <- <Verb="CREATE", Attested_Data, Evidence>
+  return Credentials, Sealed_Credentials
 
-  return Credentials, Evidence, Sealed_Credentials
+  return Credentials, Sealed_Credentials
 
   E_Manager -> E_Manager : store Sealed_Credentials
 
@@ -140,16 +141,16 @@ end group
 group enclave registration
   activate Admin
   Admin -> E_Manager ++: register CC_Id
-  E_Manager -> ERCC1 ++: register Credentials, Evidence
-  E_Manager -> ERCC2 : register Credentials, Evidence
+  E_Manager -> ERCC1 ++: register Credentials
+  E_Manager -> ERCC2 : register Credentials
 
   ref over ERCC2
     (same as ERCC1)
   end ref
   activate ERCC2
 
-  ERCC1 -> ERCC1 : check Evidence
-  ERCC1 -> ERCC1 : check Credentials
+  ERCC1 -> ERCC1 : check Credentials.Evidence
+  ERCC1 -> ERCC1 : check Credentials.Attested_Data.CC_Parameters
 
   group check consistency of Credentials (TBD)
     note over ERCC1 #FFaa00
