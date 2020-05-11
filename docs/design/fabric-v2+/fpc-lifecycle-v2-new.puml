@@ -37,9 +37,10 @@ end note
 group chaincode package
 Admin_Org1 -> Peer_Wrapper : lifecycle chaincode package
 note right
-	**Chaincode package**
-	as tar.gz, including enclave.so, and
-    metadata with path, type, label, sgx_mode
+    **Chaincode package**
+    as tar.gz with
+    metadata.json = <path:(enclaves_path), type:(cc_lang), label:(cc_label), sgx_mode: (sim/hw)>
+    code.tar.gz : compressed file with enclave binary and mrenclave
 end note
 return
 end /' group chaincode package '/
@@ -69,6 +70,12 @@ end /' group install '/
 group /' approve '/
 Admin_Org1 -> Peer_Wrapper ++: lifecycle chaincode approveformyorg
 Peer_Wrapper -> Peer1_Org1 ++: lifecycle chaincode approveformyorg
+note right
+    **Chaincode definition**
+    Name: cc_name, Version: mrenclave,
+    Sequence: sequence_number, Endorsement Policy: (2of3),
+    Plugins: <custom endorsement/validation plugins>
+end note
 Peer1_Org1 -> Orderer ++: approve transaction
 return transaction committed /' Peer1_Org1 -> Orderer '/
 return /' Peer_Wrapper -> Peer1_Org1 '/
@@ -91,12 +98,20 @@ end /' group approve '/
 
 loop until enough approvals
 	Admin_Org1 -> Peer1_Org1 : lifecycle chaincode checkcommitreadiness
+note right
+    **Chaincode definition**
+    (implemented to match the approved one)
+end note
     return
 end
 
 group commit
 Admin_Org1 -> Peer_Wrapper ++:lifecycle chaincode commit
 Peer_Wrapper -> Peer1_Org1 ++: lifecycle chaincode commit
+note right
+    **Chaincode definition**
+    (implemented to match the one that is ready to be committed)
+end note
 Peer1_Org1 -> Orderer ++: commit transaction
 return transaction committed /' Peer1_Org1 -> Orderer '/
 return /' Peer_Wrapper -> Peer1_Org1 '/
