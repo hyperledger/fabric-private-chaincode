@@ -15,27 +15,29 @@ title Foot Box removed
 title Fabric Private Chaincode - Lifecycle v2
 
 box "Org1"
-actor	Admin_Org1 order 10
-entity "fpc-peer-sh" as Peer_Wrapper order 15
-participant Peer1_Org1 order 20
+actor	Admin order 10
+entity "FPC_Peer1_Wrapper" as FPC_Peer1_Wrapper order 15
+participant Peer1 order 20
+entity "FPC_Peer2_Wrapper" as FPC_Peer2_Wrapper order 30
+participant Peer2 order 40
 end box
 
 box "Channel Abstraction"
-participant Channel order 40
+participant Channel order 70
 note over Channel
     This box abstracts all other orgs and components.
     Actions are supposed to be performed by channel participants.
 end note
 end box
 
-entity Orderer order 50
+entity Orderer order 80
 
-note over Admin_Org1
-    Admin uses the fpc-peer wrapper
+note over Admin
+    Admin uses the fpc-peer wrappers, which abstract the Fabric Peer CLI.
 end note
 
 group chaincode package
-Admin_Org1 -> Peer_Wrapper : lifecycle chaincode package
+Admin -> FPC_Peer1_Wrapper : lifecycle chaincode package
 note right
     **Chaincode package**
     as tar.gz with
@@ -46,10 +48,10 @@ return
 end /' group chaincode package '/
 
 group install
-Admin_Org1 -> Peer_Wrapper ++: lifecycle chaincode install
-Peer_Wrapper -> Peer1_Org1 ++: lifecycle chaincode install
+Admin -> FPC_Peer1_Wrapper ++: lifecycle chaincode install
+FPC_Peer1_Wrapper -> Peer1 ++: lifecycle chaincode install
 return packageId
-note over Peer_Wrapper
+note over FPC_Peer1_Wrapper
     Bookeeping operations to take into account that:
     - FPC's initial version will run a chaincode on a designated peer
     - the install lifecyle op is peer-specific
@@ -57,34 +59,38 @@ note over Peer_Wrapper
     So the approve stores data for an FPC chaincode installed locally,
     and the commit checks for data of a locally-approved FPC chaincode.    
 end note
-Peer_Wrapper -> Peer_Wrapper : retrieve cc_language from package
-note over Peer_Wrapper
+FPC_Peer1_Wrapper -> FPC_Peer1_Wrapper : retrieve cc_language from package
+note over FPC_Peer1_Wrapper
     Queryinstalled is redudant, yet consistent with implementation.    
 end note
-Peer_Wrapper -> Peer1_Org1 ++: lifecycle chaincode queryinstalled
+FPC_Peer1_Wrapper -> Peer1 ++: lifecycle chaincode queryinstalled
 return packageId
-Peer_Wrapper -> Peer_Wrapper : if cc_language==fpc then store packageId
-return packageId /' Admin_Org1 -> Peer_Wrapper '/
+FPC_Peer1_Wrapper -> FPC_Peer1_Wrapper : if cc_language==fpc then store packageId
+return packageId /' Admin -> FPC_Peer1_Wrapper '/
 end /' group install '/
 
+ref over Admin, FPC_Peer2_Wrapper, Peer2
+    install chaincode on Peer2
+end /' ref '/
+
 group /' approve '/
-Admin_Org1 -> Peer_Wrapper ++: lifecycle chaincode approveformyorg
-Peer_Wrapper -> Peer1_Org1 ++: lifecycle chaincode approveformyorg
+Admin -> FPC_Peer1_Wrapper ++: lifecycle chaincode approveformyorg
+FPC_Peer1_Wrapper -> Peer1 ++: lifecycle chaincode approveformyorg
 note right
     **Chaincode definition**
     Name: cc_name, Version: mrenclave,
     Sequence: sequence_number, Endorsement Policy: (2of3),
     Plugins: <custom endorsement/validation plugins>
 end note
-Peer1_Org1 -> Orderer ++: approve transaction
-return transaction committed /' Peer1_Org1 -> Orderer '/
-return /' Peer_Wrapper -> Peer1_Org1 '/
-note over Peer_Wrapper
+Peer1 -> Orderer ++: approve transaction
+return transaction committed /' Peer1 -> Orderer '/
+return /' FPC_Peer1_Wrapper -> Peer1 '/
+note over FPC_Peer1_Wrapper
     Bookkeping operations.
     Note: packageId is an input parameter of approveformyorg
 end note
-Peer_Wrapper -> Peer_Wrapper : if packageId was stored then store cc_namie, cc_version
-return /' Admin_Org1 -> Peer_Wrapper '/
+FPC_Peer1_Wrapper -> FPC_Peer1_Wrapper : if packageId was stored then store cc_namie, cc_version
+return /' Admin -> FPC_Peer1_Wrapper '/
 
 Channel -> Channel : approvals from other parties
 note over Channel
@@ -97,7 +103,7 @@ end note
 end /' group approve '/
 
 loop until enough approvals
-	Admin_Org1 -> Peer1_Org1 : lifecycle chaincode checkcommitreadiness
+	Admin -> Peer1 : lifecycle chaincode checkcommitreadiness
 note right
     **Chaincode definition**
     (implemented to match the approved one)
@@ -106,28 +112,28 @@ end note
 end
 
 group commit
-Admin_Org1 -> Peer_Wrapper ++:lifecycle chaincode commit
-Peer_Wrapper -> Peer1_Org1 ++: lifecycle chaincode commit
+Admin -> FPC_Peer1_Wrapper ++:lifecycle chaincode commit
+FPC_Peer1_Wrapper -> Peer1 ++: lifecycle chaincode commit
 note right
     **Chaincode definition**
     (implemented to match the one that is ready to be committed)
 end note
-Peer1_Org1 -> Orderer ++: commit transaction
-return transaction committed /' Peer1_Org1 -> Orderer '/
-return /' Peer_Wrapper -> Peer1_Org1 '/
-note over Peer_Wrapper
+Peer1 -> Orderer ++: commit transaction
+return transaction committed /' Peer1 -> Orderer '/
+return /' FPC_Peer1_Wrapper -> Peer1 '/
+note over FPC_Peer1_Wrapper
     Commit has succeeded.
     Now, check if this fpc cc was previously approved.
     If so, perform some invocations.
 end note
-Peer_Wrapper -> Peer_Wrapper : if cc_name, cc_version not stored then return
-Peer_Wrapper -> Peer1_Org1 ++: invoke chaincode __setup
-Peer1_Org1 -> Orderer ++: invoke transaction
+FPC_Peer1_Wrapper -> FPC_Peer1_Wrapper : if cc_name, cc_version not stored then return
+FPC_Peer1_Wrapper -> Peer1 ++: invoke chaincode __setup
+Peer1 -> Orderer ++: invoke transaction
 return transaction committed
-return /' Peer_Wrapper -> Peer1_Org1 '/
-Peer_Wrapper -> Peer1_Org1 ++: query chaincode __getEnclavePk
-return /' Peer_Wrapper -> Peer1_Org1 '/
-return /' Admin_Org1 -> Peer_Wrapper '/
+return /' FPC_Peer1_Wrapper -> Peer1 '/
+FPC_Peer1_Wrapper -> Peer1 ++: query chaincode __getEnclavePk
+return /' FPC_Peer1_Wrapper -> Peer1 '/
+return /' Admin -> FPC_Peer1_Wrapper '/
 end /' group commit '/
 
 @enduml
