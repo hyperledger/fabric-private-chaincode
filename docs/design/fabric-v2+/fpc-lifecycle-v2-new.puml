@@ -1,0 +1,108 @@
+/'
+    Copyright 2020 Intel Corporation
+    Copyright IBM Corp. All Rights Reserved.
+
+    SPDX-License-Identifier: Apache-2.0
+'/
+
+@startuml
+
+!pragma teoz true
+
+hide footbox
+title Foot Box removed
+
+title Fabric Private Chaincode - Lifecycle v2
+
+box "Org1"
+actor	Admin_Org1 order 10
+entity "fpc-peer-sh" as Peer_Wrapper order 15
+participant Peer1_Org1 order 20
+end box
+
+box "Channel Abstraction"
+participant Channel order 40
+note over Channel
+    This box abstracts all other orgs and components.
+    Actions are supposed to be performed by channel participants.
+end note
+end box
+
+entity Orderer order 50
+
+note over Admin_Org1
+    Admin uses the fpc-peer wrapper
+end note
+
+Admin_Org1 -> Peer_Wrapper : lifecycle chaincode package
+note right
+	**Chaincode package**
+	as tar.gz, including enclave.so, and
+    metadata with path, type, label, sgx_mode
+end note
+return
+
+Admin_Org1 -> Peer_Wrapper ++: lifecycle chaincode install
+Peer_Wrapper -> Peer1_Org1 ++: lifecycle chaincode install
+return packageId
+note over Peer_Wrapper
+    Bookeeping operations to take into account that:
+    - FPC's initial version will run a chaincode on a designated peer
+    - the install lifecyle op is peer-specific
+    - the approveformyorg and commit ops are org-specific
+    So the approve stores data for an FPC chaincode installed locally,
+    and the commit checks for data of a locally-approved FPC chaincode.    
+end note
+Peer_Wrapper -> Peer_Wrapper : retrieve cc_language from package
+note over Peer_Wrapper
+    Queryinstalled is redudant, yet consistent with implementation.    
+end note
+Peer_Wrapper -> Peer1_Org1 ++: lifecycle chaincode queryinstalled
+return packageId
+Peer_Wrapper -> Peer_Wrapper : if cc_language==fpc then store packageId
+return packageId /' Admin_Org1 -> Peer_Wrapper '/
+
+Admin_Org1 -> Peer_Wrapper ++: lifecycle chaincode approveformyorg
+Peer_Wrapper -> Peer1_Org1 ++: lifecycle chaincode approveformyorg
+Peer1_Org1 -> Orderer ++: approve transaction
+return transaction committed /' Peer1_Org1 -> Orderer '/
+return /' Peer_Wrapper -> Peer1_Org1 '/
+note over Peer_Wrapper
+    Bookkeping operations.
+    Note: packageId is an input parameter of approveformyorg
+end note
+Peer_Wrapper -> Peer_Wrapper : if packageId was stored then store cc_namie, cc_version
+return /' Admin_Org1 -> Peer_Wrapper '/
+
+Channel -> Channel : approvals from other parties
+note over Channel
+    Other participants must approve the chaincode definition,
+    and commit the corresponding transaction,
+    according to the LifecycleEndorsement policy.
+    So the party here has to loop to check for the approvals.
+end note
+loop until enough approvals
+	Admin_Org1 -> Peer1_Org1 : lifecycle chaincode checkcommitreadiness
+    return
+end
+
+Admin_Org1 -> Peer_Wrapper ++:lifecycle chaincode commit
+Peer_Wrapper -> Peer1_Org1 ++: lifecycle chaincode commit
+Peer1_Org1 -> Orderer ++: commit transaction
+return transaction committed /' Peer1_Org1 -> Orderer '/
+return /' Peer_Wrapper -> Peer1_Org1 '/
+note over Peer_Wrapper
+    Commit has succeeded.
+    Now, check if this fpc cc was previously approved.
+    If so, perform some invocations.
+end note
+Peer_Wrapper -> Peer_Wrapper : if cc_name, cc_version not stored then return
+Peer_Wrapper -> Peer1_Org1 ++: invoke chaincode __setup
+Peer1_Org1 -> Orderer ++: invoke transaction
+return transaction committed
+return /' Peer_Wrapper -> Peer1_Org1 '/
+Peer_Wrapper -> Peer1_Org1 ++: query chaincode __getEnclavePk
+return /' Peer_Wrapper -> Peer1_Org1 '/
+return /' Admin_Org1 -> Peer_Wrapper '/
+
+@enduml
