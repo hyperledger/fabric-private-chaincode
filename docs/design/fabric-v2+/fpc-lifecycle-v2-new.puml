@@ -34,6 +34,7 @@ note over Admin_Org1
     Admin uses the fpc-peer wrapper
 end note
 
+group chaincode package
 Admin_Org1 -> Peer_Wrapper : lifecycle chaincode package
 note right
 	**Chaincode package**
@@ -41,7 +42,9 @@ note right
     metadata with path, type, label, sgx_mode
 end note
 return
+end /' group chaincode package '/
 
+group install
 Admin_Org1 -> Peer_Wrapper ++: lifecycle chaincode install
 Peer_Wrapper -> Peer1_Org1 ++: lifecycle chaincode install
 return packageId
@@ -61,7 +64,9 @@ Peer_Wrapper -> Peer1_Org1 ++: lifecycle chaincode queryinstalled
 return packageId
 Peer_Wrapper -> Peer_Wrapper : if cc_language==fpc then store packageId
 return packageId /' Admin_Org1 -> Peer_Wrapper '/
+end /' group install '/
 
+group /' approve '/
 Admin_Org1 -> Peer_Wrapper ++: lifecycle chaincode approveformyorg
 Peer_Wrapper -> Peer1_Org1 ++: lifecycle chaincode approveformyorg
 Peer1_Org1 -> Orderer ++: approve transaction
@@ -81,11 +86,15 @@ note over Channel
     according to the LifecycleEndorsement policy.
     So the party here has to loop to check for the approvals.
 end note
+
+end /' group approve '/
+
 loop until enough approvals
 	Admin_Org1 -> Peer1_Org1 : lifecycle chaincode checkcommitreadiness
     return
 end
 
+group commit
 Admin_Org1 -> Peer_Wrapper ++:lifecycle chaincode commit
 Peer_Wrapper -> Peer1_Org1 ++: lifecycle chaincode commit
 Peer1_Org1 -> Orderer ++: commit transaction
@@ -104,5 +113,6 @@ return /' Peer_Wrapper -> Peer1_Org1 '/
 Peer_Wrapper -> Peer1_Org1 ++: query chaincode __getEnclavePk
 return /' Peer_Wrapper -> Peer1_Org1 '/
 return /' Admin_Org1 -> Peer_Wrapper '/
+end /' group commit '/
 
 @enduml
