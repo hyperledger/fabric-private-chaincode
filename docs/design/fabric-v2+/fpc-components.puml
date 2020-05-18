@@ -16,6 +16,7 @@ package protobufs {
 class CC_Parameters {
     + CC_Id string
     + CC_Version string
+    + CC_Sequence int
     + Channel_Id string
     + MSPID string
     + TLCC_MREnclave bytes
@@ -45,6 +46,9 @@ note right of CC_Parameters::CC_Id #FFaa00
 end note
 note right of CC_Parameters::CC_Version #FFaa00
     initialized from Create transaction proposal
+end note
+note right of CC_Parameters::CC_Sequence #FFaa00
+    initialized from chaincode definition (need TLCC?)
 end note
 note right of CC_Parameters::Channel_Id #FFaa00
     initialized from shim (need check from TLCC?)

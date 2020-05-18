@@ -29,12 +29,6 @@ note over ERCC1, ERCC2 #FFaa00
 end note
 
 group enclave creation
-  note over Admin #FFaa00
-    **MST**: we might want to replace (here and elsewhere) CC_Version with the sequence
-    number from chain code definition as versions can be re-used in downgrades yet we
-    might or might not want to re-use enclaves?
-  end note
-
   activate Admin
 
   note over Admin, Enclave1 #FFaa00
@@ -65,7 +59,7 @@ group enclave creation
     the validation of these parameters occurs when the registration tx is processed by ercc;
     if necessary, a pre-validation can be performed through tlcc.
   end note
-  Enclave1 -> Enclave1: CC_Parameters <- retrieve CC_Id, CC_Version, MSPID, Channel_Id, TLCC_MREnclave
+  Enclave1 -> Enclave1: CC_Parameters <- retrieve CC_Id, CC_Version, CC_Sequence, MSPID, Channel_Id, TLCC_MREnclave
 
   Enclave1 -> Enclave1 : generate Private_Keys <- <Enclave_SK, Enclave_DK>
   Enclave1 -> Enclave1 : Public_Keys <- Public(Private_Keys)
