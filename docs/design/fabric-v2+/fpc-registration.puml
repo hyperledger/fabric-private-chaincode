@@ -11,7 +11,7 @@ title FPC Enclave Registration
 
 actor "Admin Org1" as Admin order 10
 participant "ECC Peer1_Org1" as ECC1 order 20
-participant "ECC_Enclave" as Enclave1 order 30 #99FF99
+'participant "ECC_Enclave" as Enclave1 order 30 #99FF99
 participant "ERCC Peer1_Org1" as ERCC1 order 40
 participant "ERCC Peer1_Org2" as ERCC2 order 50
 
@@ -55,6 +55,7 @@ group enclave creation
 
   E_Manager -> ECC1 ++: create
 
+  create participant "ECC_Enclave" as Enclave1 order 30 #99FF99
   ECC1 -> Enclave1 ++: create
 
   note over Enclave1 #FFaa00
