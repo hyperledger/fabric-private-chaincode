@@ -7,7 +7,7 @@
 
 @startuml
 
-title FPC Enclave Registration \n ***** DOCUMENT IN PROGRESS ******
+title FPC Enclave Registration
 
 actor "Admin Org1" as Admin order 10
 participant "ECC Peer1_Org1" as ECC1 order 20
