@@ -148,8 +148,11 @@ group enclave registration
 
   group check consistency of Credentials (TBD)
     note over ERCC1 #FFaa00
-        The interaction with TLCC is not relevant. Rather, it is convenient to
-        access the chaincode definition.
+        It is crucial for ERCC to perform queries over (or have access to) the chaincode
+        definition. Querying (or retrieving) the chaincode definition through TLCC is the
+        most convenient way to implement this with least impact on core Fabric code.
+        Future tighter integration in Fabric could also change that to more direct ways
+        to feed it to ERCC.
     end note
     create "TLCC Peer1_Org1" as TLCC1 order 45
     ERCC1 -> TLCC1  ++: approve consistency of Credentials
