@@ -73,7 +73,7 @@ group enclave creation
 
   Enclave1 -> Enclave1 : Attested_Data <- <CC_Parameters, Public_Keys>
 
-group enclave attestation
+group "enclave attestation: Evidence <- GetEvidence(Attested_Data)"
   note over E_Manager #FFaa00
     As the EPID attestation requires the SPID, we let the E_Manager provide it.
     In a concrete implementation, the E_Manager could explicitly send the SPID to ECC_Enclave.
