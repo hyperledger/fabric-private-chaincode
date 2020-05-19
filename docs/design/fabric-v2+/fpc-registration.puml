@@ -59,13 +59,14 @@ group enclave creation
   ECC1 -> Enclave1 ++: create
 
   note over Enclave1 #FFaa00
-    The retrieval of CC_Paramenters can be realized in practice as follows:
+    The requirement of CC_Paramenters can be met in practice as follows:
     cc id, version, MSPID and channel id can be retrieved through Fabric shim functions;
     tlcc mrenclave can be retrieved through ercc;
     the validation of these parameters occurs when the registration tx is processed by ercc;
     if necessary, a pre-validation can be performed through tlcc.
+    Another alternative could be to pass these parameters as part of the create call.
   end note
-  Enclave1 -> Enclave1: CC_Parameters <- retrieve CC_Id, CC_Version, CC_Sequence, MSPID, Channel_Id, TLCC_MREnclave
+  Enclave1 -> Enclave1: CC_Parameters <- Require: CC_Id, CC_Version, CC_Sequence, MSPID, Channel_Id, TLCC_MREnclave
 
   Enclave1 -> Enclave1 : generate Private_Keys <- <Enclave_SK, Enclave_DK>
   Enclave1 -> Enclave1 : Public_Keys <- Public(Private_Keys)
