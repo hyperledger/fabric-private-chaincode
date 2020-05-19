@@ -102,9 +102,7 @@ group "enclave attestation: Evidence <- GetEvidence(Attested_Data)"
   return Evidence <- Verification_Report
 end group
 
-  group Persistent Credentials (to be implemented)
-    Enclave1 -> Enclave1 : Sealed_Credentials <- seal(CC_Parameters, Private_Keys)
-  end group
+  Enclave1 -> Enclave1 : Sealed_Credentials <- seal(CC_Parameters, Private_Keys)
 
   Enclave1 -> Enclave1 : Credentials <- <Verb="CREATE", Attested_Data, Evidence>
   return Credentials, Sealed_Credentials
