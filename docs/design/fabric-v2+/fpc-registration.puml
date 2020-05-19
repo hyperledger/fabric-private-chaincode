@@ -32,10 +32,15 @@ group enclave creation
   activate Admin
 
   note over Admin, Enclave1 #FFaa00
-    These operations are assumed to be performed once the chaincode definition is
+    These operations are assumed to be performed only after the chaincode definition is
     committed on the channel for two reasons:
     1) chaincode invocation may not be available before the definition is committed,
     2) enclave registration should be feasible only for committed chaincodes
+
+    PS: in a future tighter integration with fabric we could remove the first constraint
+    and could potentially piggyback the steps before the ercc registration (enclave and
+    evidence generation) in the `approveformyorg` and the registration as part of
+    `commit` without having to change the protocol flows.
   end note
 
   create E_Manager order 15
