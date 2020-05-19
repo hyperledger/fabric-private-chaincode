@@ -11,11 +11,14 @@ title FPC Enclave Registration
 
 actor "Admin Org1" as Admin order 10
 participant "ECC Peer1_Org1" as ECC1 order 20
-'participant "ECC_Enclave" as Enclave1 order 30 #99FF99
 participant "ERCC Peer1_Org1" as ERCC1 order 40
 participant "ERCC Peer1_Org2" as ERCC2 order 50
 
 entity IAS order 1
+
+note over IAS, ERCC2
+Types are shown in the fpc-components diagram.
+end note
 
 note over ERCC1, ERCC2 #FFaa00
   It is assumed that:
@@ -31,7 +34,7 @@ end note
 group enclave creation
   activate Admin
 
-  note over Admin, Enclave1 #FFaa00
+  note over Admin #FFaa00
     These operations are assumed to be performed only after the chaincode definition is
     committed on the channel for two reasons:
     1) chaincode invocation may not be available before the definition is committed,
@@ -55,7 +58,7 @@ group enclave creation
 
   E_Manager -> ECC1 ++: create
 
-  create participant "ECC_Enclave" as Enclave1 order 30 #99FF99
+  create Enclave1 order 30 #99FF99
   ECC1 -> Enclave1 ++: create
 
   note over Enclave1 #FFaa00
