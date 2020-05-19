@@ -86,10 +86,14 @@ RUN git clone --branch v$FABRIC_VERSION $FABRIC_REPO $FABRIC_PATH
 ENV FPC_PATH=$GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
 # We copy context so we can use that to potentially get local .git as repo ...
 COPY .git /tmp/cloned-local-fpc-git-repo
-RUN git clone --recurse $FPC_REPO_URL $FPC_PATH \
+RUN git \
+       -c submodule.interpreters/wasm-micro-runtime.update=none -c submodule.ccf_transaction_processor/CCF.update=none \
+	clone --recurse $FPC_REPO_URL $FPC_PATH \
   && cd $FPC_PATH \
   && git checkout --recurse $FPC_REPO_BRANCH_TAG_OR_COMMIT
-# Note: could add --single-branch to below to speed-up and keep size smaller. But for now for a dev-image better keep complete repo
+# Notes:
+# - the -c submodule's are to prevent dragging in large but unneeded sub-sub-modules of pdo ...
+# - could add --single-branch to below to speed-up and keep size smaller. But for now for a dev-image better keep complete repo
 
 # Build FPC peer including plugins and tlcc support
 RUN cd $FPC_PATH \
