@@ -160,8 +160,20 @@ group enclave registration
         Future tighter integration in Fabric could also change that to more direct ways
         to feed it to ERCC.
     end note
+
     create "TLCC Peer1_Org1" as TLCC1 order 45
+    create "TLCC_Enclave1" as TLCC_Enclave1 order 46
+    TLCC1 -[hidden]> TLCC_Enclave1: hidden
+    note over TLCC1, TLCC_Enclave1 #FFaa00
+        The presence of TLCC_Enclave1, and the absence of messages to it, is to further
+        emphasize that here it is only required a (possibly untrusted) system chaincode
+        in Fabric to look up the chaincode definition. Again, using TLCC is convenient,
+        but an enclave is not necessary.
+    end note
+
     ERCC1 -> TLCC1  ++: approve consistency of Credentials
+
+
     TLCC1 -> TLCC1    : check Credentials against chaincode definition
     note over TLCC1 #FFaa00
         This check ensures that:
