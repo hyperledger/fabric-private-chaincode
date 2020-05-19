@@ -66,7 +66,7 @@ group enclave creation
     if necessary, a pre-validation can be performed through tlcc.
     Another alternative could be to pass these parameters as part of the create call.
   end note
-  Enclave1 -> Enclave1: CC_Parameters <- Require: CC_Id, CC_Version, CC_Sequence, MSPID, Channel_Id, TLCC_MREnclave
+  Enclave1 -> Enclave1: Require: CC_Parameters
 
   Enclave1 -> Enclave1 : generate Private_Keys <- <Enclave_SK, Enclave_DK>
   Enclave1 -> Enclave1 : Public_Keys <- Public(Private_Keys)
