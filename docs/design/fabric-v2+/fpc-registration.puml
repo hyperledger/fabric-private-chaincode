@@ -150,7 +150,7 @@ group enclave registration
   activate ERCC2
 
   ERCC1 -> ERCC1 : check Credentials.Evidence
-  ERCC1 -> ERCC1 : check Credentials.Attested_Data.CC_Parameters
+  ERCC1 -> ERCC1 : check Credentials.Attested_Data.CC_Parameters (Channel_Id, MSPID of sender, TLCC_MREnclave)
 
   group check consistency of Credentials (TBD)
     note over ERCC1 #FFaa00
