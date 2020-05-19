@@ -104,6 +104,12 @@ end group
 
   Enclave1 -> Enclave1 : Sealed_Credentials <- seal(CC_Parameters, Private_Keys)
 
+  note over Enclave1
+    The constant string "CREATE" in the Verb field is meant to be used only here
+    (in the create call). A different constant string is expected to be used whenever
+    the Credentials prototobuf is reused (e.g., to re-attest the chaincode). This
+    allows to distinguish different calls. 
+  end note
   Enclave1 -> Enclave1 : Credentials <- <Verb="CREATE", Attested_Data, Evidence>
   return Credentials, Sealed_Credentials
 
