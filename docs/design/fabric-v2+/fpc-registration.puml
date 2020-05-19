@@ -115,20 +115,6 @@ end group
 
   deactivate Admin
 
-'  note over Admin1 #FFaa00
-'    **MST**: From an attestation generalization perspective i think there should be just a single
-'    call ""GetAttestationProof"" or alike rather than a separate place where you get quote
-'    and another where you get the registration report which requires some re-organization of calls.
-'    I think from a high-level there should be following three high-level calls either in
-'    ECC or ECCMAnager depending on above:
-'    - EnclaveCreate (key-gen & imprint of context, i.e., current create/binding flows
-'    - EnclaveProof: gets org endorsement-sig, creates report, then quote
-'      and, if epid, gets IAS report. 
-'    - EnclavePersist: returns sealed state (important for security that this is called only after
-'      EnclaveProof [which we might want to enforce using some state-machine?] )
-'  end note
-'  return ATTESTATION
-
 end
 
 group Org-Enclave binding/certification (to be implemented)
