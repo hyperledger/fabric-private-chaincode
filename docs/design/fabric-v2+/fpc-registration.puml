@@ -47,7 +47,8 @@ group enclave creation
 
   note over Admin, E_Manager #FFaa00
     The E_Manager component hides some operations that do not necessarily need to be
-    performed by the Admin -- they could be scripted or embedded in the peer process.
+    performed by the Admin -- they could be scripted or embedded in the peer process;
+    depending on the actual implementation it may require admin credential on the peer.
   end note
 
   Admin -> E_Manager ++: create
