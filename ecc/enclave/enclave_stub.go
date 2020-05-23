@@ -138,6 +138,31 @@ var _logger = func(in string) {
 	logger.Info(in)
 }
 
+//export get_channel_id
+func get_channel_id(channel_id *C.char, max_channel_id_len C.uint32_t, ctx unsafe.Pointer) {
+    stubs := registry.Get(*(*int)(ctx))
+    channelIdStr := stubs.shimStub.GetChannelID()
+    if len(channelIdStr) > int(max_channel_id_len) {
+        panic(fmt.Sprintf("error: insufficient buffer (len=%d) for channel id string (len=%d)", len(channelIdStr), int(max_channel_id_len)))
+    }
+    C._cpy_str(channel_id, channelIdStr, max_channel_id_len)
+}
+
+//export get_msp_id
+func get_msp_id(msp_id *C.char, max_msp_id_len C.uint32_t, ctx unsafe.Pointer) {
+    //stubs := registry.Get(*(*int)(ctx))
+    //mspIdStr, err := cid.GetMSPID(stubs.shimStub)
+    mspIdStr, err := shim.GetMSPID()
+    if err != nil {
+        logger.Infof("CORE_PEER_LOCALMSPID env var not set, returning empty mspid")
+        mspIdStr = ""
+    }
+    if len(mspIdStr) > int(max_msp_id_len) {
+        panic(fmt.Sprintf("error: insufficient buffer (len=%d) for channel id string (len=%d)", len(mspIdStr), int(max_msp_id_len)))
+    }
+    C._cpy_str(msp_id, mspIdStr, max_msp_id_len)
+}
+
 //export get_creator_name
 func get_creator_name(msp_id *C.char, max_msp_id_len C.uint32_t, dn *C.char, max_dn_len C.uint32_t, ctx unsafe.Pointer) {
 	stubs := registry.Get(*(*int)(ctx))

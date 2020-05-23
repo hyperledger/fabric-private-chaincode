@@ -227,6 +227,22 @@ void get_creator_name(char* msp_id,  // MSP id of organization to which transact
 // upgrade it according to what highlighted in note-3.
 extern int get_random_bytes(uint8_t* buffer, size_t length);
 
+// get_channel_id
+// --------------
+// returns the channel id string.
+// The channel id might be truncated if the buffer size is not large enough.
+void get_channel_id(char* channel_id,
+    uint32_t max_msp_id_len,
+    shim_ctx_ptr_t ctx);
+
+// get_msp_id
+// --------------
+// returns the msp id string.
+// The msp id might be truncated if the buffer size is not large enough.
+void get_msp_id(char* msp_id,
+    uint32_t max_msp_id_len,
+    shim_ctx_ptr_t ctx);
+
 // logging
 //-------------------------------------------------
 void log_critical(const char* format, ...);

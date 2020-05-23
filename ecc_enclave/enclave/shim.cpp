@@ -37,6 +37,16 @@ void get_creator_name(
     ocall_get_creator_name(msp_id, max_msp_id_len, dn, max_dn_len, ctx->u_shim_ctx);
 }
 
+void get_channel_id(char* channel_id, uint32_t max_channel_id_len, shim_ctx_ptr_t ctx)
+{
+    ocall_get_channel_id(channel_id, max_channel_id_len, ctx->u_shim_ctx);
+}
+
+void get_msp_id(char* msp_id, uint32_t max_msp_id_len, shim_ctx_ptr_t ctx)
+{
+    ocall_get_msp_id(msp_id, max_msp_id_len, ctx->u_shim_ctx);
+}
+
 void get_state(
     const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* val_len, shim_ctx_ptr_t ctx)
 {
@@ -253,6 +263,11 @@ void get_public_state_by_partial_composite_key(
 int get_string_args(std::vector<std::string>& argss, shim_ctx_ptr_t ctx)
 {
     JSON_Value* root = json_parse_string(ctx->json_args);
+    if(root == NULL)
+    {
+        LOG_ERROR("Shim: Cannot parse json");
+        return -1;
+    }
     if (json_value_get_type(root) != JSONArray)
     {
         LOG_ERROR("Shim: Cannot parse args '%s'", ctx->json_args);
@@ -272,6 +287,11 @@ int get_func_and_params(
     std::string& func_name, std::vector<std::string>& params, shim_ctx_ptr_t ctx)
 {
     JSON_Value* root = json_parse_string(ctx->json_args);
+    if(root == NULL)
+    {
+        LOG_ERROR("Shim: Cannot parse json");
+        return -1;
+    }
     if (json_value_get_type(root) != JSONArray)
     {
         LOG_ERROR("Shim: Cannot parse args '%s'", ctx->json_args);
