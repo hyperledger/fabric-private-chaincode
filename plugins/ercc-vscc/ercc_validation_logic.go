@@ -140,6 +140,10 @@ func (t *VSCCERCC) checkAttestation(respPayload *peer.ChaincodeAction) error {
 		// transform INTEL pk to DER format
 		block, _ := pem.Decode([]byte(attestation.IntelPubPEM))
 
+		if block == nil {
+			return fmt.Errorf("public key resides in a malformed PEM block")
+		}
+
 		// transform sig-pk from attestation report to DER format
 		verificationPK, err := x509.ParsePKIXPublicKey(block.Bytes)
 		if err != nil {
