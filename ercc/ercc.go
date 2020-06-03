@@ -1,5 +1,6 @@
 /*
 Copyright IBM Corp. All Rights Reserved.
+Copyright 2020 Intel Corp.
 
 SPDX-License-Identifier: Apache-2.0
 */
@@ -17,6 +18,13 @@ import (
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/common/flogging"
 )
+
+// #cgo CFLAGS: -I/opt/intel/sgxsdk/include -I${SRCDIR}/../common/crypto
+// #cgo LDFLAGS: -L${SRCDIR}/../common/_build -L${SRCDIR}/../common/crypto/_build -Wl,--start-group -lpdo-utils -lupdo-crypto -Wl,--end-group -lcrypto
+// #include "stdlib.h"  /* needed for free */
+// #include "pdo/common/crypto/verify_ias_report/verify-report.h"
+import "C"
+import "unsafe"
 
 var logger = flogging.MustGetLogger("ercc")
 
@@ -86,6 +94,14 @@ func (ercc *EnclaveRegistryCC) registerEnclave(stub shim.ChaincodeStubInterface,
 	if len(args) < 2 {
 		return shim.Error("Incorrect number of arguments. Expecting enclave pk and quote to register")
 	}
+
+    //TO BE REMOVED
+    pCert1 := C.CString("mock certificate")
+    defer C.free(unsafe.Pointer(pCert1))
+    ret := C.verify_ias_certificate_chain(pCert1)
+    if ret != 0 {
+        logger.Debugf("call to pdo crypto failed as expected")
+    }
 
 	enclavePkAsBytes, err := base64.StdEncoding.DecodeString(args[0])
 	if err != nil {
