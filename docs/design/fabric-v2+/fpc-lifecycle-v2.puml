@@ -52,12 +52,16 @@ Admin -> FPC_Peer1_Wrapper ++: lifecycle chaincode install
 FPC_Peer1_Wrapper -> Peer1 ++: lifecycle chaincode install
 return packageId
 note over FPC_Peer1_Wrapper
-    Bookeeping operations to take into account that:
-    - FPC's initial version will run a chaincode on a designated peer
-    - the install lifecyle op is peer-specific
-    - the approveformyorg and commit ops are org-specific
-    So the approve stores data for an FPC chaincode installed locally,
-    and the commit checks for data of a locally-approved FPC chaincode.    
+    The following bookking operations help remember (across lifecycle calls)
+    that a package (id) corresponds to a FPC chaincode. Similarly, the
+    approve will later store data for an FPC chaincode installed locally,
+    and the commit checks for data of a locally-approved FPC chaincode.
+    Also, it should be noted that
+    - the install lifecycle op is peer-specific, while
+    - the approveformyorg is org-specific, to be run on at most one org's peer
+    - the and commit op is expected to run on a single peer
+    Hence, the current bookeeping ops expect the approve and commit ops to
+    run on peers where the FPC chaincode has been previously installed.
 end note
 FPC_Peer1_Wrapper -> FPC_Peer1_Wrapper : retrieve cc_language from package
 FPC_Peer1_Wrapper -> FPC_Peer1_Wrapper : if cc_language==fpc then store packageId
