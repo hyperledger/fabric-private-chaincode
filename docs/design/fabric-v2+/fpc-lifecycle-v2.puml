@@ -72,7 +72,7 @@ ref over Admin, FPC_Peer2_Wrapper, Peer2
     install chaincode on Peer2
 end /' ref '/
 
-group /' approve '/
+group approve
 Admin -> FPC_Peer1_Wrapper ++: lifecycle chaincode approveformyorg
 FPC_Peer1_Wrapper -> Peer1 ++: lifecycle chaincode approveformyorg
 note right
