@@ -18,8 +18,9 @@ import (
 	"testing"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
-	"github.com/hyperledger-labs/fabric-private-chaincode/eval/benchmark/executor"
-	th "github.com/hyperledger-labs/fabric-private-chaincode/utils"
+	th "github.com/hyperledger-labs/fabric-private-chaincode/internal/testing"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/testing/executor"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-chaincode-go/shimtest"
 )
@@ -164,7 +165,7 @@ func TestEnclaveChaincode_Invoke_Auction(t *testing.T) {
 		t.FailNow()
 	}
 
-	r := &th.Response{}
+	r := &utils.Response{}
 	err := json.Unmarshal(res.GetPayload(), r)
 	if err != nil {
 		t.FailNow()
@@ -200,7 +201,7 @@ func TestEnclaveChaincode_EncryptedInvoke(t *testing.T) {
 		fmt.Println("Invoke getPK failed", string(res.Message))
 		t.FailNow()
 	}
-	r := &th.Response{}
+	r := &utils.Response{}
 	err := json.Unmarshal(res.GetPayload(), r)
 	if err != nil {
 		t.FailNow()
