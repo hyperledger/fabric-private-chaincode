@@ -72,7 +72,7 @@ ref over Admin, FPC_Peer2_Wrapper, Peer2
     install chaincode on Peer2
 end /' ref '/
 
-group approve
+group local approve
 Admin -> FPC_Peer1_Wrapper ++: lifecycle chaincode approveformyorg
 FPC_Peer1_Wrapper -> Peer1 ++: lifecycle chaincode approveformyorg
 note right
@@ -90,7 +90,9 @@ note over FPC_Peer1_Wrapper
 end note
 FPC_Peer1_Wrapper -> FPC_Peer1_Wrapper : if packageId was stored then store cc_namie, cc_version
 return /' Admin -> FPC_Peer1_Wrapper '/
+end /' group approve '/
 
+group other orgs approve
 Channel -> Channel : approvals from other parties
 note over Channel
     Other participants must approve the chaincode definition,
@@ -98,8 +100,8 @@ note over Channel
     according to the LifecycleEndorsement policy.
     So the party here has to loop to check for the approvals.
 end note
+end group 'other orgs approve'
 
-end /' group approve '/
 
 loop until enough approvals
 	Admin -> Peer1 : lifecycle chaincode checkcommitreadiness
