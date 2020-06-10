@@ -60,11 +60,6 @@ note over FPC_Peer1_Wrapper
     and the commit checks for data of a locally-approved FPC chaincode.    
 end note
 FPC_Peer1_Wrapper -> FPC_Peer1_Wrapper : retrieve cc_language from package
-note over FPC_Peer1_Wrapper
-    Queryinstalled is redudant, yet consistent with implementation.    
-end note
-FPC_Peer1_Wrapper -> Peer1 ++: lifecycle chaincode queryinstalled
-return packageId
 FPC_Peer1_Wrapper -> FPC_Peer1_Wrapper : if cc_language==fpc then store packageId
 return packageId /' Admin -> FPC_Peer1_Wrapper '/
 end /' group install '/
