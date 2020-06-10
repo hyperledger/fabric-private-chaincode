@@ -12,11 +12,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
-	sgx_utils "github.com/hyperledger-labs/fabric-private-chaincode/utils"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	commonerrors "github.com/hyperledger/fabric/common/errors"
 	"github.com/hyperledger/fabric/common/flogging"
@@ -25,7 +24,7 @@ import (
 	"github.com/hyperledger/fabric/protoutil"
 )
 
-var logger = flogging.MustGetLogger("vscc")
+var logger = flogging.MustGetLogger("ecc-vscc")
 
 // New creates a new instance of the ercc VSCC
 // Typically this will only be invoked once per peer
@@ -121,70 +120,72 @@ func (vscc *VSCCECC) checkEnclaveEndorsement(cis *peer.ChaincodeInvocationSpec, 
 		return err
 	}
 
+	function := cis.ChaincodeSpec.Input.Args[0]
+	logger.Debugf("function: %s\n", string(function))
+
+	if string(function) == "__setup" {
+		// We skip validation of `__setup` transaction as there is no enclave endorsement for this tx type.
+		// In particular, `__setup` invokes `registerEnclave` at ercc via a cc2cc call. The corresponding ercc-vscc
+		// is responsible to validate this transaction triggered through `__setup`
+		return nil
+	}
+
+	// Note: we encode all args before sending to enclave (and this is also what is
+	// ultimately signed), see enclave_chaincode.go::{init,invoke} for encoding.
+	var txType []byte
+	var argss []string
+	if string(function) == "__init" {
+		txType = []byte("init")
+		argss = make([]string, len(cis.ChaincodeSpec.Input.Args[1:]))
+		for i, v := range cis.ChaincodeSpec.Input.Args[1:] { // drop "__init"
+			argss[i] = string(v)
+		}
+	} else {
+		txType = []byte("invoke")
+		argss = make([]string, len(cis.ChaincodeSpec.Input.Args))
+		for i, v := range cis.ChaincodeSpec.Input.Args {
+			argss[i] = string(v)
+		}
+	}
+	var encoded_args []byte
+	encoded_args, err = json.Marshal(argss)
+	if err != nil {
+		return fmt.Errorf("Couldn't json encode arguments, err %s", err)
+	}
+	logger.Debugf("txType: %s / encoded_args: %s\n", string(txType), string(encoded_args))
+
+	// get the enclave response
+	response := &utils.Response{}
+	if err := json.Unmarshal(respPayload.Response.Payload, response); err != nil {
+		return fmt.Errorf("Unmarshalling of SGX response failed, err: %s", err)
+	}
+	logger.Debugf("response: %s\n", string(response.ResponseData))
+
+	// check that response.PublicKey is registred
+	enclavePkHash := sha256.Sum256(response.PublicKey)
+	base64PublicKey := base64.StdEncoding.EncodeToString(enclavePkHash[:])
+	logger.Debugf("pk: %s", base64PublicKey)
+
+	// FIXME: remove hardcoding of those strings
+	attestation, err := state.GetState("ercc", base64PublicKey)
+	if err != nil || attestation == nil {
+		return fmt.Errorf("Enclave PK not found in registry")
+	}
+	logger.Debugf("found attestation at ercc for pk: %s", base64PublicKey)
+
+	var readset, writeset [][]byte
+	// go through the read/writeset as produced within the enclave
 	for _, ns := range txRWSet.NsRwSets {
-		logger.Debugf("Namespace %s", ns.NameSpace)
-
-		// TODO make this more flexible
-		if !strings.HasPrefix(ns.NameSpace, "ecc") {
+		if ns.NameSpace != cis.ChaincodeSpec.ChaincodeId.Name {
+			// note that the read/write set may contain other namespaces than our fpc chaincode such as _lifecycle and ercc
+			// here we only care about FPC chaincode namespace and therefore filter in order to verify enclave signature
 			continue
 		}
-
-		function := cis.ChaincodeSpec.Input.Args[0]
-		logger.Debugf("function: %s\n", string(function))
-
-		if string(function) == "__setup" {
-			continue
-		}
-
-		// Note: we encode all args before sending to enclave (and this is also what is
-		// ultimately signed), see enclave_chaincode.go::{init,invoke} for encoding.
-		var txType []byte
-		var argss []string
-		if string(function) == "__init" {
-			txType = []byte("init")
-			argss = make([]string, len(cis.ChaincodeSpec.Input.Args[1:]))
-			for i, v := range cis.ChaincodeSpec.Input.Args[1:] { // drop "__init"
-				argss[i] = string(v)
-			}
-		} else {
-			txType = []byte("invoke")
-			argss = make([]string, len(cis.ChaincodeSpec.Input.Args))
-			for i, v := range cis.ChaincodeSpec.Input.Args {
-				argss[i] = string(v)
-			}
-		}
-		var encoded_args []byte
-		encoded_args, err = json.Marshal(argss)
-		if err != nil {
-			return fmt.Errorf("Couldn't json encode arguments, err %s", err)
-		}
-		logger.Debugf("txType: %s / encoded_args: %s\n", string(txType), string(encoded_args))
-
-		// get the enclave response
-		response := &sgx_utils.Response{}
-		if err := json.Unmarshal(respPayload.Response.Payload, response); err != nil {
-			return fmt.Errorf("Unmarshalling of SGX response failed, err: %s", err)
-		}
-		logger.Debugf("response: %s\n", string(response.ResponseData))
-
-		// check that response.PublicKey is registred
-		enclavePkHash := sha256.Sum256(response.PublicKey)
-		base64PublicKey := base64.StdEncoding.EncodeToString(enclavePkHash[:])
-		logger.Debugf("pk: %s", base64PublicKey)
-
-		// FIXME: remove hardcoding of those strings
-		attestation, err := state.GetState("ercc", base64PublicKey)
-		if err != nil || attestation == nil {
-			return fmt.Errorf("Enclave PK not found in registry")
-		}
-
-		// Next, reproduce sorted read/writeset
-		var readset, writeset [][]byte
 
 		// normal reads
 		var readKeys []string
 		for _, r := range ns.KvRwSet.Reads {
-			k := sgx_utils.TransformToSGX(r.Key, sgx_utils.SEP)
+			k := utils.TransformToFPCKey(r.Key)
 			readKeys = append(readKeys, k)
 		}
 
@@ -195,7 +196,7 @@ func (vscc *VSCCECC) checkEnclaveEndorsement(cis *peer.ChaincodeInvocationSpec, 
 				continue
 			}
 			for _, qr := range rqi.GetRawReads().KvReads {
-				k := sgx_utils.TransformToSGX(qr.Key, sgx_utils.SEP)
+				k := utils.TransformToFPCKey(qr.Key)
 				readKeys = append(readKeys, k)
 			}
 		}
@@ -204,7 +205,7 @@ func (vscc *VSCCECC) checkEnclaveEndorsement(cis *peer.ChaincodeInvocationSpec, 
 		var writeKeys []string
 		writesetMap := make(map[string][]byte)
 		for _, w := range ns.KvRwSet.Writes {
-			k := sgx_utils.TransformToSGX(w.Key, sgx_utils.SEP)
+			k := utils.TransformToFPCKey(w.Key)
 			writeKeys = append(writeKeys, k)
 			writesetMap[k] = w.Value
 		}
@@ -225,17 +226,17 @@ func (vscc *VSCCECC) checkEnclaveEndorsement(cis *peer.ChaincodeInvocationSpec, 
 			writeset = append(writeset, []byte(k))
 			writeset = append(writeset, writesetMap[k])
 		}
-
-		isValid, err := vscc.verifier.Verify(txType, encoded_args, response.ResponseData, readset, writeset, response.Signature, response.PublicKey)
-		if err != nil {
-			return fmt.Errorf("Response invalid! Signature verification failed! Error: %s", err)
-		}
-		if !isValid {
-			return fmt.Errorf("Response invalid! Signature verification failed!")
-		}
-
 	}
 
+	isValid, err := vscc.verifier.Verify(txType, encoded_args, response.ResponseData, readset, writeset, response.Signature, response.PublicKey)
+	if err != nil {
+		return fmt.Errorf("Response invalid! Signature verification failed! Error: %s", err)
+	}
+	if !isValid {
+		return fmt.Errorf("Response invalid! Signature verification failed!")
+	}
+
+	logger.Debug("Enclave signature validation successfully passed")
 	return nil
 }
 
