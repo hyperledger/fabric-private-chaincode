@@ -88,7 +88,7 @@ note over FPC_Peer1_CLI_Wrapper
     Bookkeping operations.
     Note: packageId is an input parameter of approveformyorg
 end note
-FPC_Peer1_CLI_Wrapper -> FPC_Peer1_CLI_Wrapper : if packageId was stored then store cc_namie, cc_version
+FPC_Peer1_CLI_Wrapper -> FPC_Peer1_CLI_Wrapper : if packageId was stored then store cc_name, cc_version
 return /' Admin -> FPC_Peer1_CLI_Wrapper '/
 end /' group approve '/
 
