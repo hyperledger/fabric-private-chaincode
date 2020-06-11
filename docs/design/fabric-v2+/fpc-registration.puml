@@ -10,6 +10,7 @@
 title FPC Enclave Registration
 
 actor "Admin Org1" as Admin order 10
+participant "E_Manager" as E_Manager order 15
 participant "ECC Peer1_Org1" as ECC1 order 20
 participant "ERCC Peer1_Org1" as ERCC1 order 40
 participant "ERCC Peer1_Org2" as ERCC2 order 50
@@ -45,8 +46,6 @@ group enclave creation
     evidence generation) in the `approveformyorg` and the registration as part of
     `commit` without having to change the protocol flows.
   end note
-
-  create E_Manager order 15
 
   note over Admin, E_Manager #FFaa00
     The E_Manager component hides some operations that do not necessarily need to be
