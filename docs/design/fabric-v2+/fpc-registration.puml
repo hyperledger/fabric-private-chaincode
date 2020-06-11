@@ -71,6 +71,11 @@ group enclave creation
   end note
   Enclave1 -> Enclave1: Require: CC_Parameters
 
+  note over Enclave1 #FFaa00
+    This step generates the enclave's private keys used by the FPC chaincode
+    to sign statements and set up secure channels.
+    Check out the Components diagram to visualize Public_Keys/Private_Keys data structures.
+  end note
   Enclave1 -> Enclave1 : generate Private_Keys <- <Enclave_SK, Enclave_DK>
   Enclave1 -> Enclave1 : Public_Keys <- Public(Private_Keys)
 
