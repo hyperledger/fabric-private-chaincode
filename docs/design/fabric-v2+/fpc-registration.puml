@@ -75,7 +75,7 @@ group enclave creation
     to sign statements and set up secure channels.
     Check out the Components diagram to visualize Public_Keys/Private_Keys data structures.
   end note
-  Enclave1 -> Enclave1 : generate Private_Keys <- <Enclave_SK, Enclave_DK>
+  Enclave1 -> Enclave1 : Private_Keys <- generate_keys()
   Enclave1 -> Enclave1 : Public_Keys <- Public(Private_Keys)
 
   Enclave1 -> Enclave1 : Attested_Data <- <CC_Parameters, Public_Keys>
