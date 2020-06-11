@@ -135,7 +135,7 @@ group Org-Enclave binding/certification (to be implemented)
   return csr /' ECC1 -> Enclave1 '/
   return csr /' E_Manager -> ECC1 '/
   E_Manager -> E_Manager : generate peer certificate for enclave (certified by Org_1)
-  return certificate
+  return Certificate
   note over Admin, E_Manager #FFaa00
     -Org_1 takes "ownership" of this enclave,
     -the certificate should be made available to the chaincode endorsement plugin,
@@ -146,8 +146,8 @@ end group
 group enclave registration
   activate Admin
   Admin -> E_Manager ++: register
-  E_Manager -> ERCC1 ++: register Credentials
-  E_Manager -> ERCC2 : register Credentials
+  E_Manager -> ERCC1 ++: register Credentials, Certificate
+  E_Manager -> ERCC2 : register Credentials, Certificate
 
   ref over ERCC2
     (same as ERCC1)
@@ -160,6 +160,7 @@ group enclave registration
   end note
   ERCC1 -> ERCC1 : check Credentials.Evidence
   ERCC1 -> ERCC1 : check Credentials.Attested_Data.CC_Parameters (Channel_Id, MSPID of sender, TLCC_MREnclave)
+  ERCC1 -> ERCC1 : check Certificate
 
   group check consistency of Credentials (TBD)
     note over ERCC1 #FFaa00
