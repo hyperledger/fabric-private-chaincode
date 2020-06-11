@@ -129,9 +129,9 @@ end group
 end
 
 group Org-Enclave binding/certification (to be implemented)
-  Admin -> E_Manager ++: certify(CC_Id, Cert_Parameters)
-  E_Manager -> ECC1 ++: getCSR(Cert_Parameters)
-  ECC1 -> Enclave1 ++: getCSR(Cert_Parameters)
+  Admin -> E_Manager ++: certify
+  E_Manager -> ECC1 ++: getCSR
+  ECC1 -> Enclave1 ++: getCSR
   return csr /' ECC1 -> Enclave1 '/
   return csr /' E_Manager -> ECC1 '/
   E_Manager -> E_Manager : generate peer certificate for enclave (certified by Org_1)
