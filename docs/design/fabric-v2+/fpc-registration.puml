@@ -154,6 +154,10 @@ group enclave registration
   end ref
   activate ERCC2
 
+  note over ERCC1 #FFaa00
+    The evidence check ensures that the evidence is signed by IAS
+    and covers the attested data.
+  end note
   ERCC1 -> ERCC1 : check Credentials.Evidence
   ERCC1 -> ERCC1 : check Credentials.Attested_Data.CC_Parameters (Channel_Id, MSPID of sender, TLCC_MREnclave)
 
