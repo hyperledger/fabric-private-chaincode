@@ -60,6 +60,16 @@ class Credentials {
     + Attested_Data
     + Evidence bytes
 }
+note left of Credentials::Verb
+    Definition and motivation for "verb".
+    The verb is simply a string, e.g., "CREATE", "RE-ATTEST".
+    The expectation is that an admin will request re-attestations in the future.
+    Such operation will likely follow an execution flow different than the one
+    used to create enclaves. Hence, it will use a different API.
+    Yet, the attestation operations will be the same (or very similar).
+    The verb used in the two cases (create enclave, and re-attest enclave) will be different,
+    thereby allowing to distinguish them.
+end note
 
 } /' package protobufs '/
 
