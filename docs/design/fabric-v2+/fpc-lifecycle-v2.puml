@@ -79,13 +79,14 @@ note right
     **Chaincode definition**
     Name: cc_name, Version: mrenclave,
     Sequence: sequence_number, Endorsement Policy: (2of3),
-    Plugins: <custom endorsement/validation plugins>
-    IMPORTANT: the endorsement policy specifies how many enclaves are expected to run the chaincode.
+    Plugins: <ecc validation plugin>
+    NOTE: the endorsement policy specifies how many enclaves are expected to run the chaincode.
     In the initial version of FPC, a specific FPC chaincode will be implemented to run on
     a "designated" peer. Hence, initially, the endorsement policy will require a single endorser.
     FPC is expected to support multiple endorsers in the future. To have an idea of how FPC will
     enalve multiple endorsers, please check out the diagram describing
     how secret/private keys are expected to be distributed among endorsing chaincode enclaves.
+    NOTE: FPC does not support custom user plugins.
 end note
 Peer1_CLI -> Orderer ++: approve transaction
 return transaction committed /' Peer1_CLI -> Orderer '/
