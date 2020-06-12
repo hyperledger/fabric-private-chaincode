@@ -59,8 +59,8 @@ note over FPC_Peer1_CLI_Wrapper
     Also, it should be noted that
     - the install lifecycle op is peer-specific, while
     - the approveformyorg is org-specific, to be run on at most one org's peer
-    - the and commit op is expected to run on a single peer
-    Hence, the current bookeeping ops expect the approve and commit ops to
+    - the commit op has to be run on a single peer
+    The current bookeeping ops expect the approve and commit ops to
     run on peers where the FPC chaincode has been previously installed.
 end note
 FPC_Peer1_CLI_Wrapper -> FPC_Peer1_CLI_Wrapper : retrieve cc_language from package
