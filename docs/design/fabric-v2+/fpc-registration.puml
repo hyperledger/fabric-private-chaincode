@@ -61,6 +61,8 @@ group enclave creation
   ECC1 -> Enclave1 ++: create
 
   note over Enclave1 #FFaa00
+    The CC_Parameters help binding the enclave to a specific chaincode,
+    as it is registered in Fabric.
     The requirement of CC_Paramenters can be met in practice as follows:
     cc id, version, MSPID and channel id can be retrieved through Fabric shim functions;
     tlcc mrenclave can be retrieved through ercc;
@@ -68,7 +70,7 @@ group enclave creation
     if necessary, a pre-validation can be performed through tlcc.
     Another alternative could be to pass these parameters as part of the create call.
   end note
-  Enclave1 -> Enclave1: Require: CC_Parameters
+  Enclave1 -> Enclave1: fetch CC_Parameters
 
   note over Enclave1 #FFaa00
     This step generates the enclave's private keys used by the FPC chaincode
