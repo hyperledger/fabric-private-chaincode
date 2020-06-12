@@ -133,6 +133,7 @@ group Org-Enclave binding/certification (to be implemented)
   Admin -> E_Manager ++: certify
   E_Manager -> ECC1 ++: getCSR
   ECC1 -> Enclave1 ++: getCSR
+  Enclave1 -> Enclave1 : csr <- generate_csr(Private_Keys.Enclave_SK)
   return csr /' ECC1 -> Enclave1 '/
   return csr /' E_Manager -> ECC1 '/
   E_Manager -> E_Manager : generate peer certificate for enclave (certified by Org_1)
