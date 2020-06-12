@@ -129,19 +129,11 @@ end note
 Peer1_CLI -> Orderer ++: commit transaction
 return transaction committed /' Peer1_CLI -> Orderer '/
 return /' FPC_Peer1_CLI_Wrapper -> Peer1_CLI '/
-note over FPC_Peer1_CLI_Wrapper
-    Commit has succeeded.
-    Now, check if this fpc cc was previously approved.
-    If so, perform some invocations.
-end note
-FPC_Peer1_CLI_Wrapper -> FPC_Peer1_CLI_Wrapper : if cc_name, cc_version not stored then return
-FPC_Peer1_CLI_Wrapper -> Peer1_CLI ++: invoke chaincode __setup
-Peer1_CLI -> Orderer ++: invoke transaction
-return transaction committed
-return /' FPC_Peer1_CLI_Wrapper -> Peer1_CLI '/
-FPC_Peer1_CLI_Wrapper -> Peer1_CLI ++: query chaincode __getEnclavePk
-return /' FPC_Peer1_CLI_Wrapper -> Peer1_CLI '/
 return /' Admin -> FPC_Peer1_CLI_Wrapper '/
 end /' group commit '/
-
+note over FPC_Peer1_CLI_Wrapper
+    To complete setting up an FPC chaincode, enclaves have to be registered and provisioned with keys.
+    See the separate UML diagrams `fpc-registration` and `fpc-key-dist`
+    for the corresponding admin commands and protocol flows.
+end note
 @enduml
