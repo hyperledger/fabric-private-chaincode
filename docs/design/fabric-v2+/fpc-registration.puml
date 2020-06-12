@@ -148,13 +148,9 @@ end group
 group enclave registration
   activate Admin
   Admin -> E_Manager ++: register
+  
+  group invoke ERCC register
   E_Manager -> ERCC1 ++: register Credentials, Certificate
-  E_Manager -> ERCC2 : register Credentials, Certificate
-
-  ref over ERCC2
-    (same as ERCC1)
-  end ref
-  activate ERCC2
 
   note over ERCC1 #FFaa00
     The evidence check ensures that the evidence is signed by IAS
@@ -211,9 +207,12 @@ group enclave registration
   E.g., putState(key=Credentials.CC_Id, value=Credentials)
   end note
 
-  return register endorsement /' E_Manager -> ERCC2 '/
-
   return register endorsement /' E_Manager -> ERCC1 '/
+  end group
+
+  ref over ERCC2
+    invoke ERCC register
+  endref
 
   ref over E_Manager
     submit transaction
