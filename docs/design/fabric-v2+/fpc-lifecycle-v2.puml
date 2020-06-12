@@ -76,7 +76,7 @@ group local approve
 Admin -> FPC_Peer1_CLI_Wrapper ++: lifecycle chaincode approveformyorg
 FPC_Peer1_CLI_Wrapper -> Peer1_CLI ++: lifecycle chaincode approveformyorg
 note right
-    **Chaincode definition**
+    **Chaincode Definition for FPC Chaincode**
     Name: cc_name, Version: mrenclave,
     Sequence: sequence_number, Endorsement Policy: (2of3),
     Plugins: <ecc validation plugin>
