@@ -16,7 +16,6 @@ title Fabric Private Chaincode - Key generation, distribution, confirmation
 
 actor       "Admin_Org1" as Admin1
 participant "ECC_Manager (syscc) Peer_Org1" as ECC_Manager1
-database    "Local storage Peer_Org1" as Storage1
 participant "ECC Peer_Org1" as ECC1
 participant "ECC_Enclave Peer_Org1" as Enclave1 #99FF99
 participant "ERCC Peer_Org1" as ERCC1
@@ -26,16 +25,29 @@ participant Orderer as Orderer
 
 actor	    "Admin_Org2" as Admin2
 participant "ECC_Manager (syscc) Peer_Org2" as ECC_Manager2
-database    "Local storage Peer_Org2" as Storage2
 participant "ECC Peer_Org2" as ECC2
 participant "ECC_Enclave Peer_Org2" as Enclave2 #99FF99
 participant "ERCC Peer_Org2" as ERCC2
-participant "TLCC_Enclave Peer1_Org1" as TLCC_Enclave2 #99FF99
-
+participant "TLCC_Enclave Peer_Org1" as TLCC_Enclave2 #99FF99
 
 ref over Admin1, ECC_Manager1, ECC1, Enclave1, ERCC1, TLCC_Enclave1
-  enclave creation, attestation generation, register attestation
+    create enclave, register enclave
 end ref
+ref over Admin2, ECC_Manager2, ECC2, Enclave2, ERCC2, TLCC_Enclave2
+    create enclave, register enclave
+end ref
+
+note over Admin1, Admin2
+    Assumptions.
+    - The enclaves are up and running.
+    - The administrators have created and registered the (respective) enclave credentials.
+
+    Notes.
+    - Check out the `fpc-registration` diagram for more details
+      on the creation and registration of the enclave credentials.
+    - Below several parameters and cryptographic keys are exchanged between components.
+      A description of these parameters can be found in the `fpc-components` diagrams.
+end note
 
 group key generation
 
@@ -47,17 +59,9 @@ group key generation
   end note
   Admin1        -> Admin1       :   cc_target_message <- <CC_name, CC_ver, CH_id, org_id>
   Admin1        -> ECC_Manager1 ++: GenerateCCKeys(cc_target_message)
-  ECC_Manager1  -> Storage1     ++: get enclave's sealed_state
-  note right
-    If the enclave is up and running,
-    this step and the sealed_state
-    paramenters below can be skipped.
-  end note
-  return /'Storage1 -> ECC_Manager1'/
 
-  ECC_Manager1  -> ECC1         ++: GenerateCCKeys(cc_target_message, sealed_state)
-  ECC1          -> Enclave1     ++: GenerateCCKeys(cc_target_message, sealed_state)
-  Enclave1      -> Enclave1     :   ecc_config <- Unseal(sealed_state)
+  ECC_Manager1  -> ECC1         ++: GenerateCCKeys(cc_target_message)
+  ECC1          -> Enclave1     ++: GenerateCCKeys(cc_target_message)
   Enclave1      -> Enclave1     :   check input parameters against ecc_config 
   Enclave1      -> TLCC_Enclave1++: can_endorse(ECC1_S_PK)
     note left of Enclave1
@@ -86,44 +90,14 @@ group key generation
         Confirmation statement that the enclave has CC_E_SK.
     end note
 
-  Enclave1      -> Enclave1     :   sealed_state <- Seal(ecc_config)
   Enclave1      -> Enclave1     :   key_confirmation_message <- <ECC1_S_PK, SIG_ECC1, CC_E_PK>
 
-  return key_confirmation_message, sealed_state /'ECC1 -> Enclave1'/
-  return key_confirmation_message, sealed_state /'ECC_Manager1 -> ECC1'/
-
-  ECC_Manager1  -> Storage1     :   store sealed_state
+  return key_confirmation_message /'ECC1 -> Enclave1'/
+  return key_confirmation_message /'ECC_Manager1 -> ECC1'/
 
   return key_confirmation_message /'Admin1 -> ECC_Manager1'/
 
 end group
-
-'note right Admin1 #ff0000
-'    Discussion needed ... see below
-'end note
-
-'note right Admin1
-'    - Where do we store ECC1_S_PK, SIG_ECC, m, CC_E_PK??? At ECC or ERCC?
-'    - Do we treat key-mgnt as FPC lifcycle or is this application specific?
-'    - If FPC lifecycle => ERCC ; otherwise ECC
-'end note
-
-'note right Admin1
-'    **ERCC**
-'    + aligned with FPC lifcycle policy
-'    + central place where also FPC chaincodes store keys
-'    - how can ECC_Enclave access? m is stored in ERCC namespace
-'    - ERCC namspace can be accessed through cc2cc call
-'        but not protected through TLCC
-'    TBD ...
-'end note
-
-'note right Admin1
-'    **ECC**
-'    + easy to securely access m protected through TLCC
-'    - difficult with application policy
-'    TBD ...
-'end note
 
 group key confirmation
 
@@ -233,7 +207,7 @@ group key distribution
     note left
         if false, abort
     end note
-  Enclave1      -> Enclave1         :   check CC_name, CC_ver, CH_id, org_id in sealed data
+  Enclave1      -> Enclave1         :   check CC_name, CC_ver, CH_id, org_id in ecc_config
   Enclave1      -> Enclave1         :   check ECC2_S_PK, ECC_E_PK, attestation_report
   Enclave1      -> Enclave1         :   encrypted_keys_message <- encrypt <SEK, CC_E_SK> with ECC2_E_PK
     note left
@@ -306,13 +280,10 @@ group complete key distribution
   Enclave2      -> Enclave2         :   SEK, CC_E_SK <- decrypt(keydist_start_message.encrypted_keys_message) with ECC2_E_SK
 
   Enclave2      -> Enclave2         :   SIG_ECC2 <- sign <CC_E_PK> with ECC2_S_SK
-  Enclave2      -> Enclave2         :   store SEK, CC_E_SK in sealed_state
   Enclave2      -> Enclave2         :   key_confirmation_message <- <ECC2_S_PK, SIG_ECC2, CC_E_PK>
 
-  return key_confirmation_message, sealed_state /'Enclave2 -> ECC2'/
-  return key_confirmation_message, sealed_state /'ECC2 -> ECC_Manager2'/
-
-  ECC_Manager2  -> Storage2     :   store sealed_state
+  return key_confirmation_message, /'Enclave2 -> ECC2'/
+  return key_confirmation_message, /'ECC2 -> ECC_Manager2'/
 
   return key_confirmation_message /'Admin2 -> ECC_Manager2'/
 
