@@ -11,4 +11,18 @@ Such definition builds on the design diagrams describing the enclave creation, t
 
 ### Generate FPC Chaincode Keys
 
+### Persist Data
+
+### Restore Data
+
 ## Admin Commands
+
+### Create Chaincode Enclave
+
+### Register Chaincode Enclave
+
+### Generate FPC Chaincode Keys
+
+### Persist Data
+
+### Restore Data
