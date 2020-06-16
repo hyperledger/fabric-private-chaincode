@@ -52,7 +52,7 @@ Admin -> FPC_Peer1_CLI_Wrapper ++: lifecycle chaincode install
 FPC_Peer1_CLI_Wrapper -> Peer1_CLI ++: lifecycle chaincode install
 return packageId
 note over FPC_Peer1_CLI_Wrapper
-    The following bookking operations help remember (across lifecycle calls)
+    The following bookkeeping operations help remember (across lifecycle calls)
     that a package (id) corresponds to a FPC chaincode. Similarly, the
     approve will later store data for an FPC chaincode installed locally,
     and the commit checks for data of a locally-approved FPC chaincode.
