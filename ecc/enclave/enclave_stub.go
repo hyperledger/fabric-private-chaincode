@@ -26,7 +26,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/tlcc"
-	sgx_utils "github.com/hyperledger-labs/fabric-private-chaincode/utils"
+	sgx_utils "github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-protos-go/msp"
 	"github.com/hyperledger/fabric/common/flogging"
@@ -176,8 +176,9 @@ func get_state(key *C.char, val *C.uint8_t, max_val_len C.uint32_t, val_len *C.u
 
 	// check if composite key
 	key_str := C.GoString(key)
-	if sgx_utils.IsSGXCompositeKey(key_str, sgx_utils.SEP) {
-		key_str = sgx_utils.TransformToCompositeKey(stubs.shimStub, key_str, sgx_utils.SEP)
+	if sgx_utils.IsFPCCompositeKey(key_str) {
+		comp := sgx_utils.SplitFPCCompositeKey(key_str)
+		key_str, _ = stubs.shimStub.CreateCompositeKey(comp[0], comp[1:])
 	}
 
 	data, err := stubs.shimStub.GetState(key_str)
@@ -210,8 +211,9 @@ func put_state(key *C.char, val unsafe.Pointer, val_len C.int, ctx unsafe.Pointe
 
 	// check if composite key
 	key_str := C.GoString(key)
-	if sgx_utils.IsSGXCompositeKey(key_str, sgx_utils.SEP) {
-		key_str = sgx_utils.TransformToCompositeKey(stubs.shimStub, key_str, sgx_utils.SEP)
+	if sgx_utils.IsFPCCompositeKey(key_str) {
+		comp := sgx_utils.SplitFPCCompositeKey(key_str)
+		key_str, _ = stubs.shimStub.CreateCompositeKey(comp[0], comp[1:])
 	}
 
 	if stubs.shimStub.PutState(key_str, C.GoBytes(val, val_len)) != nil {
@@ -224,7 +226,7 @@ func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max
 	stubs := registry.Get(*(*int)(ctx))
 
 	// split and get a proper composite key
-	comp := sgx_utils.SplitSGXCompositeKey(C.GoString(comp_key), sgx_utils.SEP)
+	comp := sgx_utils.SplitFPCCompositeKey(C.GoString(comp_key))
 	iter, err := stubs.shimStub.GetStateByPartialCompositeKey(comp[0], comp[1:])
 	if err != nil {
 		panic("error while range query")
@@ -239,7 +241,7 @@ func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max
 			panic("Error " + err.Error())
 		}
 		buf.WriteString("{\"key\":\"")
-		buf.WriteString(sgx_utils.TransformToSGX(item.Key, sgx_utils.SEP))
+		buf.WriteString(sgx_utils.TransformToFPCKey(item.Key))
 		buf.WriteString("\",\"value\":\"")
 		buf.Write(item.Value)
 		if iter.HasNext() {

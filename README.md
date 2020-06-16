@@ -258,7 +258,7 @@ Make sure that you have the following required dependencies installed:
 
 * [SSL](https://github.com/intel/intel-sgx-ssl)  for SGX SDK v2.4.1 (we recommend using OpenSSL 1.1.0j) 
 
-* Hyperledger [Fabric](https://github.com/hyperledger/fabric/tree/v2.1.0) v2.1.0
+* Hyperledger [Fabric](https://github.com/hyperledger/fabric/tree/v2.1.1) v2.1.1
 
 * Clang-format 6.x or higher
 
@@ -317,14 +317,14 @@ Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in t
 
 Fabric Private Chaincode support requires to re-build the Fabric peer. 
 
-Checkout Fabric 2.1.0 release using the following commands:
+Checkout Fabric 2.1.1 release using the following commands:
 
     $ export FABRIC_PATH=${GOPATH}/src/github.com/hyperledger/fabric
     $ git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
-    $ cd $FABRIC_PATH; git checkout tags/v2.1.0
+    $ cd $FABRIC_PATH; git checkout tags/v2.1.1
     
 Note that Fabric Private Chaincode currently does not work with the Fabric `master` branch, therefore make sure you use the Fabric
-`v2.1.0` tag. This is important as our build script applies some patches
+`v2.1.1` tag. This is important as our build script applies some patches
 to the fabric peer to enable FPC support. Make sure the source of Fabric is in your ``$GOPATH``.
 
 ### Build Fabric Private Chaincode

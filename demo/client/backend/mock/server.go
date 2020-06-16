@@ -33,7 +33,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hyperledger-labs/fabric-private-chaincode/demo/client/backend/mock/api"
 	"github.com/hyperledger-labs/fabric-private-chaincode/demo/client/backend/mock/chaincode"
-	"github.com/hyperledger-labs/fabric-private-chaincode/utils"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/common/flogging"
 )
