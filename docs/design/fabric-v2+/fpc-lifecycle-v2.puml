@@ -15,124 +15,149 @@ title Foot Box removed
 title Fabric Private Chaincode - Lifecycle v2
 
 box "Org1"
-actor	Admin order 10
-entity "FPC_Peer1_CLI_Wrapper" as FPC_Peer1_CLI_Wrapper order 15
-participant Peer1_CLI order 20
-entity "FPC_Peer2_CLI_Wrapper" as FPC_Peer2_CLI_Wrapper order 30
-participant Peer2_CLI order 40
-end box
-
-box "Channel Abstraction"
-participant Channel order 70
-note over Channel
-    This box abstracts all other orgs and components.
-    Actions are supposed to be performed by channel participants.
-end note
+actor Admin order 10
+participant Peer_CLI order 15
+participant Peer1 order 20
+participant Peer2 order 40
 end box
 
 entity Orderer order 80
 
-note over Admin
-    Admin uses the fpc-peer wrappers, which abstract the Fabric Peer CLI.
+group chaincode inspection
+    Admin -> Admin : inspect FPC chaincode,\nbuild enclave binary\nand **mrenclave**
+    note right Admin
+    By generating **mrenclave** based
+    on the inspected FPC chaincode,
+    the Org defines the "correct" code
+    identity they will approve
+    end note
+end
+
+note over Peer_CLI
+    Admin uses Fabric Peer CLI, which is extended with
+    additional functionality to ease FPC specific usability.
 end note
 
 group chaincode package
-Admin -> FPC_Peer1_CLI_Wrapper : lifecycle chaincode package
-note right
-    **Chaincode package**
-    as tar.gz with
-    metadata.json = <path:(enclaves_path), type:(cc_lang), label:(cc_label), sgx_mode: (sim/hw)>
-    code.tar.gz : compressed file with enclave binary and mrenclave
-end note
+    Admin -> Peer_CLI++ : lifecycle\nchaincode package
+    note right
+    **Chaincode package** as tar.gz with
+    metadata.json = <path:(enclaves_path),
+        type:(cc_lang),
+        label:(cc_label),
+        sgx_mode: (sim/hw)>
+    and code.tar.gz including enclave binary and **mrenclave**
+    end note
 return
-end /' group chaincode package '/
+end
 
 group install
-Admin -> FPC_Peer1_CLI_Wrapper ++: lifecycle chaincode install
-FPC_Peer1_CLI_Wrapper -> Peer1_CLI ++: lifecycle chaincode install
-return packageId
-note over FPC_Peer1_CLI_Wrapper
-    The following bookkeeping operations help remember (across lifecycle calls)
-    that a package (id) corresponds to a FPC chaincode. Similarly, the
-    approve will later store data for an FPC chaincode installed locally,
-    and the commit checks for data of a locally-approved FPC chaincode.
+    Admin -> Peer_CLI++ : lifecycle\nchaincode install
+    Peer_CLI -> Peer1++ : install chaincode from package
+    return packageId
+
+    note right Peer_CLI
+    The following bookkeeping operations help remember
+    (across lifecycle calls) that a package (id)
+    corresponds to a FPC chaincode. Similarly, the
+    approve will later store data for an FPC chaincode
+    installed locally, and the commit checks for data
+    of a locally-approved FPC chaincode.
+
     Also, it should be noted that
     - the install lifecycle op is peer-specific, while
-    - the approveformyorg is org-specific, to be run on at most one org's peer
+    - the approveformyorg is org-specific, to be run
+    on at most one org's peer
     - the commit op has to be run on a single peer
-    The current bookkeeping ops expect the approve and commit ops to
-    run on peers where the FPC chaincode has been previously installed.
-end note
-FPC_Peer1_CLI_Wrapper -> FPC_Peer1_CLI_Wrapper : retrieve cc_language from package
-FPC_Peer1_CLI_Wrapper -> FPC_Peer1_CLI_Wrapper : if cc_language==fpc then store packageId
-return packageId /' Admin -> FPC_Peer1_CLI_Wrapper '/
-end /' group install '/
 
-ref over Admin, FPC_Peer2_CLI_Wrapper, Peer2_CLI
-    install chaincode on Peer2
-end /' ref '/
+    The current bookkeeping ops expect the approve and
+    commit ops to run on peers where the FPC chaincode
+    has been previously installed.
+    end note
 
-group local approve
-Admin -> FPC_Peer1_CLI_Wrapper ++: lifecycle chaincode approveformyorg
-FPC_Peer1_CLI_Wrapper -> Peer1_CLI ++: lifecycle chaincode approveformyorg
-note right
-    **Chaincode Definition for FPC Chaincode**
+    Peer_CLI -> Peer_CLI : retrieve cc_language from package
+    Peer_CLI -> Peer_CLI : if cc_language==fpc\n\tthen store packageId
+    return packageId
+end
+
+ref over Admin, Peer_CLI, Peer2
+    Admin installs chaincode on Peer2
+end
+
+group approveformyorg
+    Admin -> Peer_CLI++ : lifecycle\nchaincode approveformyorg
+    note right
+    **Chaincode Definition for FPC Chaincode** including
     Name: cc_name,
     Version: **mrenclave**,
-    Sequence: sequence_number, Endorsement Policy: (2of3),
-    Plugins: <ecc validation plugin>
-    NOTE: the endorsement policy specifies how many enclaves are expected to run the chaincode.
-    In the initial version of FPC, a specific FPC chaincode will be implemented to run on
-    a "designated" peer. Hence, initially, the endorsement policy will require a single endorser.
-    FPC is expected to support multiple endorsers in the future. To have an idea of how FPC will
-    enalve multiple endorsers, please check out the diagram describing
-    how secret/private keys are expected to be distributed among endorsing chaincode enclaves.
+    Sequence: sequence_number,
+    Endorsement Policy: (2of3),
+    Plugins: ecc-vscc (FPC validation plugin)
+
+    NOTE: the admin approves the chaincode definition
+    including the **mrenclave** that was computed during
+    code inspection.
+
+    NOTE: the endorsement policy specifies how many
+    enclaves are expected to run the chaincode. The MVP
+    implementation will support a "designated" endorsing
+    peer only.
+    Hence, initially, the endorsement policy will require
+    a single endorser. FPC is expected to support
+    multiple endorsers in the future. To have an
+    idea of how FPC will enclave multiple endorsers,
+    please check out key distribution diagram.
+
     NOTE: FPC does not support custom user plugins.
-end note
-Peer1_CLI -> Orderer ++: approve transaction
-return transaction committed /' Peer1_CLI -> Orderer '/
-return /' FPC_Peer1_CLI_Wrapper -> Peer1_CLI '/
-note over FPC_Peer1_CLI_Wrapper
-    Bookkeping operations.
-    Note: packageId is an input parameter of approveformyorg
-end note
-FPC_Peer1_CLI_Wrapper -> FPC_Peer1_CLI_Wrapper : if packageId was stored (and hence it is an FPC chaincode) then store mapping packageid to <cc_name, cc_version>
-return /' Admin -> FPC_Peer1_CLI_Wrapper '/
-end /' group approve '/
+    end note
 
-group other orgs approve
-Channel -> Channel : approvals from other parties
-note over Channel
-    Other participants must approve the chaincode definition,
-    and commit the corresponding transaction,
-    according to the LifecycleEndorsement policy.
-    So the party here has to loop to check for the approvals.
-end note
-end group 'other orgs approve'
+    Peer_CLI -> Orderer++ : approve transaction
+    return transaction committed /' Peer1_CLI -> Orderer '/
 
+    note right Peer_CLI
+    Bookkeeping operations.
+    NOTE: packageId is an input parameter of approveformyorg
+    end note
+
+    Peer_CLI -> Peer_CLI : if packageId was stored (and hence it is an FPC chaincode)\n\tthen store mapping packageId to <cc_name, cc_version>
+    return
+end
 
 loop until enough approvals
-	Admin -> Peer1_CLI : lifecycle chaincode checkcommitreadiness
-note right
+	Admin -> Peer_CLI++ : lifecycle\nchaincode checkcommitreadiness
+    note right
     **Chaincode definition**
     (implemented to match the approved one)
-end note
+    end note
+
+    note right Peer_CLI
+    Other participants must approve the chaincode definition
+    by committing the corresponding transaction according to
+    the LifecycleEndorsement policy.
+
+    Note that other orgs follow the same lifecycle steps as
+    illustrated here, in particular, they inspect the FPC
+    chaincode and generate **mrenclave** accordingly.
+    end note
+
+    Peer_CLI -> Peer1++ : checkcommitreadiness
+    return
     return
 end
 
 group commit
-Admin -> FPC_Peer1_CLI_Wrapper ++:lifecycle chaincode commit
-FPC_Peer1_CLI_Wrapper -> Peer1_CLI ++: lifecycle chaincode commit
-note right
+    Admin -> Peer_CLI++ : lifecycle\nchaincode commit
+    note right
     **Chaincode definition**
     (implemented to match the one that is ready to be committed)
-end note
-Peer1_CLI -> Orderer ++: commit transaction
-return transaction committed /' Peer1_CLI -> Orderer '/
-return /' FPC_Peer1_CLI_Wrapper -> Peer1_CLI '/
-return /' Admin -> FPC_Peer1_CLI_Wrapper '/
-end /' group commit '/
-note over FPC_Peer1_CLI_Wrapper
+    end note
+
+    Peer_CLI -> Orderer++ : commit transaction
+    return transaction committed
+    return
+end
+
+note right Admin
     To complete setting up an FPC chaincode, enclaves have to be registered and provisioned with keys.
     See the separate UML diagrams `fpc-registration` and `fpc-key-dist`
     for the corresponding admin commands and protocol flows.
