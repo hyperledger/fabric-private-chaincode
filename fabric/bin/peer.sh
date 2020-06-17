@@ -61,7 +61,7 @@ handle_lifecycle_chaincode_package() {
 	    # Above is the flags we really care, but we need also the outputfile
 	    # which doesn't have a flag. So let's enumerate the known no-arg
 	    # flags (i.e., --tls -h/--help), assume all other flags have exactly
-	    # one arg (true as of v2.0.1) and then the remaining one is the
+	    # one arg (true as of v2.1.1) and then the remaining one is the
 	    # output file ...
 	    -h|--help)
 		# with help, no point to continue but run it right here ..
@@ -167,7 +167,7 @@ handle_lifecycle_chaincode_install() {
 	    # we care only about package file name but this is not prefixed
 	    # with a flag.  So let's enumerate the known no-arg flags (i.e.,
 	    # --tls -h/--help), assume all other flags have exactly
-	    # one arg (true as of v2.0.1) and then the remaining one is the
+	    # one arg (true as of v2.1.1) and then the remaining one is the
 	    # output file ...
 	    -h|--help)
 		# with help, no point to continue but run it right here ..
@@ -354,15 +354,15 @@ handle_channel_join() {
     ERCC_PACKAGE_ID=$(awk "/Package ID: ${ERCC_LABEL}/{print}" ${ERCC_QUERY_INSTALL_LOG} | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
     [ ! -z "${ERCC_PACKAGE_ID}" ] || die "Could not extract package id"
     say "Approve for my org"
-    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --package-id ${ERCC_PACKAGE_ID} --sequence ${ERCC_SEQUENCE} # -V ercc-vscc   # TODO: re-add validation plugin once they are enabled in peer ...
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --package-id ${ERCC_PACKAGE_ID} --sequence ${ERCC_SEQUENCE} -V ercc-vscc
     para
     sleep 3
     say "Checking for commit readiness"
-    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode checkcommitreadiness --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --sequence ${ERCC_SEQUENCE} --output json # -V ercc-vscc   # TODO: re-add validation plugin once they are enabled in peer ...
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode checkcommitreadiness --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --sequence ${ERCC_SEQUENCE} --output json -V ercc-vscc
     para
     sleep 3
     say "Committing chaincode definition...."
-    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode commit -o ${ORDERER_ADDR} --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --sequence ${ERCC_SEQUENCE} # -V ercc-vscc   # TODO: re-add validation plugin once they are enabled in peer ...
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode commit -o ${ORDERER_ADDR} --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --sequence ${ERCC_SEQUENCE} -V ercc-vscc
     para
     sleep 3
     # Note: Below is not crucial but they do display potentially useful info and the second also is liveness-test for ercc

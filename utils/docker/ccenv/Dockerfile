@@ -2,4 +2,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FROM hyperledger/fabric-private-chaincode-base:latest
+ARG FPC_VERSION=latest
+
+FROM hyperledger/fabric-private-chaincode-base:${FPC_VERSION}

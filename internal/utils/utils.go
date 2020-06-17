@@ -10,8 +10,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
-
-	"github.com/hyperledger/fabric-chaincode-go/shim"
 )
 
 const MrEnclaveStateKey = "MRENCLAVE"
@@ -23,7 +21,7 @@ type Response struct {
 	PublicKey    []byte `json:"PublicKey"`
 }
 
-const SEP = "."
+const sep = "."
 
 func Read(file string) []byte {
 	data, err := ioutil.ReadFile(file)
@@ -36,23 +34,17 @@ func Read(file string) []byte {
 	return data
 }
 
-func IsSGXCompositeKey(comp_str, sep string) bool {
-	return strings.HasPrefix(comp_str, sep) && strings.HasSuffix(comp_str, sep)
+func IsFPCCompositeKey(comp string) bool {
+	return strings.HasPrefix(comp, sep) && strings.HasSuffix(comp, sep)
 }
 
-func TransformToCompositeKey(stub shim.ChaincodeStubInterface, comp_key, sep string) string {
-	comp := SplitSGXCompositeKey(comp_key, sep)
-	indexKey, _ := stub.CreateCompositeKey(comp[0], comp[1:])
-	return indexKey
-}
-
-func TransformToSGX(comp, sep string) string {
+func TransformToFPCKey(comp string) string {
 	return strings.Replace(comp, "\x00", sep, -1)
 }
 
-func SplitSGXCompositeKey(comp_str, sep string) []string {
-	// check it has SEP in front and end
-	if !IsSGXCompositeKey(comp_str, sep) {
+func SplitFPCCompositeKey(comp_str string) []string {
+	// check it has sep in front and end
+	if !IsFPCCompositeKey(comp_str) {
 		panic("comp_key has wrong format")
 	}
 	comp := strings.Split(comp_str, sep)

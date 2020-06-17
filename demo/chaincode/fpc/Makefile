@@ -4,12 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 #ifneq ($(FPC_PATH), '')
-ifdef FPC_PATH
-	TOP = $(FPC_PATH)
-else
-	TOP = ../../../
-	export FPC_PATH = $(abspath $(TOP))
-endif
+TOP = ../../../
 
 include $(TOP)/build.mk
 
@@ -26,7 +21,7 @@ build: $(BUILD_DIR)
 	$(MAKE) --directory=$<
 
 clean:
-	-rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR)
 
 
 HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
@@ -39,7 +34,7 @@ docker-build: clean
 		|| { cd $(TOP)/utils/docker && make cc-builder; }
 	$(DOCKER) run \
 		-u $$(id -u):$$(id -g)\
-		-v ${PWD}:/project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/fpc\
+		-v "$(DOCKERD_FPC_PATH)/demo/chaincode/fpc":/project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/fpc\
 		-w /project/src/github.com/hyperledger-labs/fabric-private-chaincode/demo/chaincode/fpc\
 		$(FPC_DOCKER_CC_BUILDER_NAME)\
 		sh -c 'make build'

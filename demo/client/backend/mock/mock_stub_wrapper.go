@@ -15,7 +15,7 @@ import (
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/demo/client/backend/mock/api"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc"
-	"github.com/hyperledger-labs/fabric-private-chaincode/utils"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-chaincode-go/shimtest"
 	"github.com/hyperledger/fabric-protos-go/peer"

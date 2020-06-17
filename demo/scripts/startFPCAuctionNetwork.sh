@@ -67,6 +67,7 @@ export DEMO_ROOT="${DEMO_SCRIPT_DIR}/.."
 DEMO_DOCKER_COMPOSE=${DEMO_SCRIPT_DIR}/../docker-compose.yml
 
 export FPC_PATH="${FPC_PATH:-${DEMO_SCRIPT_DIR}/../..}"
+export FPC_VERSION=${FPC_VERSION:=latest}
 
 # SCRIPT_DIR is the docker compose script dir that needs to be defined to source environment variables from the FPC Network
 export SCRIPT_DIR=${FPC_PATH}/utils/docker-compose/scripts

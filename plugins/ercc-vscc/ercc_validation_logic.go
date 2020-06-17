@@ -13,7 +13,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"strings"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
@@ -28,7 +27,7 @@ import (
 
 const MrEnclaveStateKey = "MRENCLAVE"
 
-var logger = flogging.MustGetLogger("vscc")
+var logger = flogging.MustGetLogger("ercc-vscc")
 
 // New creates a new instance of the ercc VSCC
 // Typically this will only be invoked once per peer
@@ -99,7 +98,7 @@ func (vscc *VSCCERCC) Validate(envelopeBytes []byte, policyBytes []byte) commone
 }
 
 func (t *VSCCERCC) checkAttestation(respPayload *peer.ChaincodeAction) error {
-	logger.Debug("checkEnclaveEndorsement starts")
+	logger.Debug("checkAttestation starts")
 
 	var err error
 
@@ -139,6 +138,10 @@ func (t *VSCCERCC) checkAttestation(respPayload *peer.ChaincodeAction) error {
 
 		// transform INTEL pk to DER format
 		block, _ := pem.Decode([]byte(attestation.IntelPubPEM))
+
+		if block == nil {
+			return fmt.Errorf("public key resides in a malformed PEM block")
+		}
 
 		// transform sig-pk from attestation report to DER format
 		verificationPK, err := x509.ParsePKIXPublicKey(block.Bytes)
@@ -183,10 +186,15 @@ func (t *VSCCERCC) checkAttestation(respPayload *peer.ChaincodeAction) error {
 		// get mrenclave from ledger
 		mrenclave, err := state.GetState(eccNamespace, MrEnclaveStateKey)
 		if err != nil {
-			return errors.New("mrenclave does not exist")
+			return fmt.Errorf("getting MRENCLAVE failed, err %s", err)
 		}
+		// if mrenclave not already on the ledger
 		if mrenclave == nil {
-			return errors.New("mrenclave is empty")
+			// it must be in the writeset
+			mrenclave = getMrEnclaveWriteSet(eccNamespace, txRWSet)
+			if mrenclave == nil {
+				return fmt.Errorf("no MRENCLAVE on the ledger nor in write set for %s", eccNamespace)
+			}
 		}
 		logger.Debugf("mrenclave for %s: %s", eccNamespace, mrenclave)
 
@@ -228,13 +236,14 @@ func policyErr(err error) *commonerrors.VSCCEndorsementPolicyError {
 }
 
 func getEccNamespace(txRWSet *rwsetutil.TxRwSet) (string, error) {
-	// Readsets must contain only one ecc_*.MRENCLAVE
+	// Readsets must contain only one *some_fpc_chaincode_name*.MRENCLAVE
 	eccNamespace := ""
 	for _, ns := range txRWSet.NsRwSets {
 		for _, read := range ns.KvRwSet.Reads {
-			if read.Key == MrEnclaveStateKey && strings.HasPrefix(ns.NameSpace, "ecc_") {
+			if read.Key == MrEnclaveStateKey {
+				logger.Debugf("found MRENCLAVE within namespace: %s", ns.NameSpace)
 				if eccNamespace != "" {
-					return "", fmt.Errorf("mutiple namespaces for ecc found")
+					return "", fmt.Errorf("mutiple namespaces with MRENCLAVE key found")
 				}
 				eccNamespace = ns.NameSpace
 			}
@@ -244,4 +253,17 @@ func getEccNamespace(txRWSet *rwsetutil.TxRwSet) (string, error) {
 		return "", fmt.Errorf("no ecc namespace found")
 	}
 	return eccNamespace, nil
+}
+
+func getMrEnclaveWriteSet(targetNameSpace string, txRWSet *rwsetutil.TxRwSet) []byte {
+	for _, ns := range txRWSet.NsRwSets {
+		if ns.NameSpace == targetNameSpace {
+			for _, write := range ns.KvRwSet.Writes {
+				if write.Key == MrEnclaveStateKey {
+					return write.Value
+				}
+			}
+		}
+	}
+	return nil
 }

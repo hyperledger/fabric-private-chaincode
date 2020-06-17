@@ -34,7 +34,7 @@ services:
     ports:
       - "7054:7054"
     volumes:
-      - ./crypto-config/peerOrganizations/org1.example.com/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ${DOCKERD_NETWORK_CONFIG}/crypto-config/peerOrganizations/org1.example.com/ca/:/etc/hyperledger/fabric-ca-server-config
     networks:
       - basic
 
@@ -53,10 +53,10 @@ services:
     ports:
       - 7050:7050
     volumes:
-        - ./config/:/etc/hyperledger/configtx
-        - ./crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/:/etc/hyperledger/msp/orderer
-        - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/:/etc/hyperledger/msp/peerOrg1
-        - ./orderer.yaml:/etc/hyperledger/fabric/orderer.yaml
+        - ${DOCKERD_NETWORK_CONFIG}/config/:/etc/hyperledger/configtx
+        - ${DOCKERD_NETWORK_CONFIG}/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/:/etc/hyperledger/msp/orderer
+        - ${DOCKERD_NETWORK_CONFIG}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/:/etc/hyperledger/msp/peerOrg1
+        - ${DOCKERD_NETWORK_CONFIG}/orderer.yaml:/etc/hyperledger/fabric/orderer.yaml
     networks:
       - basic
 
@@ -64,7 +64,7 @@ services:
     extends:
       file: base/base.yaml
       service: peer-base
-    image: hyperledger/fabric-peer${FPC_CONFIG}
+    image: hyperledger/fabric-peer${FPC_CONFIG}:${FPC_VERSION}
     container_name: peer0.org1.example.com
     environment:
       - CORE_PEER_ID=peer0.org1.example.com
@@ -79,9 +79,9 @@ services:
       - 7051:7051
       - 7053:7053
     volumes:
-        - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/msp/peer
-        - ./crypto-config/peerOrganizations/org1.example.com/users:/etc/hyperledger/msp/users
-        - ./core${FPC_CONFIG}.yaml:/etc/hyperledger/fabric/core.yaml
+        - ${DOCKERD_NETWORK_CONFIG}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/msp/peer
+        - ${DOCKERD_NETWORK_CONFIG}/crypto-config/peerOrganizations/org1.example.com/users:/etc/hyperledger/msp/users
+        - ${DOCKERD_NETWORK_CONFIG}/core${FPC_CONFIG}.yaml:/etc/hyperledger/fabric/core.yaml
     depends_on:
       - orderer.example.com
     networks:

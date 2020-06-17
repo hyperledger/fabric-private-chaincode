@@ -35,13 +35,14 @@ if [ "$1" == '--clean-slate' ]; then
 
 	# remove chaincode docker images
 	# (Peer should usually clean them up, but for case it has crashed ...)
-        # This might also clean other container as colleteral damage ...
+	# To minimize collateral damage we explicitly exclude the dev container
+ 	# and restrict to containers matching the net-id from core.yaml ..
 	echo "removing running containers and left-over chaincode images"
-	containers=$(docker ps -aq)
+	containers=$(docker ps -a | grep -v fpc-development- | grep "${NET_ID}-" | awk '{ print $1 }')
 	if [ ! -z "$containers" ]; then
 		docker rm --force ${containers}
 	fi
-	images=$(docker images dev-* -q)
+	images=$(docker images ${NET_ID}-* -q)
 	if [ ! -z "${images}" ]; then
 		docker rmi "${images}"
 	fi

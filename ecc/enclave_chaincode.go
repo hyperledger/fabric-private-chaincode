@@ -15,7 +15,7 @@ import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/enclave"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/ercc"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/tlcc"
-	"github.com/hyperledger-labs/fabric-private-chaincode/utils"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/common/flogging"
