@@ -137,7 +137,8 @@ group Org-Enclave binding/certification (to be implemented)
   return csr /' ECC1 -> Enclave1 '/
   return csr /' E_Manager -> ECC1 '/
   E_Manager -> E_Manager : generate peer certificate for enclave (certified by Org_1)
-  return Certificate
+  E_Manager -> E_Manager : store Certificate
+  return
   note over Admin, E_Manager #FFaa00
     -Org_1 takes "ownership" of this enclave,
     -the certificate should be made available to the chaincode endorsement plugin,
