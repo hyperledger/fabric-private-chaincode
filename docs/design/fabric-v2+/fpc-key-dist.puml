@@ -113,14 +113,19 @@ group chaincode key registration
     note over ERCC1
         - A secure channel with TLCC is not required here.
           Only the endorsement policy in the "current" chaincode definition is necessary.
-        - Notice that ERCC might have a stale chaincode definition. 
+        - Notice that ERCC might have a stale chaincode definition, so ask TLCC. 
         - This can_endorse function is a nice-to-have feature.
+          It prevents sharing keys with enclave that cannot endorse.
         - We have to investigate how to implement this can_endorse function.
     end note
     return true
     note over ERCC1
         if false, abort
     end note
+    ERCC1   -> ERCC1         :  extract CC_Id from Credentials
+    ERCC1   -> ERCC1         :  Registered_Chaincode_EK <- get_state(CC_Id."Chaincode_EK")
+    ERCC1   -> ERCC1         :  if(!Registered_Chaincode_EK) put_state(CC_Id."Chaincode_EK", cckey_registration_message.Chaincode_EK)
+    ERCC1   -> ERCC1         :  else check Registered_Chaincode_EK and cckey_registration_message.Chaincode_EK match
     ERCC1   -> ERCC1         :  store cckey_registration_message on the ledger
     note over ERCC1
         E.g., put_state(key=<"keydist_registered".Enclave1_VK>, value=cckey_registration_message)
