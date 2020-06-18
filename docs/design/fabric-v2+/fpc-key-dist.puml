@@ -12,7 +12,7 @@
 hide footbox
 title Foot Box removed
 
-title Fabric Private Chaincode - Key generation, distribution, confirmation 
+title Fabric Private Chaincode - Chaincode Key generation, distribution, confirmation 
 
 actor       "Admin_Org1" as Admin1
 participant "E_Manager Peer_Org1" as E_Manager1
@@ -48,7 +48,7 @@ note over Admin1, Admin2
       on messages, parameters and cryptographic keys used below.
 end note
 
-group key generation
+group chaincode key generation
 
   note right Admin1
     One admin must begin the key
@@ -82,16 +82,16 @@ group key generation
         Confirmation statement that the enclave has Chaincode_DK.
     end note
 
-  Enclave1      -> Enclave1     :   key_confirmation_message <- <Enclave1_VK, Sig_Enclave1, Chaincode_EK>
+  Enclave1      -> Enclave1     :   cckey_confirmation_message <- <Enclave1_VK, Sig_Enclave1, Chaincode_EK>
 
-  return key_confirmation_message /'ECC1 -> Enclave1    '/
-  return key_confirmation_message /'E_Manager1 -> ECC1  '/
+  return cckey_confirmation_message /'ECC1 -> Enclave1    '/
+  return cckey_confirmation_message /'E_Manager1 -> ECC1  '/
 
-  return key_confirmation_message /'Admin1 -> E_Manager1'/
+  return cckey_confirmation_message /'Admin1 -> E_Manager1'/
 
 end group
 
-group key confirmation
+group chaincode key confirmation
 
   note right of Admin1
     Key confirmation is desirable in multi-org settings.
@@ -102,9 +102,9 @@ group key confirmation
     Key confirmation can ensure that backup enclave are
     ready to take over and/or contribute.
   end note
-  group key-confirmation endorsement
-    Admin1  -> Admin1       :   key_confirmation_message <- <Enclave1_VK, Sig_Enclave1, Chaincode_EK>
-    Admin1  -> ERCC1        ++: ConfirmCCKeys(key_confirmation_message)
+  group chaincode-key-confirmation endorsement
+    Admin1  -> Admin1       :   cckey_confirmation_message <- <Enclave1_VK, Sig_Enclave1, Chaincode_EK>
+    Admin1  -> ERCC1        ++: ConfirmCCKeys(cckey_confirmation_message)
     ERCC1   -> ERCC1        :   check that tx proposal creator is Admin
     ERCC1   -> ERCC1        :   check that admin.org and enclave.org match
     note over ERCC1
@@ -124,9 +124,9 @@ group key confirmation
     note over ERCC1
         if false, abort
     end note
-    ERCC1   -> ERCC1         :  store key_confirmation_message on the ledger
+    ERCC1   -> ERCC1         :  store cckey_confirmation_message on the ledger
     note over ERCC1
-        E.g., put_state(key=<"keydist_confirmed".Enclave1_VK>, value=key_confirmation_message)
+        E.g., put_state(key=<"keydist_confirmed".Enclave1_VK>, value=cckey_confirmation_message)
         This is the proof (stored on the ledger) that the enclave has the CC keys.
         In a multi-org setting, the proof informs of enclave availability.
     end note
@@ -136,15 +136,15 @@ group key confirmation
   end group
 
   ref over Admin1, ERCC2
-    key-confirmation endorsement
+    chaincode-key-confirmation endorsement
   end ref
 
-  Admin1 -> Orderer: submit key-confirmation transaction
+  Admin1 -> Orderer: submit chaincode-key-confirmation transaction
 
 end group
 
 
-group key distribution
+group chaincode key distribution
   ref over Admin1, TLCC_Enclave1, Admin2, TLCC_Enclave2
     if necessary, upgrade chaincode policy to enable Enclave2 endorsements
   end ref 
@@ -208,7 +208,7 @@ group key distribution
   end note
   Enclave1      -> Enclave1         :   check Enclave2_Credentials.Attested_Data.CC_Parameters.CC_Id against internal one
   Enclave1      -> Enclave1         :   check Enclave2's keys and Enclave2_VK, Enclave2_EK, attestation_report
-  Enclave1      -> Enclave1         :   encrypted_keys_message <- encrypt <SEK, Chaincode_DK> with Enclave2_EK
+  Enclave1      -> Enclave1         :   encrypted_cckeys_message <- encrypt <SEK, Chaincode_DK> with Enclave2_EK
     note left
         enclave encrypts state encryption key and chaincode private key
     end note
@@ -220,14 +220,14 @@ group key distribution
     sender and intended recipient identity
   end note
 
-  Enclave1      -> Enclave1         :   key_distribution_message <- <Enclave1_VK, Enclave2_VK, Chaincode_EK, Sig_Enclave1>
+  Enclave1      -> Enclave1         :   cckey_distribution_message <- <Enclave1_VK, Enclave2_VK, Chaincode_EK, Sig_Enclave1>
 
-  return encrypted_keys_message, key_distribution_message /'ECC1 -> Enclave1'/
-  return encrypted_keys_message, key_distribution_message /'E_Manager1 -> ECC1'/
-  return encrypted_keys_message, key_distribution_message /'Admin1 -> E_Manager1'/
+  return encrypted_cckeys_message, cckey_distribution_message /'ECC1 -> Enclave1'/
+  return encrypted_cckeys_message, cckey_distribution_message /'E_Manager1 -> ECC1'/
+  return encrypted_cckeys_message, cckey_distribution_message /'Admin1 -> E_Manager1'/
 
   note right Admin1
-    Key distribution is in progress. We need a means to transfer the message with
+    Chaincode key distribution is in progress. We need a means to transfer the message with
     the encrypted keys to the recipient enclave. The next step uses the ledger
     itself for this data transfer. This additionally allows to log the two phases
     of the key distribution: (1) the sender enclave produced the encrypted data blob;
@@ -235,8 +235,8 @@ group key distribution
     with enclaves of two different orgs, to show that the expected actions have been taken.
   end note
 
-  group start-key-distribution endorsement
-    Admin1      -> ERCC1            ++: Start_KeyDist(encrypted_keys_message, key_distribution_message)
+  group start-cckey-distribution endorsement
+    Admin1      -> ERCC1            ++: Start_KeyDist(encrypted_cckeys_message, cckey_distribution_message)
     ERCC1       -> ERCC1            :   check Enclave1_VK's and Enclave2_VK's Credentials are registered
     ERCC1       -> ERCC1            :   check Enclave1_Credentials and Enclave2_Credentials have same CC_Id
     note over ERCC1
@@ -251,18 +251,18 @@ group key distribution
     ERCC1       -> TLCC_Enclave1++: can_endorse(Enclave2_VK)
     return true
     ERCC1       -> ERCC1            :   check Sig_Enclave1
-    ERCC1       -> ERCC1            :   store <encrypted_keys_message, key_distribution_message> on the ledger
+    ERCC1       -> ERCC1            :   store <encrypted_cckeys_message, cckey_distribution_message> on the ledger
     note over ERCC1
-        e.g., put_state(key=<"keydist_started".Enclave2_VK>, value=<encrypted_keys_message, key_distribution_message>)
+        e.g., put_state(key=<"keydist_started".Enclave2_VK>, value=<encrypted_cckeys_message, cckey_distribution_message>)
     end note
     return /'Admin1 -> ERCC1'/
   end group
 
   ref over Admin1, ERCC2
-    start-key-distribution endorsement
+    start-cckey-distribution endorsement
   end ref
 
-  Admin1 -> Orderer: submit start-key-distribution transaction
+  Admin1 -> Orderer: submit start-cckey-distribution transaction
 end group
 
 group complete key distribution
@@ -272,13 +272,13 @@ group complete key distribution
   ECC2          -> Enclave2         ++: ConfirmCCKeyDist(CC_Parameters)
   Enclave2      -> Enclave2         :   check CC_Parameters matches internal one
   Enclave2      -> ERCC2            ++: GetKeyDistStart(Public_Keys.Enclave2_VK)
-  return keydist_start_message <- <encrypted_keys_message, key_distribution_message> /'Enclave2 -> ERCC2'/
-  Enclave2      -> TLCC_Enclave2    ++: check_committed_data(keydist_start_message)
+  return cckeydist_start_message <- <encrypted_cckeys_message, cckey_distribution_message> /'Enclave2 -> ERCC2'/
+  Enclave2      -> TLCC_Enclave2    ++: check_committed_data(cckeydist_start_message)
   return true /'Enclave2 -> TLCC_Enclave2'/
   note left
     if false, abort
   end note
-  Enclave2      -> Enclave2         :   extract Enclave1_VK from keydist_start_message.key_distribution_message
+  Enclave2      -> Enclave2         :   extract Enclave1_VK from cckeydist_start_message.key_distribution_message
   Enclave2      -> ERCC2            ++: GetRegistration(Enclave1_VK)
   return Registered_Enclave1_Credentials /'Enclave2 -> ERCC2'/
   Enclave2      -> TLCC_Enclave2    ++: check_committed_data(Registered_Enclave1_Credentials)
@@ -286,25 +286,25 @@ group complete key distribution
   note left
     if false, abort
   end note
-  Enclave2      -> Enclave2         :   check Enclave1_VK matches in registration_message and keydist_start_message
+  Enclave2      -> Enclave2         :   check Enclave1_VK matches in registration_message and cckeydist_start_message
   Enclave2      -> Enclave2         :   check CC_Id in Registered_Enclave1_Credentials matches internal one
   note over Enclave2
     Since Enclave1's Credentials are committed, then Enclave1's Evidence has already been verified by ERCC.
     Hence, verifying Enclave1's Evidence at this point does not appear necessary.
   end note
   Enclave2      -> Enclave2         :   verify Sig_Enclave1
-  Enclave2      -> Enclave2         :   SEK, Chaincode_DK <- decrypt(keydist_start_message.encrypted_keys_message) with Enclave2_DK
-  Enclave2      -> Enclave2         :   extract Chaincode_EK from Chaincode_EK
+  Enclave2      -> Enclave2         :   SEK, Chaincode_DK <- decrypt(cckeydist_start_message.encrypted_keys_message) with Enclave2_DK
+  Enclave2      -> Enclave2         :   extract Chaincode_EK from Chaincode_DK
   Enclave2      -> Enclave2         :   Sig_Enclave2 <- sign Chaincode_EK with Enclave2_SK
-  Enclave2      -> Enclave2         :   key_confirmation_message <- <Enclave2_VK, Sig_Enclave2, Chaincode_EK>
+  Enclave2      -> Enclave2         :   cckey_confirmation_message <- <Enclave2_VK, Sig_Enclave2, Chaincode_EK>
 
-  return key_confirmation_message, /'Enclave2 -> ECC2'/
-  return key_confirmation_message, /'ECC2 -> E_Manager2'/
+  return cckey_confirmation_message, /'Enclave2 -> ECC2'/
+  return cckey_confirmation_message, /'ECC2 -> E_Manager2'/
 
-  return key_confirmation_message /'Admin2 -> E_Manager2'/
+  return cckey_confirmation_message /'Admin2 -> E_Manager2'/
 
   ref over ERCC1, Admin2, ERCC2, Orderer
-    key confirmation (same as that from Admin1)
+    chaincode key confirmation (same as that from Admin1)
   end ref
 
 end group
