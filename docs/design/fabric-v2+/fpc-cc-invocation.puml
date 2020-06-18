@@ -17,156 +17,173 @@ title Foot Box removed
 
 title Fabric Private Chaincode - Chaincode invocation
 
-actor "User Org1" as User1 order 9
-participant "ECC_Manager (syscc) Peer1_Org1" as Manager1 order 20
+actor "User" as User1 order 9
 
-participant "TLCC_Enclave Peer1_Org1" as TLCC1 order 25 #99FF99
+participant "Peer_CLI/\nClient SDK" as CLI order 10
 
-participant "ECC Peer1_Org1" as ECC1 order 30
-participant "ECC_Enclave" as Enclave1 order 30 #99FF99
+participant "Ledger_enclave" as TLCC1 order 45 #99FF99
 
-participant "ERCC Peer1_Org1" as ERCC1 order 50
-
-'participant "ECC Peer1_Org2" as ECC2 order 60
-'participant "ERCC Peer1_Org2" as ERCC2 order 62
-'
-'participant "ECC Peer1_Org3" as ECC3 order 70
-'participant "ERCC Peer1_Org3" as ERCC3 order 72
+participant "Peer" as Peer order 25
+participant "FPC_manager" as Manager1 order 26
+participant "ERCC" as ERCC1 order 50
 
 ref over User1, ERCC1
   see fpc-registration-new.puml
+  |||
 end ref
 |||
 
-activate User1
+User1 -> CLI ++: invoke <CC_NAME,..., args>
 
-User1 -> ERCC1 ++: getECCInfo(CC_NAME)
-note right User1: The user may retrieve the ECC info for a specific <CC_NAME, ...>
-return ECCInfo = List<<ECC1_S_PK, ECC1_E_PK, ... , ATTESTATION>, ...>
+group prepare FPC proposal
 
-User1 -> User1 : verify ECCInfo
-note right #FFaa00
-  Only necessary iff User1 is not member of Org1 (otherwise authenticated response enough)
-  In that case, in general user also has to query different peers from different orgs,
-  enough to satisfy a quorum as necessary for the lifecycle endorsement policy and channel
-  configuration changes.
-  In this case, though, assuming client has a reference ECC_MR, TLCC_MR, CH_id
-  it might be sufficient to perform verification done in ""verify and store"" by peers in
-  ""register attestation"" flow.
-  (TBD)
+CLI -> ERCC1 ++: queryECCInfos(CC_NAME)
+return ECCInfos = List<Enclave_PK, Chaincode_EK, ... , ATTESTATION>, ...>
+
+CLI -> CLI: verify ECCInfos
+note right
+  NOTE ECCInfos contains a list of all FPC enclave registered for CC_NAME.
+
+  Verify performs the same verification steps (i.e., attestation
+  verification, etc.) as the registration step performed by ERCC.
+  See fpc-registration.puml for more details.
+
+  Note that this verification is only necessary iff User is not member
+  of Org1, otherwise authenticated response enough. In that case, the
+  user also has to query different peers from different orgs in order
+  to satisfy a quorum as necessary for the lifecycle endorsement policy
+  and channel configuration changes.
+
+  NOTE: For MVP, ECCInfo only contains Chaincode_EK and no ECCInfo verification is needed.
 end note
 
+CLI -> CLI : generate r_key
+note right
+    generate a symmetric key to
+    encrypt the FPC chaincode result
+end note
 
-loop for all/"enough" endorsers
+CLI -> CLI : args_ECC <- encrypt <args, r_key> with Chaincode_EK
 
-  User1 -> User1 : args_ECC1 <- encrypt args with ECC1_E_PK
+end
 
-  User1 -> ECC1 ++: send proposal (args_ECC1)
+group invoke
+  CLI -> Peer ++: send proposal <CC_NAME, args_ECC, ...>
 
-  group invoke
+  alt FPC Chaincode is not running
+      note right Peer
+          handled implicitly by the peer which determines
+          when to call run() from external builder.
+      end note
 
-    ECC1 -> Enclave1 ++: check enclave is running
-    return
+      create participant "FPC_stub" as ECC1 order 26
+      Peer -> ECC1 ++: call external builder run()
+      note right
+          NOTE: Any failure in ECC or FPC_Enclave will cause
+          ecc (and docker) dieing so peer will notice it.
+      end note
 
-    alt enclave does not exists
+
       ECC1 -> Manager1 ++: get sealed state
-      note right Manager1 : get from local storage
+      note right Manager1
+        ECC manager has access to peer local
+        storage through external builder.
+      end note
       return
+
+      create participant "FPC_stub_enclave" as Enclave1 order 30 #99FF99
       ECC1 -> Enclave1 ++ : start enclave with sealed state
       Enclave1 -> Enclave1 : unseal state and restore
-      Enclave1 <-> TLCC1: establish attested secure channel
-      note over TLCC1
-        protocol is SIGMA with 1-way local attestation of TLCC
-        with reportbody = <CH_id, TLCC_inst_id> where
-        TLCC_inst_id as unique (randomly generated) identifier of
-        this particular TLCC __instance__
-      end note
-      note over Enclave1
-        Verifies local attestation against TLCC_MR and CH_id
-        from sealed state. Remembers TLCC_inst_id.
-      end note
       return
-    else
-      |||
+      return
+  end
 
-      ECC1 -> Enclave1 ++: invoke (proposal(args_ECC))
+      Peer -> ECC1 ++: invoke (proposal(args_ECC), CTX)
+      note right
+        Transaction context (CTX) used for all interactions
+        with both, the untrusted ledger und trusted ledger (Ledger_enclave)
+        within the invocation. It ensures that all state accesses
+        are from the same state view (block height).
+      end note
+      ECC1 -> Enclave1 ++: invoke (proposal(args_ECC), CTX)
+
+      Enclave1 <-> TLCC1: establish secure channel based on local attestation
 
       Enclave1 -> Enclave1 : verify proposal
 
-      Enclave1 -> TLCC1 ++: verify client identity using MSP
+      Enclave1 -> TLCC1 ++: verify (proposal.creator, CTX)
       note over TLCC1
-      TLCC access is needed to check that
-      client identity comes with a certificate
-      that is a proper root of trust.
+      Ledger_enclave access is needed to check that the creator
+      (client identity) passes MSP validation, that is,
+      it comes with a certificate that is a proper root
+      of trust.
       end note
       return
 
 
-      Enclave1 -> Enclave1 : args <- decrypt args_ECC
+      Enclave1 -> Enclave1 : args, r_key <- decrypt args_ECC using Chaincode_DK
 
       note right
-        If proposal contains optional Req_TLCC_inst_id parameter,
-        make sure it matches own TLCC_inst_id, otherwise abort.
+        If proposal contains optional Req_ledger_enclave_inst_id parameter,
+        make sure it matches own Ledger_enclave_inst_id, otherwise abort.
         This is necessary for CC2CC calls to make sure the two chaincodes
-        interact with the same TLCC instance and hence have consistent
+        interact with the same Ledger_enclave instance and hence have consistent
         views on ledger state.
       end note
-      note over Enclave2 #FFaa00
-        **MST**: Actually, even for a single instance, how do we make sure
-        different queries to TLCC look at the same state version and prevent
-        state from being updated in-between? This seems an issue fabric also
-        has to deal with? Is there something like a view number? If so, the
-        instance id might have to be replaced by this view number as optional
-        parameter (and passed in each getState call?
-      end note
 
-      create participant "Chaincode" as Chaincode order 30 #99FF99
-      Enclave1 -> Chaincode ++ : invoke
-      |||
-      ref over Chaincode
+      Enclave1 -> Enclave1: result <- invoke(args, CTX)
+      ref over Enclave1
         Chaincode execution
         see fpc-chaincode-execution.puml
       end ref
 
-      return result
 
-
-      Enclave1 -> Enclave1 : result_??? <- encrypt result with ???
-      note right #FFaa00
-        should the result be encrypted with the user pk??
-        **MST**: To allow potentially also anonymous clients i would not tie
-        it necessarily identities and also not to force them to have encryption PKs.
-        Would seem easier (and more efficient), in request decide on a "session-key"
-        (you could either use the implicit hybrid encryption key from the request or
-         explicitly add a response key to the request: this also ensures the binding
-         of the response to the particular request)
+      Enclave1 -> Enclave1 : ECC_result <- encrypt <result> with r_key
+      note right
+        The encryption is via authenticated symmetric cipher like aes-gcm
       end note
-      Enclave1 -> Enclave1 : SIGN_ECC <- sign <args, read/writeset, result> with ECC_S_SK
-      return SIG_ECC
+      Enclave1 -> Enclave1 : SIG_Enclave <- sign <args, read/writeset, ECC_result> with Enclave_SK
+      return <ECC_result, SIG_Enclave>
 
-    end
+    return <ECC_result, SIG_Enclave>
+
+    Peer -> Peer : create proposal response <args, read/writeset, result=<ECC_result, SIG_Enclave, Enclave_PK>, ...>
 
     return proposal response
+end
 
-    User1 -> User1 : args_ECC2 <- encrypt args with ECC2_E_PK
+group complete transaction
+    note right CLI
+        Invoke at enough endorsing peers to satisfy
+        endorsement policy and collect proposal responses.
 
-  end
-    |||
+        NOTE: For MVP we support a designated endorsing peer only
+    end note
+    loop for all/"enough" endorsers
 
+        ref over CLI
+            invoke
+        end
+    end
+    CLI -> CLI : form transaction
+
+    create entity Orderer order 100
+    CLI -> Orderer : submit transaction
+end
+
+group result decryption
+    CLI -> CLI : result <- decrypt ECC_result with r_key
 end
 
 
-User1 -> User1 : form transaction
+return result
 
-create entity Orderer order 100
-User1 -> Orderer : send transaction
-
-deactivate User1
 |||
 
 ref over User1, Orderer
     continue with validation phase after ordering
-    see fpc-validation-msp.puml
+    see fpc-validation.puml
+    |||
 end ref
 
 @enduml
