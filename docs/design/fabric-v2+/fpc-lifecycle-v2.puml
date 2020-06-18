@@ -23,7 +23,7 @@ end box
 
 entity Orderer order 80
 
-group chaincode inspection
+group inspection
     Admin -> Admin : inspect FPC chaincode,\nbuild enclave binary\nand **mrenclave**
     note right Admin
     By generating **mrenclave** based
@@ -38,7 +38,7 @@ note over Peer_CLI
     additional functionality to ease FPC specific usability.
 end note
 
-group chaincode package
+group package
     Admin -> Peer_CLI++ : lifecycle\nchaincode package
     note right
     **Chaincode package** as tar.gz with
@@ -85,7 +85,7 @@ ref over Admin, Peer_CLI, Peer2
 end
 
 group approveformyorg
-    Admin -> Peer_CLI++ : lifecycle\nchaincode approveformyorg\n...**--version mrenclave**...
+    Admin -> Peer_CLI++ : lifecycle\nchaincode approveformyorg\n(version=**mrenclave**)
     note right
     **Chaincode Definition for FPC Chaincode** including
     Name: cc_name,
@@ -133,7 +133,12 @@ loop until enough approvals
 
     Note that other orgs follow the same lifecycle steps as
     illustrated here, in particular, they inspect the FPC
-    chaincode and must approve the same **mrenclave** (and hence identical code).  Requiring identical code is a deparature of the new capability added to Fabric v2 in allowing different peers to have different implementations. Unfortunately, due to confidentiality requirements, such a feature is not possible for FPC.
+    chaincode and must approve the same **mrenclave** (and
+    hence identical code).  Requiring identical code is a
+    departure of the new capability added to Fabric v2 in
+    allowing different peers to have different implementations.
+    Unfortunately, due to confidentiality requirements, such
+    a feature is not possible for FPC.
     end note
 
     Peer_CLI -> Peer1++ : checkcommitreadiness
