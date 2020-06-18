@@ -59,9 +59,17 @@ group key generation
   Admin1        -> Admin1       :   fill CC_Parameters structure
   Admin1        -> E_Manager1   ++: GenerateCCKeys(CC_Parameters)
 
-  E_Manager1  -> ECC1           ++: GenerateCCKeys(CC_Parameters)
+  E_Manager1    -> ERCC1        ++: check Enclave1 registration
+  return boolean b
+  E_Manager1    -> ECC1         ++: if(b) then GenerateCCKeys(CC_Parameters)
   ECC1          -> Enclave1     ++: GenerateCCKeys(CC_Parameters)
   Enclave1      -> Enclave1     :   check input CC_Parameters against internal CC_Parameters
+
+  note over Enclave1
+    It is not necessary to enforce that Enclave1 has already been registered in ERCC.
+    As this is the "first" time that keys are generated,
+    there is no security-critical state and/or other keys to protect.
+  end note
 
   Enclave1      -> Enclave1     :   SEK, Chaincode_DK <- keyGen()
   Enclave1      -> Enclave1     :   extract Chaincode_EK from Chaincode_DK
