@@ -85,7 +85,7 @@ ref over Admin, Peer_CLI, Peer2
 end
 
 group approveformyorg
-    Admin -> Peer_CLI++ : lifecycle\nchaincode approveformyorg
+    Admin -> Peer_CLI++ : lifecycle\nchaincode approveformyorg\n...**--version mrenclave**...
     note right
     **Chaincode Definition for FPC Chaincode** including
     Name: cc_name,
@@ -94,10 +94,6 @@ group approveformyorg
     Endorsement Policy: (2of3),
     Plugins: ecc-vscc (FPC validation plugin)
 
-    NOTE: the admin approves the chaincode definition
-    including the **mrenclave** that was computed during
-    code inspection.
-
     NOTE: the endorsement policy specifies how many
     enclaves are expected to run the chaincode. The MVP
     implementation will support a "designated" endorsing
@@ -105,7 +101,7 @@ group approveformyorg
     Hence, initially, the endorsement policy will require
     a single endorser. FPC is expected to support
     multiple endorsers in the future. To have an
-    idea of how FPC will enclave multiple endorsers,
+    idea of how FPC will enable multiple endorsers,
     please check out key distribution diagram.
 
     NOTE: FPC does not support custom user plugins.
@@ -137,7 +133,7 @@ loop until enough approvals
 
     Note that other orgs follow the same lifecycle steps as
     illustrated here, in particular, they inspect the FPC
-    chaincode and generate **mrenclave** accordingly.
+    chaincode and must approve the same **mrenclave** (and hence identical code).  Requiring identical code is a deparature of the new capability added to Fabric v2 in allowing different peers to have different implementations. Unfortunately, due to confidentiality requirements, such a feature is not possible for FPC.
     end note
 
     Peer_CLI -> Peer1++ : checkcommitreadiness
