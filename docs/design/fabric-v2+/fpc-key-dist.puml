@@ -12,7 +12,7 @@
 hide footbox
 title Foot Box removed
 
-title Fabric Private Chaincode - Chaincode Key generation, distribution, confirmation 
+title Fabric Private Chaincode - Chaincode Key generation, distribution, registration 
 
 actor       "Admin_Org1" as Admin1
 participant "E_Manager Peer_Org1" as E_Manager1
@@ -78,33 +78,30 @@ group chaincode key generation
     - Chaincode_EK and Chaincode_DK denote the public and private encryption key pair
   end note
   Enclave1      -> Enclave1     :   Sig_Enclave1 <- sign Chaincode_EK with Enclave1_SK
-    note over Enclave1
-        Confirmation statement that the enclave has Chaincode_DK.
-    end note
 
-  Enclave1      -> Enclave1     :   cckey_confirmation_message <- <Enclave1_VK, Sig_Enclave1, Chaincode_EK>
+  Enclave1      -> Enclave1     :   cckey_registration_message <- <Enclave1_VK, Sig_Enclave1, Chaincode_EK>
 
-  return cckey_confirmation_message /'ECC1 -> Enclave1    '/
-  return cckey_confirmation_message /'E_Manager1 -> ECC1  '/
+  return cckey_registration_message /'ECC1 -> Enclave1    '/
+  return cckey_registration_message /'E_Manager1 -> ECC1  '/
 
-  return cckey_confirmation_message /'Admin1 -> E_Manager1'/
+  return cckey_registration_message /'Admin1 -> E_Manager1'/
 
 end group
 
-group chaincode key confirmation
+group chaincode key registration
 
   note right of Admin1
-    Key confirmation is desirable in multi-org settings.
+    Key registration is desirable in multi-org settings.
     Assuming an org is running an enclave, other orgs may
     want to ensure that the private chaincode transaction
     can proceed in the case the running enclave is
     unavailable - for any possible or malicious cause.
-    Key confirmation can ensure that backup enclave are
+    Key registration can ensure that backup enclave are
     ready to take over and/or contribute.
   end note
-  group chaincode-key-confirmation endorsement
-    Admin1  -> Admin1       :   cckey_confirmation_message <- <Enclave1_VK, Sig_Enclave1, Chaincode_EK>
-    Admin1  -> ERCC1        ++: ConfirmCCKeys(cckey_confirmation_message)
+  group chaincode-key-registration endorsement
+    Admin1  -> Admin1       :   cckey_registration_message <- <Enclave1_VK, Sig_Enclave1, Chaincode_EK>
+    Admin1  -> ERCC1        ++: RegisterCCKeys(cckey_registration_message)
     ERCC1   -> ERCC1        :   check that tx proposal creator is Admin
     ERCC1   -> ERCC1        :   check that admin.org and enclave.org match
     note over ERCC1
@@ -124,9 +121,9 @@ group chaincode key confirmation
     note over ERCC1
         if false, abort
     end note
-    ERCC1   -> ERCC1         :  store cckey_confirmation_message on the ledger
+    ERCC1   -> ERCC1         :  store cckey_registration_message on the ledger
     note over ERCC1
-        E.g., put_state(key=<"keydist_confirmed".Enclave1_VK>, value=cckey_confirmation_message)
+        E.g., put_state(key=<"keydist_registered".Enclave1_VK>, value=cckey_registration_message)
         This is the proof (stored on the ledger) that the enclave has the CC keys.
         In a multi-org setting, the proof informs of enclave availability.
     end note
@@ -136,10 +133,10 @@ group chaincode key confirmation
   end group
 
   ref over Admin1, ERCC2
-    chaincode-key-confirmation endorsement
+    chaincode-key-registration endorsement
   end ref
 
-  Admin1 -> Orderer: submit chaincode-key-confirmation transaction
+  Admin1 -> Orderer: submit chaincode-key-registration transaction
 
 end group
 
@@ -267,9 +264,9 @@ end group
 
 group complete key distribution
   Admin2        -> Admin2           :   fill CC_Parameters
-  Admin2        -> E_Manager2       ++: ConfirmCCKeyDist(CC_Parameters)
-  E_Manager2    -> ECC2             ++: ConfirmCCKeyDist(CC_Parameters)
-  ECC2          -> Enclave2         ++: ConfirmCCKeyDist(CC_Parameters)
+  Admin2        -> E_Manager2       ++: RegisterCCKeyDist(CC_Parameters)
+  E_Manager2    -> ECC2             ++: RegisterCCKeyDist(CC_Parameters)
+  ECC2          -> Enclave2         ++: RegisterCCKeyDist(CC_Parameters)
   Enclave2      -> Enclave2         :   check CC_Parameters matches internal one
   Enclave2      -> ERCC2            ++: GetKeyDistStart(Public_Keys.Enclave2_VK)
   return cckeydist_start_message <- <encrypted_cckeys_message, cckey_distribution_message> /'Enclave2 -> ERCC2'/
@@ -296,15 +293,15 @@ group complete key distribution
   Enclave2      -> Enclave2         :   SEK, Chaincode_DK <- decrypt(cckeydist_start_message.encrypted_keys_message) with Enclave2_DK
   Enclave2      -> Enclave2         :   extract Chaincode_EK from Chaincode_DK
   Enclave2      -> Enclave2         :   Sig_Enclave2 <- sign Chaincode_EK with Enclave2_SK
-  Enclave2      -> Enclave2         :   cckey_confirmation_message <- <Enclave2_VK, Sig_Enclave2, Chaincode_EK>
+  Enclave2      -> Enclave2         :   cckey_registration_message <- <Enclave2_VK, Sig_Enclave2, Chaincode_EK>
 
-  return cckey_confirmation_message, /'Enclave2 -> ECC2'/
-  return cckey_confirmation_message, /'ECC2 -> E_Manager2'/
+  return cckey_registration_message, /'Enclave2 -> ECC2'/
+  return cckey_registration_message, /'ECC2 -> E_Manager2'/
 
-  return cckey_confirmation_message /'Admin2 -> E_Manager2'/
+  return cckey_registration_message /'Admin2 -> E_Manager2'/
 
   ref over ERCC1, Admin2, ERCC2, Orderer
-    chaincode key confirmation (same as that from Admin1)
+    chaincode key registration (same as that from Admin1)
   end ref
 
 end group
