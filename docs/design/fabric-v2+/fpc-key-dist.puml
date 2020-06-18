@@ -253,6 +253,9 @@ group chaincode key distribution
     ERCC1       -> TLCC_Enclave1++: can_endorse(Enclave2_VK)
     return true
     ERCC1       -> ERCC1            :   check Sig_Enclave1
+    ERCC1       -> ERCC1            :   check Enclave1 previously registered cckey_distribution_message.Chaincode_EK
+    ERCC1       -> ERCC1            :   extract CC_Id from Enclave1_Credentials
+    ERCC1       -> ERCC1            :   check cckey_distribution_message.Chaincode_EK and get_state(CC_Id."Chaincode_EK") match
     ERCC1       -> ERCC1            :   store <encrypted_cckeys_message, cckey_distribution_message> on the ledger
     note over ERCC1
         e.g., put_state(key=<"keydist_started".Enclave2_VK>, value=<encrypted_cckeys_message, cckey_distribution_message>)
