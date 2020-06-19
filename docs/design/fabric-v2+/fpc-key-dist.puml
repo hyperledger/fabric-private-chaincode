@@ -83,6 +83,10 @@ group chaincode key generation
 
   Enclave1      -> Enclave1     :   cckey_registration_message <- <Enclave1_VK, Sig_Enclave1, Chaincode_EK>
 
+  note over Enclave1
+    TODO: seal keys
+  end note
+
   return cckey_registration_message /'ECC1 -> Enclave1    '/
   return cckey_registration_message /'Peer1_CLI -> ECC1  '/
 
@@ -302,6 +306,9 @@ group complete key distribution
   Enclave2      -> Enclave2         :   verify Sig_Enclave1
   Enclave2      -> Enclave2         :   SEK, Chaincode_DK <- decrypt(cckeydist_start_message.encrypted_keys_message) with Enclave2_DK
   Enclave2      -> Enclave2         :   extract Chaincode_EK from Chaincode_DK
+  note over Enclave2
+    TODO: seal keys
+  end note
   Enclave2      -> Enclave2         :   Sig_Enclave2 <- sign Chaincode_EK with Enclave2_SK
   Enclave2      -> Enclave2         :   cckey_registration_message <- <Enclave2_VK, Sig_Enclave2, Chaincode_EK>
 
