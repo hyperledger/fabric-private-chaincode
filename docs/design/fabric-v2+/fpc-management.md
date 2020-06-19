@@ -55,6 +55,8 @@ FPC currently supports only a single enclave as endorser, running at a designate
 
 ### Create Chaincode Enclave
 
+```peer lifecycle chaincode createenclave -n <chaincode id>```
+
 This command performs the following operations:
 * the creation of a new chaincode enclave,
 which generates its enclave-specific cryptographic keys and produces a hardware-based attestation;
@@ -70,7 +72,6 @@ the `lifecycle chaincode querycommitted` command.
 A successful command execution returns `0`,
 indicating that the chaincode enclave is ready to endorse transaction proposals.
 
-```peer lifecycle chaincode createenclave -n <chaincode id>```
 
 ### Key Distribution
 
