@@ -15,7 +15,7 @@ title Foot Box removed
 title Fabric Private Chaincode - Chaincode Key generation, distribution, registration 
 
 actor       "Admin_Org1" as Admin1
-participant "E_Manager Peer_Org1" as E_Manager1
+participant "Peer_CLI Peer_Org1" as Peer1_CLI
 participant "ECC Peer_Org1" as ECC1
 participant "ECC_Enclave Peer_Org1" as Enclave1 #99FF99
 participant "ERCC Peer_Org1" as ERCC1
@@ -24,16 +24,16 @@ participant "TLCC_Enclave Peer1_Org1" as TLCC_Enclave1 #99FF99
 participant Orderer as Orderer
 
 actor	    "Admin_Org2" as Admin2
-participant "E_Manager Peer_Org2" as E_Manager2
+participant "Peer_CLI Peer_Org2" as Peer2_CLI
 participant "ECC Peer_Org2" as ECC2
 participant "ECC_Enclave Peer_Org2" as Enclave2 #99FF99
 participant "ERCC Peer_Org2" as ERCC2
 participant "TLCC_Enclave Peer_Org1" as TLCC_Enclave2 #99FF99
 
-ref over Admin1, E_Manager1, ECC1, Enclave1, ERCC1, TLCC_Enclave1
+ref over Admin1, Peer1_CLI, ECC1, Enclave1, ERCC1, TLCC_Enclave1
     create enclave, register enclave (see fpc-registration diagram)
 end ref
-ref over Admin2, E_Manager2, ECC2, Enclave2, ERCC2, TLCC_Enclave2
+ref over Admin2, Peer2_CLI, ECC2, Enclave2, ERCC2, TLCC_Enclave2
     create enclave, register enclave (see fpc-registration diagram)
 end ref
 
@@ -57,11 +57,11 @@ group chaincode key generation
     using Enclave2.
   end note
   Admin1        -> Admin1       :   fill CC_Parameters structure
-  Admin1        -> E_Manager1   ++: GenerateCCKeys(CC_Parameters)
+  Admin1        -> Peer1_CLI    ++: GenerateCCKeys(CC_Parameters)
 
-  E_Manager1    -> ERCC1        ++: check Enclave1 registration
+  Peer1_CLI    -> ERCC1         ++: check Enclave1 registration
   return boolean b
-  E_Manager1    -> ECC1         ++: if(b) then GenerateCCKeys(CC_Parameters)
+  Peer1_CLI    -> ECC1          ++: if(b) then GenerateCCKeys(CC_Parameters)
   ECC1          -> Enclave1     ++: GenerateCCKeys(CC_Parameters)
   Enclave1      -> Enclave1     :   check input CC_Parameters against internal CC_Parameters
 
@@ -71,8 +71,10 @@ group chaincode key generation
     there is no security-critical state and/or other keys to protect.
   end note
 
-  Enclave1      -> Enclave1     :   SEK, Chaincode_DK <- keyGen()
-  Enclave1      -> Enclave1     :   extract Chaincode_EK from Chaincode_DK
+  note over Enclave1
+    Generate the State Encryption Key (SEK) and the chaincode-specific encryption/decryption key pair.
+  end note
+  Enclave1      -> Enclave1     :   SEK, Chaincode_DK, Chaincode_EK <- keyGen()
   note over Enclave1
     - SEK denotes the state encryption key
     - Chaincode_EK and Chaincode_DK denote the public and private encryption key pair
@@ -82,9 +84,9 @@ group chaincode key generation
   Enclave1      -> Enclave1     :   cckey_registration_message <- <Enclave1_VK, Sig_Enclave1, Chaincode_EK>
 
   return cckey_registration_message /'ECC1 -> Enclave1    '/
-  return cckey_registration_message /'E_Manager1 -> ECC1  '/
+  return cckey_registration_message /'Peer1_CLI -> ECC1  '/
 
-  return cckey_registration_message /'Admin1 -> E_Manager1'/
+  return cckey_registration_message /'Admin1 -> Peer1_CLI'/
 
 end group
 
@@ -164,13 +166,13 @@ group chaincode key distribution
     both the chaincode definition and the enclave's public signing key.
   end note
 
-  Admin1        -> E_Manager1     ++: DistributeCCKeys(Enclave2_Credentials)
-  E_Manager1    -> ECC1           ++: DistributeCCKeys(Enclave2_Credentials)
-  ECC1          -> Enclave1       ++: DistributeCCKeys(Enclave2_Credentials)
+  Admin1        -> Peer1_CLI        ++: DistributeCCKeys(Enclave2_Credentials)
+  Peer1_CLI     -> ECC1             ++: DistributeCCKeys(Enclave2_Credentials)
+  ECC1          -> Enclave1         ++: DistributeCCKeys(Enclave2_Credentials)
   Enclave1      -> Enclave1         : extract Enclave2_VK from Enclave2_Credentials
-  Enclave1      -> ERCC1          ++: GetRegistration(Enclave2_VK)
+  Enclave1      -> ERCC1            ++: GetRegistration(Enclave2_VK)
   return Registered_Enclave2_Credentials /'Enclave1 -> ERCC1'/
-  Enclave1      -> TLCC_Enclave1  ++: check_committed_data(Registered_Enclave2_Credentials)
+  Enclave1      -> TLCC_Enclave1    ++: check_committed_data(Registered_Enclave2_Credentials)
   note left of TLCC_Enclave1
     The actual implementation of check_committed_data
     is out of scope here. A possible solution can be
@@ -225,8 +227,8 @@ group chaincode key distribution
   Enclave1      -> Enclave1         :   cckey_distribution_message <- <Enclave1_VK, Enclave2_VK, Chaincode_EK, Sig_Enclave1>
 
   return encrypted_cckeys_message, cckey_distribution_message /'ECC1 -> Enclave1'/
-  return encrypted_cckeys_message, cckey_distribution_message /'E_Manager1 -> ECC1'/
-  return encrypted_cckeys_message, cckey_distribution_message /'Admin1 -> E_Manager1'/
+  return encrypted_cckeys_message, cckey_distribution_message /'Peer1_CLI -> ECC1'/
+  return encrypted_cckeys_message, cckey_distribution_message /'Admin1 -> Peer1_CLI'/
 
   note right Admin1
     Chaincode key distribution is in progress. We need a means to transfer the message with
@@ -272,8 +274,8 @@ end group
 
 group complete key distribution
   Admin2        -> Admin2           :   fill CC_Parameters
-  Admin2        -> E_Manager2       ++: RegisterCCKeyDist(CC_Parameters)
-  E_Manager2    -> ECC2             ++: RegisterCCKeyDist(CC_Parameters)
+  Admin2        -> Peer2_CLI        ++: RegisterCCKeyDist(CC_Parameters)
+  Peer2_CLI     -> ECC2             ++: RegisterCCKeyDist(CC_Parameters)
   ECC2          -> Enclave2         ++: RegisterCCKeyDist(CC_Parameters)
   Enclave2      -> Enclave2         :   check CC_Parameters matches internal one
   Enclave2      -> ERCC2            ++: GetKeyDistStart(Public_Keys.Enclave2_VK)
@@ -304,9 +306,9 @@ group complete key distribution
   Enclave2      -> Enclave2         :   cckey_registration_message <- <Enclave2_VK, Sig_Enclave2, Chaincode_EK>
 
   return cckey_registration_message, /'Enclave2 -> ECC2'/
-  return cckey_registration_message, /'ECC2 -> E_Manager2'/
+  return cckey_registration_message, /'ECC2 -> Peer2_CLI'/
 
-  return cckey_registration_message /'Admin2 -> E_Manager2'/
+  return cckey_registration_message /'Admin2 -> Peer2_CLI'/
 
   ref over ERCC1, Admin2, ERCC2, Orderer
     chaincode key registration (same as that from Admin1)
