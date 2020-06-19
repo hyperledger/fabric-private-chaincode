@@ -62,6 +62,11 @@ which generates its enclave-specific cryptographic keys and produces a hardware-
 * the generation within the enclave of chaincode-specific cryptographic keys,
 which are then registered on the Enclave Registry (chaincode).
 
+The command requires that the FPC chaincode definition is already committed on the channel.
+Therefore, the command must follow the `lifecycle chaincode commit` command.
+The admin can preliminarly check the successfully committed definition through
+the `lifecycle chaincode querycommitted` command.
+
 A successful command execution returns `0`,
 indicating that the chaincode enclave is ready to endorse transaction proposals.
 
