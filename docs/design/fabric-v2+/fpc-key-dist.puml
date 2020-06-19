@@ -167,9 +167,9 @@ group chaincode key distribution
   Enclave1      -> Enclave1         : extract Enclave2_VK from Enclave2_Credentials
   Enclave1      -> ERCC1            ++: GetRegistration(Enclave2_VK)
   return Registered_Enclave2_Credentials /'Enclave1 -> ERCC1'/
-  Enclave1      -> TLCC_Enclave1    ++: check_committed_data(Registered_Enclave2_Credentials)
+  Enclave1      -> TLCC_Enclave1    ++: check_ercc_committed_data(Registered_Enclave2_Credentials)
   note left of TLCC_Enclave1
-    The actual implementation of check_committed_data
+    The actual implementation of check_ercc_committed_data
     is out of scope here. A possible solution can be
     sketched as follows. A principal asks TLCC whether
     a chaincode (say ERCC) has stored a key
@@ -264,7 +264,7 @@ group complete key distribution
   Enclave2      -> Enclave2         :   check CC_Parameters matches internal one
   Enclave2      -> ERCC2            ++: GetKeyDistStart(Public_Keys.Enclave2_VK)
   return cckeydist_start_message <- <encrypted_cckeys_message, cckey_distribution_message> /'Enclave2 -> ERCC2'/
-  Enclave2      -> TLCC_Enclave2    ++: check_committed_data(cckeydist_start_message)
+  Enclave2      -> TLCC_Enclave2    ++: check_ercc_committed_data(cckeydist_start_message)
   return true /'Enclave2 -> TLCC_Enclave2'/
   note left
     if false, abort
@@ -272,7 +272,7 @@ group complete key distribution
   Enclave2      -> Enclave2         :   extract Enclave1_VK from cckeydist_start_message.key_distribution_message
   Enclave2      -> ERCC2            ++: GetRegistration(Enclave1_VK)
   return Registered_Enclave1_Credentials /'Enclave2 -> ERCC2'/
-  Enclave2      -> TLCC_Enclave2    ++: check_committed_data(Registered_Enclave1_Credentials)
+  Enclave2      -> TLCC_Enclave2    ++: check_ercc_committed_data(Registered_Enclave1_Credentials)
   return true /'Enclave2 -> TLCC_Enclave2'/
   note left
     if false, abort
