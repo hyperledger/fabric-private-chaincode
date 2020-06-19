@@ -96,15 +96,6 @@ end group
 
 group chaincode key registration
 
-  note right of Admin1
-    Key registration is desirable in multi-org settings.
-    Assuming an org is running an enclave, other orgs may
-    want to ensure that the private chaincode transaction
-    can proceed in the case the running enclave is
-    unavailable - for any possible or malicious cause.
-    Key registration can ensure that backup enclave are
-    ready to take over and/or contribute.
-  end note
   group chaincode-key-registration endorsement
     Admin1  -> Admin1       :   cckey_registration_message <- <Enclave1_VK, Sig_Enclave1, Chaincode_EK>
     Admin1  -> ERCC1        ++: RegisterCCKeys(cckey_registration_message)
