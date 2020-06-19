@@ -235,13 +235,6 @@ group chaincode key distribution
     ERCC1       -> ERCC1            :   check Enclave1_VK's and Enclave2_VK's Credentials are registered
     ERCC1       -> ERCC1            :   check Enclave1_Credentials and Enclave2_Credentials have same CC_Id
     note over ERCC1
-        - we cannot check whether Enclave1 can endorse,
-            because the chaincode definition might have changed,
-            and the keys are now being distributed to a new enclave.
-        - similarly, we cannot check version, sequence, endorsement
-            policy fields of the chaincode definition.
-        - however, we can enforce that the recipient enclave (1) matches
-            with the current chaincode definition, and (2) can do useful work.
     end note
     ERCC1       -> TLCC_Enclave1++: can_endorse(Enclave2_VK)
     return true
