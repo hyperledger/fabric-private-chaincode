@@ -4,14 +4,6 @@ This document defines the management APIs of FPC.
 Such definition builds on the design diagrams describing the enclave creation, 
 the enclave registration and the chaincode key generation.
 
-[//]: # (## Enclave and Chaincode APIs)
-
-[//]: # (### Create Chaincode Enclave)
-
-[//]: # (### Register Chaincode Enclave)
-
-[//]: # (### Generate FPC Chaincode Keys)
-
 ## Admin Commands
 
 ### Extended Fabric v2 Lifecycle Chaincode Commands
@@ -28,7 +20,7 @@ This commands has a new option `--lang fpc-c` to specify the FPC chaincode type.
 #### Approveformyorg
 
 This command has the following requirements *when it is used for FPC chaincodes*:
-* `--version <MRENCLAVE>`, the version of the FPC chaincode must contain a string that represent the identity of the enclave. This is the same identity which the trusted hardware computes and attests to.
+* `--version <base64-encoded MRENCLAVE>`, the version of the FPC chaincode must contain a string that represent the identity of the enclave. This is the same identity which the trusted hardware computes and attests to. The string can be conveniently found in the `mrenclave` output file of the `generate_mrenclave.sh` script.
 * `--signature-policy string`, the endorsement policy must be a valid FPC endorsement policy.
 FPC currently supports only a single enclave as endorser, running at a designated peer.
 * `--endorsement-plugin string`, this flag is not supported in FPC.
@@ -37,7 +29,7 @@ FPC currently supports only a single enclave as endorser, running at a designate
 #### Checkcommitreadiness
 
 This command has the following requirements *when it is used for FPC chaincodes*:
-* `--version <MRENCLAVE>`, the version of the FPC chaincode must contain a string that represent the identity of the enclave. This is the same identity which the trusted hardware computes and attests to.
+* `--version <base64-encoded MRENCLAVE>`, the version of the FPC chaincode must contain a string that represent the identity of the enclave. This is the same identity which the trusted hardware computes and attests to. The string can be conveniently found in the `mrenclave` output file of the `generate_mrenclave.sh` script.
 * `--signature-policy string`, the endorsement policy must be a valid FPC endorsement policy.
 FPC currently supports only a single enclave as endorser, running at a designated peer.
 * `--endorsement-plugin string`, this flag is not supported in FPC.
@@ -46,7 +38,7 @@ FPC currently supports only a single enclave as endorser, running at a designate
 #### Commit
 
 This command has the following requirements *when it is used for FPC chaincodes*:
-* `--version <MRENCLAVE>`, the version of the FPC chaincode must contain a string that represent the identity of the enclave. This is the same identity which the trusted hardware computes and attests to.
+* `--version <base64-encoded MRENCLAVE>`, the version of the FPC chaincode must contain a string that represent the identity of the enclave. This is the same identity which the trusted hardware computes and attests to. The string can be conveniently found in the `mrenclave` output file of the `generate_mrenclave.sh` script.
 * `--signature-policy string`, the endorsement policy must be a valid FPC endorsement policy.
 FPC currently supports only a single enclave as endorser, running at a designated peer.
 * `--endorsement-plugin string`, this flag is not supported in FPC.
