@@ -188,12 +188,8 @@ group chaincode key distribution
     if the recipient enclave is an eligible endorser.
   end note
   note right
-    TLCC should check that the recipient enclave's MRENCLAVE
-    matches the chaincode definition's MRENCLAVE.
-    This could enable key distribution from an old cc version,
-    with a different MRENCLAVE.
-    Notice: in this case there cannot be also a check
-    can_endorse(Enclave1_VK) -- or it should be negated.
+    See above for the what can_endorse does.
+    Contrary to above, here we **do need a secure channel** (as in this context we cannot trust peer)
   end note
   return true /'Enclave1 -> TLCC_Enclave1'/
   note left
