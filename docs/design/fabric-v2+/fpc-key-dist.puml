@@ -12,32 +12,22 @@
 hide footbox
 title Foot Box removed
 
-title Fabric Private Chaincode - Chaincode Key generation, distribution, registration 
+title Fabric Private Chaincode - Chaincode Key generation, export, and import
 
-actor       "Admin_Org1" as Admin1
-participant "Peer_CLI Peer_Org1" as Peer1_CLI
-participant "ECC Peer_Org1" as ECC1
-participant "ECC_Enclave Peer_Org1" as Enclave1 #99FF99
-participant "ERCC Peer_Org1" as ERCC1
-participant "TLCC_Enclave Peer1_Org1" as TLCC_Enclave1 #99FF99
+actor       "Admin_Org1" as Admin1 order 10
+participant "Peer_CLI" as Peer1_CLI order 20
+participant "FPC_stub" as ECC1 order 30
+participant "FPC_stub_enclave" as Enclave1 order 40 #99FF99
+participant "ERCC" as ERCC1 order 50
+participant "Ledger_enclave" as TLCC_Enclave1 order 60 #99FF99
 
-participant Orderer as Orderer
+participant Orderer as Orderer order 100
 
-actor	    "Admin_Org2" as Admin2
-participant "Peer_CLI Peer_Org2" as Peer2_CLI
-participant "ECC Peer_Org2" as ECC2
-participant "ECC_Enclave Peer_Org2" as Enclave2 #99FF99
-participant "ERCC Peer_Org2" as ERCC2
-participant "TLCC_Enclave Peer_Org1" as TLCC_Enclave2 #99FF99
-
-ref over Admin1, Peer1_CLI, ECC1, Enclave1, ERCC1, TLCC_Enclave1
-    create enclave, register enclave (see fpc-registration diagram)
-end ref
-ref over Admin2, Peer2_CLI, ECC2, Enclave2, ERCC2, TLCC_Enclave2
-    create enclave, register enclave (see fpc-registration diagram)
+ref over Admin1, Peer1_CLI, ECC1, Enclave1, ERCC1, TLCC_Enclave1, Orderer
+    create and register enclave (see fpc-registration diagram)
 end ref
 
-note over Admin1, Admin2
+note right Admin1
     Assumptions.
     - The administrators, respectively, have created the enclaves and registered their credentials.
 
@@ -49,125 +39,134 @@ note over Admin1, Admin2
 end note
 
 group chaincode key generation
-
   note right Admin1
-    One admin must begin the key
-    generation using the local enclave.
-    This might as well be Admin2
-    using Enclave2.
+    One admin must begin the key generation using the local enclave.
+    This might as well be Admin2 using Enclave2.
   end note
-  Admin1        -> Admin1       :   fill CC_Parameters structure
-  Admin1        -> Peer1_CLI    ++: GenerateCCKeys(CC_Parameters)
+  Admin1        -> Peer1_CLI    ++: generateCCKeys(CC_NAME)
 
-  Peer1_CLI    -> ERCC1         ++: check Enclave1 registration
-  return boolean b
-  Peer1_CLI    -> ECC1          ++: if(b) then GenerateCCKeys(CC_Parameters)
-  ECC1          -> Enclave1     ++: GenerateCCKeys(CC_Parameters)
+  Peer1_CLI        -> ERCC1          ++: queryECCInfos(CC_NAME)
+  return ECCInfos = List<Enclave Credential,...> /'Admin1 -> ERCC1'/
+
+  Peer1_CLI    -> Peer1_CLI : check if ECCInfos contains enclave for this peer;\n otherwise abort
+
+  Peer1_CLI -> Peer1_CLI : Fill CC_Parameter
+
+  Peer1_CLI    -> ECC1          ++: generateCCKeys(CC_Parameters)
+  ECC1          -> Enclave1     ++: generateCCKeys(CC_Parameters)
   Enclave1      -> Enclave1     :   check input CC_Parameters against internal CC_Parameters
 
-  note over Enclave1
+  note right Enclave1
     It is not necessary to enforce that Enclave1 has already been registered in ERCC.
     As this is the "first" time that keys are generated,
     there is no security-critical state and/or other keys to protect.
   end note
 
-  note over Enclave1
+  note right Enclave1
     Generate the State Encryption Key (SEK) and the chaincode-specific encryption/decryption key pair.
   end note
-  Enclave1      -> Enclave1     :   SEK, Chaincode_DK, Chaincode_EK <- keyGen()
-  note over Enclave1
+  Enclave1      -> Enclave1     :   SEK, Chaincode_EK, Chaincode_DK, <- keyGen()
+  note right Enclave1
     - SEK denotes the state encryption key
     - Chaincode_EK and Chaincode_DK denote the public and private encryption key pair
   end note
-  Enclave1      -> Enclave1     :   Sig_Enclave1 <- sign Chaincode_EK with Enclave1_SK
-
-  Enclave1      -> Enclave1     :   cckey_registration_message <- <Enclave1_VK, Sig_Enclave1, Chaincode_EK>
-
-  note over Enclave1
-    TODO: seal keys
+  Enclave1      -> Enclave1     :   SIG_Enclave <- sign Chaincode_EK with Enclave_SK
+  note right
+    NOTE: Enclave signing key (Enclave_SK) is generated during enclave creation.
   end note
 
-  return cckey_registration_message /'ECC1 -> Enclave1    '/
+  Enclave1      -> Enclave1     :   cckey_registration_message <- <Chaincode_EK, Enclave_VK, SIG_Enclave>
+
+  Enclave1 -> Enclave1 : sealed_cckeys <- seal <SEK, Chaincode_EK, Chaincode_DK>
+
+  return cckey_registration_message, selaed_cckeys /'ECC1 -> Enclave1    '/
+  ECC1 -> ECC1 : store sealed cc_keys
+  note right ECC1
+     FPC_stub stores sealed cckeys with the help of
+     the external builder on the peer local storage.
+  end note
+
   return cckey_registration_message /'Peer1_CLI -> ECC1  '/
 
-  return cckey_registration_message /'Admin1 -> Peer1_CLI'/
-
-end group
-
-group chaincode key registration
-
-  group chaincode-key-registration endorsement
-    Admin1  -> Admin1       :   cckey_registration_message <- <Enclave1_VK, Sig_Enclave1, Chaincode_EK>
-    Admin1  -> ERCC1        ++: RegisterCCKeys(cckey_registration_message)
+  loop for all/"enough" endorsers
+      note right Peer1_CLI
+          Invoke RegisterCCKeys() at enough endorsing peers to satisfy
+          ERCC endorsement policy and collect proposal responses.
+      end note
+    Peer1_CLI  -> ERCC1        ++: RegisterCCKeys(cckey_registration_message)
     ERCC1   -> ERCC1        :   check that tx proposal creator is Admin
     ERCC1   -> ERCC1        :   check that admin.org and enclave.org match
-    note over ERCC1
+    ERCC1 -> ERCC1 : <Chaincode_EK, Enclave_VK, SIG_Enclave> <- extract from cckey_registration_message
+    note right ERCC1
         Check enclave registration by searching for its Credentials.
     end note
-    ERCC1   -> ERCC1        :   Credentials <- find(Enclave1_VK)
-    ERCC1   -> ERCC1        :   verify Sig_Enclave1 over Chaincode_EK using Enclave1_VK
-    ERCC1   -> TLCC_Enclave1++: can_endorse(Enclave1_VK)
-    note over ERCC1
-        - The can_endorse function validates that according to the chaincode definition, this enclaves (key) is properly registered in ercc for the chaincode and can indeed sign endorsements according to the chaincodes endorsement policy,.   
-          This is nice-to-have feature, primarily useful in the designated peer case to catch early mismatching endorsement policies with the single registered enclave.
-        - As ERCC cannot directly access the chaincode definition, similar to the case during enclave registration we do a cc2scc call to tlcc.
+    ERCC1   -> ERCC1        :   Credentials <- find(Enclave_VK)
+    note right
+        if not found; abort
+    end note
+    ERCC1   -> ERCC1        :   verify SIG_Enclave over Chaincode_EK using Enclave_VK
+    ERCC1   -> TLCC_Enclave1++: can_endorse(Enclave_VK)
+    note right ERCC1
+        - The can_endorse function validates that according to the chaincode definition,
+          this enclaves (key) is properly registered in ercc for the chaincode and can
+          indeed sign endorsements according to the chaincodes endorsement policy.
+          This is nice-to-have feature, primarily useful in the designated peer case to
+          catch early mismatching endorsement policies with the single registered enclave.
+        - As ERCC cannot directly access the chaincode definition, similar to the case
+          during enclave registration we do a cc2scc call to tlcc.
         - A secure channel with TLCC is not required here.
         - We have to investigate how to implement this can_endorse function.
     end note
     return true
-    note over ERCC1
+    note right ERCC1
         if false, abort
     end note
     ERCC1   -> ERCC1         :  extract CC_Id from Credentials
-    ERCC1   -> ERCC1         :  Registered_Chaincode_EK <- get_state(CC_Id."Chaincode_EK")
-    ERCC1   -> ERCC1         :  if(!Registered_Chaincode_EK) put_state(CC_Id."Chaincode_EK", cckey_registration_message.Chaincode_EK)
-    ERCC1   -> ERCC1         :  else check Registered_Chaincode_EK and cckey_registration_message.Chaincode_EK match
-    ERCC1   -> ERCC1         :  store cckey_registration_message on the ledger
-    note over ERCC1
-        E.g., put_state(key=<"keydist_registered".Enclave1_VK>, value=cckey_registration_message)
+    ERCC1   -> ERCC1         :  cc_ek <-
+    ERCC1   -> ERCC1         :  if get_state(CC_Id."Chaincode_EK") return empty\n then put_state(CC_Id."Chaincode_EK", cckey_registration_message.Chaincode_EK);\n otherwise abort
+    ERCC1   -> ERCC1         :  put_state("keydist_registered".Enclave_VK, cckey_registration_message)
+    note right ERCC1
         This is the proof (stored on the ledger) that the enclave has the CC keys.
         In a multi-org setting, the proof informs of enclave availability.
     end note
 
-    return /'Admin1 -> ERCC1'/
+    return proposal response /'Admin1 -> ERCC1'/
+   end
+    Peer1_CLI -> Peer1_CLI : form transaction
+    Peer1_CLI -> Orderer: submit RegisterCCKeys transaction
+    return
+end
 
-  end group
+note right Admin1
+    NOTE that key distribution finishes here for MVP.
+    The following Key Export and Import are Post-MVP features.
+end note
+|||
 
-  ref over Admin1, ERCC2
-    chaincode-key-registration endorsement
-  end ref
-
-  Admin1 -> Orderer: submit chaincode-key-registration transaction
-
-end group
-
-
-group chaincode key distribution
-  ref over Admin1, TLCC_Enclave1, Admin2, TLCC_Enclave2
-    if necessary, upgrade chaincode policy to enable Enclave2 endorsements
-  end ref 
-  
-  note over Admin1, Admin2
-    At this point, Enclave1 has completed (its part of) the key distribution,
-    and Enclave2 is waiting for the chaincode keys.
+group chaincode key export
+  note right Admin1
+    if necessary, upgrade chaincode policy to enable target Enclave endorsements
   end note
 
-  Admin1        -> ERCC1          ++: query registered enclave's key
-  return list of enclave Credentials /'Admin1 -> ERCC1'/
-  Admin1        -> Admin1           : select non-provisioned Enclave2's Credentials from list
-  note over Admin1
+  Admin1 -> Peer1_CLI ++: exportCCKeys(CC_NAME)
+
+  Peer1_CLI        -> ERCC1          ++: queryECCInfos(CC_NAME)
+  return ECCInfos = List<Enclave Credential,...> /'Admin1 -> ERCC1'/
+  Peer1_CLI        -> Peer1_CLI           : Enclave2_Credentials <- select non-provisioned (target) enclave from ECCInfos
+  note right Peer1_CLI
     The Credentials data structure contains
     both the chaincode definition and the enclave's public signing key.
   end note
 
-  Admin1        -> Peer1_CLI        ++: DistributeCCKeys(Enclave2_Credentials)
-  Peer1_CLI     -> ECC1             ++: DistributeCCKeys(Enclave2_Credentials)
-  ECC1          -> Enclave1         ++: DistributeCCKeys(Enclave2_Credentials)
-  Enclave1      -> Enclave1         : extract Enclave2_VK from Enclave2_Credentials
-  Enclave1      -> ERCC1            ++: GetRegistration(Enclave2_VK)
-  return Registered_Enclave2_Credentials /'Enclave1 -> ERCC1'/
-  Enclave1      -> TLCC_Enclave1    ++: check_ercc_committed_data(Registered_Enclave2_Credentials)
-  note left of TLCC_Enclave1
+  Peer1_CLI     -> ECC1             ++: exportCCKeys(Enclave2_Credentials)
+  ECC1          -> Enclave1         ++: exportCCKeys(Enclave2_Credentials)
+  Enclave1      <-> TLCC_Enclave1 : establish secure channel based on local attestation
+  note right Enclave1
+      See above for the what can_endorse does.
+      Contrary to above, here we **do need a secure channel** (as in this context we cannot trust peer)
+    end note
+  Enclave1      -> TLCC_Enclave1    ++: check_ercc_committed_data(Enclave2_Credentials)
+  note right of TLCC_Enclave1
     The actual implementation of check_ercc_committed_data
     is out of scope here. A possible solution can be
     sketched as follows. A principal asks TLCC whether
@@ -180,125 +179,147 @@ group chaincode key distribution
   note left
     if false, abort
   end note
-  Enclave1      -> Enclave1           : check Registered_Enclave2_Credentials matches Enclave2_Credentials
+  Enclave1      -> Enclave1         : extract Enclave2_VK from Enclave2_Credentials
   Enclave1      -> TLCC_Enclave1    ++: can_endorse(Enclave2_VK)
-  note right
-    TLCC checks the endorsement policy to determine
+  note right TLCC_Enclave1
+    Ledger_enclave checks the endorsement policy to determine
     if the recipient enclave is an eligible endorser.
   end note
-  note right
+  note right TLCC_Enclave1
     See above for the what can_endorse does.
-    Contrary to above, here we **do need a secure channel** (as in this context we cannot trust peer)
+    Contrary to above, here we **use a secure channel**
+    (as in this context we cannot trust peer)
   end note
   return true /'Enclave1 -> TLCC_Enclave1'/
   note left
     if false, abort
   end note
-  note over Enclave1
+  note right Enclave1
     Regarding Enclave2's chaincode definition, we can only check that CC_Id matches,
     because the other fields might have changed.
     Alternatively, we could access the "current" chaincode definition,
     and check whether Enclave2's matches it.
   end note
   Enclave1      -> Enclave1         :   check Enclave2_Credentials.Attested_Data.CC_Parameters.CC_Id against internal one
-  Enclave1      -> Enclave1         :   check Enclave2's keys and Enclave2_VK, Enclave2_EK, attestation_report
-  Enclave1      -> Enclave1         :   encrypted_cckeys_message <- encrypt <SEK, Chaincode_DK> with Enclave2_EK
+  Enclave1      -> Enclave1         :   check Enclave2_VK, Enclave2_EK, ATTESTATION
+  Enclave1      -> Enclave1         :   cckeys_enc <- encrypt <SEK, Chaincode_DK> with Enclave2_EK
     note left
-        enclave encrypts state encryption key and chaincode private key
+        Enclave encrypts state encryption key and chaincode private key for target enclave.
     end note
 
-  Enclave1      -> Enclave1         :   Sig_Enclave1 <- sign <Enclave1_VK, Enclave2_VK, Chaincode_EK, encrypted_keys_message> with Enclave1_SK
+  Enclave1      -> Enclave1         :   SIG_Enclave <- sign <Chaincode_EK, cckeys_enc, Enclave2_VK, Enclave_VK> with Enclave_SK
   note left
-    Enclave1 signs the key material
-    it distributes together with the
-    sender and intended recipient identity
+    Enclave signs the encrypted key material it distributes together with the
+    sender (enclave) and intended recipient (target enclave) identity
   end note
 
-  Enclave1      -> Enclave1         :   cckey_distribution_message <- <Enclave1_VK, Enclave2_VK, Chaincode_EK, Sig_Enclave1>
+  Enclave1      -> Enclave1         :   export_message <- <Chaincode_EK, cckeys_enc, Enclave2_VK, Enclave_VK, SIG_Enclave>
 
-  return encrypted_cckeys_message, cckey_distribution_message /'ECC1 -> Enclave1'/
-  return encrypted_cckeys_message, cckey_distribution_message /'Peer1_CLI -> ECC1'/
-  return encrypted_cckeys_message, cckey_distribution_message /'Admin1 -> Peer1_CLI'/
+  return export_message /'ECC1 -> Enclave1'/
+  return export_message /'Peer1_CLI -> ECC1'/
 
-  note right Admin1
+  note right Peer1_CLI
+    At this point, Enclave has completed (its part of) the key distribution,
+    and the target enclave is waiting for the chaincode keys.
+  end note
+
+  note right Peer1_CLI
     Chaincode key distribution is in progress. We need a means to transfer the message with
-    the encrypted keys to the recipient enclave. The next step uses the ledger
+    the encrypted keys to the target enclave. The next step uses the ledger
     itself for this data transfer. This additionally allows to log the two phases
-    of the key distribution: (1) the sender enclave produced the encrypted data blob;
-    (2) the recipient enclave correctly received it. This can be useful when dealing
+    of the key distribution: (1) Export: the sender enclave produced the encrypted data blob;
+    (2) Import: the recipient enclave correctly received it. This can be useful when dealing
     with enclaves of two different orgs, to show that the expected actions have been taken.
   end note
 
-  group start-cckey-distribution endorsement
-    Admin1      -> ERCC1            ++: Start_KeyDist(encrypted_cckeys_message, cckey_distribution_message)
-    ERCC1       -> ERCC1            :   check Enclave1_VK's and Enclave2_VK's Credentials are registered
-    ERCC1       -> ERCC1            :   check Enclave1_Credentials and Enclave2_Credentials have same CC_Id
-    note over ERCC1
-    end note
+  loop for all/"enough" endorsers
+      note right Peer1_CLI
+          Invoke CCKeysExport() at enough endorsing peers to satisfy
+          ERCC endorsement policy and collect proposal responses.
+      end note
+    Peer1_CLI   -> ERCC1            ++: CCKeysExport(export_message)
+    ERCC1       -> ERCC1            :   <Chaincode_EK, cckeys_enc, Enclave2_VK, Enclave_VK, SIG_Enclave> <- extract from export_message
+    ERCC1       -> ERCC1            :   check Enclave_VK's and Enclave2_VK's Credentials are registered
+    ERCC1       -> ERCC1            :   CC_Id <- extract from Enclave_Credentials
+    ERCC1       -> ERCC1            :   check Enclave_Credentials and Enclave2_Credentials have same CC_Id
     ERCC1       -> TLCC_Enclave1++: can_endorse(Enclave2_VK)
     return true
-    ERCC1       -> ERCC1            :   check Sig_Enclave1
-    ERCC1       -> ERCC1            :   check Enclave1 previously registered cckey_distribution_message.Chaincode_EK
-    ERCC1       -> ERCC1            :   extract CC_Id from Enclave1_Credentials
+    ERCC1       -> ERCC1            :   verify SIG_Enclave over <Chaincode_EK, cckeys_enc, Enclave2_VK, Enclave_VK> with Enclave_VK
+    ERCC1       -> ERCC1            :   check Enclave previously registered cckey_distribution_message.Chaincode_EK
     ERCC1       -> ERCC1            :   check cckey_distribution_message.Chaincode_EK and get_state(CC_Id."Chaincode_EK") match
-    ERCC1       -> ERCC1            :   store <encrypted_cckeys_message, cckey_distribution_message> on the ledger
-    note over ERCC1
-        e.g., put_state(key=<"keydist_started".Enclave2_VK>, value=<encrypted_cckeys_message, cckey_distribution_message>)
-    end note
-    return /'Admin1 -> ERCC1'/
-  end group
-
-  ref over Admin1, ERCC2
-    start-cckey-distribution endorsement
-  end ref
-
-  Admin1 -> Orderer: submit start-cckey-distribution transaction
+    ERCC1       -> ERCC1            :   put_state("keydist_started".Enclave2_VK, export_message)
+    return proposal response /'Admin1 -> ERCC1'/
+  end loop
+  Peer1_CLI -> Peer1_CLI : form transaction
+  Peer1_CLI -> Orderer: submit CCKeysExport transaction
+  return
 end group
 
-group complete key distribution
-  Admin2        -> Admin2           :   fill CC_Parameters
-  Admin2        -> Peer2_CLI        ++: RegisterCCKeyDist(CC_Parameters)
-  Peer2_CLI     -> ECC2             ++: RegisterCCKeyDist(CC_Parameters)
-  ECC2          -> Enclave2         ++: RegisterCCKeyDist(CC_Parameters)
-  Enclave2      -> Enclave2         :   check CC_Parameters matches internal one
-  Enclave2      -> ERCC2            ++: GetKeyDistStart(Public_Keys.Enclave2_VK)
+
+group chaincode key import
+  note right Admin1
+    NOTE that import is called at another peer to provision a FPC enclave with
+    the keys exported in the chaincode key export flow above.  In order to simplify
+    this diagram, only a single admin, peer, enclave, ercc is depicted even though
+    the import flow may involve other entities or the target / recipient enclave.
+  end note
+
+  Admin1        -> Peer1_CLI        ++: importCCKeys(CC_NAME)
+
+  Peer1_CLI        -> ERCC1          ++: queryECCInfos(CC_NAME)
+  return ECCInfos = List<Enclave Credential,...>
+  Peer1_CLI    -> Peer1_CLI : check if ECCInfos contains enclave for this peer;\n otherwise abort
+
+  Peer1_CLI -> Peer1_CLI : Fill CC_Parameter
+
+  Peer1_CLI     -> ECC1             ++: importCCKeys(CC_Parameters)
+  ECC1          -> Enclave1         ++: importCCKeys(CC_Parameters)
+  Enclave1      -> Enclave1         :   check CC_Parameters matches internal one
+  Enclave1      -> ERCC1            ++: GetKeyDistStart(Public_Keys.Enclave2_VK)
   return cckeydist_start_message <- <encrypted_cckeys_message, cckey_distribution_message> /'Enclave2 -> ERCC2'/
-  Enclave2      -> TLCC_Enclave2    ++: check_ercc_committed_data(cckeydist_start_message)
+  Enclave1      -> TLCC_Enclave1    ++: check_ercc_committed_data(cckeydist_start_message)
   return true /'Enclave2 -> TLCC_Enclave2'/
   note left
     if false, abort
   end note
-  Enclave2      -> Enclave2         :   extract Enclave1_VK from cckeydist_start_message.key_distribution_message
-  Enclave2      -> ERCC2            ++: GetRegistration(Enclave1_VK)
+  Enclave1      -> Enclave1         :   extract Enclave1_VK from cckeydist_start_message.key_distribution_message
+  Enclave1      -> ERCC1            ++: GetRegistration(Enclave1_VK)
   return Registered_Enclave1_Credentials /'Enclave2 -> ERCC2'/
-  Enclave2      -> TLCC_Enclave2    ++: check_ercc_committed_data(Registered_Enclave1_Credentials)
+  Enclave1      -> TLCC_Enclave1    ++: check_ercc_committed_data(Registered_Enclave1_Credentials)
   return true /'Enclave2 -> TLCC_Enclave2'/
   note left
     if false, abort
   end note
-  Enclave2      -> Enclave2         :   check Enclave1_VK matches in registration_message and cckeydist_start_message
-  Enclave2      -> Enclave2         :   check CC_Id in Registered_Enclave1_Credentials matches internal one
-  note over Enclave2
+  Enclave1      -> Enclave1         :   check Enclave1_VK matches in registration_message and cckeydist_start_message
+  Enclave1      -> Enclave1         :   check CC_Id in Registered_Enclave1_Credentials matches internal one
+  note right Enclave1
     Since Enclave1's Credentials are committed, then Enclave1's Evidence has already been verified by ERCC.
     Hence, verifying Enclave1's Evidence at this point does not appear necessary.
   end note
-  Enclave2      -> Enclave2         :   verify Sig_Enclave1
-  Enclave2      -> Enclave2         :   SEK, Chaincode_DK <- decrypt(cckeydist_start_message.encrypted_keys_message) with Enclave2_DK
-  Enclave2      -> Enclave2         :   extract Chaincode_EK from Chaincode_DK
-  note over Enclave2
-    TODO: seal keys
-  end note
-  Enclave2      -> Enclave2         :   Sig_Enclave2 <- sign Chaincode_EK with Enclave2_SK
-  Enclave2      -> Enclave2         :   cckey_registration_message <- <Enclave2_VK, Sig_Enclave2, Chaincode_EK>
+  Enclave1      -> Enclave1         :   verify Sig_Enclave1
+  Enclave1      -> Enclave1         :   SEK, Chaincode_DK <- decrypt(cckeydist_start_message.encrypted_keys_message) with Enclave2_DK
+  Enclave1      -> Enclave1         :   extract Chaincode_EK from Chaincode_DK
+  Enclave1 -> Enclave1 : sealed_cckeys <- seal <SEK, Chaincode_EK, Chaincode_DK>
+  Enclave1      -> Enclave1         :   SIG_Enclave2 <- sign Chaincode_EK with Enclave2_SK
+  Enclave1      -> Enclave1         :   cckey_registration_message <- <Enclave2_VK, Sig_Enclave2, Chaincode_EK>
 
-  return cckey_registration_message, /'Enclave2 -> ECC2'/
-  return cckey_registration_message, /'ECC2 -> Peer2_CLI'/
+  return cckey_registration_message /'Enclave2 -> ECC2'/
+  return cckey_registration_message /'ECC2 -> Peer2_CLI'/
 
-  return cckey_registration_message /'Admin2 -> Peer2_CLI'/
+  loop for all/"enough" endorsers
+      note right Peer1_CLI
+          Invoke RegisterCCKeys() at enough endorsing peers to satisfy
+          ERCC endorsement policy and collect proposal responses.
+      end note
 
-  ref over ERCC1, Admin2, ERCC2, Orderer
-    chaincode key registration (same as that from Admin1)
-  end ref
+        ref over Peer1_CLI
+          run RegisterCCKeys(cckey_registration_message)
+        end ref
+
+  end loop
+  Peer1_CLI -> Peer1_CLI : form transaction
+  Peer1_CLI -> Orderer: submit RegisterCCKeys transaction
+  return /'Admin2 -> Peer2_CLI'/
 
 end group
 
