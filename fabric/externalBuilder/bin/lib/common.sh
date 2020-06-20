@@ -46,8 +46,8 @@ cc_build_for_host() {
     mkdir -p ${CC_LIB_PATH}
 
     # - ecc shims
-    try ln -s "${FPC_TOP_DIR}/ecc/ecc" "${CC_PATH}/chaincode"
-    try ln -s "${FPC_TOP_DIR}/ecc_enclave/_build/lib/libsgxcc.so" "${CC_LIB_PATH}/"
+    try cp "${FPC_TOP_DIR}/ecc/ecc" "${CC_PATH}/chaincode"
+    try cp "${FPC_TOP_DIR}/ecc_enclave/_build/lib/libsgxcc.so" "${CC_LIB_PATH}/"
 
     # - chaincode specific stuff
     try cp "${CC_SOURCE_DIR}/${MRENCLAVE_FILE}" "${CC_PATH}"
@@ -103,6 +103,9 @@ process_runtime_metadata() {
     fi
 
     # For debugging purposes, we also symlink the source metadata & build artifacts
+    # Note: the external builder in fabric 2.1.1 has started treating symlinks differently. So
+    #  far they still work here, so leave it for now as it is still useful for debugging. (But 
+    #  as cp doesn't make sense here, we should remove it as soon as symlinks don't work anymore).
     try ln -s "${CC_BUILD_DIR}/" "${RUN_STATE_DIR}/build"
     try ln -s "${CC_RT_METADATA_DIR}/" "${RUN_STATE_DIR}/rt-metadata"
 }

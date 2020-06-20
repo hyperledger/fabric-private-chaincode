@@ -6,9 +6,9 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/golang/protobuf v1.3.5 // indirect
 	github.com/google/go-cmp v0.4.0 // indirect
-	github.com/hyperledger/fabric v2.0.1+incompatible
-	github.com/hyperledger/fabric-chaincode-go v0.0.0-20200128192331-2d899240a7ed
-	github.com/hyperledger/fabric-protos-go v0.0.0-20200124220212-e9cfc186ba7b
+	github.com/hyperledger/fabric v2.1.1+incompatible
+	github.com/hyperledger/fabric-chaincode-go v0.0.0-20200511190512-bcfeb58dd83a
+	github.com/hyperledger/fabric-protos-go v0.0.0-20200506201313-25f6564b9ac4
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.9.0
