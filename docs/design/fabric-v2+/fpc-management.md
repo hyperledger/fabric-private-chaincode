@@ -1,6 +1,6 @@
 # FPC Management
 
-This document defines the management APIs of FPC.
+This document defines the management APIs of FPC as part of the `peer` commandline tool.
 Such definition builds on the design diagrams describing the enclave creation, 
 the enclave registration and the chaincode key generation.
 
@@ -69,4 +69,3 @@ indicating that the chaincode enclave is ready to endorse transaction proposals.
 
 Key distribution commands are not supported in the initial version of FPC.
 Users must aware that each FPC chaincode runs in a single enclave at a designated peer.
-
