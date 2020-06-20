@@ -108,11 +108,10 @@ group chaincode key registration
     ERCC1   -> ERCC1        :   verify Sig_Enclave1 over Chaincode_EK using Enclave1_VK
     ERCC1   -> TLCC_Enclave1++: can_endorse(Enclave1_VK)
     note over ERCC1
+        - The can_endorse function validates that according to the chaincode definition, this enclaves (key) is properly registered in ercc for the chaincode and can indeed sign endorsements according to the chaincodes endorsement policy,.   
+          This is nice-to-have feature, primarily useful in the designated peer case to catch early mismatching endorsement policies with the single registered enclave.
+        - As ERCC cannot directly access the chaincode definition, similar to the case during enclave registration we do a cc2scc call to tlcc.
         - A secure channel with TLCC is not required here.
-          Only the endorsement policy in the "current" chaincode definition is necessary.
-        - Notice that ERCC might have a stale chaincode definition, so ask TLCC. 
-        - This can_endorse function is a nice-to-have feature.
-          It prevents sharing keys with enclave that cannot endorse.
         - We have to investigate how to implement this can_endorse function.
     end note
     return true
