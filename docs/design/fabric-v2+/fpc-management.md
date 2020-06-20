@@ -9,7 +9,7 @@ the enclave registration and the chaincode key generation.
 ### Extended Fabric v2 Lifecycle Chaincode Commands
 
 These commands extend the original Fabric v2 commands to handle FPC chaincodes.
-For a description of the original Fabric v2 commands, check out the Fabric v2 documentation.
+For a description of the original Fabric v2 commands, check out the [Fabric v2 documentation](https://hyperledger-fabric.readthedocs.io/en/release-2.1/commands/peerlifecycle.html).
 In the following, this document describes additional flags and usages.
 Any other commands, which does not appear in this list, remains unchanged in FPC.
 
