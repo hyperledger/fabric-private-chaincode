@@ -21,6 +21,9 @@ class CC_Parameters {
     + MSPID string
     + TLCC_MREnclave bytes
 }
+note right of CC_Parameters::CC_Version
+        CC_Version should always correspond to the MRENCLAVE of the FPC Chaincode
+end note
 
 class Public_Keys {
     Enclave_VK bytes
@@ -35,7 +38,12 @@ class Private_Keys {
 class Attested_Data {
     + CC_Parameters bytes
     + Public_Keys bytes
+    + onCreation boolean
 }
+note left of Attested_Data::onCreation
+    For semantics and motivation of this field, see
+     comment in createEnclave function in fpc-registration.puml.
+end note
 
 Attested_Data *-down-  CC_Parameters : contains
 Attested_Data *-down-  Public_Keys : contains
@@ -55,20 +63,18 @@ note right of Private_Keys::Enclave_DK #FFaa00
 end note
 
 class Credentials {
-    + Verb string
     + Attestation bytes
     + Attested_Data
     + Evidence bytes
+    + Certificate
 }
-note left of Credentials::Verb
-    Definition and motivation for "verb".
-    The verb is simply a string, e.g., "CREATE", "RE-ATTEST".
-    The expectation is that an admin will request re-attestations in the future.
-    Such operation will likely follow an execution flow different than the one
-    used to create enclaves. Hence, it will use a different API.
-    Yet, the attestation operations will be the same (or very similar).
-    The verb used in the two cases (create enclave, and re-attest enclave) will be different,
-    thereby allowing to distinguish them.
+note right of Credentials::Certificate
+  [Post-MVP: Validation]:  This will be a X509 peer certificate on
+    Enclave_VK and CC_Parameters signed by a CA rooted in
+    the MSP of the Organization hosting the peer running the FPC
+    Chaincode enclave.  This shows the "ownership" of Org for that
+    particular FPC Chaincode enclave.   See additional information in
+    fpc-registration.puml in the 'Org-Enclave binding/certification' group.
 end note
 
 } /' package protobufs '/
@@ -147,9 +153,9 @@ interface ECC_Enclave_Admin {
 }
 
 interface ECC_Enclave {
-    -Public_Keys
-    -Private_Keys
-    - CC_{E, D}K
+    - Public_Keys
+    - Private_Keys
+    - Chaincode_DK
     - ecc_admin ECC_Admin
     + --init--
     + int invoke(*args, *response, max_response_len, actual_response_len, ctx)

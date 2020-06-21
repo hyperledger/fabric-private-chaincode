@@ -17,6 +17,8 @@ participant "FPC_stub" as ECC1 order 20
 participant "Ledger Enclave" as TLCC1 order 36 #99FF99
 participant "ERCC" as ERCC1 order 40
 
+entity CA order 90
+
 entity IAS order 100
 participant Orderer as Orderer order 100
 
@@ -26,27 +28,36 @@ end note
 
 note right Admin
   It is assumed that:
-    -Channel has already been created;
-    -ERCC has been installed -- approved by the participating organizations, see lifecycle;
-    -ERCC contains hard-coded the TLCC_MRenclave and the IAS Root Certificate;
-    -ERCC has an Endorsement Policy that requires signatures from a majority of orgs,
-     for security reasons -- namely to avoid unilateral modifications and preserve
-     integrity. As a result, changes to chaincode enclave info stored in ERCC will
-     be dependent on such policy.
+    - Channel has already been created;
+    - ERCC has been installed -- approved by the participating organizations;
+    - ERCC contains hard-coded the TLCC_MRenclave and the IAS Root Certificate;
+    - ERCC has an Endorsement Policy that is identical with the Lifecycle Policy
+      governing the FPC chaincode, e.g., the Majority of Organizations.
+      This is necessary as ERCC transactions are essentially extensions to the
+      chaincode lifecycle and ERCC-managed data is paramount for the overall security
+      of FPC chaincode.
 end note
 
 Admin -> Peer_CLI ++: lifecycle chaincode\n createenclave (CC_Id)
 
 group enclave creation
   note right Peer_CLI
-    This operation can only be performed after the chaincode definition --- 
-    which defines the root of trust (MRENCLAVE) for the FPC Chaincode --- 
-    is committed on the channel. More specifically, this commitment must have 
+    This operation can only be performed after the chaincode definition ---
+    which defines the root of trust (MRENCLAVE) for the FPC Chaincode ---
+    is committed on the channel. More specifically, this commitment must have
     completed before below 'registerEnclave' starts  in order to complete the
     enclave registration step.
+
+    PS: In the future (post-MVP) when we support chaincode upgrades, the
+    interleaving of below with normal lifecycle commands will have to be revisited;
+    chaincode upgrades will require consistent and atomic updates of both the
+    chaincode definition on the channel as well as in ERCC.
   end note
 
   Peer_CLI -> ECC1 ++: createEnclave (CC_Id)
+  ref over ECC1
+    This might trigger [FPC Chaincode is not running] from fpc-cc-invocation.puml
+  end ref
 
   create "FPC_stub_enclave" as Enclave1 order 30 #99FF99
   ECC1 -> Enclave1 ++: createEnclave (CC_Id)
@@ -73,7 +84,16 @@ group enclave creation
     See fpc-components.uml diagram for more details
   end note
 
-  Enclave1 -> Enclave1 : Attested_Data <- <CC_Parameters, Public_Keys>
+  Enclave1 -> Enclave1 : Attested_Data <- <CC_Parameters, Public_Keys, onCreation=true>
+  note right Enclave1
+     In the future an admin might want to request re-attestations: For EPID this would be
+     the only way to check for revocations (In DCAP, checking CRLs would enable this as well.)
+     For security reasoning, it is crucial that the TCB level (CPUSVN) of the seal operation is
+     reflected in the attestation (and, hence, ERCC registration)  as this determines whether
+     enclave secrets might be exposed in case of newly discovered future SGX vulnerabilities.
+     We ensure that performing the initial attestation before sealing the state and distinguish
+     the intial from subsequent attestations  based on the onCreation field in Attested_Data.
+  end note
 
   Enclave1 -> Enclave1 +: GetEvidence(Attested_Data)
   group enclave attestation - evidence creation
@@ -99,11 +119,8 @@ group enclave creation
 
   Enclave1 -> IAS ++: send quote for verification
   note right Enclave1
-    Ideally the enclave itself is able to retrieve the verifiable evidence
-    (i.e., the verification report, using EPID) and return it.
-    This additionally requires some ocalls and helper code in FPC_stub.
-    For convenience, the enclave now returns the attestation, and the evidence
-    (i.e., the verification report) is retrieved from untrusted environment.
+    This call to IAS will require additional ocalls and helper code in FPC_stub
+    to perform the network interaction with IAS and alike.
   end note
   note left IAS
     IAS verifies the quote produced by the enclave and returns
@@ -123,45 +140,38 @@ group enclave creation
       so it can be stored outside the enclave for recovery.
   end note
 
-  Enclave1 -> Enclave1 : Credentials <- <Verb="CREATE", Attested_Data, Evidence>
-  note right Enclave1
-      The constant string "CREATE" in the Verb field is meant to be used only here
-      (in the create call). A different constant string is expected to be used whenever
-      the Credentials prototobuf is reused (e.g., to re-attest the chaincode). This
-      allows to distinguish different calls.
-  end note
+  Enclave1 -> Enclave1 : Credentials <- <Attested_Data, Evidence>
   return Credentials, Sealed_Credentials
 
-  ECC1 -> ECC1 : store Sealed_Credentials
+group Org-Enclave binding/certification [Post-MVP: Validation]
+  note right ECC1
+     In MVP, the attestation will be carried in the fabric transaction response payload in addition to the normal peer endorsement signature.
+     To enable cleaner integration into Fabric and, in particular. support multi-enclave endorsement,, post-MVP we will provide the enclave
+     with a peer-certificate on Private_keys.Enclave_VK rooted in the organizations MSP -- explicitly expressing that the Org take
+     "ownership" of this enclave -- and replace the normal peer endorsement signature with the enclave signature.
+     The corresponding changes will be marked with '[Post-MVP: Validation]'.
+  end note
+
+  ECC1 -> Enclave1 ++: getCSR
+  Enclave1 -> Enclave1 : csr <- generate_csr(Private_Keys.Enclave_SK, CC_Parameters)
+  return csr /' ECC1 -> Enclave1 '/
+  ECC1 -> CA ++: issueCertificate(csr)
+  return  cert /' ECC1 -> CA '/
+  ECC1 -> ECC1: Credentials, Certificate <- cert
+end group
+
+  ECC1 -> ECC1 : store Sealed_Credentials, Credentials
   note right ECC1
     FPC_stub stores sealed chaincode credentials with the help of
     the external builder on the peer local storage.
   end note
 
-group Org-Enclave binding/certification
-  note right ECC1
-    Here the Org takes "ownership" of this enclave by generating a certificate.
-    In Post-MVP, this certificate is used by an FPC endorsement plugin,
-    to replace the normal peer endorsement signature with the enclave signature.
-  end note
-
-  ECC1 -> Enclave1 ++: getCSR
-  Enclave1 -> Enclave1 : csr <- generate_csr(Private_Keys.Enclave_SK)
-  return csr /' ECC1 -> Enclave1 '/
-  ECC1 -> ECC1 : generate peer certificate for enclave (certified by the Org)
-  ECC1 -> ECC1 : store Certificate
-    note right ECC1
-      FPC_stub stores the binding certificate with the help of
-      the external builder on the peer local storage but also
-      returns it to the Peer_CLI.
-    end note
-end group
-return Credentials, Certificate
+return Credentials
 
 end
 
   loop for all/"enough" endorsers to satisfy ercc endorsement policy
-    Peer_CLI -> ERCC1 ++: registerEnclave (Credentials, Certificate)
+    Peer_CLI -> ERCC1 ++: registerEnclave (Credentials)
     note right ERCC1
         Note that ERCC aborts if a single check failed.
     end note
@@ -171,35 +181,37 @@ end
       note right ERCC1
         The evidence check ensures that the evidence is correct (e.g. in
         case of EPID-based attestation the evidence must be signed by IAS)
-        and covers the attested data.
+        and covers Hash(Credentials.Attested_Data).
 
         Note that the IAS verification key is hardcoded in ERCC. This
         verification key does not change frequently. In the case the verification
         key changes, the ERCC must be updated and upgraded through the normal
         chaincode lifecycle upgrade operation.
       end note
-      ERCC1 -> ERCC1 : check Credentials.Attested_Data match CC_Parameters known to ERCC
+      ERCC1 -> ERCC1 : check Credentials.Attested_Data.CC_Parameters
       note right ERCC1
-        In particular Channel_Id, MSPID of sender, TLCC_MRENCLAVE is verified
+        - Channel_Id should correspond to ERCC's own view
+        - MSPID should correspond to the tx sender
+        - TLCC_MRENCLAVE matches the version baked into ERCC
+        - CC_Version matches MRENCLAVE from (validated) Credentials.Evidence
       end note
    end group
 
-  ERCC1 -> ERCC1 : check Org-Enclave binding certificate
+  group Org-Enclave binding verification [Post-MVP: Validation]
+    ERCC1 -> ERCC1 : check Org-Enclave binding certificate
+      note right ERCC1
+        - Credentials.Attested_Data.CC_Parameters == Credentials.Certificate.CC_Parameters
+        - Credentials.Certificate should be issued by CA owned by CC_Parameters.MSPID
+        - Credentials.Certificate.role == 'peer'
+      end note
+  end group
 
-  group check consistency of Credentials (TBD)
-    note right ERCC1
-        It is crucial for ERCC to perform queries over (or have access to) the chaincode
-        definition. Querying (or retrieving) the chaincode definition through TLCC is the
-        most convenient way to implement this with least impact on core Fabric code.
-        Future tighter integration in Fabric could also change that to more direct ways
-        to feed it to ERCC.
-    end note
-
+  group check consistency of Credentials
     create Lifecycle order 55
     ERCC1 -> Lifecycle +: queryChaincodeDefinition (Credentials.Attested_Data.CC_Parameters.CC_Id)
     return chaincode definition
 
-    ERCC1 -> ERCC1    : check Credentials against chaincode definition
+    ERCC1 -> ERCC1    : check Credentials.Attested_Data.CC_Parameters against chaincode definition
     note right ERCC1
         This check ensures that:
         1) the chaincode version (i.e., the MREnclave) matches the
@@ -214,10 +226,10 @@ end
     end note
   end group
 
-  group Deployment validation
+  group Deployment validation  [Post-MVP: Risk-management]
     ERCC1 -> ERCC1 : validate FPC deployment (restriction) policy
     note right ERCC1
-      This is a POST-MVP feature related to risk management.
+      This might cover policies like anti-collocation, risk-budgets for collocated chaincodes or alike.
     end note
   end group
 

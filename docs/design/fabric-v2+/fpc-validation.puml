@@ -89,30 +89,39 @@ end group
             group fpc-vscc
                 note over ECC1
                      fpc-vscc is a validation plugin associated with each fpc chaincode.
+                     Any failure below will result in an invalidation of the transaction
                 end note
-                ECC1 -> ECC1 : <args, read/writeset, result> <- extract from transaction
-                ECC1 -> ECC1 : <Enclave_VK, Sig_Enclave, ECC_result> <- extract from result
+                alt  MVP
+                  ECC1 -> ECC1 : <args, read/writeset, result> <- extract from transaction
+                  ECC1 -> ECC1 : <Enclave_VK, Sig_Enclave, ECC_result> <- extract from result
 
-                create participant ERCC order 30
-                ECC1 -> ERCC++ : queryECCInfo(CC_Id, Hash(Enclave_VK))
-                note right
-                    If FPC enclave is registered, ERCC will return
-                    ECCInfo containing enclave information message;
-                    otherwise ECCInfo is empty.
-                end note
-                return ECCInfo = <ATTESTATION, ...>
-                ECC1 -> ECC1 : check ECCInfo exists
-                note right
-                    If enclave not registered, invalidate transaction
-                end note
+                  ECC1 -> ECC1 : verify Sig_Enclave with Enclave_VK and <args, read/writeset, ECC_result>
 
-                ECC1 -> ECC1 : verify Sig_Enclave with Enclave_VK and <args, read/writeset, ECC_result>
+                  create participant ERCC order 30
+                  ECC1 -> ERCC++ : queryECCInfo(CC_Id, Hash(Enclave_VK))
+                  note right
+                      If FPC enclave is registered, ERCC will return the corresponding (Credentials.Attestated_Data.)CC_Parameters
+                      otherwise CC_Parameters is empty.
+                  end note
+                  return CC_Parameters
+
+              else Post-MVP: Validation
+                  note right of ECC1
+                      The enclave's signature was already verified against the (enclave's) PeerCertificate.
+                  end note
+
+                  ECC1 -> ERCC++ : queryECCInfo(CC_Id, Hash(PeerCertificate.Public_key))
+                  return CC_Parameters
+              end
+
+              ECC1 -> ECC1 : check CC_Parameters matches chaincode definition
+              ECC1 -> ECC1 : check CC_Parameters.MSPID matches MSPID of endorser
+              note right of ECC1
+                This ensures that the Orgs used when evaluating  endorsement policies during
+                 the default validation matches the organization having taken "ownership" over
+                 the particular FPC Chaincode enclave.
+              end note
             end
-
-            note right
-                any failed verification causes to mark tx as invalid
-            end note
-
         end loop
 
         loop for each tx in block
