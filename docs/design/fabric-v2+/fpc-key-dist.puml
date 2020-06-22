@@ -65,7 +65,7 @@ group chaincode key generation
   note right Enclave1
     Generate the State Encryption Key (SEK) and the chaincode-specific encryption/decryption key pair.
   end note
-  Enclave1      -> Enclave1     :   SEK, Chaincode_EK, Chaincode_DK, <- keyGen()
+  Enclave1      -> Enclave1     :   SEK, <Chaincode_EK, Chaincode_DK>, <- keyGen()
   note right Enclave1
     - SEK denotes the state encryption key
     - Chaincode_EK and Chaincode_DK denote the public and private encryption key pair
@@ -117,7 +117,7 @@ group chaincode key generation
         - A secure channel with TLCC is not required here.
         - We have to investigate how to implement this can_endorse function.
     end note
-    return true
+    return true/false
     note right ERCC1
         if false, abort
     end note
@@ -190,7 +190,7 @@ group chaincode key export
     Contrary to above, here we **use a secure channel**
     (as in this context we cannot trust peer)
   end note
-  return true /'Enclave1 -> TLCC_Enclave1'/
+  return true/false /'Enclave1 -> TLCC_Enclave1'/
   note left
     if false, abort
   end note
@@ -243,7 +243,7 @@ group chaincode key export
     ERCC1       -> ERCC1            :   CC_Id <- extract from Enclave_Credentials
     ERCC1       -> ERCC1            :   check Enclave_Credentials and Enclave2_Credentials have same CC_Id
     ERCC1       -> TLCC_Enclave1++: can_endorse(Enclave2_VK)
-    return true
+    return true/false
     ERCC1       -> ERCC1            :   verify SIG_Enclave over <Chaincode_EK, cckeys_enc, Enclave2_VK, Enclave_VK> with Enclave_VK
     ERCC1       -> ERCC1            :   check Enclave previously registered cckey_distribution_message.Chaincode_EK
     ERCC1       -> ERCC1            :   check cckey_distribution_message.Chaincode_EK and get_state(CC_Id."Chaincode_EK") match
@@ -278,7 +278,7 @@ group chaincode key import
   Enclave1      -> ERCC1            ++: GetKeyDistStart(Public_Keys.Enclave2_VK)
   return cckeydist_start_message <- <encrypted_cckeys_message, cckey_distribution_message> /'Enclave2 -> ERCC2'/
   Enclave1      -> TLCC_Enclave1    ++: check_ercc_committed_data(cckeydist_start_message)
-  return true /'Enclave2 -> TLCC_Enclave2'/
+  return true/false /'Enclave2 -> TLCC_Enclave2'/
   note left
     if false, abort
   end note
@@ -286,7 +286,7 @@ group chaincode key import
   Enclave1      -> ERCC1            ++: GetRegistration(Enclave1_VK)
   return Registered_Enclave1_Credentials /'Enclave2 -> ERCC2'/
   Enclave1      -> TLCC_Enclave1    ++: check_ercc_committed_data(Registered_Enclave1_Credentials)
-  return true /'Enclave2 -> TLCC_Enclave2'/
+  return true/false /'Enclave2 -> TLCC_Enclave2'/
   note left
     if false, abort
   end note
