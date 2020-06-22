@@ -135,6 +135,7 @@ end group
             enclave establish its own trusted
             view of the ledger.
         end note
+        TLCC1 -> TLCC1 : compute and store integrity-metadata for the invoked FPC chaincode's writeset
         |||
         deactivate TLCC1
         |||
