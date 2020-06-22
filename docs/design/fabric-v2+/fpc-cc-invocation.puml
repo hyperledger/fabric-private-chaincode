@@ -24,7 +24,6 @@ participant "Peer_CLI/\nClient SDK" as CLI order 10
 participant "Ledger_enclave" as TLCC1 order 45 #99FF99
 
 participant "Peer" as Peer order 25
-participant "FPC_manager" as Manager1 order 26
 participant "ERCC" as ERCC1 order 50
 
 ref over User1, ERCC1
@@ -84,9 +83,9 @@ group invoke
       end note
 
 
-      ECC1 -> Manager1 ++: get sealed state
-      note right Manager1
-        ECC manager has access to peer local
+      ECC1 -> ECC1 ++: get sealed state
+      note right ECC1
+        FPC_stub has access to peer local
         storage through external builder.
       end note
       return
