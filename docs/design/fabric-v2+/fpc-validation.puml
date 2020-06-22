@@ -52,12 +52,6 @@ group endorsement
     end ref
     return proposal response
 
-    User1 -> ECC2 ++: send proposal
-    ref over ECC2
-        invoke chaincode enclave
-        see fpc-cc-invocation.puml
-    end ref
-    return
 
     User1 -> User1 : form transaction
 
