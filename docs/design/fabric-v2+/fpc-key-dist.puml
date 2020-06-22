@@ -278,7 +278,7 @@ group chaincode key import
     the import flow may involve other entities or the target / recipient enclave.
   end note
 
-  Admin1        -> Peer1_CLI        ++: importCCKeys(CC_Id)
+  Admin1        -> Peer1_CLI        ++: lifecycle chaincode\n importcckeys (CC_Id)
 
   Peer1_CLI        -> ERCC1          ++: queryECCInfos(CC_Id)
   return ECCInfos = List<Credential, ...>
