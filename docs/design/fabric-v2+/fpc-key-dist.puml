@@ -208,6 +208,13 @@ group chaincode key export
     and check whether Enclave2's matches it.
   end note
   Enclave1      -> Enclave1         :   check Enclave2_Credentials.Attested_Data.CC_Parameters.CC_Id against internal one
+  note right Enclave1
+    The attestation verification requires to have the IAS keys inside the enclave.
+    Alternatively, this check can be removed, thus relying on ERCC and TLCC.
+    ERCC already verified the attestation as part of the enclave registration,
+    using the IAS keys which are part of ERCC itself.
+    Also, TLCC previously confirmed that such registration was committed.
+  end note
   Enclave1      -> Enclave1         :   check Enclave2_VK, Enclave2_EK, ATTESTATION
   Enclave1      -> Enclave1         :   cckeys_enc <- encrypt <SEK, Chaincode_DK> with Enclave2_EK
     note left
