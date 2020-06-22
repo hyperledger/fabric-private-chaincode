@@ -23,14 +23,7 @@ participant "Ledger_enclave" as TLCC_Enclave1 order 60 #99FF99
 
 participant Orderer as Orderer order 100
 
-ref over Admin1, Peer1_CLI, ECC1, Enclave1, ERCC1, TLCC_Enclave1, Orderer
-    create and register enclave (see fpc-registration diagram)
-end ref
-
 note right Admin1
-    Assumptions.
-    - The administrators, respectively, have created the enclaves and registered their credentials.
-
     References.
     - Check out the `fpc-registration` diagram for more details
       on the creation and registration of the enclave credentials.
@@ -38,14 +31,31 @@ note right Admin1
       on messages, parameters and cryptographic keys used below.
 end note
 
-group chaincode key generation
-  note right Admin1
-    One admin must begin the key generation using the local enclave.
-    This might as well be Admin2 using Enclave2.
-  end note
-  Admin1        -> Peer1_CLI    ++: generateCCKeys(CC_NAME)
+Admin1 -> Peer1_CLI ++: lifecycle chaincode\n createenclave (CC_Name)
 
-  Peer1_CLI        -> ERCC1          ++: queryECCInfos(CC_NAME)
+ref over Peer1_CLI
+    Enclave creation and registration as described in fpc-registration diagram.
+end ref
+
+note right Peer1_CLI
+    Once enclave creation and registration are completed,
+    CLI checks with the help of ERCC if Chaincode Keys are
+    already available. In that case no key generation is
+    needed and CLI may continue with Key Import protocol.
+
+    In the other case where no chaincode keys are available,
+    key generation is triggered as described next.
+end note
+
+Peer1_CLI -> ERCC1 +: queryChaincodeKeys(CC_Name)
+ERCC1 -> ERCC1 : cc_keys <- get_state(CC_Name."Chaincode_EK")
+return cc_keys
+note right Peer1_CLI
+    if cc_keys empty; continue with key generation protocol
+end note
+
+group chaincode key generation
+  Peer1_CLI        -> ERCC1          ++: queryECCInfos(CC_Name)
   return ECCInfos = List<Enclave Credential,...> /'Admin1 -> ERCC1'/
 
   Peer1_CLI    -> Peer1_CLI : check if ECCInfos contains enclave for this peer;\n otherwise abort
@@ -121,9 +131,8 @@ group chaincode key generation
     note right ERCC1
         if false, abort
     end note
-    ERCC1   -> ERCC1         :  extract CC_Id from Credentials
-    ERCC1   -> ERCC1         :  cc_ek <-
-    ERCC1   -> ERCC1         :  if get_state(CC_Id."Chaincode_EK") return empty\n then put_state(CC_Id."Chaincode_EK", cckey_registration_message.Chaincode_EK);\n otherwise abort
+    ERCC1   -> ERCC1         :  extract CC_Name from Credentials
+    ERCC1   -> ERCC1         :  if get_state(CC_Name."Chaincode_EK") return empty\n then put_state(CC_Name."Chaincode_EK", cckey_registration_message.Chaincode_EK);\n otherwise abort
     ERCC1   -> ERCC1         :  put_state("keydist_registered".Enclave_VK, cckey_registration_message)
     note right ERCC1
         This is the proof (stored on the ledger) that the enclave has the CC keys.
@@ -148,9 +157,9 @@ group chaincode key export
     if necessary, upgrade chaincode policy to enable target Enclave endorsements
   end note
 
-  Admin1 -> Peer1_CLI ++: exportCCKeys(CC_NAME)
+  Admin1 -> Peer1_CLI ++: exportCCKeys(CC_Name)
 
-  Peer1_CLI        -> ERCC1          ++: queryECCInfos(CC_NAME)
+  Peer1_CLI        -> ERCC1          ++: queryECCInfos(CC_Name)
   return ECCInfos = List<Enclave Credential,...> /'Admin1 -> ERCC1'/
   Peer1_CLI        -> Peer1_CLI           : Enclave2_Credentials <- select non-provisioned (target) enclave from ECCInfos
   note right Peer1_CLI
@@ -195,12 +204,12 @@ group chaincode key export
     if false, abort
   end note
   note right Enclave1
-    Regarding Enclave2's chaincode definition, we can only check that CC_Id matches,
+    Regarding Enclave2's chaincode definition, we can only check that CC_Name matches,
     because the other fields might have changed.
     Alternatively, we could access the "current" chaincode definition,
     and check whether Enclave2's matches it.
   end note
-  Enclave1      -> Enclave1         :   check Enclave2_Credentials.Attested_Data.CC_Parameters.CC_Id against internal one
+  Enclave1      -> Enclave1         :   check Enclave2_Credentials.Attested_Data.CC_Parameters.CC_Name against internal one
   Enclave1      -> Enclave1         :   check Enclave2_VK, Enclave2_EK, ATTESTATION
   Enclave1      -> Enclave1         :   cckeys_enc <- encrypt <SEK, Chaincode_DK> with Enclave2_EK
     note left
@@ -240,13 +249,13 @@ group chaincode key export
     Peer1_CLI   -> ERCC1            ++: CCKeysExport(export_message)
     ERCC1       -> ERCC1            :   <Chaincode_EK, cckeys_enc, Enclave2_VK, Enclave_VK, SIG_Enclave> <- extract from export_message
     ERCC1       -> ERCC1            :   check Enclave_VK's and Enclave2_VK's Credentials are registered
-    ERCC1       -> ERCC1            :   CC_Id <- extract from Enclave_Credentials
-    ERCC1       -> ERCC1            :   check Enclave_Credentials and Enclave2_Credentials have same CC_Id
+    ERCC1       -> ERCC1            :   CC_Name <- extract from Enclave_Credentials
+    ERCC1       -> ERCC1            :   check Enclave_Credentials and Enclave2_Credentials have same CC_Name
     ERCC1       -> TLCC_Enclave1++: can_endorse(Enclave2_VK)
     return true/false
     ERCC1       -> ERCC1            :   verify SIG_Enclave over <Chaincode_EK, cckeys_enc, Enclave2_VK, Enclave_VK> with Enclave_VK
     ERCC1       -> ERCC1            :   check Enclave previously registered cckey_distribution_message.Chaincode_EK
-    ERCC1       -> ERCC1            :   check cckey_distribution_message.Chaincode_EK and get_state(CC_Id."Chaincode_EK") match
+    ERCC1       -> ERCC1            :   check cckey_distribution_message.Chaincode_EK and get_state(CC_Name."Chaincode_EK") match
     ERCC1       -> ERCC1            :   put_state("keydist_started".Enclave2_VK, export_message)
     return proposal response /'Admin1 -> ERCC1'/
   end loop
@@ -264,9 +273,9 @@ group chaincode key import
     the import flow may involve other entities or the target / recipient enclave.
   end note
 
-  Admin1        -> Peer1_CLI        ++: importCCKeys(CC_NAME)
+  Admin1        -> Peer1_CLI        ++: importCCKeys(CC_Name)
 
-  Peer1_CLI        -> ERCC1          ++: queryECCInfos(CC_NAME)
+  Peer1_CLI        -> ERCC1          ++: queryECCInfos(CC_Name)
   return ECCInfos = List<Enclave Credential,...>
   Peer1_CLI    -> Peer1_CLI : check if ECCInfos contains enclave for this peer;\n otherwise abort
 
@@ -291,7 +300,7 @@ group chaincode key import
     if false, abort
   end note
   Enclave1      -> Enclave1         :   check Enclave1_VK matches in registration_message and cckeydist_start_message
-  Enclave1      -> Enclave1         :   check CC_Id in Registered_Enclave1_Credentials matches internal one
+  Enclave1      -> Enclave1         :   check CC_Name in Registered_Enclave1_Credentials matches internal one
   note right Enclave1
     Since Enclave1's Credentials are committed, then Enclave1's Evidence has already been verified by ERCC.
     Hence, verifying Enclave1's Evidence at this point does not appear necessary.
@@ -303,7 +312,13 @@ group chaincode key import
   Enclave1      -> Enclave1         :   SIG_Enclave2 <- sign Chaincode_EK with Enclave2_SK
   Enclave1      -> Enclave1         :   cckey_registration_message <- <Enclave2_VK, Sig_Enclave2, Chaincode_EK>
 
-  return cckey_registration_message /'Enclave2 -> ECC2'/
+  return cckey_registration_message, sealed_cckeys /'Enclave2 -> ECC2'/
+  ECC1 -> ECC1 : store sealed cc_keys
+  note right ECC1
+    FPC_stub stores sealed cckeys with the help of
+    the external builder on the peer local storage.
+  end note
+
   return cckey_registration_message /'ECC2 -> Peer2_CLI'/
 
   loop for all/"enough" endorsers
