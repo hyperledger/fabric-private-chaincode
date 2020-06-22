@@ -47,16 +47,14 @@ note right Peer1_CLI
     key generation is triggered as described next.
 end note
 
-Peer1_CLI -> ERCC1 +: queryChaincodeKeys(CC_Id)
+Peer1_CLI -> ERCC1 +: queryChaincodeKey(CC_Id)
 ERCC1 -> ERCC1 : Chaincode_EK <- get_state(CC_Id."Chaincode_EK")
 return Chaincode_EK
-note right Peer1_CLI
-    if Chaincode_EK empty; continue with key generation protocol
-end note
+Peer1_CLI -> Peer1_CLI : if Chaincode_EK empty\n than continue with key generation protocol;\n otherwise abort
 
 group chaincode key generation
   Peer1_CLI        -> ERCC1          ++: queryECCInfos(CC_Id)
-  return ECCInfos = List<Enclave Credential,...> /'Admin1 -> ERCC1'/
+  return ECCInfos = List<Credential, ...> /'Admin1 -> ERCC1'/
 
   Peer1_CLI    -> Peer1_CLI : check if ECCInfos contains enclave for this peer;\n otherwise abort
 
@@ -75,11 +73,13 @@ group chaincode key generation
   note right Enclave1
     Generate the State Encryption Key (SEK) and the chaincode-specific encryption/decryption key pair.
   end note
-  Enclave1      -> Enclave1     :   SEK, <Chaincode_EK, Chaincode_DK> <- keyGen()
+  Enclave1      -> Enclave1     :   SEK, <Chaincode_EK, Chaincode_DK> <- generate keys
   note right Enclave1
     - SEK denotes the state encryption key
     - Chaincode_EK and Chaincode_DK denote the public and private encryption key pair
   end note
+  Enclave1 -> Enclave1 : sealed_cckeys <- seal <SEK, Chaincode_EK, Chaincode_DK>
+
   Enclave1      -> Enclave1     :   Sig_Enclave <- sign Chaincode_EK with Enclave_SK
   note right
     NOTE: Enclave signing key (Enclave_SK) is generated during enclave creation.
@@ -87,12 +87,10 @@ group chaincode key generation
 
   Enclave1      -> Enclave1     :   cckey_registration_message <- <Chaincode_EK, Enclave_VK, Sig_Enclave>
 
-  Enclave1 -> Enclave1 : sealed_cckeys <- seal <SEK, Chaincode_EK, Chaincode_DK>
-
   return cckey_registration_message, selaed_cckeys /'ECC1 -> Enclave1    '/
-  ECC1 -> ECC1 : store sealed cc_keys
+  ECC1 -> ECC1 : store sealed_cckeys
   note right ECC1
-     FPC_stub stores sealed cckeys with the help of
+     FPC_stub stores sealed chaincode keys with the help of
      the external builder on the peer local storage.
   end note
 
@@ -100,10 +98,10 @@ group chaincode key generation
 
   loop for all/"enough" endorsers
       note right Peer1_CLI
-          Invoke RegisterCCKeys() at enough endorsing peers to satisfy
+          Invoke registerCCKeys() at enough endorsing peers to satisfy
           ERCC endorsement policy and collect proposal responses.
       end note
-    Peer1_CLI  -> ERCC1        ++: RegisterCCKeys(cckey_registration_message)
+    Peer1_CLI  -> ERCC1        ++: registerCCKeys(cckey_registration_message)
     ERCC1   -> ERCC1        :   check that tx proposal creator is Admin
     ERCC1   -> ERCC1        :   check that admin.org and enclave.org match
     ERCC1 -> ERCC1 : <Chaincode_EK, Enclave_VK, Sig_Enclave> <- extract from cckey_registration_message
@@ -142,7 +140,7 @@ group chaincode key generation
     return proposal response /'Admin1 -> ERCC1'/
    end
     Peer1_CLI -> Peer1_CLI : form transaction
-    Peer1_CLI -> Orderer: submit RegisterCCKeys transaction
+    Peer1_CLI -> Orderer: submit registerCCKeys transaction
     return
 end
 
@@ -160,7 +158,7 @@ group chaincode key export
   Admin1 -> Peer1_CLI ++: exportCCKeys(CC_Id)
 
   Peer1_CLI        -> ERCC1          ++: queryECCInfos(CC_Id)
-  return ECCInfos = List<Enclave Credential,...> /'Admin1 -> ERCC1'/
+  return ECCInfos = List<Credential, ...> /'Admin1 -> ERCC1'/
   Peer1_CLI        -> Peer1_CLI           : Enclave2_Credentials <- select non-provisioned (target) enclave from ECCInfos
   note right Peer1_CLI
     The Credentials data structure contains
@@ -276,7 +274,7 @@ group chaincode key import
   Admin1        -> Peer1_CLI        ++: importCCKeys(CC_Id)
 
   Peer1_CLI        -> ERCC1          ++: queryECCInfos(CC_Id)
-  return ECCInfos = List<Enclave Credential,...>
+  return ECCInfos = List<Credential, ...>
   Peer1_CLI    -> Peer1_CLI : check if ECCInfos contains enclave for this peer;\n otherwise abort
 
   Peer1_CLI -> Peer1_CLI : Fill CC_Parameters
@@ -291,7 +289,7 @@ group chaincode key import
   note left
     if false, abort
   end note
-  Enclave1      -> Enclave1         :   extract Enclave1_VK from cckeydist_start_message.key_distribution_message
+  Enclave1      -> Enclave1         :   extract Enclave1_VK from cckeydist_start_message.cckey_distribution_message
   Enclave1      -> ERCC1            ++: GetRegistration(Enclave1_VK)
   return Registered_Enclave1_Credentials /'Enclave2 -> ERCC2'/
   Enclave1      -> TLCC_Enclave1    ++: check_ercc_committed_data(Registered_Enclave1_Credentials)
@@ -305,17 +303,17 @@ group chaincode key import
     Since Enclave1's Credentials are committed, then Enclave1's Evidence has already been verified by ERCC.
     Hence, verifying Enclave1's Evidence at this point does not appear necessary.
   end note
-  Enclave1      -> Enclave1         :   verify Sig_Enclave1
-  Enclave1      -> Enclave1         :   SEK, Chaincode_DK <- decrypt(cckeydist_start_message.encrypted_keys_message) with Enclave2_DK
+  Enclave1      -> Enclave1         :   verify Sig_Enclave1 over <Chaincode_EK, cckeys_enc, Enclave2_VK, Enclave_VK> with Enclave1_VK
+  Enclave1      -> Enclave1         :   SEK, Chaincode_DK <- decrypt cckeydist_start_message.encrypted_keys_message with Enclave2_DK
   Enclave1      -> Enclave1         :   extract Chaincode_EK from Chaincode_DK
   Enclave1 -> Enclave1 : sealed_cckeys <- seal <SEK, Chaincode_EK, Chaincode_DK>
   Enclave1      -> Enclave1         :   Sig_Enclave2 <- sign Chaincode_EK with Enclave2_SK
   Enclave1      -> Enclave1         :   cckey_registration_message <- <Enclave2_VK, Sig_Enclave2, Chaincode_EK>
 
   return cckey_registration_message, sealed_cckeys /'Enclave2 -> ECC2'/
-  ECC1 -> ECC1 : store sealed cc_keys
+  ECC1 -> ECC1 : store sealed_cckeys
   note right ECC1
-    FPC_stub stores sealed cckeys with the help of
+    FPC_stub stores sealed chaincode keys with the help of
     the external builder on the peer local storage.
   end note
 
@@ -323,17 +321,17 @@ group chaincode key import
 
   loop for all/"enough" endorsers
       note right Peer1_CLI
-          Invoke RegisterCCKeys() at enough endorsing peers to satisfy
+          Invoke registerCCKeys() at enough endorsing peers to satisfy
           ERCC endorsement policy and collect proposal responses.
       end note
 
         ref over Peer1_CLI
-          run RegisterCCKeys(cckey_registration_message)
+          run registerCCKeys(cckey_registration_message)
         end ref
 
   end loop
   Peer1_CLI -> Peer1_CLI : form transaction
-  Peer1_CLI -> Orderer: submit RegisterCCKeys transaction
+  Peer1_CLI -> Orderer: submit registerCCKeys transaction
   return /'Admin2 -> Peer2_CLI'/
 
 end group
