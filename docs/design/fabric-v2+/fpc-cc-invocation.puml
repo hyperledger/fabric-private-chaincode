@@ -32,16 +32,16 @@ ref over User1, ERCC1
 end ref
 |||
 
-User1 -> CLI ++: invoke <CC_NAME,..., args>
+User1 -> CLI ++: invoke <CC_Id, args, ...>
 
 group prepare FPC proposal
 
-CLI -> ERCC1 ++: queryECCInfos(CC_NAME)
-return ECCInfos = List<Enclave_PK, Chaincode_EK, ... , ATTESTATION>, ...>
+CLI -> ERCC1 ++: queryECCInfos(CC_Id)
+return ECCInfos = List<<Enclave_VK, Chaincode_EK, ... , ATTESTATION>, ...>
 
 CLI -> CLI: verify ECCInfos
 note right
-  NOTE ECCInfos contains a list of all FPC enclave registered for CC_NAME.
+  NOTE ECCInfos contains a list of all FPC enclave registered for CC_Id.
 
   Verify performs the same verification steps (i.e., attestation
   verification, etc.) as the registration step performed by ERCC.
@@ -56,7 +56,7 @@ note right
   NOTE: For MVP, ECCInfo only contains Chaincode_EK and no ECCInfo verification is needed.
 end note
 
-CLI -> CLI : generate r_key
+CLI -> CLI : r_key <- keyGen()
 note right
     generate a symmetric key to
     encrypt the FPC chaincode result
@@ -67,7 +67,7 @@ CLI -> CLI : args_ECC <- encrypt <args, r_key> with Chaincode_EK
 end
 
 group invoke
-  CLI -> Peer ++: send proposal <CC_NAME, args_ECC, ...>
+  CLI -> Peer ++: send proposal <CC_Id, args_enc, ...>
 
   alt FPC Chaincode is not running
       note right Peer
@@ -83,7 +83,7 @@ group invoke
       end note
 
 
-      ECC1 -> ECC1 ++: get sealed state
+      ECC1 -> ECC1 ++: get sealed credentials
       note right ECC1
         FPC_stub has access to peer local
         storage through external builder.
@@ -91,20 +91,20 @@ group invoke
       return
 
       create participant "FPC_stub_enclave" as Enclave1 order 30 #99FF99
-      ECC1 -> Enclave1 ++ : start enclave with sealed state
-      Enclave1 -> Enclave1 : unseal state and restore
+      ECC1 -> Enclave1 ++ : spawn enclave with sealed credentials
+      Enclave1 -> Enclave1 : unseal credentials and restore
       return
       return
   end
 
-      Peer -> ECC1 ++: invoke (proposal(args_ECC), CTX)
+      Peer -> ECC1 ++: invoke (proposal(args_enc), CTX)
       note right
         Transaction context (CTX) used for all interactions
         with both, the untrusted ledger und trusted ledger (Ledger_enclave)
         within the invocation. It ensures that all state accesses
         are from the same state view (block height).
       end note
-      ECC1 -> Enclave1 ++: invoke (proposal(args_ECC), CTX)
+      ECC1 -> Enclave1 ++: invoke (proposal(args_enc), CTX)
 
       Enclave1 <-> TLCC1: establish secure channel based on local attestation
 
@@ -120,7 +120,7 @@ group invoke
       return
 
 
-      Enclave1 -> Enclave1 : args, r_key <- decrypt args_ECC using Chaincode_DK
+      Enclave1 -> Enclave1 : <args, r_key> <- decrypt args_enc with Chaincode_DK
 
       note right
         If proposal contains optional Req_ledger_enclave_inst_id parameter,
@@ -137,16 +137,22 @@ group invoke
       end ref
 
 
-      Enclave1 -> Enclave1 : ECC_result <- encrypt <result> with r_key
+      Enclave1 -> Enclave1 : result_enc <- encrypt result with r_key
       note right
         The encryption is via authenticated symmetric cipher like aes-gcm
       end note
-      Enclave1 -> Enclave1 : SIG_Enclave <- sign <args, read/writeset, ECC_result> with Enclave_SK
-      return <ECC_result, SIG_Enclave>
+      Enclave1 -> Enclave1 : Sig_Enclave <- sign <args, read/writeset, result_enc> with Enclave_SK
+      return <result_enc, Sig_Enclave>
 
-    return <ECC_result, SIG_Enclave>
+    return <result_enc, Sig_Enclave>
 
-    Peer -> Peer : create proposal response <args, read/writeset, result=<ECC_result, SIG_Enclave, Enclave_PK>, ...>
+    Peer -> Peer : create proposal response <args, read/writeset, result=<result_enc, Sig_Enclave, Enclave_VK>, ...>
+    note right Peer
+        Note that the result field of the proposal response contains
+        a message that comprises the encrypted result produced by the
+        enclave, the enclave signature, and the corresponding
+        verification key.
+    end note
 
     return proposal response
 end
@@ -171,7 +177,8 @@ group complete transaction
 end
 
 group result decryption
-    CLI -> CLI : result <- decrypt ECC_result with r_key
+    CLI -> CLI : result_enc <- extract from proposal response
+    CLI -> CLI : result <- decrypt result_enc with r_key
 end
 
 
