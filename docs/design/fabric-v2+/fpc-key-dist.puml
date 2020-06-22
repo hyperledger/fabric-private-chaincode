@@ -155,7 +155,7 @@ group chaincode key export
     if necessary, upgrade chaincode policy to enable target Enclave endorsements
   end note
 
-  Admin1 -> Peer1_CLI ++: exportCCKeys(CC_Id)
+ Admin1 -> Peer1_CLI ++:  lifecycle chaincode\n exportcckeys (CC_Id)
 
   Peer1_CLI        -> ERCC1          ++: queryECCInfos(CC_Id)
   return ECCInfos = List<Credential, ...> /'Admin1 -> ERCC1'/
