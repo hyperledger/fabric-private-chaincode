@@ -93,6 +93,9 @@ end group
             end
 
             group fpc-vscc
+                note over ECC1
+                     fpc-vscc is a validation plugin associated with each fpc chaincode.
+                end note
                 ECC1 -> ECC1 : <args, read/writeset, result> <- extract from transaction
                 ECC1 -> ECC1 : <Enclave_VK, Sig_Enclave, ECC_result> <- extract from result
 
