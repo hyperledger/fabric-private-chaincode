@@ -17,101 +17,82 @@ title Foot Box removed
 
 title Fabric Private Chaincode - Chaincode execution
 
-'actor "User Org1" as User1 order 9
-'participant "ECC_Manager (syscc) Peer1_Org1" as Manager1 order 20
+participant "FPC_stub_enclave" as Enclave1 order 10 #99FF99
+participant "FPC_chaincode" as Chaincode order 30 #99FF99
+
+participant "FPC_stub" as ECC1 order 31
+
+database "Peer_state" as storage1 order 40
+participant "Ledger_enclave" as TLCC1 order 41 #99FF99
+
+activate Enclave1
+
+ref over Enclave1, TLCC1
+    see fpc-cc-invocation.puml
+end
 
 
-
-
-participant "Chaincode" as Chaincode order 10 #99FF99
-
-participant "ECC_Enclave" as Enclave1 order 30 #99FF99
-participant "ECC1" as ECC1 order 31
-
-database "Local storage" as storage1 order 40
-participant "TLCC" as TLCC1 order 41 #99FF99
-
-
-participant "ECC2" as ECC2 order 50
-participant "ECC_Enclave2" as Enclave2 order 51 #99FF99
-
-
-[-> Chaincode : invoke (args, CTX)
+Enclave1 -> Chaincode : invoke (args, CTX)
 activate Chaincode
+note right
+    FPC_stub_enclave calls invoke of the FPC_chaincode,
+    which implements the actual application logic.
+
+    Context (CTX) is used to retrieve state and the
+    corresponding integrity-metadata from the same view.
+end note
 
 loop
-  note right Chaincode
-    this loop implements the application business logic
-    It may perform getState, putState, and cc2cc calls
+  note over Chaincode
+    This loop denotes the application logic as it
+    may perform multiple getState and putState operations.
   end note
 
   alt getState
-    Chaincode -> Enclave1 ++ : getState(key)
+    Chaincode -> Enclave1 ++ : getState(key, CTX)
     Enclave1 -> Enclave1 : update readset
-    Enclave1 -> ECC1 ++ : getState(key)
-    ECC1 -> storage1 ++ : getState(key)
-    return value
-    ECC1 -> TLCC1 ++ : getMetadata(key)
-    note right Enclave1 #FFaa00
-      This almost certainly would also require some view-id or alike
-      so different getStates in a single transactions are based on same view.
-      See comments on TLCC_inst_id in fpc-cc-invocation.puml.
-    end note
+    Enclave1 -> ECC1 ++ : getState(key, CTX)
+    ECC1 -> storage1 ++ : getState(key, CTX)
+    return value_enc
+    ECC1 -> TLCC1 ++ : getMetadata(key, CTX)
     return integrity-metadata
-    return value, integrity-metadata
-    Enclave1 -> Enclave1 : check value using integrity-data
-    note left: also check that integrity-metadata comes from TLCC
-    Enclave1 -> Enclave1 : decrypt value with S_State
-    return decrypted and verified value
+    return value_enc, integrity-metadata
+    Enclave1 -> Enclave1 : check value_enc using integrity-data
+
+    note right: also check that integrity-metadata comes from Ledger_enclave
+    Enclave1 -> Enclave1 : value <- decrypt value_enc with SEK
+    Enclave1 -> Enclave1 : update readset
+    return value
+    note right
+        Application logic can now use value for
+        some computation; the value is in clear
+        and validated with the help of Ledger_enclave.
+    end note
 
 
   else putState
-    Chaincode -> Enclave1 ++ : putState(key,value)
-    Enclave1 -> Enclave1 : encrypt value with S_State
+    Chaincode -> Enclave1 ++ : putState(key, value, CTX)
+    Enclave1 -> Enclave1 : value_enc <- encrypt value with SEK
+    Enclave1 -> ECC1 ++: putState(key, value_enc, CTX)
+    note right
+        NOTE that with putState operations, only encrypted
+        data leaves the enclave.
+    end note
+    ECC1 -> ECC1 : putState(key, value_enc, CTX)
+    return
+
     Enclave1 -> Enclave1 : update writeset
     return
 
-  else CC2CC #FFaa00
-
-    note right Chaincode #FFaa00
-      Not supported at the moment TBD !!!!!!!!!
-      **BUR**: I propose this as v2.0 feature
-    end note
-
-    Chaincode -> Enclave1 ++ : cc2cc(CC_name, CH_name, args)
-
-    Enclave1 -> ECC1 ++ : cc2cc(CC_name, CH_name, args, TLCC_inst_id)
-    note left
-      ECC_Enclave adds TLCC_inst_id, which is the
-      identifier of the TLCC instance with it has
-      established a secure session.
-    end note
-
-    ECC1 -> ECC2 ++ : invoke(args, TLCC_inst_id)
-
-    ECC2 -> Enclave2 ++ : invoke(args, TLCC_inst_id)
-    Enclave2 -> Enclave2 : check TLCC_inst_id
-    note left
-      Enclave2 checks that TLCC_inst_id matches
-      its own TLCC_inst_id
-    end note
-    note right Enclave1 #FFaa00
-      See comments on TLCC_inst_id in fpc-cc-invocation.puml why
-      this might have to be replaced by a view-id or alike.
-    end note
-
-    ref over Enclave2
-      chaincode execution
-    end ref
-    return
-
-    return
-
-    return
   end
 end
 
-Chaincode -->[ : return
+Chaincode -> Chaincode : compute some result
+note right
+    The application logic may also return some result
+end note
+
+Chaincode --> Enclave1 : return result
 deactivate Chaincode
 
 @enduml
