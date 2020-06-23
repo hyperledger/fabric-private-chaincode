@@ -7,23 +7,26 @@
 
 @startuml
 
+!pragma teoz true
+
 title FPC Enclave Registration
 
-actor "Admin Org1" as Admin order 10
-participant "E_Manager" as E_Manager order 15
-participant "ECC Peer1_Org1" as ECC1 order 20
-participant "ERCC Peer1_Org1" as ERCC1 order 40
-participant "ERCC Peer1_Org2" as ERCC2 order 50
+actor "Admin" as Admin order 10
+participant "Peer_CLI" as Peer_CLI order 15
+participant "FPC_stub" as ECC1 order 20
+participant "Ledger Enclave" as TLCC1 order 36 #99FF99
+participant "ERCC" as ERCC1 order 40
 
-entity IAS order 1
+entity IAS order 100
+participant Orderer as Orderer order 100
 
-note over IAS, ERCC2
+note right Admin
 Types are shown in the fpc-components diagram.
 end note
 
-note over ERCC1, ERCC2 #FFaa00
+note right Admin
   It is assumed that:
-    -channel has already been created;
+    -Channel has already been created;
     -ERCC has been installed -- approved by the participating organizations, see lifecycle;
     -ERCC contains hard-coded the TLCC_MRenclave and the IAS Root Certificate;
     -ERCC has an Endorsement Policy that requires signatures from a majority of orgs,
@@ -32,137 +35,158 @@ note over ERCC1, ERCC2 #FFaa00
      be dependent on such policy.
 end note
 
+Admin -> Peer_CLI ++: lifecycle chaincode\n createenclave (CC_Id)
+
 group enclave creation
-  activate Admin
-
-  note over Admin #FFaa00
-    These operations are assumed to be performed only after the chaincode definition is
-    committed on the channel for two reasons:
-    1) chaincode invocation may not be available before the definition is committed,
-    2) enclave registration should be feasible only for committed chaincodes
-
-    PS: in a future tighter integration with fabric we could remove the first constraint
-    and could potentially piggyback the steps before the ercc registration (enclave and
-    evidence generation) in the `approveformyorg` and the registration as part of
-    `commit` without having to change the protocol flows.
+  note right Peer_CLI
+    This operation can only be performed only after the chaincode definition is
+    committed on the channel as it defined the root of trust (MRENCLAVE) for
+    the FPC Chaincode. In particular, this must be set in order to complete the
+    enclave registration step as described next.
   end note
 
-  note over Admin, E_Manager #FFaa00
-    The E_Manager component hides some operations that do not necessarily need to be
-    performed by the Admin -- they could be scripted or embedded in the peer process;
-    depending on the actual implementation it may require admin credential on the peer.
-  end note
+  Peer_CLI -> ECC1 ++: createEnclave (CC_Id)
 
-  Admin -> E_Manager ++: create
+  create "FPC_stub_enclave" as Enclave1 order 30 #99FF99
+  ECC1 -> Enclave1 ++: createEnclave (CC_Id)
 
-  E_Manager -> ECC1 ++: create
-
-  create Enclave1 order 30 #99FF99
-  ECC1 -> Enclave1 ++: create
-
-  note over Enclave1 #FFaa00
-    The CC_Parameters help binding the enclave to a specific chaincode,
-    as it is registered in Fabric.
-    The requirement of CC_Paramenters can be met in practice as follows:
-    cc id, version, MSPID and channel id can be retrieved through Fabric shim functions;
-    tlcc mrenclave can be retrieved through ercc;
-    the validation of these parameters occurs when the registration tx is processed by ercc;
-    if necessary, a pre-validation can be performed through tlcc.
-    Another alternative could be to pass these parameters as part of the create call.
-  end note
   Enclave1 -> Enclave1: fetch CC_Parameters
+  note right Enclave1
+    The CC_Parameters help binding the enclave to a specific FPC chaincode,
+    as it is registered in Fabric.
 
-  note over Enclave1 #FFaa00
-    This step generates the enclave's private keys used by the FPC chaincode
-    to sign statements and set up secure channels.
-    Check out the Components diagram to visualize Public_Keys/Private_Keys data structures.
+    The requirement of CC_Paramenters can be met in practice as follows:
+    CC_Id, version, MSPID, and channel id can be retrieved through Fabric
+    shim functions; TLCC_mrenclave can be retrieved through ERCC;
+
+    Note that the validation of these parameters is performed by ERCC.
+    If necessary, a pre-validation can be performed through the Ledger Enclave.
+    Another alternative could be to pass these parameters as argument in
+    the createEnclave call.
   end note
-  Enclave1 -> Enclave1 : Private_Keys <- generate_keys()
-  Enclave1 -> Enclave1 : Public_Keys <- Public(Private_Keys)
+
+  Enclave1 -> Enclave1 : <Public_Keys, Private_Keys>  <- generate keys
+  note right Enclave1
+    This step generates the enclave's public and private keys used by
+    the FPC chaincode to sign transactions and decrypt transaction arguments.
+    See fpc-components.uml diagram for more details
+  end note
 
   Enclave1 -> Enclave1 : Attested_Data <- <CC_Parameters, Public_Keys>
 
-group "enclave attestation: Evidence <- GetEvidence(Attested_Data)"
-  note over E_Manager #FFaa00
-    As the EPID attestation requires the SPID, we let the E_Manager provide it.
-    In a concrete implementation, the E_Manager could explicitly send the SPID to ECC_Enclave.
-    Also, the SPID could be made an optional argument within an Aux_Data field.
-    This would allow for the generalization of the attestation, to enable DCAP.
+  Enclave1 -> Enclave1 +: GetEvidence(Attested_Data)
+  group enclave attestation - evidence creation
+  note right Enclave1
+    The GetEvidence method abstracts/generalizes the attestation protocol used here.
+    Currently, Intel SGX supports two different attestation schemes, namely,
+    EPID-based attestation and DCAP. For more details see Intel SGX docu.
+
+    In this diagram we illustrate the flow of the EPID-based attestation, which
+    involves Intel Attestation Service (IAS). As the EPID attestation requires
+    the SPID to generate a quote, the peer provides it through FPC_stub.
   end note
-  Enclave1-> E_Manager ++: getSPID
+  Enclave1-> Enclave1 ++: getSPID
   return SPID
 
-  Enclave1 -> Enclave1 : Attestation <- attest(SPID, Attested_Data)
-  note left #FFaa00
-    quote is defined with reportbody = Hash(<Attested_Data>)
+  Enclave1 -> Enclave1 : quote <- create quote using SPID over Hash(Attested_Data)
+  note right Enclave1
+      There are differnt options to implmement getSPID:
+      - FPC_stub could explicitly send the SPID to FPC_stub_enclave
+      - SPID could be an optional argument within an Aux_Data field.
+      - FPC_stub_enclave performs a ocall to fetch the SPID from FPC_stub
   end note
 
-  note over Enclave1 #FFaa00
+  Enclave1 -> IAS ++: send quote for verification
+  note right Enclave1
     Ideally the enclave itself is able to retrieve the verifiable evidence
     (i.e., the verification report, using EPID) and return it.
-    This additionally requires some ocalls and helper code in untrusted environment.
+    This additionally requires some ocalls and helper code in FPC_stub.
     For convenience, the enclave now returns the attestation, and the evidence
     (i.e., the verification report) is retrieved from untrusted environment.
   end note
-  Enclave1 -> IAS ++: Attestation
-  return Evidence <- Verification_Report
-end group
-
-  Enclave1 -> Enclave1 : Sealed_Credentials <- seal(CC_Parameters, Private_Keys)
-
-  note over Enclave1
-    The constant string "CREATE" in the Verb field is meant to be used only here
-    (in the create call). A different constant string is expected to be used whenever
-    the Credentials prototobuf is reused (e.g., to re-attest the chaincode). This
-    allows to distinguish different calls. 
+  note left IAS
+    IAS verifies the quote produced by the enclave and returns
+    a signed verification report that is used as evidence that
+    the enclave runs a certain FPC enclave in certain security context.
   end note
+  return Evidence <- Verification_Report
+  end group
+
+   return Evidence
+
+  Enclave1 -> Enclave1 : Sealed_Credentials <- seal <CC_Parameters, Private_Keys, Public_Keys>
+  note right Enclave1
+      The enclave keeps CC_Paramenters, Public_Keys, and Private_Keys as local state
+      in memory during it's lifetime.  Once an enclave restarts, this state is
+      deleted and must be restored. For this reason, the enclave state is sealed
+      so it can be stored outside the enclave for recovery.
+  end note
+
   Enclave1 -> Enclave1 : Credentials <- <Verb="CREATE", Attested_Data, Evidence>
+  note right Enclave1
+      The constant string "CREATE" in the Verb field is meant to be used only here
+      (in the create call). A different constant string is expected to be used whenever
+      the Credentials prototobuf is reused (e.g., to re-attest the chaincode). This
+      allows to distinguish different calls.
+  end note
   return Credentials, Sealed_Credentials
 
-  return Credentials, Sealed_Credentials
+  ECC1 -> ECC1 : store Sealed_Credentials
+  note right ECC1
+    FPC_stub stores sealed chaincode credentials with the help of
+    the external builder on the peer local storage.
+  end note
 
-  E_Manager -> E_Manager : store Sealed_Credentials
+group Org-Enclave binding/certification
+  note right ECC1
+    Here the Org takes "ownership" of this enclave by generating a certificate.
+    In Post-MVP, this certificate is used by an FPC endorsement plugin,
+    to replace the normal peer endorsement signature with the enclave signature.
+  end note
 
-  return result /' Admin -> E_Manager '/
-
-  deactivate Admin
-
-end
-
-group Org-Enclave binding/certification (to be implemented)
-  Admin -> E_Manager ++: certify
-  E_Manager -> ECC1 ++: getCSR
   ECC1 -> Enclave1 ++: getCSR
   Enclave1 -> Enclave1 : csr <- generate_csr(Private_Keys.Enclave_SK)
   return csr /' ECC1 -> Enclave1 '/
-  return csr /' E_Manager -> ECC1 '/
-  E_Manager -> E_Manager : generate peer certificate for enclave (certified by Org_1)
-  E_Manager -> E_Manager : store Certificate
-  return
-  note over Admin, E_Manager #FFaa00
-    -Org_1 takes "ownership" of this enclave,
-    -the certificate should be made available to the chaincode endorsement plugin,
-     so to include it in the responses (for eventual validation) 
-  end note
+  ECC1 -> ECC1 : generate peer certificate for enclave (certified by the Org)
+  ECC1 -> ECC1 : store Certificate
+    note right ECC1
+      FPC_stub stores the binding certificate with the help of
+      the external builder on the peer local storage but also
+      returns it to the Peer_CLI.
+    end note
 end group
+return Credentials, Certificate
 
-group enclave registration
-  activate Admin
-  Admin -> E_Manager ++: register
-  
-  group invoke ERCC register
-  E_Manager -> ERCC1 ++: register Credentials, Certificate
+end
 
-  note over ERCC1 #FFaa00
-    The evidence check ensures that the evidence is signed by IAS
-    and covers the attested data.
-  end note
-  ERCC1 -> ERCC1 : check Credentials.Evidence
-  ERCC1 -> ERCC1 : check Credentials.Attested_Data.CC_Parameters (Channel_Id, MSPID of sender, TLCC_MREnclave)
-  ERCC1 -> ERCC1 : check Certificate
+  loop for all/"enough" endorsers
+    Peer_CLI -> ERCC1 ++: registerEnclave (Credentials, Certificate)
+    note right ERCC1
+        Note that ERCC aborts if a single check failed.
+    end note
+
+    group enclave attestation - evidence validation
+      ERCC1 -> ERCC1 : check Credentials.Evidence
+      note right ERCC1
+        The evidence check ensures that the evidence is correct (e.g. in
+        case of EPID-based attestation the evidence must be signed by IAS)
+        and covers the attested data.
+
+        Note that the IAS verification key is hardcoded in ERCC. This
+        verification key does not change frequently. In the case the verification
+        key changes, the ERCC must be updated and upgraded through the normal
+        chaincode lifecycle upgrade operation.
+      end note
+      ERCC1 -> ERCC1 : check Credentials.Attested_Data match CC_Parameters known to ERCC
+      note right ERCC1
+        In particular Channel_Id, MSPID of sender, TLCC_MRENCLAVE is verified
+      end note
+   end group
+
+  ERCC1 -> ERCC1 : check Org-Enclave binding certificate
 
   group check consistency of Credentials (TBD)
-    note over ERCC1 #FFaa00
+    note right ERCC1
         It is crucial for ERCC to perform queries over (or have access to) the chaincode
         definition. Querying (or retrieving) the chaincode definition through TLCC is the
         most convenient way to implement this with least impact on core Fabric code.
@@ -170,59 +194,44 @@ group enclave registration
         to feed it to ERCC.
     end note
 
-    create "TLCC Peer1_Org1" as TLCC1 order 45
-    create "TLCC_Enclave1" as TLCC_Enclave1 order 46
-    TLCC1 -[hidden]> TLCC_Enclave1: hidden
-    note over TLCC1, TLCC_Enclave1 #FFaa00
-        The presence of TLCC_Enclave1, and the absence of messages to it, is to further
-        emphasize that here it is only required a (possibly untrusted) system chaincode
-        in Fabric to look up the chaincode definition. Again, using TLCC is convenient,
-        but an enclave is not necessary.
-    end note
+    create Lifecycle order 55
+    ERCC1 -> Lifecycle +: queryChaincodeDefinition
+    return chaincode definition
 
-    ERCC1 -> TLCC1  ++: approve consistency of Credentials
-
-
-    TLCC1 -> TLCC1    : check Credentials against chaincode definition
-    note over TLCC1 #FFaa00
+    ERCC1 -> ERCC1    : check Credentials against chaincode definition
+    note right ERCC1
         This check ensures that:
-        1) the chaincode version (i.e., the MREnclave) matches the version of the
-            approved chaincode.
+        1) the chaincode version (i.e., the MREnclave) matches the
+            version of the approved chaincode.
         2) the chaincode is registered
-        Note that (1) is security-critical and saves the client from verifying the
-        chaincode version/MREnclave.
-        Note that (2) merely prevents spurious chaincode enclaves from being registered.
+
+        Note that (1) is security-critical and saves the client from
+        verifying the chaincode version/MREnclave.
+
+        Note that (2) merely prevents spurious chaincode enclaves from
+        being registered.
     end note
-    return result
   end group
 
-  group deployment validation (unclear, TBD)
+  group Deployment validation
     ERCC1 -> ERCC1 : validate FPC deployment (restriction) policy
-    note left #FFaa00
-      related risk management (v2.0 feature TBD)
+    note right ERCC1
+      This is a POST-MVP feature related to risk management.
     end note
   end group
 
-  ERCC1 -> ERCC1 : store Credentials on the ledger
-  note over ERCC1 #FFaa00
-  E.g., putState(key=Credentials.CC_Id, value=Credentials)
+  ERCC1 -> ERCC1 : putState(CC_Id"."Credentials.Enclave_VK, Credentials)
+  note over ERCC1
   end note
 
-  return register endorsement /' E_Manager -> ERCC1 '/
-  end group
+  return  proposal response
+  end loop
 
-  ref over ERCC2
-    invoke ERCC register
-  endref
 
-  ref over E_Manager
-    submit transaction
-  end ref
 
-  return result
+  Peer_CLI -> Peer_CLI : form transaction
+  Peer_CLI -> Orderer: submit registerEnclave transaction
 
-  deactivate Admin
-
-end
+  return
 
 @enduml
