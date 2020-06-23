@@ -16,6 +16,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	commonerrors "github.com/hyperledger/fabric/common/errors"
 	"github.com/hyperledger/fabric/common/flogging"
@@ -24,8 +25,6 @@ import (
 	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
 )
-
-const MrEnclaveStateKey = "MRENCLAVE"
 
 var logger = flogging.MustGetLogger("ercc-vscc")
 
@@ -88,10 +87,27 @@ func (vscc *VSCCERCC) Validate(envelopeBytes []byte, policyBytes []byte) commone
 			return policyErr(err)
 		}
 
-		err = vscc.checkAttestation(ccAction)
+		// next get invocation specs
+		cpp, err := protoutil.UnmarshalChaincodeProposalPayload(cap.ChaincodeProposalPayload)
 		if err != nil {
-			logger.Errorf("VSCC error: checkAttestation failed, err %s", err)
 			return policyErr(err)
+		}
+
+		cis := &peer.ChaincodeInvocationSpec{}
+		if err = proto.Unmarshal(cpp.Input, cis); err != nil {
+			return policyErr(err)
+		}
+
+		function := cis.ChaincodeSpec.Input.Args[0]
+		logger.Debugf("function: %s\n", string(function))
+
+		// we only perform attestation checks for registerEnclave invocations triggered through __setup of ecc
+		if string(function) == "__setup" {
+			err = vscc.checkAttestation(ccAction)
+			if err != nil {
+				logger.Errorf("VSCC error: checkAttestation failed, err %s", err)
+				return policyErr(err)
+			}
 		}
 	}
 	return nil
@@ -184,7 +200,7 @@ func (t *VSCCERCC) checkAttestation(respPayload *peer.ChaincodeAction) error {
 
 		state := &state{channelState}
 		// get mrenclave from ledger
-		mrenclave, err := state.GetState(eccNamespace, MrEnclaveStateKey)
+		mrenclave, err := state.GetState(eccNamespace, utils.MrEnclaveStateKey)
 		if err != nil {
 			return fmt.Errorf("getting MRENCLAVE failed, err %s", err)
 		}
@@ -240,7 +256,7 @@ func getEccNamespace(txRWSet *rwsetutil.TxRwSet) (string, error) {
 	eccNamespace := ""
 	for _, ns := range txRWSet.NsRwSets {
 		for _, read := range ns.KvRwSet.Reads {
-			if read.Key == MrEnclaveStateKey {
+			if read.Key == utils.MrEnclaveStateKey {
 				logger.Debugf("found MRENCLAVE within namespace: %s", ns.NameSpace)
 				if eccNamespace != "" {
 					return "", fmt.Errorf("mutiple namespaces with MRENCLAVE key found")
@@ -259,7 +275,7 @@ func getMrEnclaveWriteSet(targetNameSpace string, txRWSet *rwsetutil.TxRwSet) []
 	for _, ns := range txRWSet.NsRwSets {
 		if ns.NameSpace == targetNameSpace {
 			for _, write := range ns.KvRwSet.Writes {
-				if write.Key == MrEnclaveStateKey {
+				if write.Key == utils.MrEnclaveStateKey {
 					return write.Value
 				}
 			}
