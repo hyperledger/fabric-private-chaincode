@@ -370,8 +370,8 @@ handle_channel_join() {
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode querycommitted --channelID ${CHAN_ID}
     para
     sleep 3
-    say "call chaincode invoke..."
-    try $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke -n ${ERCC_ID} -c '{"function":"getSPID","args":[]}' -C ${CHAN_ID}
+    say "call chaincode query ..."
+    try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -n ${ERCC_ID} -c '{"function":"getSPID","args":[]}' -C ${CHAN_ID}
     sleep 3
 
 
