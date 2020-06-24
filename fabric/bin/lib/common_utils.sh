@@ -67,7 +67,7 @@ try() {
     "$@" || die "test failed: $*"
 }
 
-try_rev() {
+try_fail() {
     recho "failure expected next"
     (! "$@") || die "rev-test failed: $*"
 }
