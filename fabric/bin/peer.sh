@@ -240,21 +240,93 @@ handle_lifecycle_chaincode_approveformyorg() {
 		CHAN_ID=$2;
 		shift; shift
 		;;
+        -E|--endorsement-plugin)
+        ENDORSEMENT_PLUGIN_NAME=$2;
+        shift; shift
+        ;;
+        -V|--validation-plugin)
+        VALIDATION_PLUGIN_NAME=$2;
+        shift; shift
+        ;;
 	    *)
 		shift
 		;;
 	    esac
     done
 
+    # - iff it is fpc pkg
+    if [ -f "${FABRIC_STATE_DIR}/is-fpc-c-package.${PKG_ID}" ]; then
+        # no endorsement plugin can be specified in FPC
+        [ -z "${ENDORSEMENT_PLUGIN_NAME}" ] || die "Endorsement plugins are disabled for FPC chaincodes"
+        # no validation plugin can be specified in FPC
+        [ -z "${VALIDATION_PLUGIN_NAME}" ] || die "Validation plugins are disabled for FPC chaincodes"
+
+        # all check passed
+
+        # add FPC default validation plugin to argument list
+        ARGS_EXEC=( "${ARGS_EXEC[@]}" "-V" "ecc-vscc" )
+    fi
+
     # - do normal approve (and exit if not successfull)
     try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
 
     # - iff it is fpc pkg
     if [ -f "${FABRIC_STATE_DIR}/is-fpc-c-package.${PKG_ID}" ]; then
-	#  remember mapping
-	try touch "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.${CC_VERSION}"
+	    #  remember mapping
+	    try touch "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.${CC_VERSION}"
     fi
     # - exit (instead of below return, which would re-execute install)
+    exit 0
+}
+
+handle_lifecycle_chaincode_checkcommitreadiness() {
+    # NOTE: this command is intercepted only to hide FPC validation plugin in peer CLI
+
+    # - remember variables we might need later
+    while [[ $# > 0 ]]; do
+    case "$1" in
+        -n|--name)
+        CC_NAME=$2;
+        shift; shift
+        ;;
+        -v|--version)
+        CC_VERSION=$2;
+        shift; shift
+        ;;
+        -C|--channelID)
+        CHAN_ID=$2;
+        shift; shift
+        ;;
+        -E|--endorsement-plugin)
+        ENDORSEMENT_PLUGIN_NAME=$2;
+        shift; shift
+        ;;
+        -V|--validation-plugin)
+        VALIDATION_PLUGIN_NAME=$2;
+        shift; shift
+        ;;
+        *)
+        shift
+        ;;
+        esac
+    done
+
+    # - iff it is fpc pkg
+    if [ -f "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.${CC_VERSION}" ]; then
+        # no endorsement plugin can be specified in FPC
+        [ -z "${ENDORSEMENT_PLUGIN_NAME}" ] || die "Endorsement plugins are disabled for FPC chaincodes"
+        # no validation plugin can be specified in FPC
+        [ -z "${VALIDATION_PLUGIN_NAME}" ] || die "Validation plugins are disabled for FPC chaincodes"
+
+        # all check passed
+
+        # add FPC default validation plugin to argument list
+        ARGS_EXEC=( "${ARGS_EXEC[@]}" "-V" "ecc-vscc" )
+    fi
+
+    # - call real peer so channel is joined
+    try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
+
     exit 0
 }
 
@@ -274,17 +346,38 @@ handle_lifecycle_chaincode_commit() {
 		CHAN_ID=$2;
 		shift; shift
 		;;
+        -E|--endorsement-plugin)
+        ENDORSEMENT_PLUGIN_NAME=$2;
+        shift; shift
+        ;;
+        -V|--validation-plugin)
+        VALIDATION_PLUGIN_NAME=$2;
+        shift; shift
+        ;;
 	    *)
 		shift
 		;;
 	    esac
     done
 
+    # - iff it is fpc pkg
+    if [ -f "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.${CC_VERSION}" ]; then
+        # no endorsement plugin can be specified in FPC
+        [ -z "${ENDORSEMENT_PLUGIN_NAME}" ] || die "Endorsement plugins are disabled for FPC chaincodes"
+        # no validation plugin can be specified in FPC
+        [ -z "${VALIDATION_PLUGIN_NAME}" ] || die "Validation plugins are disabled for FPC chaincodes"
+
+        # all check passed
+
+        # add FPC default validation plugin to argument list
+        ARGS_EXEC=( "${ARGS_EXEC[@]}" "-V" "ecc-vscc" )
+    fi
+
     # - call real peer so channel is joined
     try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
 
     # below setup function we should do only if this is FPC chaincode, so exit otherwise
-    [ -f ${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.${CC_VERSION} ] || exit 0
+    [ -f "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.${CC_VERSION}" ] || exit 0
 
     # - setup internal ecc state, e.g., register chaincode
     try ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__setup", "'${ERCC_ID}'"]}' --waitForEvent
@@ -412,6 +505,10 @@ case "$1" in
 			shift
 			handle_lifecycle_chaincode_approveformyorg "$@"
 			;;
+            checkcommitreadiness)
+            shift
+            handle_lifecycle_chaincode_checkcommitreadiness "$@"
+            ;;
 		    commit)
 			shift
 			handle_lifecycle_chaincode_commit "$@"

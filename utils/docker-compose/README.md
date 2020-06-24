@@ -168,7 +168,7 @@ The [examples](../../examples) and [demo](../../demo) directories has been
 
 5. Instantiate your chaincode
    ```
-   ${PEER_CMD} chaincode instantiate -C mychannel -n helloworld_test -v 0 -c '{"Args":["init"]}' -V ecc-vscc
+   ${PEER_CMD} chaincode instantiate -C mychannel -n helloworld_test -v 0 -c '{"Args":["init"]}'
    ```
 
 ## Interact with the FPC Chaincode
