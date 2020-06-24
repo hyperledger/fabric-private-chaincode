@@ -26,9 +26,18 @@ run_test() {
     try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label auction_test --path ${FPC_TOP_DIR}/examples/auction/_build/lib/ ${PKG}
     try ${PEER_CMD} lifecycle chaincode install ${PKG}
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: auction_test/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VERS} -V ecc-vscc
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VERS} -V ecc-vscc
-    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VERS} -V ecc-vscc
+
+    # first call negated as it fails due to specification of validation plugin
+    try_rev ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VERS} -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VERS}
+
+    # first call negated as it fails due to specification of validation plugin
+    try_rev ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VERS} -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VERS}
+
+    # first call negated as it fails due to specification of validation plugin
+    try_rev ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VERS} -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VERS}
 
     # install something non-fpc
     PKG=/tmp/marbles02.tar.gz
@@ -52,9 +61,18 @@ run_test() {
     try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label echo_test --path ${FPC_TOP_DIR}/examples/echo/_build/lib ${PKG}
     try ${PEER_CMD} lifecycle chaincode install ${PKG}
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: echo_test/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name echo_test --version ${CC_VERS} -V ecc-vscc
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name echo_test --version ${CC_VERS} -V ecc-vscc
-    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name echo_test --version ${CC_VERS} -V ecc-vscc
+
+    # first call negated as it fails due to specification of validation plugin
+    try_rev ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name echo_test --version ${CC_VERS} -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name echo_test --version ${CC_VERS}
+
+    # first call negated as it fails due to specification of validation plugin
+    try_rev ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name echo_test --version ${CC_VERS} -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name echo_test --version ${CC_VERS}
+
+    # first call negated as it fails due to specification of validation plugin
+    try_rev ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name echo_test --version ${CC_VERS} -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name echo_test --version ${CC_VERS}
 
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -c '{"Args": ["moin"]}' --waitForEvent
     check_result "moin"

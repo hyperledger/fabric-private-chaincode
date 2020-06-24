@@ -67,6 +67,11 @@ try() {
     "$@" || die "test failed: $*"
 }
 
+try_rev() {
+    recho "failure expected next"
+    (! "$@") || die "rev-test failed: $*"
+}
+
 # Variant of try which stores commands stdout and stderr in variable RESPONSE
 try_r() {
     echo "$@"
