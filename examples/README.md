@@ -319,6 +319,7 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 CC_ID=helloworld_test
+CC_EP="OR('SampleOrg.member')"
 
 #this is the path that will be used for the docker build of the chaincode enclave
 ENCLAVE_SO_PATH=examples/helloworld/_build/lib/
@@ -371,9 +372,9 @@ helloworld_test() {
 
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_ID}/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VERS}
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS}
-    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS}
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
 
     # store the value of 100 in asset1
     say "- invoke storeAsset transaction to store value 100 in asset1"
@@ -401,6 +402,7 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 CC_ID=helloworld_test
+CC_EP="OR('SampleOrg.member')"
 
 #this is the path that will be used for the docker build of the chaincode enclave
 CC_PATH=examples/helloworld/_build/lib/
@@ -420,9 +422,9 @@ helloworld_test() {
 
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_ID}/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VERS}
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS}
-    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS}
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
 
     # store the value of 100 in asset1
     say "- invoke storeAsset transaction to store value 100 in asset1"
