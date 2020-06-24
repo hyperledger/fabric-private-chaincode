@@ -240,6 +240,10 @@ handle_lifecycle_chaincode_approveformyorg() {
 		CHAN_ID=$2;
 		shift; shift
 		;;
+        -E|--endorsement-plugin)
+        ENDORSEMENT_PLUGIN_NAME=$2;
+        shift; shift
+        ;;
         -V|--validation-plugin)
         VALIDATION_PLUGIN_NAME=$2;
         shift; shift
@@ -252,6 +256,8 @@ handle_lifecycle_chaincode_approveformyorg() {
 
     # - iff it is fpc pkg
     if [ -f "${FABRIC_STATE_DIR}/is-fpc-c-package.${PKG_ID}" ]; then
+        # no endorsement plugin can be specified in FPC
+        [ -z "${ENDORSEMENT_PLUGIN_NAME}" ] || die "Endorsement plugins are disabled for FPC chaincodes"
         # no validation plugin can be specified in FPC
         [ -z "${VALIDATION_PLUGIN_NAME}" ] || die "Validation plugins are disabled for FPC chaincodes"
 
@@ -291,6 +297,10 @@ handle_lifecycle_chaincode_checkcommitreadiness() {
         CHAN_ID=$2;
         shift; shift
         ;;
+        -E|--endorsement-plugin)
+        ENDORSEMENT_PLUGIN_NAME=$2;
+        shift; shift
+        ;;
         -V|--validation-plugin)
         VALIDATION_PLUGIN_NAME=$2;
         shift; shift
@@ -303,6 +313,8 @@ handle_lifecycle_chaincode_checkcommitreadiness() {
 
     # - iff it is fpc pkg
     if [ -f "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.${CC_VERSION}" ]; then
+        # no endorsement plugin can be specified in FPC
+        [ -z "${ENDORSEMENT_PLUGIN_NAME}" ] || die "Endorsement plugins are disabled for FPC chaincodes"
         # no validation plugin can be specified in FPC
         [ -z "${VALIDATION_PLUGIN_NAME}" ] || die "Validation plugins are disabled for FPC chaincodes"
 
@@ -334,6 +346,10 @@ handle_lifecycle_chaincode_commit() {
 		CHAN_ID=$2;
 		shift; shift
 		;;
+        -E|--endorsement-plugin)
+        ENDORSEMENT_PLUGIN_NAME=$2;
+        shift; shift
+        ;;
         -V|--validation-plugin)
         VALIDATION_PLUGIN_NAME=$2;
         shift; shift
@@ -346,6 +362,8 @@ handle_lifecycle_chaincode_commit() {
 
     # - iff it is fpc pkg
     if [ -f "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.${CC_VERSION}" ]; then
+        # no endorsement plugin can be specified in FPC
+        [ -z "${ENDORSEMENT_PLUGIN_NAME}" ] || die "Endorsement plugins are disabled for FPC chaincodes"
         # no validation plugin can be specified in FPC
         [ -z "${VALIDATION_PLUGIN_NAME}" ] || die "Validation plugins are disabled for FPC chaincodes"
 
