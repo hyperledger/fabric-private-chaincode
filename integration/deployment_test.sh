@@ -17,6 +17,7 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 CC_VERS=0
+CC_EP="OR('SampleOrg.member')" # note that we use .member as NodeOUs is disabled with the crypto material used in the integration tests.
 FAILURES=0
 
 run_test() {
@@ -28,16 +29,16 @@ run_test() {
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: auction_test/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VERS} -E mock-escc -V ecc-vscc
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VERS}
+    try_fail ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VERS} --signature-policy ${CC_EP} -E mock-escc -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VERS} --signature-policy ${CC_EP}
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VERS} -E mock-escc -V ecc-vscc
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VERS}
+    try_fail ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VERS} --signature-policy ${CC_EP} -E mock-escc -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VERS} --signature-policy ${CC_EP}
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VERS} -E mock-escc -V ecc-vscc
-    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VERS}
+    try_fail ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VERS} --signature-policy ${CC_EP} -E mock-escc -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VERS} --signature-policy ${CC_EP}
 
     # install something non-fpc
     PKG=/tmp/marbles02.tar.gz
