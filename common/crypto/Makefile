@@ -20,9 +20,7 @@ $(BUILD_DIR):
 
 build: $(BUILD_DIR)
 	$(MAKE) --directory=$<
-
-test: build
-	$(MAKE) -C $(BUILD_DIR) $@
+	$(MAKE) -C $(BUILD_DIR) test
 
 clean:
 	rm -rf $(BUILD_DIR)
