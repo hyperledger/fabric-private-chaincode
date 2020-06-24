@@ -39,10 +39,11 @@ Admin -> Peer_CLI ++: lifecycle chaincode\n createenclave (CC_Id)
 
 group enclave creation
   note right Peer_CLI
-    This operation can only be performed only after the chaincode definition is
-    committed on the channel as it defined the root of trust (MRENCLAVE) for
-    the FPC Chaincode. In particular, this must be set in order to complete the
-    enclave registration step as described next.
+    This operation can only be performed after the chaincode definition --- 
+    which defines the root of trust (MRENCLAVE) for the FPC Chaincode --- 
+    is committed on the channel. More specifically, this commitment must have 
+    completed before below 'registerEnclave' starts  in order to complete the
+    enclave registration step.
   end note
 
   Peer_CLI -> ECC1 ++: createEnclave (CC_Id)
