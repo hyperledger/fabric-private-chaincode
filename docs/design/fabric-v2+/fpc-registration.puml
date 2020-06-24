@@ -196,7 +196,7 @@ end
     end note
 
     create Lifecycle order 55
-    ERCC1 -> Lifecycle +: queryChaincodeDefinition
+    ERCC1 -> Lifecycle +: queryChaincodeDefinition (Credentials.Attested_Data.CC_Parameters.CC_Id)
     return chaincode definition
 
     ERCC1 -> ERCC1    : check Credentials against chaincode definition
