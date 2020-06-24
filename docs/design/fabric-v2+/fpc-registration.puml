@@ -160,7 +160,7 @@ return Credentials, Certificate
 
 end
 
-  loop for all/"enough" endorsers
+  loop for all/"enough" endorsers to satisfy ercc endorsement policy
     Peer_CLI -> ERCC1 ++: registerEnclave (Credentials, Certificate)
     note right ERCC1
         Note that ERCC aborts if a single check failed.
