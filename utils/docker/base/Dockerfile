@@ -21,6 +21,7 @@ RUN apt-get update \
     vim \
     unzip \
     basez \
+    pkg-config \
  && apt-get -y -q upgrade \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
