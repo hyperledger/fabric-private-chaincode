@@ -396,7 +396,7 @@ handle_lifecycle_chaincode_createenclave() {
     # - createenclave can only be run on FPC chaincodes
     FILES_NUM=$(ls -1 ${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.* 2> /dev/null | wc -l) 
     if [ ${FILES_NUM} -eq 0 ]; then
-        die "createenclave: $CC_NAME does not have fpc-c type"
+        die "createenclave: $CC_NAME is not written in language 'fpc-c'"
     fi
 
     # - setup internal ecc state, e.g., register chaincode
