@@ -40,6 +40,10 @@ run_test() {
     try_fail ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VERS} --signature-policy ${CC_EP} -E mock-escc -V ecc-vscc
     try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VERS} --signature-policy ${CC_EP}
 
+    #first call negated as it fails
+    try_fail ${PEER_CMD} lifecycle chaincode createenclave --name wrong-cc-id
+    try ${PEER_CMD} lifecycle chaincode createenclave --name auction_test
+
     # install something non-fpc
     PKG=/tmp/marbles02.tar.gz
     try ${PEER_CMD} lifecycle chaincode package --lang golang --label marbles02 --path github.com/hyperledger/fabric-samples/chaincode/marbles02/go ${PKG}
@@ -74,6 +78,10 @@ run_test() {
     # first call negated as it fails due to specification of validation plugin
     try_fail ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name echo_test --version ${CC_VERS} -E mock-escc -V ecc-vscc
     try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name echo_test --version ${CC_VERS}
+
+    #first call negated as it fails
+    try_fail ${PEER_CMD} lifecycle chaincode createenclave --name wrong-cc-id
+    try ${PEER_CMD} lifecycle chaincode createenclave --name echo_test
 
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -c '{"Args": ["moin"]}' --waitForEvent
     check_result "moin"

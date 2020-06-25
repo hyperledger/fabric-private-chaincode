@@ -43,6 +43,10 @@ auction_test() {
     try_fail ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP} -E mock-escc -V ecc-vscc
     try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
 
+    # first call negated as it fails
+    try_fail ${PEER_CMD} lifecycle chaincode createenclave --name wrong-cc-id
+    try ${PEER_CMD} lifecycle chaincode createenclave --name ${CC_ID}
+
     try ${PEER_CMD} lifecycle chaincode querycommitted -C ${CHAN_ID}
 
     # Scenario 1

@@ -376,8 +376,28 @@ handle_lifecycle_chaincode_commit() {
     # - call real peer so channel is joined
     try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
 
-    # below setup function we should do only if this is FPC chaincode, so exit otherwise
-    [ -f "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.${CC_VERSION}" ] || exit 0
+    exit 0
+}
+
+handle_lifecycle_chaincode_createenclave() {
+    # - remember variables we might need later
+    while [[ $# > 0 ]]; do
+    case "$1" in
+        -n|--name)
+        CC_NAME=$2;
+        shift; shift
+        ;;
+        *)
+        die "createenclave: invalid option"
+        ;;
+        esac
+    done
+
+    # - createenclave can only be run on FPC chaincodes
+    FILES_NUM=$(ls -1 ${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.* 2> /dev/null | wc -l) 
+    if [ ${FILES_NUM} -eq 0 ]; then
+        die "createenclave: $CC_NAME is not written in language 'fpc-c'"
+    fi
 
     # - setup internal ecc state, e.g., register chaincode
     try ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__setup", "'${ERCC_ID}'"]}' --waitForEvent
@@ -388,7 +408,6 @@ handle_lifecycle_chaincode_commit() {
     # - exit (otherwise main function will invoke operation again!)
     exit 0
 }
-
 
 # Chaincode command wrappers
 #--------------------------------------------
@@ -512,6 +531,10 @@ case "$1" in
 		    commit)
 			shift
 			handle_lifecycle_chaincode_commit "$@"
+			;;
+		    createenclave)
+			shift
+			handle_lifecycle_chaincode_createenclave "$@"
 			;;
 		    *)
 			# fall through, nothing to do
