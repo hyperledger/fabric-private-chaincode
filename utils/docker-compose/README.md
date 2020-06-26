@@ -80,7 +80,7 @@ is used. Otherwise it will use `core.yaml` and the regular peer image.
    a makefile target `peer` in `$FPC_PATH/utils/docker/Makefile`.
 
 2. Download the necessary fabric binaries. Run the
-   [bootstrap script](scripts/bootstrap.sh) which will download the Fabric 1.4.3
+   [bootstrap script](scripts/bootstrap.sh) which will download the Fabric 2.1.1
    binaries into `$FPC_PATH/utils/docker-compose/bin` directory as well as download
    also all fabric docker images  that version. If you already have the binaries
    downloaded and in located in your `PATH`, this step can be skipped. If you don't want
@@ -155,31 +155,46 @@ The [examples](../../examples) and [demo](../../demo) directories has been
         PEER_CMD=${PEER_CMD}\
         CORE_PEER_MSPCONFIGPATH=${CORE_PEER_MSPCONFIGPATH}
    ```
-   Note that to save you from explicitly having to specify CORE_PEER_MSPCONFIGPATH on each call, we defined them
-   in `docker-compose.yml` as admin credentials. This means though also that your peer will run with admin
-   instead of peer credentials. If you have role-specific endorsement policies, you might have to comment out the
-   corresponding definition in [docker-compose.yml](./network-config/docker-compose.yml) to peer credentials and then manually
-   define the corresponding value here in the docker exec shell.
+   Note, though, that the credentials predefined in `docker-compose.yml` in the `CORE_PEER_MSPCONFIGPATH`
+   environment variable are peer credentials (`/etc/hyperledger/msp/peer/`).  To execute with admin credentials,
+   e.g., to issue management commands, you will have to redefine `CORE_PEER_MSPCONFIGPATH` to 
+   `/etc/hyperledger/msp/users/Admin@org1.example.com/msp`.
 
-4. Install your chaincode.
+4. package, install, approve & commit your chaincode.
    ```
-   ${PEER_CMD} chaincode install -l fpc-c -n helloworld_test -v 0 -p examples/helloworld/_build/lib
+   export CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp
+
+   CHAN_ID=${CHANNEL_NAME}
+
+   CC_ID=helloworld_test
+   CC_PATH=examples/helloworld/_build/lib
+   CC_VER="$(cat ${CC_PATH}/mrenclave)"
+   CC_EP="OR('Org1MSP.peer')"
+
+   PKG=/tmp/hello-pkg.tar.gz
+
+   ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label ${CC_ID} --path ${CC_PATH} ${PKG}
+   ${PEER_CMD} lifecycle chaincode install ${PKG}
+   PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_ID}/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
+   ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
+   ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
+   ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER}  --signature-policy ${CC_EP}
    ```
 
-5. Instantiate your chaincode
+5. Instantiate chaincode enclave
    ```
-   ${PEER_CMD} chaincode instantiate -C mychannel -n helloworld_test -v 0 -c '{"Args":["init"]}'
+   ${PEER_CMD} lifecycle chaincode createenclave --name ${CC_ID}
    ```
 
 ## Interact with the FPC Chaincode
 1. Store asset1 with a value of a 100
    ```
-   ${PEER_CMD} chaincode invoke -C mychannel -n helloworld_test -c '{"Args":["storeAsset","asset1","100"]}'
+   ${PEER_CMD} chaincode invoke -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["storeAsset","asset1","100"]}'
    ```
 
 2. Retrieve the current value of asset1.
    ```
-   ${PEER_CMD} chaincode query -C mychannel -n helloworld_test -c '{"Args":["retrieveAsset","asset1"]}'
+   ${PEER_CMD} chaincode query -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["retrieveAsset","asset1"]}'
    ```
    The response should look like the following:
    ```

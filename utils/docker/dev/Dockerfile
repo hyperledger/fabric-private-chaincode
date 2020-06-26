@@ -34,11 +34,14 @@ WORKDIR /tmp
 RUN git config --global user.name $GIT_USER_NAME \
  && git config --global user.email $GIT_USER_EMAIL
 
-# we need docker commands (even though we use docker daemon from "outside")
+# Notes:
+# - we need docker commands (even though we use docker daemon from "outside")
+# - jq we need for e.g., external-builder
 RUN apt-get update \
  && apt-get install -y \
     docker.io \
     clang-format \
+    jq \
     $APT_ADD_PKGS
 
 # Install go
@@ -97,8 +100,7 @@ RUN git \
 # Note: below are differences to peer image. Eventually this should be consolidated via some refactoring
 # but for now we just make sure we have a common prefix so docker caching will reuse above for the second
 # image built
-RUN apt install -y \
-	jq \
+RUN apt-get install -y \
 	psmisc \
 	bc \
 	docker-compose

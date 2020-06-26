@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+# Based on sampleconfig from github.com/hyperledger/fabric.git tagged with v2.1.1
 
 ###############################################################################
 #
@@ -11,14 +12,18 @@
 ###############################################################################
 peer:
 
-    # The Peer id is used for identifying this Peer instance.
-    id: peer0.org1.example.com
+    # The peer id provides a name for this peer instance and is used when
+    # naming docker resources.
+    # FPC: Can be overriden by CORE_PEER_ID environment varaible
+    id: jdoe
 
-    # The networkId allows for logical seperation of networks
-    networkId: dev_test
+    # The networkId allows for logical separation of networks and is used when
+    # naming docker resources.
+    networkId: dev
 
     # The Address at local network interface this Peer will listen on.
     # By default, it will listen on all network interfaces
+    # FPC: for integration tests we had to change to 127.0.0.1 to make proxy work but here it's ok
     listenAddress: 0.0.0.0:7051
 
     # The endpoint this peer uses to listen for inbound chaincode connections.
@@ -36,18 +41,21 @@ peer:
     # in the same organization. For peers in other organization, see
     # gossip.externalEndpoint for more info.
     # When used as CLI config, this means the peer's endpoint to interact with
-    address: 127.0.0.1:7051 # Note: setting to 127.0.0.1 restricts to localhost but does make it work behind proxies
+    # FPC: for integration tests we had to change to 127.0.0.1 to make proxy work but here it's ok
+    address: 0.0.0.0:7051
 
     # Whether the Peer should programmatically determine its address
     # This case is useful for docker containers.
     addressAutoDetect: false
 
-    # Setting for runtime.GOMAXPROCS(n). If n < 1, it does not change the
-    # current setting
-    gomaxprocs: -1
-
     # Keepalive settings for peer server and clients
     keepalive:
+        # Interval is the duration after which if the server does not see
+        # any activity from the client it pings the client to see if it's alive
+        interval: 7200s
+        # Timeout is the duration the server waits for a response
+        # from the client after sending a ping before closing the connection
+        timeout: 20s
         # MinInterval is the minimum permitted time between client pings.
         # If clients send pings more frequently, the peer server will
         # disconnect them
@@ -201,6 +209,18 @@ peer:
             # transaction's private data from other peers need to be skipped during the commit time and pulled
             # only through reconciler.
             skipPullingInvalidTransactionsDuringCommit: false
+            # implicitCollectionDisseminationPolicy specifies the dissemination  policy for the peer's own implicit collection.
+            # When a peer endorses a proposal that writes to its own implicit collection, below values override the default values
+            # for disseminating private data.
+            # Note that it is applicable to all channels the peer has joined. The implication is that requiredPeerCount has to
+            # be smaller than the number of peers in a channel that has the lowest numbers of peers from the organization.
+            implicitCollectionDisseminationPolicy:
+               # requiredPeerCount defines the minimum number of eligible peers to which the peer must successfully
+               # disseminate private data for its own implicit collection during endorsement. Default value is 0.
+               requiredPeerCount: 0
+               # maxPeerCount defines the maximum number of eligible peers to which the peer will attempt to
+               # disseminate private data for its own implicit collection during endorsement. Default value is 1.
+               maxPeerCount: 1
 
         # Gossip state transfer related configuration
         state:
@@ -217,18 +237,16 @@ peer:
             responseTimeout: 3s
             # batchSize the number of blocks to request via state transfer from another peer
             batchSize: 10
-            # blockBufferSize reflect the maximum distance between lowest and
-            # highest block sequence number state buffer to avoid holes.
-            # In order to ensure absence of the holes actual buffer size
-            # is twice of this distance
+            # blockBufferSize reflects the size of the re-ordering buffer
+            # which captures blocks and takes care to deliver them in order
+            # down to the ledger layer. The actually buffer size is bounded between
+            # 0 and 2*blockBufferSize, each channel maintains its own buffer
             blockBufferSize: 100
             # maxRetries maximum number of re-tries to ask
             # for single state transfer request
             maxRetries: 3
 
     # TLS Settings
-    # Note that peer-chaincode connections through chaincodeListenAddress is
-    # not mutual TLS auth. See comments on chaincodeListenAddress for more info
     tls:
         # Require server-side TLS
         enabled:  false
@@ -269,7 +287,7 @@ peer:
     # Path on the file system where peer will store data (eg ledger). This
     # location must be access control protected to prevent unintended
     # modification that might corrupt the peer operations.
-    fileSystemPath: /tmp/hyperledger/test
+    fileSystemPath: /var/hyperledger/production
 
     # BCCSP (Blockchain crypto provider): Select which crypto implementation or
     # library to use
@@ -296,8 +314,6 @@ peer:
             Pin:
             Hash:
             Security:
-            FileKeyStore:
-                KeyStore:
 
     # Path on the file system where peer will find MSP local configurations
     mspConfigPath: msp
@@ -328,6 +344,16 @@ peer:
         # It sets the delivery service maximal delay between consecutive retries
         reConnectBackoffThreshold: 3600s
 
+        # A list of orderer endpoint addresses which should be overridden
+        # when found in channel configurations.
+        addressOverrides:
+        #  - from:
+        #    to:
+        #    caCertsFile:
+        #  - from:
+        #    to:
+        #    caCertsFile:
+
     # Type for the local MSP - by default it's of type bccsp
     localMspType: bccsp
 
@@ -336,16 +362,6 @@ peer:
     profile:
         enabled:     false
         listenAddress: 0.0.0.0:6060
-
-    # The admin service is used for administrative operations such as
-    # control over logger levels, etc.
-    # Only peer administrators can use the service.
-    adminService:
-        # The interface and port on which the admin server will listen on.
-        # If this is commented out, or the port number is equal to the port
-        # of the peer listen address - the admin service is attached to the
-        # peer's service (defaults to 7051).
-        #listenAddress: 0.0.0.0:7055
 
     # Handlers defines custom handlers that can filter and mutate
     # objects passing within the peer, such as:
@@ -389,9 +405,9 @@ peer:
           -
             name: DefaultDecorator
           -
-          # FPC Addition:1
+            # FPC Addition:1
             name: ERCCDecorator
-            library: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/ercc/ercc-decorator.so
+            library: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/plugins/ercc-decorator.so
         endorsers:
           escc:
             name: DefaultEndorsement
@@ -402,12 +418,12 @@ peer:
             library:
           # FPC Addition:2
           ercc-vscc:
-            name: ercc-vscc
-            library: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/ercc/ercc-vscc.so
+             name: ercc-vscc
+             library: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/plugins/ercc-vscc.so
           # FPC Addition:3 
           ecc-vscc:
-            name: ecc-vscc
-            library: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/ecc/ecc-vscc.so
+             name: ecc-vscc
+             library: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/plugins/ecc-vscc.so
 
     #    library: /etc/hyperledger/fabric/plugin/escc.so
     # Number of goroutines that will execute transaction validation in parallel.
@@ -432,6 +448,19 @@ peer:
         # Whether to allow non-admins to perform non channel scoped queries.
         # When this is false, it means that only peer admins can perform non channel scoped queries.
         orgMembersAllowedAccess: false
+
+    # Limits is used to configure some internal resource limits.
+    limits:
+        # Concurrency limits the number of concurrently running requests to a service on each peer.
+        # Currently this option is only applied to endorser service and deliver service.
+        # When the property is missing or the value is 0, the concurrency limit is disabled for the service.
+        concurrency:
+            # endorserService limits concurrent requests to endorser service that handles chaincode deployment, query and invocation,
+            # including both user chaincodes and system chaincodes.
+            endorserService: 2500
+            # deliverService limits concurrent event listeners registered to deliver service for blocks and transaction events.
+            deliverService: 2500
+
 ###############################################################################
 #
 #    VM section
@@ -498,7 +527,7 @@ chaincode:
         name:
 
     # Generic builder environment, suitable for most chaincode types
-    builder: $(DOCKER_NS)/fabric-ccenv:latest
+    builder: $(DOCKER_NS)/fabric-ccenv:$(TWO_DIGIT_VERSION)
 
     # Enables/disables force pulling of the base docker images (listed below)
     # during user chaincode instantiation.
@@ -507,30 +536,54 @@ chaincode:
 
     golang:
         # golang will never need more than baseos
-        runtime: $(BASE_DOCKER_NS)/fabric-baseos:$(ARCH)-$(BASE_VERSION)
+        runtime: $(DOCKER_NS)/fabric-baseos:$(TWO_DIGIT_VERSION)
 
         # whether or not golang chaincode should be linked dynamically
         dynamicLink: false
-
-    car:
-        # car may need more facilities (JVM, etc) in the future as the catalog
-        # of platforms are expanded.  For now, we can just use baseos
-        runtime: $(BASE_DOCKER_NS)/fabric-baseos:$(ARCH)-$(BASE_VERSION)
 
     java:
         # This is an image based on java:openjdk-8 with addition compiler
         # tools added for java shim layer packaging.
         # This image is packed with shim layer libraries that are necessary
         # for Java chaincode runtime.
-        runtime: $(DOCKER_NS)/fabric-javaenv:$(ARCH)-$(PROJECT_VERSION)
+        runtime: $(DOCKER_NS)/fabric-javaenv:$(TWO_DIGIT_VERSION)
 
     node:
-        # need node.js engine at runtime, currently available in baseimage
-        # but not in baseos
-        runtime: $(BASE_DOCKER_NS)/fabric-baseimage:$(ARCH)-$(BASE_VERSION)
+        # This is an image based on node:$(NODE_VER)-alpine
+        runtime: $(DOCKER_NS)/fabric-nodeenv:$(TWO_DIGIT_VERSION)
+
+    # List of directories to treat as external builders and launchers for
+    # chaincode. The external builder detection processing will iterate over the
+    # builders in the order specified below.
+    # externalBuilders: []
+        # - path: /path/to/directory
+        #   name: descriptive-builder-name
+        #   environmentWhitelist:
+        #      - ENVVAR_NAME_TO_PROPAGATE_FROM_PEER
+        #      - GOPROXY
+    externalBuilders:
+        # FPC Addition 0: external builder for fpc-c chaincode
+        - path: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/externalBuilder
+          name: fpc-c
+          environmentWhitelist:
+              - FPC_HOSTING_MODE
+              - FABRIC_LOGGING_SPEC
+              - ftp_proxy
+              - http_proxy
+              - https_proxy
+              - no_proxy
+              # Notes:
+              # - FPC_HOSTING_MODE will determine whether chaincode is executed
+              #   directly on host or inside a container
+              # - for go builds, we also would have to define HOME and/or GOCACHE
+
+
+    # The maximum duration to wait for the chaincode build and install process
+    # to complete.
+    installTimeout: 300s
 
     # Timeout duration for starting up a container and waiting for Register
-    # to come through. 1sec should be plenty for chaincode unit tests
+    # to come through.
     startuptimeout: 300s
 
     # Timeout duration for Invoke and Init calls to prevent runaway.
@@ -549,7 +602,7 @@ chaincode:
     # In net mode, peer will run chaincode in a docker container.
     mode: net
 
-    # keepalive in seconds. In situations where the communiction goes through a
+    # keepalive in seconds. In situations where the communication goes through a
     # proxy that does not support keep-alive, this parameter will maintain connection
     # between peer and chaincode.
     # A value <= 0 turns keepalive off
@@ -559,31 +612,13 @@ chaincode:
     # whitelist, add "myscc: enable" to the list below, and register in
     # chaincode/importsysccs.go
     system:
+        _lifecycle: enable
         cscc: enable
         lscc: enable
         escc: enable
         vscc: enable
         qscc: enable
         tlcc: enable  # FPC Addition:4
-
-    # System chaincode plugins:
-    # System chaincodes can be loaded as shared objects compiled as Go plugins.
-    # See examples/plugins/scc for an example.
-    # Plugins must be white listed in the chaincode.system section above.
-    systemPlugins:
-      # example configuration:
-      # - enabled: true
-      #   name: myscc
-      #   path: /opt/lib/myscc.so
-      #   invokableExternal: true
-      #   invokableCC2CC: true
-      #
-      # FPC Addition:5  
-      - enabled: true
-        name: tlcc
-        path: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/tlcc/tlcc.so
-        invokableExternal: true
-        invokableCC2CC: true
 
     # Logging section for the chaincode container
     logging:
@@ -596,7 +631,7 @@ chaincode:
 
 ###############################################################################
 #
-#    Ledger section - ledger configuration encompases both the blockchain
+#    Ledger section - ledger configuration encompasses both the blockchain
 #    and the state
 #
 ###############################################################################
@@ -649,6 +684,11 @@ ledger:
        # This is optional.  Creating the global changes database will require
        # additional system resources to track changes and maintain the database
        createGlobalChangesDB: false
+       # CacheSize denotes the maximum mega bytes (MB) to be allocated for the in-memory state
+       # cache. Note that CacheSize needs to be a multiple of 32 MB. If it is not a multiple
+       # of 32 MB, the peer would round the size to the next multiple of 32 MB.
+       # To disable the cache, 0 MB needs to be assigned to the cacheSize.
+       cacheSize: 64
 
   history:
     # enableHistoryDatabase - options are true or false
@@ -656,6 +696,14 @@ ledger:
     # All history 'index' will be stored in goleveldb, regardless if using
     # CouchDB or alternate database for the state.
     enableHistoryDatabase: true
+
+  pvtdataStore:
+    # the maximum db batch size for converting
+    # the ineligible missing data entries to eligible missing data entries
+    collElgProcMaxDbBatchSize: 5000
+    # the minimum duration (in milliseconds) between writing
+    # two consecutive db batches for converting the ineligible missing data entries to eligible missing data entries
+    collElgProcDbBatchesInterval: 1000
 
 ###############################################################################
 #
@@ -715,7 +763,7 @@ metrics:
 ###############################################################################
 #
 #    SGX section - includes configuration for the Intel Attestation service
-#    FPC Addition:6
+#    FPC Addition:5
 #
 ###############################################################################
 sgx:

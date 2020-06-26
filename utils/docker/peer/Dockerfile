@@ -34,11 +34,14 @@ WORKDIR /tmp
 RUN git config --global user.name $GIT_USER_NAME \
  && git config --global user.email $GIT_USER_EMAIL
 
-# we need docker commands (even though we use docker daemon from "outside")
+# Notes:
+# - we need docker commands (even though we use docker daemon from "outside")
+# - jq we need for e.g., external-builder
 RUN apt-get update \
  && apt-get install -y \
     docker.io \
     clang-format \
+    jq \
     $APT_ADD_PKGS
 
 # Install go
@@ -97,8 +100,8 @@ RUN git \
 
 # Build FPC peer including plugins and tlcc support
 RUN cd $FPC_PATH \
- && make plugins tlcc_enclave tlcc fabric \
- && make -C $FPC_PATH/utils/fabric
+ && make fpc-peer \
+ && make fpc-peer-cli
 
 ENV FABRIC_BIN_DIR=$FABRIC_PATH/build/bin
 ENV FPC_CMDS=/project/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/bin

@@ -10,7 +10,7 @@
 #                          as the peers, orderer, and ca. The only requirement is that this is set to
 #                          some string and cannot be left blank. To match with the scripts use `fabric-fpc`.
 #   FABRIC_VERSION       - This is the version of fabric being used that should match with an image tag
-#                          for hyperledger/fabric-orderer. Recommended value is `1.4.3`.
+#                          for hyperledger/fabric-orderer. Recommended value is `2.1.1`.
 #   FPC_CONFIG           - Set this to `-fpc` to bring up a network using FPC Peers. Leaving it unset
 #                          will cause the network to use the hyperledger/fabric-peer:latest images
 #   PEER_CMD             - This variable indicates which peer binary should be used to start the peer.
@@ -42,7 +42,7 @@ services:
     container_name: orderer.example.com
     image: hyperledger/fabric-orderer:${FABRIC_VERSION}
     environment:
-      - FABRIC_LOGGING_SPEC=info
+      - FABRIC_LOGGING_SPEC=${FABRIC_LOGGING_SPEC:-info}
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
       - ORDERER_GENERAL_GENESISMETHOD=file
       - ORDERER_GENERAL_GENESISFILE=/etc/hyperledger/configtx/genesis.block
@@ -70,11 +70,6 @@ services:
       - CORE_PEER_ID=peer0.org1.example.com
       - CORE_PEER_LOCALMSPID=Org1MSP
       - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
-      # we set here credentials to admin, so we don't have to explicitly have to set
-      # it in 'docker exec' so we can run ${PEER_CMD}. It means, though, that the peer
-      # also will run with admin and not peer credentials. If that gives problems, e.g.,
-      # because of role-specific endorsement policies, you will have to comment below
-      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp
     ports:
       - 7051:7051
       - 7053:7053

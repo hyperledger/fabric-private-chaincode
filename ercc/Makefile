@@ -6,19 +6,18 @@
 TOP = ..
 include $(TOP)/build.mk
 
-ATTESTATION = attestation/provider.go
+ATTESTATION_DIR = ./attestation/
+ATTESTATION_PROVIDER = $(ATTESTATION_DIR)/provider.go
 
 build: attestation ercc
 
-$(ATTESTATION):
-	cd attestation && \
-	make
+$(ATTESTATION_PROVIDER):
+	$(MAKE) -C $(ATTESTATION_DIR)
 
 attestation-clean:
-	cd attestation && \
-	make clean
+	$(MAKE) -C $(ATTESTATION_DIR) clean
 
-ercc: $(ATTESTATION)
+ercc: $(ATTESTATION_PROVIDER)
 	$(GO) build
 	rm ercc # validating a successful build, ercc not meant to be run directly
 

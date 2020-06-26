@@ -45,7 +45,7 @@ do
 
     docker exec ca.example.com fabric-ca-client register \
       --id.name $username --id.secret adminpw \
-      --id.type user  --id.affiliation org1 \
+      --id.type client  --id.affiliation org1 \
       --id.attrs "approle=$userrole:ecert" \
       --url http://org1admin:adminpw@localhost:7054
 done

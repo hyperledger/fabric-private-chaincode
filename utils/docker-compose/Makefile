@@ -17,3 +17,6 @@ clobber:
 	(cd ../../demo/; make clobber)
 	# above presumably does below, but better safe than sorry :-)
 	./scripts/teardown.sh --clean-slate
+	# lastly, remove also any downloaded fabric binaries; they might hurt you when
+	# still being around after a fabric upgrade ..
+	rm -rf ./bin

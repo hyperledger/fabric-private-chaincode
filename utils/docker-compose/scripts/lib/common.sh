@@ -11,12 +11,15 @@ export FABRIC_CFG_PATH=${SCRIPT_DIR}/../network-config
 export FPC_PATH="${FPC_PATH:-${SCRIPT_DIR}/../../..}"
 if [ -z ${DOCKERD_FPC_PATH+x} ]; then export DOCKERD_FPC_PATH=${FPC_PATH}; fi
 
+# load general script utils, .e.g, die, say, yell and alike ...
+. ${FPC_PATH}/fabric/bin/lib/common_utils.sh
+
 # SGX mode: make sure it is set so we consistently use the same value also when we call make
 # Note: make might define in config*.mk its own value without necessarily it being an env variable
 export SGX_MODE=${SGX_MODE:=SIM}
 
 # Variables which we allow the caller override ..
-export FABRIC_VERSION=${FABRIC_VERSION:=1.4.3}
+export FABRIC_VERSION=${FABRIC_VERSION:=2.1.1}
 export FPC_VERSION=${FPC_VERSION:=latest}
 export NET_ID=${NET_ID:=dev}
 # above should correspond to 'peer->networkId' in ../network-config/core.yaml. when refactoring, we might

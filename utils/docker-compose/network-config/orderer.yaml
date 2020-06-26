@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+# Based on sampleconfig from github.com/hyperledger/fabric.git tagged with v2.1.1
 
 ---
 ################################################################################
@@ -13,15 +14,6 @@
 #
 ################################################################################
 General:
-
-    # Ledger Type: The ledger type to provide to the orderer.
-    # Two non-production ledger types are provided for test purposes only:
-    #  - ram: An in-memory ledger whose contents are lost on restart.
-    #  - json: A simple file ledger that writes blocks to disk in JSON format.
-    # Only one production ledger type is provided:
-    #  - file: A production file-based ledger.
-    LedgerType: file
-
     # Listen address: The IP on which to bind to listen.
     ListenAddress: 127.0.0.1
 
@@ -69,32 +61,30 @@ General:
         # client-facing and the intra-cluster listeners.
 
         # ListenPort defines the port on which the cluster listens to connections.
-        ListenPort:
+        # FPC Change: see related comment in 'configtx.yml' in 'Orderer: &OrdererDefaults' section
+        ListenPort: 7059
         # ListenAddress defines the IP on which to listen to intra-cluster communication.
-        ListenAddress:
+        ListenAddress: 127.0.0.1
         # ServerCertificate defines the file location of the server TLS certificate used for intra-cluster
         # communication.
-        ServerCertificate:
+        ServerCertificate: /etc/hyperledger/msp/orderer/tls/server.crt
         # ServerPrivateKey defines the file location of the private key of the TLS certificate.
-        ServerPrivateKey:
-    # Genesis method: The method by which the genesis block for the orderer
-    # system channel is specified. Available options are "provisional", "file":
-    #  - provisional: Utilizes a genesis profile, specified by GenesisProfile,
-    #                 to dynamically generate a new genesis block.
-    #  - file: Uses the file provided by GenesisFile as the genesis block.
-    GenesisMethod: provisional
+        ServerPrivateKey: /etc/hyperledger/msp/orderer/tls/server.key
 
-    # Genesis profile: The profile to use to dynamically generate the genesis
-    # block to use when initializing the orderer system channel and
-    # GenesisMethod is set to "provisional". See the configtx.yaml file for the
-    # descriptions of the available profiles. Ignored if GenesisMethod is set to
-    # "file".
-    GenesisProfile: SampleInsecureSolo
+    # Bootstrap method: The method by which to obtain the bootstrap block
+    # system channel is specified. The option can be one of:
+    #   "file" - path to a file containing the genesis block or config block of system channel
+    #   "none" - allows an orderer to start without a system channel configuration
+    BootstrapMethod: file
 
-    # Genesis file: The file containing the genesis block to use when
-    # initializing the orderer system channel and GenesisMethod is set to
-    # "file". Ignored if GenesisMethod is set to "provisional".
-    GenesisFile: genesisblock
+    # Bootstrap file: The file containing the bootstrap block to use when
+    # initializing the orderer system channel and BootstrapMethod is set to
+    # "file".  The bootstrap file can be the genesis block, and it can also be
+    # a config block for late bootstrap of some consensus methods like Raft.
+    # Generate a genesis block by updating $FABRIC_CFG_PATH/configtx.yaml and
+    # using configtxgen command with "-outputBlock" option.
+    # Defaults to file "genesisblock" (in $FABRIC_CFG_PATH directory) if not specified.
+    # FPC: We specify it via ORDERER_GENERAL_GENESISFILE in docker-compose.yaml ..
 
     # LocalMSPDir is where to find the private crypto material needed by the
     # orderer. It is set relative here as a default for dev environments but
@@ -136,12 +126,26 @@ General:
             FileKeyStore:
                 KeyStore:
 
+        # Settings for the PKCS#11 crypto provider (i.e. when DEFAULT: PKCS11)
+        PKCS11:
+            # Location of the PKCS11 module library
+            Library:
+            # Token Label
+            Label:
+            # User PIN
+            Pin:
+            Hash:
+            Security:
+            FileKeyStore:
+                KeyStore:
+
     # Authentication contains configuration parameters related to authenticating
     # client messages
     Authentication:
         # the acceptable difference between the current server time and the
         # client's time as specified in a client request message
         TimeWindow: 15m
+
 
 ################################################################################
 #
@@ -160,22 +164,6 @@ FileLedger:
     # The prefix to use when generating a ledger directory in temporary space.
     # Otherwise, this value is ignored.
     Prefix: hyperledger-fabric-ordererledger
-
-################################################################################
-#
-#   SECTION: RAM Ledger
-#
-#   - This section applies to the configuration of the RAM ledger.
-#
-################################################################################
-RAMLedger:
-
-    # History Size: The number of blocks that the RAM ledger is set to retain.
-    # WARNING: Appending a block to the ledger might cause the oldest block in
-    # the ledger to be dropped in order to limit the number total number blocks
-    # to HistorySize. For example, if history size is 10, when appending block
-    # 10, block 0 (the genesis block!) will be dropped to make room for block 10.
-    HistorySize: 1000
 
 ################################################################################
 #

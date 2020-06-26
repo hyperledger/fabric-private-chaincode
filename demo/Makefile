@@ -7,7 +7,11 @@ include $(TOP)/build.mk
 
 SUB_DIRS = chaincode client
 
-build test clean:
+build test:
+	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)
+
+clean:
+	./scripts/teardown.sh
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)
 
 clobber:

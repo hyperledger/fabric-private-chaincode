@@ -57,7 +57,7 @@ COMPOSE_IGNORE_ORPHANS=true ${DOCKER_COMPOSE_CMD} -f ${DEMO_DOCKER_COMPOSE} kill
 if $CLEAN_SLATE; then
     "${SCRIPT_DIR}/teardown.sh" --clean-slate
 
-    image=$(go run ${DEMO_SCRIPT_DIR}/../../utils/fabric/get-fabric-container-name.go --cc-name ecc_auctioncc --peer-id peer0.org1.example.com --net-id dev_test --cc-version 1.0)
+    image=$(go run ${DEMO_SCRIPT_DIR}/../../utils/fabric/get-fabric-container-name.go --cc-name auctioncc --peer-id peer0.org1.example.com --net-id dev_test --cc-version 1.0)
     docker inspect $image > /dev/null 2>&1 && docker rmi "${image}" || echo "No auctioncc images available to remove"
 fi
 
