@@ -89,7 +89,7 @@ group enclave creation
      In the future an admin might want to request re-attestations: For EPID this would be
      the only way to check for revocations (In DCAP, checking CRLs would enable this as well).
      For security reasoning, it is crucial that the TCB level (CPUSVN) of the seal operation is
-     reflected in the attestation (and, hence, ERCC registration)  as this determines whether
+     reflected in the attestation (and, hence, ERCC registration) as this determines whether
      enclave secrets might be exposed in case of newly discovered future SGX vulnerabilities.
      We ensure that performing the initial attestation before sealing the state and distinguish
      the intial from subsequent attestations  based on the onCreation field in Attested_Data.
