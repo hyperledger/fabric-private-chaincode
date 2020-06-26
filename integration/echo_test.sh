@@ -16,7 +16,7 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 CC_ID=echo_test
 CC_PATH=${FPC_TOP_DIR}/examples/echo/_build/lib/
 CC_LANG=fpc-c
-CC_VER=0
+CC_VER="$(cat ${CC_PATH}/mrenclave)"
 CC_EP="OR('SampleOrg.member')" # note that we use .member as NodeOUs is disabled with the crypto material used in the integration tests.
 
 num_rounds=10

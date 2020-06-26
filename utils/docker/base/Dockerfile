@@ -20,6 +20,7 @@ RUN apt-get update \
     cmake \
     vim \
     unzip \
+    basez \
  && apt-get -y -q upgrade \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*

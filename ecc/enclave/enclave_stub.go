@@ -13,13 +13,16 @@ TODO:
 package enclave
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/x509"
+	"encoding/hex"
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
+	"strings"
 	"sync"
 	"unsafe"
 
@@ -502,14 +505,27 @@ func (e *StubImpl) Destroy() error {
 }
 
 func (e *StubImpl) MrEnclave() (string, error) {
-	binMrEnclave, err := ioutil.ReadFile("mrenclave")
+	f, err := os.Open("mrenclave")
 	if err != nil {
-		return "", fmt.Errorf("Error reading MrEnclave from file: Reason %s", err.Error())
+		return "", fmt.Errorf("error reading MrEnclave from file: Reason %s", err.Error())
+	}
+	defer f.Close()
+
+	// read just a single line
+	scanner := bufio.NewScanner(f)
+	scanner.Scan()
+	mrenclave := strings.TrimSuffix(scanner.Text(), "\n")
+
+	// check size
+	if len(mrenclave) != 64 {
+		return "", fmt.Errorf("error reading MrEnclave from file: Reason wrong size. Expected 64 but read %d: %s", len(mrenclave), mrenclave)
 	}
 
-	if len(binMrEnclave) == 0 {
-		return "", fmt.Errorf("Error reading MrEnclave from file: Reason mrenclave is empty")
+	// check that MrEnclave comes as hex string
+	_, err = hex.DecodeString(mrenclave)
+	if err != nil {
+		return "", fmt.Errorf("error reading MrEnclave from file: Reason %s", err.Error())
 	}
 
-	return string(binMrEnclave), nil
+	return mrenclave, nil
 }
