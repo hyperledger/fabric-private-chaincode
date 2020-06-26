@@ -87,7 +87,7 @@ group enclave creation
   Enclave1 -> Enclave1 : Attested_Data <- <CC_Parameters, Public_Keys, onCreation=true>
   note right Enclave1
      In the future an admin might want to request re-attestations: For EPID this would be
-     the only way to check for revocations (In DCAP, checking CRLs would enable this as well.)
+     the only way to check for revocations (In DCAP, checking CRLs would enable this as well).
      For security reasoning, it is crucial that the TCB level (CPUSVN) of the seal operation is
      reflected in the attestation (and, hence, ERCC registration)  as this determines whether
      enclave secrets might be exposed in case of newly discovered future SGX vulnerabilities.
