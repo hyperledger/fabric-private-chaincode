@@ -89,7 +89,7 @@ end group
             group fpc-vscc
                 note over ECC1
                      fpc-vscc is a validation plugin associated with each fpc chaincode.
-                     Any failure below will result in an invalidation of the transaction
+                     Any failure below will result in an invalidation of the transaction.
                 end note
                 alt  MVP
                   ECC1 -> ECC1 : <args, read/writeset, result> <- extract from transaction
