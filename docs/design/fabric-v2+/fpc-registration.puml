@@ -157,7 +157,7 @@ group Org-Enclave binding/certification [Post-MVP: Validation]
   return csr /' ECC1 -> Enclave1 '/
   ECC1 -> CA ++: issueCertificate(csr)
   return  cert /' ECC1 -> CA '/
-  ECC1 -> ECC1: Credentials, Certificate <- cert
+  ECC1 -> ECC1: Credentials.Certificate <- cert
 end group
 
   ECC1 -> ECC1 : store Sealed_Credentials, Credentials
