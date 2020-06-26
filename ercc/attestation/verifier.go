@@ -15,6 +15,7 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
@@ -106,7 +107,7 @@ func QuoteFromAttestationReport(report IASAttestationReport) (EnclaveQuote, erro
 // Verifier interface
 type Verifier interface {
 	VerifyAttestationReport(verificationPubKey interface{}, report IASAttestationReport) (bool, error)
-	CheckMrEnclave(mrEnclaveBase64 string, report IASAttestationReport) (bool, error)
+	CheckMrEnclave(mrEnclaveHexString string, report IASAttestationReport) (bool, error)
 	CheckEnclavePkHash(pkBytes []byte, report IASAttestationReport) (bool, error)
 }
 
@@ -165,14 +166,14 @@ func (v *VerifierImpl) VerifyAttestationReport(verificationPubKey interface{}, r
 }
 
 // CheckMrEnclave returns true if mrenclave in attestation report matches the expected value. Expected value input as base64.
-func (v *VerifierImpl) CheckMrEnclave(mrEnclaveBase64 string, report IASAttestationReport) (bool, error) {
+func (v *VerifierImpl) CheckMrEnclave(mrEnclaveHexString string, report IASAttestationReport) (bool, error) {
 
 	quote, err := QuoteFromAttestationReport(report)
 	if err != nil {
 		return false, err
 	}
 
-	mrenclave, err := base64.StdEncoding.DecodeString(mrEnclaveBase64)
+	mrenclave, err := hex.DecodeString(mrEnclaveHexString)
 	if err != nil {
 		return false, err
 	}

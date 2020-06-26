@@ -318,13 +318,12 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
-CC_ID=helloworld_test
-CC_EP="OR('SampleOrg.member')"
-
 #this is the path that will be used for the docker build of the chaincode enclave
-ENCLAVE_SO_PATH=examples/helloworld/_build/lib/
+CC_PATH=${FPC_TOP_DIR}/examples/helloworld/_build/lib/
 
-CC_VERS=0
+CC_ID=helloworld_test
+CC_VER="$(cat ${CC_PATH}/mrenclave)"
+CC_EP="OR('SampleOrg.member')"
 ```
 
 ### Launch Fabric network
@@ -360,9 +359,9 @@ With the variables set and `common_ledger.sh` executed, usage of `peer.sh` is as
 
 In the next step, the FPC chaincode must be approved by the organizations on the channel by agreeing on the chaincode definition.
 ```
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
 ```
 
 To complete the installation, we need to create an enclave that runs the FPC Chaincode.
@@ -378,8 +377,8 @@ helloworld_test() {
     say "- do hello world"
 
     # install helloworld  chaincode
-    # input:  CC_ID:chaincode name; CC_VERS:chaincode version;
-    #         ENCLAVE_SO_PATH:path to build artifacts
+    # input:  CC_ID:chaincode name; CC_VER:chaincode version;
+    #         CC_PATH:path to build artifacts
     say "- install helloworld chaincode"
     PKG=/tmp/${CC_ID}.tar.gz
     try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label ${CC_ID} --path ${CC_PATH} ${PKG}
@@ -387,9 +386,9 @@ helloworld_test() {
 
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_ID}/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
 
     # create an FPC Chaincode enclave
     try ${PEER_CMD} lifecycle chaincode createenclave --name ${CC_ID}
@@ -419,20 +418,19 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
-CC_ID=helloworld_test
-CC_EP="OR('SampleOrg.member')"
-
 #this is the path that will be used for the docker build of the chaincode enclave
-CC_PATH=examples/helloworld/_build/lib/
+CC_PATH=${FPC_TOP_DIR}/examples/helloworld/_build/lib/
 
-CC_VERS=0
+CC_ID=helloworld_test
+CC_VER="$(cat ${CC_PATH}/mrenclave)"
+CC_EP="OR('SampleOrg.member')"
 
 helloworld_test() {
     say "- do hello world"
 
     # install helloworld  chaincode
-    # input:  CC_ID:chaincode name; CC_VERS:chaincode version;
-    #         ENCLAVE_SO_PATH:path to build artifacts
+    # input:  CC_ID:chaincode name; CC_VER:chaincode version;
+    #         CC_PATH:path to build artifacts
     say "- install helloworld chaincode"
     PKG=/tmp/${CC_ID}.tar.gz
     try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label ${CC_ID} --path ${CC_PATH} ${PKG}
@@ -440,9 +438,9 @@ helloworld_test() {
 
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_ID}/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
 
     # create an FPC Chaincode enclave
     try ${PEER_CMD} lifecycle chaincode createenclave --name ${CC_ID}

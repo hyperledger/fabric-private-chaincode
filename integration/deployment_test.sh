@@ -16,29 +16,31 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
-CC_VERS=0
 CC_EP="OR('SampleOrg.member')" # note that we use .member as NodeOUs is disabled with the crypto material used in the integration tests.
 FAILURES=0
 
 run_test() {
 
     # install examples/auction
+    CC_PATH=${FPC_TOP_DIR}/examples/auction/_build/lib/
+    CC_VER="$(cat ${CC_PATH}/mrenclave)"
     PKG=/tmp/auction_test.tar.gz
-    try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label auction_test --path ${FPC_TOP_DIR}/examples/auction/_build/lib/ ${PKG}
+
+    try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label auction_test --path ${CC_PATH} ${PKG}
     try ${PEER_CMD} lifecycle chaincode install ${PKG}
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: auction_test/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VERS} --signature-policy ${CC_EP} -E mock-escc -V ecc-vscc
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VERS} --signature-policy ${CC_EP}
+    try_fail ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP} -E mock-escc -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP}
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VERS} --signature-policy ${CC_EP} -E mock-escc -V ecc-vscc
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VERS} --signature-policy ${CC_EP}
+    try_fail ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP} -E mock-escc -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP}
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VERS} --signature-policy ${CC_EP} -E mock-escc -V ecc-vscc
-    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VERS} --signature-policy ${CC_EP}
+    try_fail ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP} -E mock-escc -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP}
 
     #first call negated as it fails
     try_fail ${PEER_CMD} lifecycle chaincode createenclave --name wrong-cc-id
@@ -49,9 +51,9 @@ run_test() {
     try ${PEER_CMD} lifecycle chaincode package --lang golang --label marbles02 --path github.com/hyperledger/fabric-samples/chaincode/marbles02/go ${PKG}
     try ${PEER_CMD} lifecycle chaincode install ${PKG}
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: marbles02/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name marbles02 --version ${CC_VERS}
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name marbles02 --version ${CC_VERS}
-    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name marbles02 --version ${CC_VERS}
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name marbles02 --version 0
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name marbles02 --version 0
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name marbles02 --version 0
 
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["init", "MyAuctionHouse"]}' --waitForEvent
     check_result "OK"
@@ -62,22 +64,25 @@ run_test() {
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n marbles02 -c '{"Args":["initMarble","marble1","blue","35","tom"]}' --waitForEvent
 
     # install examples/echo
-    PKG=/tmp/auction_test.tar.gz
+    CC_PATH=${FPC_TOP_DIR}/examples/echo/_build/lib/
+    CC_VER="$(cat ${CC_PATH}/mrenclave)"
+    PKG=/tmp/echo_test.tar.gz
+
     try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label echo_test --path ${FPC_TOP_DIR}/examples/echo/_build/lib ${PKG}
     try ${PEER_CMD} lifecycle chaincode install ${PKG}
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: echo_test/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name echo_test --version ${CC_VERS} -E mock-escc -V ecc-vscc
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name echo_test --version ${CC_VERS}
+    try_fail ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name echo_test --version ${CC_VER} -E mock-escc -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name echo_test --version ${CC_VER}
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name echo_test --version ${CC_VERS} -E mock-escc -V ecc-vscc
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name echo_test --version ${CC_VERS}
+    try_fail ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name echo_test --version ${CC_VER} -E mock-escc -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name echo_test --version ${CC_VER}
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name echo_test --version ${CC_VERS} -E mock-escc -V ecc-vscc
-    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name echo_test --version ${CC_VERS}
+    try_fail ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name echo_test --version ${CC_VER} -E mock-escc -V ecc-vscc
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name echo_test --version ${CC_VER}
 
     #first call negated as it fails
     try_fail ${PEER_CMD} lifecycle chaincode createenclave --name wrong-cc-id
