@@ -146,13 +146,22 @@ group invoke
 
     return <result_enc, Sig_Enclave>
 
-    Peer -> Peer : create proposal response <args, read/writeset, result=<result_enc, Sig_Enclave, Enclave_VK>, ...>
-    note right Peer
-        Note that the result field of the proposal response contains
-        a message that comprises the encrypted result produced by the
-        enclave, the enclave signature, and the corresponding
-        verification key.
-    end note
+    alt  MVP
+      Peer -> Peer : create proposal response <args, read/writeset, result=<result_enc, Sig_Enclave, Enclave_VK>, ...>
+      note right Peer
+          Note that the result field of the proposal response contains
+          a message that comprises the encrypted result produced by the
+          enclave, the enclave signature, and the corresponding
+          verification key.
+      end note
+
+    else Post-MVP: Validation
+      Peer -> Peer : create proposal response <args, read/writeset, result=result_enc, ...>
+      Peer -> Peer : Replace endorsement signature & cert of peer with Sig_enclave & CC_Parameters.Certificate
+      note right Peer
+          This step is performed using an FPC-specific endorsement plugin.
+      end note
+    end
 
     return proposal response
 end
