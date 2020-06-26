@@ -95,7 +95,7 @@ end group
                   ECC1 -> ECC1 : <args, read/writeset, result> <- extract from transaction
                   ECC1 -> ECC1 : <Enclave_VK, Sig_Enclave, ECC_result> <- extract from result
 
-                  ECC1 -> ECC1 : verify Sig_Enclave with Enclave_VK and <args, read/writeset, ECC_result>
+                  ECC1 -> ECC1 : verify Sig_Enclave over <args, read/writeset, ECC_result> with Enclave_VK
 
                   create participant ERCC order 30
                   ECC1 -> ERCC++ : queryECCInfo(CC_Id, Hash(Enclave_VK))
