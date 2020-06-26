@@ -100,7 +100,8 @@ end group
                   create participant ERCC order 30
                   ECC1 -> ERCC++ : queryECCInfo(CC_Id, Hash(Enclave_VK))
                   note right
-                      If FPC enclave is registered, ERCC will return the corresponding (Credentials.Attestated_Data.)CC_Parameters
+                      If FPC enclave is registered, ERCC will return the corresponding
+                      Credentials.Attestated_Data.CC_Parameters;
                       otherwise CC_Parameters is empty.
                   end note
                   return CC_Parameters
