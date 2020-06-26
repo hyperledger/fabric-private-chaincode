@@ -146,7 +146,7 @@ group enclave creation
 group Org-Enclave binding/certification [Post-MVP: Validation]
   note right ECC1
      In MVP, the attestation will be carried in the fabric transaction response payload in addition to the normal peer endorsement signature.
-     To enable cleaner integration into Fabric and, in particular. support multi-enclave endorsement,, post-MVP we will provide the enclave
+     To enable cleaner integration into Fabric and, in particular, support multi-enclave endorsement, post-MVP we will provide the enclave
      with a peer-certificate on Private_keys.Enclave_VK rooted in the organizations MSP -- explicitly expressing that the Org take
      "ownership" of this enclave -- and replace the normal peer endorsement signature with the enclave signature.
      The corresponding changes will be marked with '[Post-MVP: Validation]'.
