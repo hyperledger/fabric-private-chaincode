@@ -88,7 +88,7 @@ end group
 
             group fpc-vscc
                 note over ECC1
-                     fpc-vscc is a validation plugin associated with each fpc chaincode.
+                     fpc-vscc is a validation plugin associated with each FPC Chaincode.
                      Any failure below will result in an invalidation of the transaction.
                 end note
                 alt  MVP
