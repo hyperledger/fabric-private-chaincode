@@ -349,11 +349,26 @@ say "- shutdown ledger"
 ledger_shutdown
 ```
 
-### Install and instantiate chaincode on the peer
-Like in the case of Fabric, you install, instantiate the chaincode and then invoke transactions.  To install a chaincode, you need to use `FPC-INSTALL-DIR/fabric/bin/peer.sh`.  This is a custom FPC wrapper to be used _instead_ of the `peer` cli command from Fabric.  `${PEER_CMD}` is set in `FPC-INSTALL-DIR/fabric/bin/lib/common_ledger.sh` and conveniently points to the required script file.
+### Install our FPC Chaincode
+Like in the case of Fabric, you install the chaincode using the `peer lifecycle` commands and then invoke transactions. 
+To install the FPC chaincode, you need to use `FPC-INSTALL-DIR/fabric/bin/peer.sh`.  This is a custom FPC wrapper to be used _instead_ of the `peer` cli command from Fabric.  `${PEER_CMD}` is set in `FPC-INSTALL-DIR/fabric/bin/lib/common_ledger.sh` and conveniently points to the required script file.
 With the variables set and `common_ledger.sh` executed, usage of `peer.sh` is as follows:
 ```
-try ${PEER_CMD} chaincode install -l fpc-c -n ${CC_ID} -v ${CC_VERS} -p ${ENCLAVE_SO_PATH}
+    try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label ${CC_ID} --path ${CC_PATH} ${PKG}
+    try ${PEER_CMD} lifecycle chaincode install ${PKG}
+```
+
+In the next step, the FPC chaincode must be approved by the organizations on the channel by agreeing on the chaincode definition.
+```
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
+```
+
+To complete the installation, we need to create an enclave that runs the FPC Chaincode.
+```
+    # create an FPC Chaincode enclave
+    try ${PEER_CMD} lifecycle chaincode createenclave --name ${CC_ID}
 ```
 
 Add the following content to the function, `helloworld_test()` in test.sh.  Please note the inline comments for each of the commands.
@@ -375,6 +390,9 @@ helloworld_test() {
     try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
     try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
     try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
+
+    # create an FPC Chaincode enclave
+    try ${PEER_CMD} lifecycle chaincode createenclave --name ${CC_ID}
 
     # store the value of 100 in asset1
     say "- invoke storeAsset transaction to store value 100 in asset1"
@@ -425,6 +443,9 @@ helloworld_test() {
     try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
     try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
     try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VERS} --signature-policy ${CC_EP}
+
+    # create an FPC Chaincode enclave
+    try ${PEER_CMD} lifecycle chaincode createenclave --name ${CC_ID}
 
     # store the value of 100 in asset1
     say "- invoke storeAsset transaction to store value 100 in asset1"
