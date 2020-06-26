@@ -6,10 +6,12 @@
 TOP = .
 include $(TOP)/build.mk
 
-# TODO bring back demo
-# SUB_DIRS = utils ercc ecc_enclave ecc tlcc_enclave tlcc examples integration demo # docs
-SUB_DIRS = common utils ercc ecc_enclave ecc tlcc_enclave tlcc plugins fabric examples integration
-FPC_SDK = utils/fabric ecc_enclave ecc
+SUB_DIRS = common utils ercc ecc_enclave ecc tlcc_enclave tlcc plugins fabric examples integration demo # docs
+
+FPC_SDK_DEP_DIRS = utils/fabric common ecc_enclave ecc
+FPC_PEER_DEP_DIRS = plugins tlcc_enclave tlcc fabric ecc_enclave ecc # ecc & ecc_enclave we need if we run on host in external builder, not via docker
+FPC_PEER_CLI_WRAPPER_DEP_DIRS = utils/fabric
+
 
 .PHONY: license
 
@@ -39,4 +41,10 @@ godeps: gotools
 	$(GO) mod download
 
 fpc-sdk: godeps
-	$(foreach DIR, $(FPC_SDK), $(MAKE) -C $(DIR) build || exit;)
+	$(foreach DIR, $(FPC_SDK_DEP_DIRS), $(MAKE) -C $(DIR) build || exit;)
+
+fpc-peer: godeps
+	$(foreach DIR, $(FPC_PEER_DEP_DIRS), $(MAKE) -C $(DIR) build || exit;)
+
+fpc-peer-cli: godeps
+	$(foreach DIR, $(FPC_PEER_CLI_WRAPPER_DEP_DIRS), $(MAKE) -C $(DIR) build || exit;)

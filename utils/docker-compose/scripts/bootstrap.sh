@@ -10,14 +10,25 @@
 export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd ${SCRIPT_DIR}/..
 
-# if version not passed in, default to latest released version
-export VERSION=1.4.3
-# if ca version not passed in, default to latest released version
-export CA_VERSION=$VERSION
-# current version of thirdparty images (couchdb, kafka and zookeeper) released
-export THIRDPARTY_IMAGE_VERSION=0.4.15
+# Versions for Dependencies
+# Notes:
+# - as some of script downloads binary which does require full semantic version, we cannot only
+#   specify major and minor version and so ask implicitly for latest patch version. 
+# - We also allow averride by caller
+# * Fabric binaries and images
+export FABRIC_VERSION=${FABRIC_VERSION:=2.1.1}
+export FABRIC_TAG=${FABRIC_TAG:="$FABRIC_VERSION"}
+# * CA
+export CA_VERSION=${CA_VERSION:=1.4.7}
+export CA_TAG=${CA_TAG:="$CA_VERSION"}
+# * thirdparty images (couchdb, kafka and zookeeper) 
+export THIRDPARTY_IMAGE_VERSION=${THIRDPARTY_IMAGE_VERSION:=0.4.20}
+export THIRDPARTY_TAG=${THIRDPARTY_TAG:="$THIRDPARTY_IMAGE_VERSION"}
+
 export ARCH=$(echo "$(uname -s|tr '[:upper:]' '[:lower:]'|sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')")
 export MARCH=$(uname -m)
+
+
 
 printHelp() {
   echo "Usage: bootstrap.sh [<version>] [<ca_version>] [<thirdparty_version>][-d -b]"
@@ -25,8 +36,8 @@ printHelp() {
   echo "-d - bypass docker image download"
   echo "-b - bypass download of platform-specific binaries"
   echo
-  echo "e.g. bootstrap.sh 1.4.1 1.4.1 0.4.15"
-  echo "would download docker images and binaries for version 1.4.0 (fabric) 1.4.0 (fabric-ca) 0.4.15 (thirdparty)"
+  echo "e.g. bootstrap.sh 2.1 1.4 0.4.15"
+  echo "would download docker images and binaries for version 2.1 (fabric) 1.4 (fabric-ca) 0.4.15 (thirdparty)"
 }
 
 # dockerFabricPull() pulls docker images from fabric and chaincode repositories
@@ -120,8 +131,10 @@ binaryDownload() {
 }
 
 binariesInstall() {
+   local FABRIC_BINARY_FILE=$1
+   local CA_BINARY_FILE=$2
   echo "===> Downloading version ${FABRIC_TAG} platform specific fabric binaries"
-  binaryDownload "${BINARY_FILE}" "https://github.com/hyperledger/fabric/releases/download/v${VERSION}/${BINARY_FILE}"
+  binaryDownload "${FABRIC_BINARY_FILE}" "https://github.com/hyperledger/fabric/releases/download/v${FABRIC_VERSION}/${FABRIC_BINARY_FILE}"
   if [ $? -eq 22 ]; then
      echo
      echo "------> ${FABRIC_TAG} platform specific fabric binary is not available to download <----"
@@ -129,10 +142,10 @@ binariesInstall() {
    fi
 
   echo "===> Downloading version ${CA_TAG} platform specific fabric-ca-client binary"
-  binaryDownload "${BINARY_FILE}" "https://github.com/hyperledger/fabric-ca/releases/download/v${CA_VERSION}/${CA_BINARY_FILE}"
+  binaryDownload "${CA_BINARY_FILE}" "https://github.com/hyperledger/fabric-ca/releases/download/v${CA_VERSION}/${CA_BINARY_FILE}"
   if [ $? -eq 22 ]; then
      echo
-     echo "------> ${CA_TAG} fabric-ca-client binary is not available to download  (Available from 1.1.0-rc1) <----"
+     echo "------> ${CA_TAG} fabric-ca-client binary is not available to download <----"
      echo
    fi
 }
@@ -157,20 +170,12 @@ dockerInstall() {
   fi
 }
 
+
+
+# command-line option defaults
 DOCKER=true
 SAMPLES=true
 BINARIES=true
-
-VERSION=1.4.3 # Fabric Version for Binaries and Images
-CA_VERSION=1.4.3
-THIRDPARTY_IMAGE_VERSION=0.4.18
-
-export FABRIC_TAG=${FABRIC_TAG:="$VERSION"}
-export CA_TAG=${CA_TAG:="$CA_VERSION"}
-export THIRDPARTY_TAG=${THIRDPARTY_TAG:="$THIRDPARTY_IMAGE_VERSION"}
-
-BINARY_FILE=hyperledger-fabric-${ARCH}-${VERSION}.tar.gz
-CA_BINARY_FILE=hyperledger-fabric-ca-${ARCH}-${CA_VERSION}.tar.gz
 
 # then parse opts
 while getopts "hdb" opt; do
@@ -190,7 +195,7 @@ if [ "$BINARIES" == "true" ]; then
   echo
   echo "Installing Hyperledger Fabric binaries"
   echo
-  binariesInstall
+  binariesInstall "hyperledger-fabric-${ARCH}-${FABRIC_VERSION}.tar.gz" "hyperledger-fabric-ca-${ARCH}-${CA_VERSION}.tar.gz"
 fi
 if [ "$DOCKER" == "true" ]; then
   echo

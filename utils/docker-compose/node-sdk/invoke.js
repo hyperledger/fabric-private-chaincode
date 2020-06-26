@@ -16,7 +16,7 @@ async function main() {
     try {
         var user = process.argv[2]
         var channel = process.argv[3]
-        var chaincode = "ecc_" + process.argv[4]
+        var chaincode = process.argv[4]
 
         // Create a new file system based wallet for managing identities.
         const walletPath = path.join(process.cwd(), 'wallet');

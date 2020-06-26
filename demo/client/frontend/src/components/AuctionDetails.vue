@@ -256,7 +256,7 @@ export default {
 
   filters: {
     dn: function(owner) {
-      //"CN=Auctioneer1,OU=user+OU=org1"
+      //"CN=Auctioneer1,OU=client+OU=org1"
       let p = owner.dn.match(/^CN=(\w+),.*$/);
       if (p === null) {
         return owner;

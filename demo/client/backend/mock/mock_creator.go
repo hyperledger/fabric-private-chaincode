@@ -23,7 +23,7 @@ import (
 func generateMockCreatorPKIXName(mspId string, org string, user string) pkix.Name {
 	return pkix.Name{
 		CommonName:         user,
-		OrganizationalUnit: []string{"user", org},
+		OrganizationalUnit: []string{"client", org}, // Note: this should correspond to the Fabric role name!
 		// Below RDNs would be likely in a real certificates but
 		// seem to be skipped by dy default in fabric-ca ...
 		//   Organization: []string{mspId+".example.com"},

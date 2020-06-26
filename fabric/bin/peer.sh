@@ -29,7 +29,7 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 
 FPC_DOCKER_NAME_CMD="${FPC_TOP_DIR}/utils/fabric/get-fabric-container-name"
 
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/tlcc/enclave/lib
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${FPC_TOP_DIR}/tlcc/enclave/lib
 
 
 # Lifecycle Chaincode command wrappers
@@ -373,7 +373,7 @@ handle_lifecycle_chaincode_commit() {
         ARGS_EXEC=( "${ARGS_EXEC[@]}" "-V" "ecc-vscc" )
     fi
 
-    # - call real peer so channel is joined
+    # - call real peer so chaincode is committed
     try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
 
     exit 0
@@ -453,7 +453,7 @@ handle_channel_join() {
     ERCC_QUERY_INSTALL_LOG=${FABRIC_STATE_DIR}/ercc-query-install.$$.log
     say "Installing ercc on channel '${CHAN_ID}' ..."
     say "Packaging chaincode ..."
-    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode package ${ERCC_PACKAGE} -p ../../ercc --lang golang --label ${ERCC_LABEL}
+    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode package ${ERCC_PACKAGE} -p ${FPC_TOP_DIR}/ercc --lang golang --label ${ERCC_LABEL}
     para
     sleep 3
     say "Installing chaincode ..."

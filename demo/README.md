@@ -25,7 +25,7 @@ scripts/startFPCAuctionNetwork.sh --build-cc
 
 The channel `mychannel` will be created and used to install and instantiate
 all chaincodes. The [FPC auction chaincode](chaincode/fpc) will be
-instantiated as `ecc_auctioncc`.  If you do not need to build
+instantiated as `auctioncc`.  If you do not need to build
 the FPC Auction CC, omit the `--build-cc` flag. If you do pass the `--build-cc`
 flag, the script assumes that the docker image
 `hyperledger/fabric-private-chaincode-cc-builder` exists. If the image does not
@@ -36,15 +36,10 @@ building the chaincode.
 The fabric gateway will be configured to use the `auctioncc` chaincode. This can
 be changed by changing the `chaincode_name` in the fabric gateway
 [config](client/backend/fabric-gateway/config.json). Currently it is set to
-`ecc_auctioncc`. If you change the fabric gateway config, remember to rebuild
+`auctioncc`. If you change the fabric gateway config, remember to rebuild
 the client so the updated configuration is added in the fabric gateway image.
 You can add the `--build-client` flag to the above start script to automatically
 rebuild the fabric gateway and frontend.
-
-**NOTE** To differentiate FPC chaincode from other chaincodes,
-we currently prefix the chaincode name with `ecc_` when installing it. While the
-FPC peer cli hides this name mapping, you will have to manually prefix the
-chaincode name in `config.json`, hence the default `ecc_auctioncc`.
 
 Both the frontend and fabric-gateway [expose ports](docker-compose.yml) and are
 accessible on the host machine. The frontend can be accessed at [localhost:5000](http://localhost:5000)

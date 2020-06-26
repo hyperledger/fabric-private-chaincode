@@ -20,8 +20,14 @@ ERCC_VSCC_OUT = ercc-vscc.so
 ERCC_DECO_SRC = ercc-decorator/decoration.go
 ERCC_DECO_OUT = ercc-decorator.so
 
+ATTESTATION_DIR = ../ercc/attestation/
+ATTESTATION_PROVIDER = $(ATTESTATION_DIR)/provider.go
+
 $(FABRIC_FPC_PLUGINS):
 	ln -sfn $$(/bin/pwd) $(FABRIC_FPC_PLUGINS)
+
+$(ATTESTATION_PROVIDER):
+	$(MAKE) -C $(ATTESTATION_DIR)
 
 build: $(FABRIC_FPC_PLUGINS)
 	cd $(FABRIC_FPC_PLUGINS) && \
@@ -39,8 +45,8 @@ ecc-vscc: $(ECC_VSCC_SRC)
 	$(GO) build -o $(ECC_VSCC_OUT) -buildmode=plugin $^
 
 .PHONY: ercc-vscc
-ercc-vscc: $(ERCC_VSCC_SRC)
-	$(GO) build -o $(ERCC_VSCC_OUT) -buildmode=plugin $^
+ercc-vscc: $(ERCC_VSCC_SRC) $(ATTESTATION_PROVIDER)
+	$(GO) build -o $(ERCC_VSCC_OUT) -buildmode=plugin $(ERCC_VSCC_SRC)
 
 .PHONY: ercc-decorator
 ercc-decorator: $(ERCC_DECO_SRC)

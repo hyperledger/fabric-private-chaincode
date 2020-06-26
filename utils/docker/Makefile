@@ -153,11 +153,10 @@ dev: base
          . )
 	$(DOCKER) tag $(FPC_DOCKER_DEV_NAME) $(FPC_DOCKER_DEV_NAME):${FPC_VERSION}
 
-# TODO bring cc-builder back
 cc-builder: dev
-#	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
-#		-t $(FPC_DOCKER_CC_BUILDER_NAME)\
-#		--build-arg SGX_MODE=${SGX_MODE}\
-#		cc-builder
-#	$(DOCKER) tag $(FPC_DOCKER_CC_BUILDER_NAME) $(FPC_DOCKER_CC_BUILDER_NAME):${FPC_VERSION}
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
+		-t $(FPC_DOCKER_CC_BUILDER_NAME)\
+		--build-arg SGX_MODE=${SGX_MODE}\
+		cc-builder
+	$(DOCKER) tag $(FPC_DOCKER_CC_BUILDER_NAME) $(FPC_DOCKER_CC_BUILDER_NAME):${FPC_VERSION}
 

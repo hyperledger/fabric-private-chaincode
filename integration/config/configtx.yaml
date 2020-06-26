@@ -328,7 +328,9 @@ Orderer: &OrdererDefaults
         # a subset of the host:port items enumerated in this list should be
         # replicated under the Orderer.Addresses key above.
         #
-        # NOTE: we define raft-raft port on a different port (rather than standard 7050) so we can exclusively define TLS (mandatory for raft node to raft node communication) on that port but not on the order-client port 7050 (and hence do not need client certificates).  See also matching change in 'orderer.yaml'.
+        # FPC:  we define raft-raft port on a different port (rather than standard 7050) so we can exclusively define
+        #   TLS (mandatory for raft node to raft node communication) on that port but not on the order-client port
+        #   7050 (and hence do not need client certificates).  See also matching change in 'orderer.yaml'.
         Consenters:
             - Host: 127.0.0.1
               Port: 7059

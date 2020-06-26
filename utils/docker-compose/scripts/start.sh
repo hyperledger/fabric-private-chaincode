@@ -75,9 +75,14 @@ ${DOCKER_COMPOSE} ps
 export FABRIC_START_TIMEOUT=20
 sleep ${FABRIC_START_TIMEOUT}
 
+
+# Command to execute peer cli inside peer container 
+# Note: by default the peer runs with peer credentials, so we have to override CORE_PEER_MSPCONFIGPATH env-var that the peer in cli-mode doesn't use peer but admin credentials
+REMOTE_PEER_CMD="docker exec -e CORE_PEER_LOCALMSPID=Org1MSP -e CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp peer0.org1.example.com env TERM=${TERM} ${PEER_CMD}"
+
 # Create the channel
-docker exec -e "CORE_PEER_LOCALMSPID=Org1MSP" -e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" peer0.org1.example.com env TERM=${TERM} ${PEER_CMD} channel create -o orderer.example.com:7050 -c ${CHANNEL_NAME} -f /etc/hyperledger/configtx/channel.tx
+${REMOTE_PEER_CMD} channel create -o orderer.example.com:7050 -c ${CHANNEL_NAME} -f /etc/hyperledger/configtx/channel.tx
 
 # Join peer0.org1.example.com to the channel.
-docker exec -e "CORE_PEER_LOCALMSPID=Org1MSP" -e "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/msp/users/Admin@org1.example.com/msp" peer0.org1.example.com env TERM=${TERM} ${PEER_CMD} channel join -b ${CHANNEL_NAME}.block
+${REMOTE_PEER_CMD}  channel join -b ${CHANNEL_NAME}.block
 

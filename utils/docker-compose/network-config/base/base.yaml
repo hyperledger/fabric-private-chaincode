@@ -27,7 +27,7 @@ services:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - DOCKER_HOST=unix:///host/var/run/docker.sock
       - FABRIC_CFG_PATH=/etc/hyperledger/fabric
-      - FABRIC_LOGGING_SPEC=info
+      - FABRIC_LOGGING_SPEC=${FABRIC_LOGGING_SPEC:-info}
       - CORE_VM_DOCKER_ATTACHSTDOUT=true
       - PEER_CMD=${PEER_CMD}
       - ORDERER_ADDR=orderer.example.com:7050

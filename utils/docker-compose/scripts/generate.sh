@@ -44,7 +44,7 @@ if [ "$?" -ne 0 ]; then
 fi
 
 #generate genesis block for orderer
-configtxgen -profile OneOrgOrdererGenesis -outputBlock ${FABRIC_CFG_PATH}/config/genesis.block
+configtxgen -profile SampleSingleNodeEtcdRaft -outputBlock ${FABRIC_CFG_PATH}/config/genesis.block -channelID orderer-system-channel
 if [ "$?" -ne 0 ]; then
   echo "Failed to generate orderer genesis block..."
   exit 1
