@@ -97,6 +97,23 @@ The system consists of the following components:
    ledger enclave, which crosschecks the decision before it finally commits
    the transaction to the ledger.
 
+More detailed architectural information can be found in the [Fabric Private Chaincode RFC](https://github.com/mbrandenburger/fabric-rfcs/blob/fpc-rfc/text/0000-fabric-private-chaincode.md) <!-- TODO: fix-me with pointer to version in fabric-rfcs once RFC is accepted ... -->
+
+The full detailed operation of FPC is documented in a series of UML
+Sequence Diagrams. Specifically:
+
+- The `fpc-lifecycle-v2`([puml](docs/design/fabric-v2%2B/fpc-lifecycle-v2.puml)/[png](docs/design/fabric-v2%2B/fpc-lifecycle-v2.png)) diagram describes the normal lifecycle of a chaincode in FPC, focusing in particular on those elements that change in FPC vs. regular Fabric.
+- The `fpc-registration`([puml](docs/design/fabric-v2%2B/fpc-registration.puml)/[png](/design/fabric-v2%2B/fpc-registration.png)) diagram describes how an FPC Chaincode Enclave is created on a Peer and registered in the FPC Registry, including the Remote Attestation process.
+- The `fpc-key-dist`([puml](docs/design/fabric-v2%2B/fpc-key-dist.puml),[png](docs/design/fabric-v2%2B/fpc-key-dist.ng))) diagram describes the process by which chaincode-unique cryptographic keys are created and distributed among enclaves running identical chaincodes. Note that in the current version of FPC, key generation is performed, but the key distribution protocol has not yet been implemented.
+- The `fpc-cc-invocation`([puml](docs/design/fabric-v2%2B/fpc-cc-invocation.puml)/[png](docs/design/fabric-v2%2B/fpc-cc-invocation.png)) diagram illustrates the invocation process at the beginning of the chaincode lifecycle in detail, focusing on the cryptographic operations between the Client and Peer leading up to submission of a transaction for Ordering.
+- The `fpc-cc-execution`([puml](docs/design/fabric-v2%2B/fpc-cc-execution.puml)/[png](docs/design/fabric-v2%2B/fpc-cc-execution.png)) diagram provides further detail of the execution phase of an FPC chaincode, focusing in particular on the `getState` and `putState` interactions with the Ledger and verification of state with the Ledger Enclave.
+- The `fpc-validation`([puml](docs/design/fabric-v2%2B/fpc-validation.puml)/[png](docs/design/fabric-v2%2B/fpc-validation.png)) diagram describes the FPC-specific process of validation and revalidation using the Ledger Enclave.
+- The `fpc-components`([puml](docs/design/fabric-v2%2B/fpc-components.puml)/[png](docs/design/fabric-v2%2B/fpc-components.png)) diagram shows the important data structures of FPC components and messages exchanged between components.
+
+Note: for the `png`-files, you will have to build the documentation as described [below](#building-documentation).
+
+
+
 ## Releases
 
 - [Concept Release - March 2, 2020](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/concept-release-1.0)
@@ -265,7 +282,7 @@ Make sure that you have the following required dependencies installed:
 * jq
 * hex (for ubuntu, found in package basez)
 
-* A recent version of [PlantUML](http://plantuml.com/), including Graphviz, for building documentation. See [Documentation](#Documentation) for our recommendations on installing. The version available in common package repositories may be out of date.
+* A recent version of [PlantUML](http://plantuml.com/), including Graphviz, for building documentation. See [Documentation](#building-documentation) for our recommendations on installing. The version available in common package repositories may be out of date.
 
 #### Intel SGX SDK and SSL
 
@@ -462,18 +479,9 @@ will create dummy files. In case you switch later to HW mode without
 configuring these files correctly for HW mode, this will result in
 above error.
 
-## Developing with Fabric Private Chaincode
+### Building Documentation
 
-### Your first private chaincode
-Create, build and test your first private chaincode with this [tutorial](examples/README.md).
-
-### A Complete Application
-For an end-to-end application demonstrating the potential of FPC, check out our [Clock Auction Demo Application](demo/README.md).
-
-
-## Documentation
-
-To build documentation, you will have to install `java` and download `plantuml.jar`. Either put `plantuml.jar` into
+To build documentation (e.g., images from the PlantUML `.puml` files), you will have to install `java` and download `plantuml.jar`. Either put `plantuml.jar` into
 in your `CLASSPATH` environment variable or override `PLANTUML_JAR` or `PLANTUML_CMD` in `config.override.mk`
 (see `config.mk` for default definition of the two variables). Additionally, you will need the `dot` program from the
 graphviz package (e.g., via `apt-get install graphviz` on ubuntu).
@@ -483,6 +491,32 @@ By running the following command you can generate the documentation.
     $ cd docs
     $ make
 
+
+
+## Developing with Fabric Private Chaincode
+
+### Your first private chaincode
+Create, build and test your first private chaincode with this [tutorial](examples/README.md).
+
+### A Complete Application
+For an end-to-end application demonstrating the potential of FPC, check out our [Clock Auction Demo Application](demo/README.md).
+
+
+## Reference Guides
+
+### Management API
+
+While the management API for Fabric is mostly unchanged, some modifications are needed for FPC to work.
+In particular, FPC extends the Fabric's lifecycle API with additional commands to create an FPC enclave and handle the key provisioning.
+These are detailed separately in the [FPC Management API document](docs/design/fabric-v2%2B/fpc-management.md)
+
+### FPC Shim
+
+The FPC Shim follows the programming model used in the standard Fabric Go shim and offers a C++ based FPC Shim to FPC chaincode developers. It currently comprises only a subset of the standard Fabric Shim and is complemented in the future.
+These details are documented separately in the Shim header file itself: **[ecc_enclave/enclave/shim.h](ecc_enclave/enclave/shim.h)**
+
+### FPC Client-side SDK
+FPC related encryption and decryption client-side is transparent to the user, i.e., client-side programming is standard Fabric and agnostic to FPC.
 
 
 ## Getting Help
@@ -505,8 +539,7 @@ section.
   Sorniotti: Blockchain and Trusted Computing: Problems, Pitfalls, and a
   Solution for Hyperledger Fabric. https://arxiv.org/abs/1805.08541
 
-- Data Privacy through Trusted Smart-contract Execution for Hyperledger Fabric.
-  WIP Draft: https://docs.google.com/document/d/1u15vjk4jZoeGHHE4abJ1TjY3XFFuCNpHBL6JCg73buo/edit?usp=sharing
+-  [Fabric Private Chaincode RFC](https://github.com/mbrandenburger/fabric-rfcs/blob/fpc-rfc/text/0000-fabric-private-chaincode.md) <!-- TODO: fix-me with pointer to version in fabric-rfcs once RFC is accepted ... -->
 
 - Presentation at the Hyperledger Fabric contributor meeting August 21, 2019.
   Slides: https://docs.google.com/presentation/d/1ewl7PcY9t27lScv2O2VaeHMsk13oe5B2MqU-qzDiR80 
