@@ -2,7 +2,9 @@
 This tutorial shows how to create, build, install and test  chaincode using the Fabric-Private-chaincode(FPC) framework.  This assumes familiarity with the [concepts](https://hyperledger-fabric.readthedocs.io/en/release-2.0/whatis.html#) and [the programming model](https://hyperledger-fabric.readthedocs.io/en/release-2.0/chaincode.html) in Hyperledger Fabric v2.0.
 
 
-Refer to [package shim](github.com/hyperledger/fabric-chaincode-go/shim) for the GoDoc for shim interface provided by Fabric.  The FPC programming model for chaincode provides a simpler version of the _shim_ SDK provided by Hyperledger Fabric in Go and node.js.  FPC provides a C++ interface  to access its state variables and transaction context through [shim.h](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/ecc_enclave/enclave/shim.h).  The standard commands are similar to the ones in Fabric.  To ensure confidentiality of the arguments passed to the chaincode, the arguments are encrypted while using FPC SDK.
+Refer to [package shim](https://pkg.go.dev/github.com/hyperledger/fabric-chaincode-go/shim?tab=doc) for the GoDoc for shim interface provided by Fabric.  The FPC programming model for chaincode provides a simpler version of the _shim_ SDK provided by Hyperledger Fabric in Go and node.js.  FPC provides a C++ interface  to access its state variables and transaction context through [shim.h](../ecc_enclave/enclave/shim.h).  The standard commands are similar to the ones in Fabric.  To ensure confidentiality of the arguments passed to the chaincode, the arguments are transparently encrypted while using FPC SDK.
+
+Regarding management functionally such as chaincode installation and alike, plus refer to  [FPC Management API document](../docs/design/fabric-v2%2B/fpc-management.md) for details.
 
 This example illustrates a simple usecase where the chaincode is used to store a single asset, `asset1` in the ledger and then retrieve the latest value of `asset1`.  Here are the steps to accomplish this:
 * Develop chaincode
