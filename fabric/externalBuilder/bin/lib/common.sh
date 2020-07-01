@@ -9,6 +9,7 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 
 FPC_CC_TYPE="fpc-c"
+ERCC_TYPE="ercc-lang"
 
 : ${FPC_HOSTING_MODE:=host} # alternatives: host, docker (not yet implemented), kubernetes (not yet implemented)
 
@@ -17,21 +18,26 @@ METADATA_FILE="metadata.json"
 ENCLAVE_FILE="enclave.signed.so"
 MRENCLAVE_FILE="mrenclave"
 
-# assumes CC_SOURCE_DIR & CC_METADATA_DIR: / provides: REQUEST_CC_TYPE
+# assumes CC_METADATA_DIR: / provides: REQUEST_CC_TYPE
 check_pkg_meta(){
     [ -f "${CC_METADATA_DIR}/${METADATA_FILE}" ] || die "no metadata file '${METADATA_FILE}'"
     REQUEST_CC_TYPE="$(jq -r .type "${CC_METADATA_DIR}/metadata.json" | tr '[:upper:]' '[:lower:]')"
 }
 
+# assumes CC_BUILD_DIR: / provides: REQUEST_CC_TYPE
+check_pkg_rt_meta(){
+    [ -f "${CC_BUILD_DIR}/${METADATA_FILE}" ] || die "no metadata file '${METADATA_FILE}'"
+    REQUEST_CC_TYPE="$(jq -r .type "${CC_BUILD_DIR}/metadata.json" | tr '[:upper:]' '[:lower:]')"
+}
+
 # assumes CC_SOURCE_DIR & CC_METADATA_DIR: / provides:SGX_MODE
-check_pkg_src(){
+check_fpc_pkg_src(){
     SGX_MODE="$(jq -r .sgx_mode "${CC_METADATA_DIR}/metadata.json")"
     [ ! -z "${SGX_MODE}" ]                       || die "SGX mode not specified in metadata file"
 
     [ -f "${CC_SOURCE_DIR}/${MRENCLAVE_FILE}" ]  || die "no enclave file '${ENCLAVE_FILE}'"
     [ -f "${CC_SOURCE_DIR}/${ENCLAVE_FILE}" ]    || die "no MRENCLAVE file '${MRENCLAVE_FILE}'"
 }
-
 
 # run directly on host
 cc_build_for_host() {
@@ -70,10 +76,13 @@ cc_build_for_docker() {
 # provides: SGX_MODE, PEER_ADDRESS, RUN_STATE_DIR & all env-vars expected by shim
 process_runtime_metadata() {
     [ -f "${CC_BUILD_DIR}/${METADATA_FILE}" ] || die "no metadata file '${METADATA_FILE}'"
-    SGX_MODE="$(jq -r .sgx_mode "${CC_BUILD_DIR}/metadata.json")"
-    [ ! -z "${SGX_MODE}" ]                       || die "SGX mode not specified in metadata file"
 
-    [ -f "${CC_RT_METADATA_DIR}/chaincode.json" ] || die "chaincode.jsaon does not exist"
+    if [ "${REQUEST_CC_TYPE}" == "${FPC_CC_TYPE}" ]; then
+        SGX_MODE="$(jq -r .sgx_mode "${CC_BUILD_DIR}/metadata.json")"
+        [ ! -z "${SGX_MODE}" ] || die "SGX mode not specified in metadata file"
+    fi
+
+    [ -f "${CC_RT_METADATA_DIR}/chaincode.json" ] || die "chaincode.json does not exist"
     export CORE_CHAINCODE_ID_NAME="$(jq -r .chaincode_id "${CC_RT_METADATA_DIR}/chaincode.json")" || die "could not extract chaincode-id"
 
 	
@@ -112,14 +121,26 @@ process_runtime_metadata() {
 
 # expects CC_BUILD_DIR and variables set in 'process_runtime_metadata'
 # provides CC_PID, process id of chaincode
-cc_run_on_host() {
-    # get SGX SDK environment variables
-    export SGX_SDK="/opt/intel/sgxsdk"
-    if [ -z ${PKG_CONFIG_PATH+x} ]; then PKG_CONFIG_PATH=""; fi # Hack necessary as below otherwise uses undefined var
-    . "${SGX_SDK}/environment"
+ercc_run() {
+    try cd "${CC_BUILD_DIR}"
+    ./chaincode -peer.address="${PEER_ADDRESS}" 2>&1 | tee "${RUN_STATE_DIR}/chaincode.log" &
+    CC_PID=$!
+    sleep 1
+    kill -0 ${CC_PID} || die "Chaincode quit too quickly: (for log see '${RUN_STATE_DIR}/chaincode.log')"
+}
 
-    CC_LIB_PATH="${CC_BUILD_DIR}/enclave/lib"
-    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${CC_LIB_PATH}"
+# expects CC_BUILD_DIR and variables set in 'process_runtime_metadata'
+# provides CC_PID, process id of chaincode
+cc_run_on_host() {
+    if [ "${REQUEST_CC_TYPE}" == "${FPC_CC_TYPE}" ]; then
+        # get SGX SDK environment variables
+        export SGX_SDK="/opt/intel/sgxsdk"
+        if [ -z ${PKG_CONFIG_PATH+x} ]; then PKG_CONFIG_PATH=""; fi # Hack necessary as below otherwise uses undefined var
+        . "${SGX_SDK}/environment"
+
+        CC_LIB_PATH="${CC_BUILD_DIR}/enclave/lib"
+        export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${CC_LIB_PATH}"
+    fi
 
     # Notes on starting chaincode
     # - cd is necessary so (relatively linked) enclave is found
@@ -159,8 +180,21 @@ cc_build() {
     esac
 }
 
+# run directly on host, assumes CC_SOURCE_DIR & CC_METADATA_DIR are set
+ercc_build() {
+
+    # - just make sure we have in build-dir the chaincode binary
+    try ln -s "${FPC_TOP_DIR}/ercc/ercc" "${CC_BUILD_DIR}/chaincode"
+
+    # - store also meta-data file
+    try cp "${CC_METADATA_DIR}/${METADATA_FILE}" "${CC_BUILD_DIR}"
+}
+
 # assumes CC_BUILD_DIR & CC_RT_METADATA_DIR are set
 cc_run() {
+    # - get chaincode type
+    check_pkg_rt_meta
+
     # - process inputs
     process_runtime_metadata || die "could not process runtime metadata"
 

@@ -18,10 +18,22 @@ CC_BUILD_DIR="$3"
 
 check_pkg_meta || die "failed to check package meta-data"
 
-[ "${REQUEST_CC_TYPE}" == "${FPC_CC_TYPE}" ] || die "i've told you before in 'detect' that we do not support '${FPC_CC_TYPE}'?!"
+case "${REQUEST_CC_TYPE}" in
+    "${FPC_CC_TYPE}")
+        check_fpc_pkg_src || die "failed to check package source"
+        cc_build || die "failed to build ${REQUEST_CC_TYPE} chaincode type"
+        ;;
 
-check_pkg_src || die "failed to check package source"
+    "${ERCC_TYPE}")
+        # no package check
+        ercc_build || die "failed to build ${REQUEST_CC_TYPE} chaincode type"
+        ;;
 
-cc_build || die "failed to build"
+    *)
+        # this check should have already failed in detect
+        say "chaincode type '${REQUEST_CC_TYPE}' NOT supported"
+        exit 1
+        ;;
+esac
 
 exit 0

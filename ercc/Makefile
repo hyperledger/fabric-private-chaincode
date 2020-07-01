@@ -18,8 +18,8 @@ attestation-clean:
 	$(MAKE) -C $(ATTESTATION_DIR) clean
 
 ercc: $(ATTESTATION_PROVIDER)
+	# ercc's binary is created here and referenced by external launcher for run-on-host mode
 	$(GO) build
-	rm ercc # validating a successful build, ercc not meant to be run directly
 
 test: build
 	$(GO) test -v ./...

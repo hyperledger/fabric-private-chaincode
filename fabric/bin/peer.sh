@@ -35,6 +35,44 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${FPC_TOP_DIR}/t
 # Lifecycle Chaincode command wrappers
 #--------------------------------------------
 
+handle_lifecycle_ercc_package() {
+    # check required parameters
+    [ ! -z "${ERCC_PACKAGE}" ]     || die "undefined ercc package"
+    [ ! -z "${ERCC_LANG}" ]     || die "undefined ercc lang"
+    [ ! -z "${ERCC_LABEL}" ]       || die "undefined ercc label'"
+    [ -d "${ERCC_PATH}" ] || die "undefined or non-existing ercc path"
+    # Note: normal fabric package format & layout:
+    # Overall the package is a gzipped tar-file containing files
+    # - 'metadata.json', a json object with 'path', 'type' and 'label' string fields
+    # - 'code.tar.gz' a gzipped tar-fil containing files
+    #    - 'src/...'
+
+    FPC_PKG_SANDBOX="$(mktemp -d -t  fpc-pkg-sandbox.XXX)" || die "mktemp failed"
+
+    # - create code.tar.gz
+    try cd "${ERCC_PATH}"
+    [ -f "ercc" ]   || die "no enclave file 'ercc' in '${ERCC_PATH}'"
+    try tar -zcf "${FPC_PKG_SANDBOX}/code.tar.gz" \
+        "ercc"
+
+    # - create metadata.json
+    cat <<EOF >"${FPC_PKG_SANDBOX}/metadata.json"
+{
+            "path":"${ERCC_PATH}",
+            "type":"${ERCC_LANG}",
+            "label":"${ERCC_LABEL}"
+}
+EOF
+    cat ${FPC_PKG_SANDBOX}/metadata.json
+
+    # - tar it
+    try cd "${FPC_PKG_SANDBOX}"
+    try tar -zcf "${ERCC_PACKAGE}" *
+
+    # - cleanup
+    try rm -rf "${FPC_PKG_SANDBOX}"
+}
+
 handle_lifecycle_chaincode_package() {
     OTHER_ARGS=()
     while [[ $# > 0 ]]; do
@@ -94,9 +132,10 @@ handle_lifecycle_chaincode_package() {
 		;;
 	    esac
     done
+
     if [ ! "${CC_LANG}" = "fpc-c" ]; then
-	# Nothing special to do for non-fpc chaincode, just forward to real peer
-	return
+	    # Nothing special to do for non-fpc chaincode, just forward to real peer
+	    return
     fi
 
     # check required parameters
@@ -451,12 +490,14 @@ handle_channel_join() {
     ERCC_LABEL="${ERCC_ID}_${ERCC_VERSION}"
     ERCC_PACKAGE=${FABRIC_STATE_DIR}/ercc.tar.gz
     ERCC_QUERY_INSTALL_LOG=${FABRIC_STATE_DIR}/ercc-query-install.$$.log
+    ERCC_PATH="${FPC_TOP_DIR}/ercc"
+    ERCC_LANG="ercc-lang"
     say "Installing ercc on channel '${CHAN_ID}' ..."
-    say "Packaging chaincode ..."
-    try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode package ${ERCC_PACKAGE} -p ${FPC_TOP_DIR}/ercc --lang golang --label ${ERCC_LABEL}
+    say "Packaging ${ERCC_ID} ..."
+    handle_lifecycle_ercc_package
     para
     sleep 3
-    say "Installing chaincode ..."
+    say "Installing ${ERCC_ID} ..."
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode install ${ERCC_PACKAGE}
     para
     sleep 3
