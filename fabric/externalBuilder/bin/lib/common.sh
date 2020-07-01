@@ -184,7 +184,7 @@ cc_build() {
 ercc_build() {
 
     # - just make sure we have in build-dir the chaincode binary
-    try ln -s "${FPC_TOP_DIR}/ercc/ercc" "${CC_BUILD_DIR}/chaincode"
+    try cp "${FPC_TOP_DIR}/ercc/ercc" "${CC_BUILD_DIR}/chaincode"
 
     # - store also meta-data file
     try cp "${CC_METADATA_DIR}/${METADATA_FILE}" "${CC_BUILD_DIR}"
