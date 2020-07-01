@@ -20,7 +20,7 @@ import (
 )
 
 // #cgo CFLAGS: -I/opt/intel/sgxsdk/include -I${SRCDIR}/../common/crypto
-// #cgo LDFLAGS: -L${SRCDIR}/../common/_build -L${SRCDIR}/../common/crypto/_build -Wl,--start-group -lpdo-utils -lupdo-crypto -Wl,--end-group -lcrypto
+// #cgo LDFLAGS: -L${SRCDIR}/../common/crypto/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto
 // #include "stdlib.h"  /* needed for free */
 // #include "pdo/common/crypto/verify_ias_report/verify-report.h"
 import "C"
