@@ -21,6 +21,8 @@ SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
 FPC_TOP_DIR="${SCRIPTDIR}/../../"
 FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 
+METADATA_FILE="metadata.json"
+
 : ${FABRIC_CFG_PATH:=$(pwd)}
 : ${SGX_MODE:=SIM}
 
@@ -43,7 +45,7 @@ handle_lifecycle_ercc_package() {
     [ -d "${ERCC_PATH}" ] || die "undefined or non-existing ercc path"
     # Note: normal fabric package format & layout:
     # Overall the package is a gzipped tar-file containing files
-    # - 'metadata.json', a json object with 'path', 'type' and 'label' string fields
+    # - '${METADATA_FILE}', a json object with 'path', 'type' and 'label' string fields
     # - 'code.tar.gz' a gzipped tar-fil containing files
     #    - 'src/...'
 
@@ -51,19 +53,19 @@ handle_lifecycle_ercc_package() {
 
     # - create code.tar.gz
     try cd "${ERCC_PATH}"
-    [ -f "ercc" ]   || die "no enclave file 'ercc' in '${ERCC_PATH}'"
+    [ -f "ercc" ]   || die "no binary file 'ercc' in '${ERCC_PATH}'"
     try tar -zcf "${FPC_PKG_SANDBOX}/code.tar.gz" \
         "ercc"
 
-    # - create metadata.json
-    cat <<EOF >"${FPC_PKG_SANDBOX}/metadata.json"
+    # - create ${METADATA_FILE}
+    cat <<EOF >"${FPC_PKG_SANDBOX}/${METADATA_FILE}"
 {
             "path":"${ERCC_PATH}",
             "type":"${ERCC_LANG}",
             "label":"${ERCC_LABEL}"
 }
 EOF
-    cat ${FPC_PKG_SANDBOX}/metadata.json
+    cat ${FPC_PKG_SANDBOX}/${METADATA_FILE}
 
     # - tar it
     try cd "${FPC_PKG_SANDBOX}"
@@ -145,14 +147,14 @@ handle_lifecycle_chaincode_package() {
 
     # Note: normal fabric package format & layout:
     # Overall the package is a gzipped tar-file containing files
-    # - 'metadata.json', a json object with 'path', 'type' and 'label' string fields
+    # - '${METADATA_FILE}', a json object with 'path', 'type' and 'label' string fields
     # - 'code.tar.gz' a gzipped tar-fil containing files
     #    - 'src/...'
     # as for fpc for now we will package already built artifacts 'enclave.signed.so' and
     # 'mrenclave', we will skip 'src' and directly place the built artifacts into
     # the root of 'code.tar.gz'. (Eventually we might add reproducible build to the
     # external builder, in which case we would stuff the related source into 'src/...'
-    # for metadata.json use the params passed to us, i.e., in particular type 'fpc-c'.
+    # for ${METADATA_FILE} use the params passed to us, i.e., in particular type 'fpc-c'.
 
     FPC_PKG_SANDBOX="$(mktemp -d -t  fpc-pkg-sandbox.XXX)" || die "mktemp failed"
 
@@ -166,9 +168,9 @@ handle_lifecycle_chaincode_package() {
 	"${ENCLAVE_FILE}" \
 	"${MRENCLAVE_FILE}"
 
-    # - create metadata.json
+    # - create ${METADATA_FILE}
     [ ! -z "${SGX_MODE}" ] || die "SGX_MODE not correctly specified either via environment variable or -s/--sgx-mode argument"
-    cat <<EOF >"${FPC_PKG_SANDBOX}/metadata.json"
+    cat <<EOF >"${FPC_PKG_SANDBOX}/${METADATA_FILE}"
 {
   "path":"${CC_ENCLAVESOPATH}",
   "type":"${CC_LANG}",
@@ -238,13 +240,13 @@ handle_lifecycle_chaincode_install() {
     # - do normal install (and exit if not successfull)
     try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
 
-    # - inspect metadata.json from package tar & get type
-    CC_LANG=$(tar -zvxf "${PKG_FILE}" --to-stdout metadata.json | jq .type | tr -d '"' | tr '[:upper:]' '[:lower:]') || die "could not extract cc language type from package file '${PKG_FILE}'"
+    # - inspect ${METADATA_FILE} from package tar & get type
+    CC_LANG=$(tar -zvxf "${PKG_FILE}" --to-stdout ${METADATA_FILE} | jq .type | tr -d '"' | tr '[:upper:]' '[:lower:]') || die "could not extract cc language type from package file '${PKG_FILE}'"
 
     # - iff type is fpc-c
     if [ "${CC_LANG}" = "fpc-c" ]; then
-	#   - get label from metadata.json
-	CC_LABEL=$(tar -zvxf "${PKG_FILE}" --to-stdout metadata.json | jq .label | tr -d '"') || die "could not extract label from package file '${PKG_FILE}'"
+	#   - get label from ${METADATA_FILE}
+	CC_LABEL=$(tar -zvxf "${PKG_FILE}" --to-stdout ${METADATA_FILE} | jq .label | tr -d '"') || die "could not extract label from package file '${PKG_FILE}'"
 	#   - extract package id PKG_ID via queryinstalled
 	PKG_ID=$(${FABRIC_BIN_DIR}/peer lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_LABEL}:/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 	[ ! -z "${PKG_ID}" ] || die "Could not extract package id"

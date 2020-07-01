@@ -18,13 +18,13 @@ METADATA_FILE="metadata.json"
 ENCLAVE_FILE="enclave.signed.so"
 MRENCLAVE_FILE="mrenclave"
 
-# assumes CC_METADATA_DIR: / provides: REQUEST_CC_TYPE
+# assumes: CC_METADATA_DIR / provides: REQUEST_CC_TYPE
 check_pkg_meta(){
     [ -f "${CC_METADATA_DIR}/${METADATA_FILE}" ] || die "no metadata file '${METADATA_FILE}'"
     REQUEST_CC_TYPE="$(jq -r .type "${CC_METADATA_DIR}/metadata.json" | tr '[:upper:]' '[:lower:]')"
 }
 
-# assumes CC_BUILD_DIR: / provides: REQUEST_CC_TYPE
+# assumes: CC_BUILD_DIR / provides: REQUEST_CC_TYPE
 check_pkg_rt_meta(){
     [ -f "${CC_BUILD_DIR}/${METADATA_FILE}" ] || die "no metadata file '${METADATA_FILE}'"
     REQUEST_CC_TYPE="$(jq -r .type "${CC_BUILD_DIR}/metadata.json" | tr '[:upper:]' '[:lower:]')"
@@ -182,7 +182,6 @@ cc_build() {
 
 # run directly on host, assumes CC_SOURCE_DIR & CC_METADATA_DIR are set
 ercc_build() {
-
     # - just make sure we have in build-dir the chaincode binary
     try cp "${FPC_TOP_DIR}/ercc/ercc" "${CC_BUILD_DIR}/chaincode"
 
