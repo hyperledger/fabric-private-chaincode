@@ -19,10 +19,13 @@ docker exec ca.example.com fabric-ca-client enroll \
 docker exec ca.example.com fabric-ca-client register \
    --id.name org1admin --id.secret adminpw  \
    --id.type admin  --id.affiliation org1  \
-   --id.attrs 'hf.Registrar.Roles=user, hf.Revoker=true' \
+   --id.attrs 'hf.Registrar.Roles=client, hf.Revoker=true' \
    --id.attrs 'hf.GenCRL=true, admin=true:ecert, hf.Registrar.Attributes=approle=auction.*:ecert' \
    --id.attrs 'approle=auction.*' \
    --url http://admin:adminpw@localhost:7054
+# Note: for /api/getRegisteredUsers API call to work it is crucial that hf.Registrar.Roles 
+#   attribute above covers the id.type from below or that function will just return an
+#   empty list (but no error)!
 
 #verify org1admin has been registered
 #........................................................
