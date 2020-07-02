@@ -9,7 +9,8 @@ include $(TOP)/build.mk
 SUB_DIRS = common utils ercc ecc_enclave ecc tlcc_enclave tlcc fabric examples integration demo # docs
 
 FPC_SDK_DEP_DIRS = utils/fabric common ecc_enclave ecc
-FPC_PEER_DEP_DIRS = ercc tlcc_enclave tlcc fabric ecc_enclave ecc # ecc & ecc_enclave we need if we run on host in external builder, not via docker
+FPC_PEER_DEP_DIRS = common ercc tlcc_enclave tlcc fabric ecc_enclave ecc
+# FPC_PEER_DEP_DIRS has to include ecc, ecc_enclave, common and ercc only if we run chaincode in external builder directly on host and not indirectly via docker
 FPC_PEER_CLI_WRAPPER_DEP_DIRS = utils/fabric
 
 
