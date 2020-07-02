@@ -10,7 +10,7 @@ DOCKER := docker $(DOCKERFLAGS)
 
 PROJECT_NAME=fabric-private-chaincode
 
-export FPC_VERSION := master
+export FPC_VERSION := cr2.0.0
 
 export SGX_MODE ?= SIM
 export SGX_BUILD ?= PRERELEASE
