@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# Based on sampleconfig from github.com/hyperledger/fabric.git tagged with v2.1.1
+# Based on sampleconfig from github.com/hyperledger/fabric.git tagged with v2.2.0
 
 ---
 ################################################################################
@@ -342,6 +342,7 @@ Metrics:
 
       # The prefix is prepended to all emitted statsd metrics
       Prefix:
+
 
 ################################################################################
 #

@@ -30,7 +30,7 @@ index 340d6da26..909708e3c 100644
  	}
  
  	lsccInst := &lscc.SCC{
-@@ -719,8 +721,10 @@ func serve(args []string) error {
+@@ -743,8 +745,10 @@ func serve(args []string) error {
  		Metrics:                endorser.NewMetrics(metricsProvider),
  	}
  
@@ -39,7 +39,7 @@ index 340d6da26..909708e3c 100644
  	// deploy system chaincodes
 -	for _, cc := range []scc.SelfDescribingSysCC{lsccInst, csccInst, qsccInst, lifecycleSCC} {
 +	for _, cc := range []scc.SelfDescribingSysCC{lsccInst, csccInst, qsccInst, lifecycleSCC, tlccInst} {
- 		if enabled, ok := chaincodeConfig.SCCWhitelist[cc.Name()]; !ok || !enabled {
+ 		if enabled, ok := chaincodeConfig.SCCAllowlist[cc.Name()]; !ok || !enabled {
  			logger.Infof("not deploying chaincode %s as it is not enabled", cc.Name())
  			continue
 -- 

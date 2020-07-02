@@ -1,7 +1,9 @@
 # Copyright IBM Corp. All Rights Reserved.
+# Copyright 2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
+# Loosely Based on ./discovery/test/testdata/crypto-config.yaml from github.com/hyperledger/fabric.git tagged with v2.2.0
 
 # ---------------------------------------------------------------------------
 # "OrdererOrgs" - Definition of organizations managing orderer nodes
@@ -12,13 +14,12 @@ OrdererOrgs:
   # ---------------------------------------------------------------------------
   - Name: Orderer
     Domain: example.com
-    EnableNodeOUs: true
     # ---------------------------------------------------------------------------
     # "Specs" - See PeerOrgs below for complete description
     # ---------------------------------------------------------------------------
     Specs:
       - Hostname: orderer
-        SANS:
+        SANS:: # Subject Alternative Names
                 - localhost
 
 
@@ -67,7 +68,7 @@ PeerOrgs:
     # ---------------------------------------------------------------------------
     Template:
       Count: 1
-      SANS:
+      SANS: # Subject Alternative Names
               - localhost
       # Start: 5
       # Hostname: {{.Prefix}}{{.Index}} # default
