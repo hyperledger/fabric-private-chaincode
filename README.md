@@ -116,6 +116,8 @@ Note: for the `png`-files, you will have to build the documentation as described
 
 ## Releases
 
+- [Tech Preview - July 2, 2020](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/concept-release-2.0)
+
 - [Concept Release - March 2, 2020](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/concept-release-1.0)
 
 *WARNING: This project is in continous development and the `master`
