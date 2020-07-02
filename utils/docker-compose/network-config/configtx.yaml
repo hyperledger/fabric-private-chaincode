@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# Based on first-network/configtx.yaml from github.com/hyperledger/fabric-samples.git tagged with v2.1.1
+# Based on first-network/configtx.yaml from github.com/hyperledger/fabric-samples.git tagged with v2.1.0
 
 ---
 ################################################################################

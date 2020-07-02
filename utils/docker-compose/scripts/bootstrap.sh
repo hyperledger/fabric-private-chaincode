@@ -16,14 +16,11 @@ cd ${SCRIPT_DIR}/..
 #   specify major and minor version and so ask implicitly for latest patch version. 
 # - We also allow averride by caller
 # * Fabric binaries and images
-export FABRIC_VERSION=${FABRIC_VERSION:=2.1.1}
+export FABRIC_VERSION=${FABRIC_VERSION:=2.2.0}
 export FABRIC_TAG=${FABRIC_TAG:="$FABRIC_VERSION"}
 # * CA
 export CA_VERSION=${CA_VERSION:=1.4.7}
 export CA_TAG=${CA_TAG:="$CA_VERSION"}
-# * thirdparty images (couchdb, kafka and zookeeper) 
-export THIRDPARTY_IMAGE_VERSION=${THIRDPARTY_IMAGE_VERSION:=0.4.20}
-export THIRDPARTY_TAG=${THIRDPARTY_TAG:="$THIRDPARTY_IMAGE_VERSION"}
 
 export ARCH=$(echo "$(uname -s|tr '[:upper:]' '[:lower:]'|sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')")
 export MARCH=$(uname -m)
@@ -31,13 +28,14 @@ export MARCH=$(uname -m)
 
 
 printHelp() {
-  echo "Usage: bootstrap.sh [<version>] [<ca_version>] [<thirdparty_version>][-d -b]"
+  echo "Usage: bootstrap.sh [-d -b]"
   echo
   echo "-d - bypass docker image download"
   echo "-b - bypass download of platform-specific binaries"
   echo
-  echo "e.g. bootstrap.sh 2.1 1.4 0.4.15"
-  echo "would download docker images and binaries for version 2.1 (fabric) 1.4 (fabric-ca) 0.4.15 (thirdparty)"
+  echo "the version downloaded is determined by environment variables"
+  echo "- FABRIC_VERSION (default: ${FABRIC_VERSION})"
+  echo "- CA_VERSION (default: ${CA_VERSION})"
 }
 
 # dockerFabricPull() pulls docker images from fabric and chaincode repositories
@@ -50,16 +48,6 @@ dockerFabricPull() {
       echo
       docker pull hyperledger/fabric-$IMAGES:$FABRIC_TAG
       docker tag hyperledger/fabric-$IMAGES:$FABRIC_TAG hyperledger/fabric-$IMAGES
-  done
-}
-
-dockerThirdPartyImagesPull() {
-  local THIRDPARTY_TAG=$1
-  for IMAGES in couchdb kafka zookeeper; do
-      echo "==> THIRDPARTY DOCKER IMAGE: $IMAGES"
-      echo
-      docker pull hyperledger/fabric-$IMAGES:$THIRDPARTY_TAG
-      docker tag hyperledger/fabric-$IMAGES:$THIRDPARTY_TAG hyperledger/fabric-$IMAGES
   done
 }
 
@@ -158,8 +146,6 @@ dockerInstall() {
 	  dockerFabricPull ${FABRIC_TAG}
 	  echo "===> Pulling fabric ca Image"
 	  dockerCaPull ${CA_TAG}
-	  echo "===> Pulling thirdparty docker images"
-	  dockerThirdPartyImagesPull ${THIRDPARTY_TAG}
 	  echo
 	  echo "===> List out hyperledger docker images"
 	  docker images | grep hyperledger*

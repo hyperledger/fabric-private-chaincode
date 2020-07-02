@@ -41,7 +41,7 @@ is used. Otherwise it will use `core.yaml` and the regular peer image.
     e.g., processed transactions.
    If you set the environment variable `USE_COUCHDB` to `true`, the peer will use couchdb
    to store the local version of the ledger and you can inspect the peer's ledger state
-   on [port 5984](http://localhost:5984) (login as user `admin` with password `adminPassword`).
+   on [port 5984](http://localhost:5984) (login as user `admin` with password `adminpw`).
 
    For more information in the steps involved, continue
    reading the following section. Otherwise, you can skip to the
@@ -80,14 +80,13 @@ is used. Otherwise it will use `core.yaml` and the regular peer image.
    a makefile target `peer` in `$FPC_PATH/utils/docker/Makefile`.
 
 2. Download the necessary fabric binaries. Run the
-   [bootstrap script](scripts/bootstrap.sh) which will download the Fabric 2.1.1
+   [bootstrap script](scripts/bootstrap.sh) which will download the Fabric 2.2.0
    binaries into `$FPC_PATH/utils/docker-compose/bin` directory as well as download
    also all fabric docker images  that version. If you already have the binaries
    downloaded and in located in your `PATH`, this step can be skipped. If you don't want
    download the docker images, you can also skip that part by passing option `-d` to
    the `bootstrap.sh` script (docker-compose will download them later if they are missing
    locally.)
-   **Fabric 1.4.3 versions of configtxgen and  are required to use the configurations above.**
    ```
    cd $FPC_PATH/utils/docker-compose
    scripts/bootstrap.sh

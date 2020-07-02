@@ -6,7 +6,7 @@ dist: bionic
 language: go
 
 go:
-  - 1.14.1
+  - 1.14.4
 
 sudo: required
 services:
@@ -33,7 +33,7 @@ env:
     - NANOPB_VERSION=0.3.9.2
     - NANOPB_PATH=${HOME}/nanopb
     # FABRIC
-    - FABRIC_VERSION=2.1.1
+    - FABRIC_VERSION=2.2.0
     - FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
     # FPC
     - FPC_PATH=$GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode

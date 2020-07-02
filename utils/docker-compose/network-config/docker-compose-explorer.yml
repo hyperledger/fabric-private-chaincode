@@ -15,7 +15,7 @@ networks:
 
 services:
   explorerdb.example.com:
-    image: hyperledger/explorer-db:latest
+    image: hyperledger/explorer-db:1.1.0
     container_name: explorerdb.example.com
     hostname: explorerdb.example.com
     environment:
@@ -30,7 +30,7 @@ services:
       - basic
 
   explorer.example.com:
-    image: hyperledger/explorer:latest
+    image: hyperledger/explorer:1.1.0
     container_name: explorer.example.com
     hostname: explorer.example.com
     environment:

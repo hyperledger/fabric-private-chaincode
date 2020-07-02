@@ -19,7 +19,7 @@ if [ -z ${DOCKERD_FPC_PATH+x} ]; then export DOCKERD_FPC_PATH=${FPC_PATH}; fi
 export SGX_MODE=${SGX_MODE:=SIM}
 
 # Variables which we allow the caller override ..
-export FABRIC_VERSION=${FABRIC_VERSION:=2.1.1}
+export FABRIC_VERSION=${FABRIC_VERSION:=2.2.0}
 export FPC_VERSION=${FPC_VERSION:=latest}
 export NET_ID=${NET_ID:=dev}
 # above should correspond to 'peer->networkId' in ../network-config/core.yaml. when refactoring, we might

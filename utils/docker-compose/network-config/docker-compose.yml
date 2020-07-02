@@ -10,7 +10,7 @@
 #                          as the peers, orderer, and ca. The only requirement is that this is set to
 #                          some string and cannot be left blank. To match with the scripts use `fabric-fpc`.
 #   FABRIC_VERSION       - This is the version of fabric being used that should match with an image tag
-#                          for hyperledger/fabric-orderer. Recommended value is `2.1.1`.
+#                          for hyperledger/fabric-orderer. Recommended value is `2.2.0`.
 #   FPC_CONFIG           - Set this to `-fpc` to bring up a network using FPC Peers. Leaving it unset
 #                          will cause the network to use the hyperledger/fabric-peer:latest images
 #   PEER_CMD             - This variable indicates which peer binary should be used to start the peer.
