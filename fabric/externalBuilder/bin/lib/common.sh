@@ -21,18 +21,18 @@ MRENCLAVE_FILE="mrenclave"
 # assumes: CC_METADATA_DIR / provides: REQUEST_CC_TYPE
 check_pkg_meta(){
     [ -f "${CC_METADATA_DIR}/${METADATA_FILE}" ] || die "no metadata file '${METADATA_FILE}'"
-    REQUEST_CC_TYPE="$(jq -r .type "${CC_METADATA_DIR}/metadata.json" | tr '[:upper:]' '[:lower:]')"
+    REQUEST_CC_TYPE="$(jq -r .type "${CC_METADATA_DIR}/${METADATA_FILE}" | tr '[:upper:]' '[:lower:]')"
 }
 
 # assumes: CC_BUILD_DIR / provides: REQUEST_CC_TYPE
 check_pkg_rt_meta(){
     [ -f "${CC_BUILD_DIR}/${METADATA_FILE}" ] || die "no metadata file '${METADATA_FILE}'"
-    REQUEST_CC_TYPE="$(jq -r .type "${CC_BUILD_DIR}/metadata.json" | tr '[:upper:]' '[:lower:]')"
+    REQUEST_CC_TYPE="$(jq -r .type "${CC_BUILD_DIR}/${METADATA_FILE}" | tr '[:upper:]' '[:lower:]')"
 }
 
 # assumes CC_SOURCE_DIR & CC_METADATA_DIR: / provides:SGX_MODE
 check_fpc_pkg_src(){
-    SGX_MODE="$(jq -r .sgx_mode "${CC_METADATA_DIR}/metadata.json")"
+    SGX_MODE="$(jq -r .sgx_mode "${CC_METADATA_DIR}/${METADATA_FILE}")"
     [ ! -z "${SGX_MODE}" ]                       || die "SGX mode not specified in metadata file"
 
     [ -f "${CC_SOURCE_DIR}/${MRENCLAVE_FILE}" ]  || die "no enclave file '${ENCLAVE_FILE}'"
@@ -78,7 +78,7 @@ process_runtime_metadata() {
     [ -f "${CC_BUILD_DIR}/${METADATA_FILE}" ] || die "no metadata file '${METADATA_FILE}'"
 
     if [ "${REQUEST_CC_TYPE}" == "${FPC_CC_TYPE}" ]; then
-        SGX_MODE="$(jq -r .sgx_mode "${CC_BUILD_DIR}/metadata.json")"
+       SGX_MODE="$(jq -r .sgx_mode "${CC_BUILD_DIR}/${METADATA_FILE}")"
         [ ! -z "${SGX_MODE}" ] || die "SGX mode not specified in metadata file"
     fi
 

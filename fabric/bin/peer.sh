@@ -39,10 +39,10 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${FPC_TOP_DIR}/t
 
 handle_lifecycle_ercc_package() {
     # check required parameters
-    [ ! -z "${ERCC_PACKAGE}" ]     || die "undefined ercc package"
-    [ ! -z "${ERCC_LANG}" ]     || die "undefined ercc lang"
-    [ ! -z "${ERCC_LABEL}" ]       || die "undefined ercc label'"
-    [ -d "${ERCC_PATH}" ] || die "undefined or non-existing ercc path"
+    [ ! -z "${ERCC_PACKAGE}" ]      || die "undefined ercc package"
+    [ ! -z "${ERCC_LANG}" ]         || die "undefined ercc lang"
+    [ ! -z "${ERCC_LABEL}" ]        || die "undefined ercc label'"
+    [ -d "${ERCC_PATH}" ]           || die "undefined or non-existing ercc path"
     # Note: normal fabric package format & layout:
     # Overall the package is a gzipped tar-file containing files
     # - '${METADATA_FILE}', a json object with 'path', 'type' and 'label' string fields
@@ -54,8 +54,7 @@ handle_lifecycle_ercc_package() {
     # - create code.tar.gz
     try cd "${ERCC_PATH}"
     [ -f "ercc" ]   || die "no binary file 'ercc' in '${ERCC_PATH}'"
-    try tar -zcf "${FPC_PKG_SANDBOX}/code.tar.gz" \
-        "ercc"
+    try tar -zcf "${FPC_PKG_SANDBOX}/code.tar.gz" "ercc"
 
     # - create ${METADATA_FILE}
     cat <<EOF >"${FPC_PKG_SANDBOX}/${METADATA_FILE}"
