@@ -422,8 +422,7 @@ peer:
              library: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/plugins/ercc-vscc.so
           # FPC Addition:3 
           ecc-vscc:
-             name: ecc-vscc
-             library: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/plugins/ecc-vscc.so
+             name: ECCValidation
 
     #    library: /etc/hyperledger/fabric/plugin/escc.so
     # Number of goroutines that will execute transaction validation in parallel.

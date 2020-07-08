@@ -11,9 +11,6 @@ include $(TOP)/build.mk
 
 FABRIC_FPC_PLUGINS = $(FABRIC_PATH)/fpc_plugins
 
-ECC_VSCC_SRC = ecc-vscc/ecc_validation_plugin.go ecc-vscc/ecc_validation_logic.go
-ECC_VSCC_OUT = ecc-vscc.so
-
 ERCC_VSCC_SRC = ercc-vscc/ercc_validation_plugin.go ercc-vscc/ercc_validation_logic.go
 ERCC_VSCC_OUT = ercc-vscc.so
 
@@ -34,15 +31,11 @@ build: $(FABRIC_FPC_PLUGINS)
 	$(MAKE) build-from-fabric;
 
 .PHONY: build-from-fabric
-build-from-fabric: godeps ecc-vscc ercc-vscc ercc-decorator
+build-from-fabric: godeps ercc-vscc ercc-decorator
 
 godeps:
 	$(GO) get github.com/hyperledger/fabric-chaincode-go/shim
 	$(GO) get github.com/hyperledger/fabric-chaincode-go/shimtest
-
-.PHONY: ecc-vscc
-ecc-vscc: $(ECC_VSCC_SRC)
-	$(GO) build -o $(ECC_VSCC_OUT) -buildmode=plugin $^
 
 .PHONY: ercc-vscc
 ercc-vscc: $(ERCC_VSCC_SRC) $(ATTESTATION_PROVIDER)

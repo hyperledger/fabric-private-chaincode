@@ -4,13 +4,14 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+package eccvscc
 
 import (
 	"fmt"
 	"reflect"
 
 	"github.com/hyperledger/fabric-protos-go/common"
+	//"github.com/hyperledger/fabric/vendor/github.com/hyperledger/fabric-protos-go/common"
 	commonerrors "github.com/hyperledger/fabric/common/errors"
 	validation "github.com/hyperledger/fabric/core/handlers/validation/api"
 	. "github.com/hyperledger/fabric/core/handlers/validation/api/policies"
@@ -32,11 +33,11 @@ func (*ECCValidationFactory) New() validation.Plugin {
 
 type ECCValidation struct {
 	DefaultTxValidator validation.Plugin
-	ECCTxValidator     TransactionValidator
+	ECCTxValidator     ECCTransactionValidator
 }
 
 //go:generate mockery -dir . -name TransactionValidator -case underscore -output mocks/
-type TransactionValidator interface {
+type ECCTransactionValidator interface {
 	Validate(txData []byte, policy []byte) commonerrors.TxValidationError
 }
 

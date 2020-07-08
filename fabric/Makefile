@@ -9,6 +9,7 @@ FABRIC_VERSION ?= 2.1.1
 FABRIC_VERSION_TAG =v$(FABRIC_VERSION)
 FABRIC_PEER_BIN = $(FABRIC_PATH)/build/bin/peer
 FABRIC_TLCC = $(FABRIC_PATH)/core/scc/tlcc
+FABRIC_ECCVSCC = $(FABRIC_PATH)/core/handlers/validation/builtin/eccvscc
 TLCC_GO_SRC = ${TOP}/tlcc/*.go
 TLCC_ENCLAVE_DIR = ${TOP}/tlcc_enclave
 TLCC_ENCLAVE_LIB = ${TLCC_ENCLAVE_DIR}/_build/libtl.so
@@ -75,12 +76,15 @@ clean-patch:
 $(FABRIC_TLCC):
 	ln -sfn $$(/bin/pwd)/../tlcc $(FABRIC_TLCC)
 
+$(FABRIC_ECCVSCC):
+	ln -sfn $$(/bin/pwd)/../plugins/ecc-vscc $(FABRIC_ECCVSCC)
+
 $(TLCC_ENCLAVE_LIB):
 	${MAKE} -C ${TLCC_ENCLAVE_DIR} build
 
 peer: patch $(FABRIC_PEER_BIN)
 
-$(FABRIC_PEER_BIN): $(FABRIC_TLCC) $(TLCC_GO_SRC) $(TLCC_ENCLAVE_LIB) $(FABRIC_PATCHED)
+$(FABRIC_PEER_BIN): $(FABRIC_TLCC) $(FABRIC_ECCVSCC) $(TLCC_GO_SRC) $(TLCC_ENCLAVE_LIB) $(FABRIC_PATCHED)
 	# Note: above does not have enough dependencies to trigger a rebuild if (recursively) 
 	# any TLCC and dependent code changes. however, it should at least make sure it will
 	# build properly if tlcc enclave is not yet built ..
@@ -93,6 +97,7 @@ native: peer
 
 clean: clean-native clean-patch
 	rm -f $(FABRIC_TLCC)
+	rm -f $(FABRIC_ECC_VSCC)
 
 clean-peer:
 	rm -rf $(FABRIC_PEER_BIN)

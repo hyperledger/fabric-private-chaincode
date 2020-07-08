@@ -1,0 +1,33 @@
+From a4b40dd866b83b0ff9489bde057a1a68a69ed840 Mon Sep 17 00:00:00 2001
+From: Bruno Vavala <bruno.vavala@intel.com>
+Date: Tue, 7 Jul 2020 23:14:10 -0700
+Subject: [PATCH] Integrate FPC Validation Plugin
+
+Signed-off-by: Bruno Vavala <bruno.vavala@intel.com>
+---
+ core/handlers/library/library.go | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/core/handlers/library/library.go b/core/handlers/library/library.go
+index 1d5401e2b..4016ac6fc 100644
+--- a/core/handlers/library/library.go
++++ b/core/handlers/library/library.go
+@@ -15,6 +15,7 @@ import (
+ 	"github.com/hyperledger/fabric/core/handlers/endorsement/builtin"
+ 	validation "github.com/hyperledger/fabric/core/handlers/validation/api"
+ 	. "github.com/hyperledger/fabric/core/handlers/validation/builtin"
++	. "github.com/hyperledger/fabric/core/handlers/validation/builtin/eccvscc"
+ )
+ 
+ // HandlerLibrary is used to assert
+@@ -51,3 +52,7 @@ func (r *HandlerLibrary) DefaultEndorsement() endorsement.PluginFactory {
+ func (r *HandlerLibrary) DefaultValidation() validation.PluginFactory {
+ 	return &DefaultValidationFactory{}
+ }
++
++func (r *HandlerLibrary) ECCValidation() validation.PluginFactory {
++    return &ECCValidationFactory{}
++}
+-- 
+2.17.1
+
