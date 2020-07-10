@@ -10,6 +10,7 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 
 FPC_CC_TYPE="fpc-c"
 ERCC_TYPE="ercc-type"
+ERCC_BINARY="ercc"
 
 : ${FPC_HOSTING_MODE:=host} # alternatives: host, docker (not yet implemented), kubernetes (not yet implemented)
 
@@ -182,8 +183,10 @@ cc_build() {
 
 # run directly on host, assumes CC_SOURCE_DIR & CC_METADATA_DIR are set
 ercc_build() {
+    [ -f ${CC_SOURCE_DIR}/${ERCC_BINARY} ] || die "no binary file ${ERCC_BINARY} in '${CC_SOURCE_DIR}'"
+
     # - just make sure we have in build-dir the chaincode binary
-    try cp "${FPC_TOP_DIR}/ercc/ercc" "${CC_BUILD_DIR}/chaincode"
+    try cp "${CC_SOURCE_DIR}/${ERCC_BINARY}" "${CC_BUILD_DIR}/chaincode"
 
     # - store also meta-data file
     try cp "${CC_METADATA_DIR}/${METADATA_FILE}" "${CC_BUILD_DIR}"
