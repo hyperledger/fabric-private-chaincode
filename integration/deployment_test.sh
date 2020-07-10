@@ -31,15 +31,15 @@ run_test() {
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: auction_test/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP} -E mock-escc -V ecc-vscc
+    try_fail ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP} -E mock-escc -V fpc-vscc
     try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP}
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP} -E mock-escc -V ecc-vscc
+    try_fail ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP} -E mock-escc -V fpc-vscc
     try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP}
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP} -E mock-escc -V ecc-vscc
+    try_fail ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP} -E mock-escc -V fpc-vscc
     try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name auction_test --version ${CC_VER} --signature-policy ${CC_EP}
 
     #first call negated as it fails
@@ -73,15 +73,15 @@ run_test() {
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: echo_test/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name echo_test --version ${CC_VER} -E mock-escc -V ecc-vscc
+    try_fail ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name echo_test --version ${CC_VER} -E mock-escc -V fpc-vscc
     try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name echo_test --version ${CC_VER}
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name echo_test --version ${CC_VER} -E mock-escc -V ecc-vscc
+    try_fail ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name echo_test --version ${CC_VER} -E mock-escc -V fpc-vscc
     try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name echo_test --version ${CC_VER}
 
     # first call negated as it fails due to specification of validation plugin
-    try_fail ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name echo_test --version ${CC_VER} -E mock-escc -V ecc-vscc
+    try_fail ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name echo_test --version ${CC_VER} -E mock-escc -V fpc-vscc
     try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name echo_test --version ${CC_VER}
 
     #first call negated as it fails

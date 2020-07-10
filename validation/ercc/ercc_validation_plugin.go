@@ -4,7 +4,9 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+// This ercc-vscc code is deprecated and will be integrated in ercc with the refactoring
+
+package ercc
 
 import (
 	"fmt"
@@ -19,20 +21,16 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewPluginFactory() validation.PluginFactory {
-	return &ECCValidationFactory{}
+type ERCCValidationFactory struct {
 }
 
-type ECCValidationFactory struct {
+func (*ERCCValidationFactory) New() validation.Plugin {
+	return &ERCCValidation{}
 }
 
-func (*ECCValidationFactory) New() validation.Plugin {
-	return &ECCValidation{}
-}
-
-type ECCValidation struct {
+type ERCCValidation struct {
 	DefaultTxValidator validation.Plugin
-	ECCTxValidator     TransactionValidator
+	ERCCTxValidator    TransactionValidator
 }
 
 //go:generate mockery -dir . -name TransactionValidator -case underscore -output mocks/
@@ -40,7 +38,7 @@ type TransactionValidator interface {
 	Validate(txData []byte, policy []byte) commonerrors.TxValidationError
 }
 
-func (v *ECCValidation) Validate(block *common.Block, namespace string, txPosition int, actionPosition int, contextData ...validation.ContextDatum) error {
+func (v *ERCCValidation) Validate(block *common.Block, namespace string, txPosition int, actionPosition int, contextData ...validation.ContextDatum) error {
 	if len(contextData) == 0 {
 		logger.Panicf("Expected to receive policy bytes in context data")
 	}
@@ -66,8 +64,8 @@ func (v *ECCValidation) Validate(block *common.Block, namespace string, txPositi
 		return convertErrorTypeOrPanic(err)
 	}
 
-	// do ecc-vscc
-	err = v.ECCTxValidator.Validate(block.Data.Data[txPosition], serializedPolicy.Bytes())
+	// do ercc-vscc
+	err = v.ERCCTxValidator.Validate(block.Data.Data[txPosition], serializedPolicy.Bytes())
 	logger.Debugf("block %d, namespace: %s, tx %d validation results is: %v", block.Header.Number, namespace, txPosition, err)
 	return convertErrorTypeOrPanic(err)
 
@@ -89,7 +87,7 @@ func convertErrorTypeOrPanic(err error) error {
 	return &validation.ExecutionFailureError{Reason: fmt.Sprintf("error of type %v returned from VSCC", reflect.TypeOf(err))}
 }
 
-func (v *ECCValidation) Init(dependencies ...validation.Dependency) error {
+func (v *ERCCValidation) Init(dependencies ...validation.Dependency) error {
 	var sf StateFetcher
 	for _, dep := range dependencies {
 		if stateFetcher, isStateFetcher := dep.(StateFetcher); isStateFetcher {
@@ -97,12 +95,12 @@ func (v *ECCValidation) Init(dependencies ...validation.Dependency) error {
 		}
 	}
 	if sf == nil {
-		return errors.New("ECC-VSCC: stateFetcher not passed in init")
+		return errors.New("ERCC-VSCC: stateFetcher not passed in init")
 	}
 
-	v.ECCTxValidator = New(sf)
+	v.ERCCTxValidator = New(sf)
 
-	// use default vscc and our custom ecc vscc
+	// use default vscc and our custom ercc vscc
 	factory := &defaultvscc.DefaultValidationFactory{}
 	v.DefaultTxValidator = factory.New()
 	err := v.DefaultTxValidator.Init(dependencies...)

@@ -9,6 +9,7 @@ FABRIC_VERSION ?= 2.1.1
 FABRIC_VERSION_TAG =v$(FABRIC_VERSION)
 FABRIC_PEER_BIN = $(FABRIC_PATH)/build/bin/peer
 FABRIC_TLCC = $(FABRIC_PATH)/core/scc/tlcc
+FABRIC_VALIDATION = $(FABRIC_PATH)/core/handlers/validation/fpc
 TLCC_GO_SRC = ${TOP}/tlcc/*.go
 TLCC_ENCLAVE_DIR = ${TOP}/tlcc_enclave
 TLCC_ENCLAVE_LIB = ${TLCC_ENCLAVE_DIR}/_build/libtl.so
@@ -75,17 +76,22 @@ clean-patch:
 $(FABRIC_TLCC):
 	ln -sfn $$(/bin/pwd)/../tlcc $(FABRIC_TLCC)
 
+$(FABRIC_VALIDATION):
+	# TODO: this will go away once upgraded to Fabric v2.2 has completed
+	ln -sfn $$(/bin/pwd)/../validation/fpc $(FABRIC_VALIDATION)
+	ln -sfn $$(/bin/pwd)/../validation/ercc $(FABRIC_VALIDATION)/ercc
+
 $(TLCC_ENCLAVE_LIB):
 	${MAKE} -C ${TLCC_ENCLAVE_DIR} build
 
 peer: patch $(FABRIC_PEER_BIN)
 
-$(FABRIC_PEER_BIN): $(FABRIC_TLCC) $(TLCC_GO_SRC) $(TLCC_ENCLAVE_LIB) $(FABRIC_PATCHED)
-	# Note: above does not have enough dependencies to trigger a rebuild if (recursively) 
+$(FABRIC_PEER_BIN): $(FABRIC_TLCC) $(FABRIC_VALIDATION) $(TLCC_GO_SRC) $(TLCC_ENCLAVE_LIB) $(FABRIC_PATCHED)
+	# Note: above does not have enough dependencies to trigger a rebuild if (recursively)
 	# any TLCC and dependent code changes. however, it should at least make sure it will
 	# build properly if tlcc enclave is not yet built ..
 	cd $(FABRIC_PATH) && \
-	GO_TAGS=pluginsenabled $(MAKE) peer
+	GO_TAGS=pluginsenabled,FPC $(MAKE) peer
 
 native: peer
 	cd $(FABRIC_PATH) && \
@@ -93,6 +99,7 @@ native: peer
 
 clean: clean-native clean-patch
 	rm -f $(FABRIC_TLCC)
+	rm -f $(FABRIC_VALIDATION)
 
 clean-peer:
 	rm -rf $(FABRIC_PEER_BIN)
