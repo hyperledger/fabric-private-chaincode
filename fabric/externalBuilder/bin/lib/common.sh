@@ -9,7 +9,7 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 
 FPC_CC_TYPE="fpc-c"
-ERCC_TYPE="ercc-lang"
+ERCC_TYPE="ercc-type"
 
 : ${FPC_HOSTING_MODE:=host} # alternatives: host, docker (not yet implemented), kubernetes (not yet implemented)
 

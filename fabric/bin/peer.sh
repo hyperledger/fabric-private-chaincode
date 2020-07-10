@@ -40,7 +40,7 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${FPC_TOP_DIR}/t
 handle_lifecycle_ercc_package() {
     # check required parameters
     [ ! -z "${ERCC_PACKAGE}" ]      || die "undefined ercc package"
-    [ ! -z "${ERCC_LANG}" ]         || die "undefined ercc lang"
+    [ ! -z "${ERCC_TYPE}" ]         || die "undefined ercc type"
     [ ! -z "${ERCC_LABEL}" ]        || die "undefined ercc label'"
     [ -d "${ERCC_PATH}" ]           || die "undefined or non-existing ercc path"
     # Note: normal fabric package format & layout:
@@ -60,7 +60,7 @@ handle_lifecycle_ercc_package() {
     cat <<EOF >"${FPC_PKG_SANDBOX}/${METADATA_FILE}"
 {
             "path":"${ERCC_PATH}",
-            "type":"${ERCC_LANG}",
+            "type":"${ERCC_TYPE}",
             "label":"${ERCC_LABEL}"
 }
 EOF
@@ -492,7 +492,7 @@ handle_channel_join() {
     ERCC_PACKAGE=${FABRIC_STATE_DIR}/ercc.tar.gz
     ERCC_QUERY_INSTALL_LOG=${FABRIC_STATE_DIR}/ercc-query-install.$$.log
     ERCC_PATH="${FPC_TOP_DIR}/ercc"
-    ERCC_LANG="ercc-lang"
+    ERCC_TYPE="ercc-type"
     say "Installing ercc on channel '${CHAN_ID}' ..."
     say "Packaging ${ERCC_ID} ..."
     handle_lifecycle_ercc_package
