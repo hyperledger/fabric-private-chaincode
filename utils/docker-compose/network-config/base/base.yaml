@@ -36,7 +36,7 @@ services:
     command: ${PEER_CMD} node start
     volumes:
         - /var/run/:/host/var/run/
-        # Note: var run is required for docker daemon socket, see above DOCKER_HOST 
+        # Note: var run is required for docker daemon socket, see above DOCKER_HOST
         # and CORE_VM_ENDPOINT
         - ${DOCKERD_NETWORK_CONFIG}/config:/etc/hyperledger/configtx
         - ${DOCKERD_FPC_PATH}/examples:/project/src/github.com/hyperledger-labs/fabric-private-chaincode/examples
@@ -44,7 +44,7 @@ services:
 
 
   ca-base:
-    image: hyperledger/fabric-ca
+    image: hyperledger/fabric-ca:1.4.7
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
       - FABRIC_CA_SERVER_CA_NAME=ca.example.com
