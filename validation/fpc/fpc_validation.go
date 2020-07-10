@@ -4,7 +4,7 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+package fpc
 
 import (
 	"fmt"
@@ -19,28 +19,24 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewPluginFactory() validation.PluginFactory {
-	return &ERCCValidationFactory{}
+type FPCValidationFactory struct {
 }
 
-type ERCCValidationFactory struct {
+func (*FPCValidationFactory) New() validation.Plugin {
+	return &FPCValidation{}
 }
 
-func (*ERCCValidationFactory) New() validation.Plugin {
-	return &ERCCValidation{}
-}
-
-type ERCCValidation struct {
-	DefaultTxValidator validation.Plugin
-	ERCCTxValidator    TransactionValidator
+type FPCValidation struct {
+	DefaultValidator validation.Plugin
+	FPCValidator     TransactionValidator
 }
 
 //go:generate mockery -dir . -name TransactionValidator -case underscore -output mocks/
 type TransactionValidator interface {
-	Validate(txData []byte, policy []byte) commonerrors.TxValidationError
+	Validate(block *common.Block, namespace string, txPosition int, actionPosition int, policy []byte) commonerrors.TxValidationError
 }
 
-func (v *ERCCValidation) Validate(block *common.Block, namespace string, txPosition int, actionPosition int, contextData ...validation.ContextDatum) error {
+func (v *FPCValidation) Validate(block *common.Block, namespace string, txPosition int, actionPosition int, contextData ...validation.ContextDatum) error {
 	if len(contextData) == 0 {
 		logger.Panicf("Expected to receive policy bytes in context data")
 	}
@@ -60,14 +56,14 @@ func (v *ERCCValidation) Validate(block *common.Block, namespace string, txPosit
 	}
 
 	// do defalt vscc
-	err := v.DefaultTxValidator.Validate(block, namespace, txPosition, actionPosition, contextData...)
+	err := v.DefaultValidator.Validate(block, namespace, txPosition, actionPosition, contextData...)
 	if err != nil {
 		logger.Debugf("block %d, namespace: %s, tx %d validation results is: %v", block.Header.Number, namespace, txPosition, err)
 		return convertErrorTypeOrPanic(err)
 	}
 
-	// do ercc-vscc
-	err = v.ERCCTxValidator.Validate(block.Data.Data[txPosition], serializedPolicy.Bytes())
+	// do fpc vscc
+	err = v.FPCValidator.Validate(block, namespace, txPosition, actionPosition, serializedPolicy.Bytes())
 	logger.Debugf("block %d, namespace: %s, tx %d validation results is: %v", block.Header.Number, namespace, txPosition, err)
 	return convertErrorTypeOrPanic(err)
 
@@ -89,7 +85,7 @@ func convertErrorTypeOrPanic(err error) error {
 	return &validation.ExecutionFailureError{Reason: fmt.Sprintf("error of type %v returned from VSCC", reflect.TypeOf(err))}
 }
 
-func (v *ERCCValidation) Init(dependencies ...validation.Dependency) error {
+func (v *FPCValidation) Init(dependencies ...validation.Dependency) error {
 	var sf StateFetcher
 	for _, dep := range dependencies {
 		if stateFetcher, isStateFetcher := dep.(StateFetcher); isStateFetcher {
@@ -97,15 +93,16 @@ func (v *ERCCValidation) Init(dependencies ...validation.Dependency) error {
 		}
 	}
 	if sf == nil {
-		return errors.New("ERCC-VSCC: stateFetcher not passed in init")
+		return errors.New("FPC-VSCC: stateFetcher not passed in init")
 	}
 
-	v.ERCCTxValidator = New(sf)
+	// create our fpc-vscc instance
+	v.FPCValidator = New(sf)
 
-	// use default vscc and our custom ercc vscc
+	// create an instance of the default vscc
 	factory := &defaultvscc.DefaultValidationFactory{}
-	v.DefaultTxValidator = factory.New()
-	err := v.DefaultTxValidator.Init(dependencies...)
+	v.DefaultValidator = factory.New()
+	err := v.DefaultValidator.Init(dependencies...)
 	if err != nil {
 		return errors.Errorf("Error while creating default vscc: %s", err)
 	}

@@ -92,7 +92,7 @@ group approveformyorg
     Version: **mrenclave**,
     Sequence: sequence_number,
     Endorsement Policy: (2of3),
-    Plugins: ecc-vscc (FPC validation plugin)
+    Plugins: fpc-vscc (FPC validation plugin)
 
     NOTE: the endorsement policy specifies how many
     enclaves are expected to run the chaincode. The MVP

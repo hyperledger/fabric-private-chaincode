@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"strings"
@@ -19,6 +20,15 @@ type Response struct {
 	ResponseData []byte `json:"ResponseData"`
 	Signature    []byte `json:"Signature"`
 	PublicKey    []byte `json:"PublicKey"`
+}
+
+func UnmarshalResponse(respBytes []byte) (*Response, error) {
+	response := &Response{}
+	err := json.Unmarshal(respBytes, response)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshaling FPC response err: %s", err)
+	}
+	return response, nil
 }
 
 const sep = "."

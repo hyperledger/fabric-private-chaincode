@@ -376,8 +376,8 @@ enclave and [tlcc/](tlcc) for the ledger enclave.
 In order to run and deploy a chaincode enclave we need to build the enclave
 registry. See [ercc/](ercc).
 
-Both, ecc and ercc use custom validation plugins to verify transactions. In [plugins/](plugins) you can find
-instructions how to build them manually.
+Both, ecc and ercc use custom validation to verify transactions. In [fabric/](fabric) you can find
+instructions how to build the FPC-enabled peer that uses our custom validation.
 
 Moreover, we provide a set of integration tests in [integration/](integration) to demonstrate Fabric Private Chaincode
 capabilities.

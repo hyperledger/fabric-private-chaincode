@@ -4,7 +4,9 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+// This ercc-vscc code is deprecated and will be integrated in ercc with the refactoring
+
+package ercc
 
 import (
 	"crypto/sha256"
