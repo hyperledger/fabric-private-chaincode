@@ -18,13 +18,21 @@ CC_METADATA_DIR="$2"
 
 check_pkg_meta || die "failed to check package meta-data"
 
-if [ "${REQUEST_CC_TYPE}" != "${FPC_CC_TYPE}" ]; then
-    say "only '${FPC_CC_TYPE}' chaincode supported"
-    exit 1
-fi
+case "${REQUEST_CC_TYPE}" in
+    "${FPC_CC_TYPE}")
+        check_fpc_pkg_src || die "failed to check package source"
+        ;;
 
-check_pkg_src || die "failed to check package source"
+    "${ERCC_TYPE}")
+        # nothing to check
+        ;;
 
-say "found support '${FPC_CC_TYPE}' chaincode "
+    *)
+        say "chaincode type '${REQUEST_CC_TYPE}' NOT supported"
+        exit 1
+        ;;
+esac
+
+say "chaincode type '${REQUEST_CC_TYPE}' supported"
 exit 0
 

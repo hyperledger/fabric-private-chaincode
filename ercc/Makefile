@@ -18,8 +18,10 @@ attestation-clean:
 	$(MAKE) -C $(ATTESTATION_DIR) clean
 
 ercc: $(ATTESTATION_PROVIDER)
+	# ERCC's binary is created here.
+	# The binary is then referenced by the fpc-peer cli, inserted in the ERCC package,
+	# and eventually run by the external launcher.
 	$(GO) build
-	rm ercc # validating a successful build, ercc not meant to be run directly
 
 test: build
 	$(GO) test -v ./...
