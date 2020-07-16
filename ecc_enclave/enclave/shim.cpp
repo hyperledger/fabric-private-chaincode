@@ -263,7 +263,7 @@ void get_public_state_by_partial_composite_key(
 int get_string_args(std::vector<std::string>& argss, shim_ctx_ptr_t ctx)
 {
     JSON_Value* root = json_parse_string(ctx->json_args);
-    if(root == NULL)
+    if (root == NULL)
     {
         LOG_ERROR("Shim: Cannot parse json");
         return -1;
@@ -287,7 +287,7 @@ int get_func_and_params(
     std::string& func_name, std::vector<std::string>& params, shim_ctx_ptr_t ctx)
 {
     JSON_Value* root = json_parse_string(ctx->json_args);
-    if(root == NULL)
+    if (root == NULL)
     {
         LOG_ERROR("Shim: Cannot parse json");
         return -1;

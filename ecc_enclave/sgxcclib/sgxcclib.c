@@ -7,8 +7,8 @@
 
 #include "sgxcclib.h"
 #include "common-sgxcclib.h"  //CHECK_SGX_ERROR_AND_RETURN_ON_ERROR macro
-#include "sgx_attestation_type.h"
 #include "enclave_u.h"
+#include "sgx_attestation_type.h"
 
 #include <stdbool.h>
 #include <string.h>
@@ -25,12 +25,10 @@ extern void get_creator_name(
     const char* msp_id, uint32_t max_msp_id_len, const char* dn, uint32_t max_dn_len, void* ctx);
 
 // - channel id
-extern void get_channel_id(
-    const char* channel_id, uint32_t max_channel_id_len, void* ctx);
+extern void get_channel_id(const char* channel_id, uint32_t max_channel_id_len, void* ctx);
 
 // - msp id
-extern void get_msp_id(
-    const char* msp_id, uint32_t max_msp_id_len, void* ctx);
+extern void get_msp_id(const char* msp_id, uint32_t max_msp_id_len, void* ctx);
 
 // - for accessing ledger kvs
 extern void get_state(const char* key,
@@ -84,14 +82,12 @@ void ocall_get_creator_name(
     get_creator_name(msp_id, max_msp_id_len, dn, max_dn_len, ctx);
 }
 
-void ocall_get_channel_id(
-    char* channel_id, uint32_t max_channel_id_len, void* ctx)
+void ocall_get_channel_id(char* channel_id, uint32_t max_channel_id_len, void* ctx)
 {
     get_channel_id(channel_id, max_channel_id_len, ctx);
 }
 
-void ocall_get_msp_id(
-    char* msp_id, uint32_t max_msp_id_len, void* ctx)
+void ocall_get_msp_id(char* msp_id, uint32_t max_msp_id_len, void* ctx)
 {
     get_msp_id(msp_id, max_msp_id_len, ctx);
 }
@@ -126,4 +122,3 @@ void ocall_print_string(const char* str)
 {
     golog(str);
 }
-
