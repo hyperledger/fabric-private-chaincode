@@ -1,0 +1,43 @@
+From fcff9c9678f996d20f2b077547c50490fa927ce2 Mon Sep 17 00:00:00 2001
+From: michael steiner <michael.steiner@intel.com>
+Date: Thu, 16 Jul 2020 17:30:36 -0700
+Subject: [PATCH] Enable mod-based FPC-enabled peer builds
+
+- include FPC module (for now local/GOPATH relative due to cgo dependencies)
+
+Signed-off-by: michael steiner <michael.steiner@intel.com>
+---
+ go.mod   | 10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletion(-)
+
+diff --git a/go.mod b/go.mod
+index c300b3bab..3631c7254 100644
+--- a/go.mod
++++ b/go.mod
+@@ -5,6 +5,13 @@ go 1.14
+ // https://github.com/golang/go/issues/34610
+ replace golang.org/x/sys => golang.org/x/sys v0.0.0-20190920190810-ef0ce1748380
+ 
++// FPC Change:
++// below replace are here temporarily so
++// - even without having yet committed go.mod reference to fabric in fpc ..
++// - right now to get go module & cgo working we need for now to colocation in GOPATH
++replace github.com/hyperledger-labs/fabric-private-chaincode => ../../hyperledger-labs/fabric-private-chaincode
++replace github.com/hyperledger-labs/fabric-private-chaincode/ercc => ../../hyperledger-labs/fabric-private-chaincode/ercc
++
+ require (
+ 	code.cloudfoundry.org/clock v1.0.0
+ 	github.com/DataDog/zstd v1.4.0 // indirect
+@@ -32,6 +39,9 @@ require (
+ 	github.com/gorilla/mux v1.7.2
+ 	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
+ 	github.com/hashicorp/go-version v1.2.0
++	// FPC Change:
++	github.com/hyperledger-labs/fabric-private-chaincode v0.0.0-20200714210837-6652dfeb7ce4
++	github.com/hyperledger-labs/fabric-private-chaincode/ercc v0.0.0-20200714210837-6652dfeb7ce4 // indirect
+ 	github.com/hyperledger/fabric-amcl v0.0.0-20200128223036-d1aa2665426a
+ 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20200128192331-2d899240a7ed
+ 	github.com/hyperledger/fabric-config v0.0.5
+-- 
+2.27.0
+

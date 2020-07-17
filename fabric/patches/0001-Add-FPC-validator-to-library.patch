@@ -26,8 +26,8 @@ index 000000000..92a355522
 +import (
 +	validation "github.com/hyperledger/fabric/core/handlers/validation/api"
 +	decoration "github.com/hyperledger/fabric/core/handlers/decoration"
-+	"github.com/hyperledger/fabric/core/handlers/validation/fpc"
-+	"github.com/hyperledger/fabric/core/handlers/validation/fpc/ercc"
++	"github.com/hyperledger-labs/fabric-private-chaincode/validation/fpc"
++	"github.com/hyperledger-labs/fabric-private-chaincode/validation/ercc"
 +)
 +
 +// Adds FPCValidation to HandlerLibrary if FPC build tag is enabled
