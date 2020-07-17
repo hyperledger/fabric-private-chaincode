@@ -18,7 +18,7 @@ index 340d6da26..909708e3c 100644
  	"github.com/hyperledger/fabric/core/scc/cscc"
  	"github.com/hyperledger/fabric/core/scc/lscc"
  	"github.com/hyperledger/fabric/core/scc/qscc"
-+	"github.com/hyperledger/fabric/core/scc/tlcc"
++	"github.com/hyperledger-labs/fabric-private-chaincode/tlcc"
  	"github.com/hyperledger/fabric/core/transientstore"
  	"github.com/hyperledger/fabric/discovery"
  	"github.com/hyperledger/fabric/discovery/endorsement"
