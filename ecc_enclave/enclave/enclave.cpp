@@ -249,6 +249,16 @@ int ecall_cc_invoke(const char* encoded_args,
     ctx.u_shim_ctx = u_shim_ctx;
     ctx.encoded_args = encoded_args;
 
+    {
+        int max_length = 1024;
+        char channel_id[max_length];
+        char mspid[max_length];
+        get_channel_id(channel_id, max_length, &ctx);
+        get_msp_id(mspid, max_length, &ctx);
+        LOG_DEBUG("(unverified) channel id: %s\n", channel_id);
+        LOG_DEBUG("(unverified) msp id: %s\n", mspid);
+    }
+
     // call chaincode invoke logic: creates output and response
     // output, response <- F(args, input)
     int ret;
