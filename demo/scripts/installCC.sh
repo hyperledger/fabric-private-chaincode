@@ -33,6 +33,7 @@ CC_ID=auctioncc
 CC_PATH=${FPC_PATH}/demo/chaincode/fpc/_build/lib
 CC_LANG=fpc-c
 CC_VER="$(${REMOTE_CAT} ${CC_PATH}/mrenclave)"
+CC_SEQ="1"
 PKG=/tmp/${CC_ID}.tar.gz
 
 CC_EP="OR('Org1MSP.peer')"
@@ -40,8 +41,8 @@ CC_EP="OR('Org1MSP.peer')"
 ${REMOTE_PEER_CMD} lifecycle chaincode package --lang ${CC_LANG} --label ${CC_ID} --path ${CC_PATH} ${PKG}
 ${REMOTE_PEER_CMD} lifecycle chaincode install ${PKG}
 PKG_ID=$(${REMOTE_PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_ID}/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
-${REMOTE_PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
-${REMOTE_PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
-${REMOTE_PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER}  --signature-policy ${CC_EP}
+${REMOTE_PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+${REMOTE_PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+${REMOTE_PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER}  --sequence ${CC_SEQ} --signature-policy ${CC_EP}
 ${REMOTE_PEER_CMD} lifecycle chaincode querycommitted -C ${CHAN_ID}
 ${REMOTE_PEER_CMD} lifecycle chaincode createenclave --name ${CC_ID}

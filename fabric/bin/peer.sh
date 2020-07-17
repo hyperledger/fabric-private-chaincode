@@ -427,6 +427,14 @@ handle_lifecycle_chaincode_createenclave() {
         CC_NAME=$2;
         shift; shift
         ;;
+        -C|--channelID)
+        CHAN_ID=$2;
+        shift; shift
+        ;;
+        -o|--orderer)
+        ORDERER_ADDR=$2;
+        shift; shift
+        ;;
         *)
         die "createenclave: invalid option"
         ;;
