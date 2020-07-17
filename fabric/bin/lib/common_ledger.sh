@@ -164,6 +164,7 @@ ledger_shutdown() {
     fi
     if [ ! -z "${PEER_PID}" ]; then
 	kill  ${PEER_PID}
+	wait  ${PEER_PID}
 	unset PEER_PID
 	rm ${PEER_PID_FILE}
     fi
@@ -174,6 +175,7 @@ ledger_shutdown() {
     fi
     if [ ! -z "${ORDERER_PID}" ]; then
 	kill ${ORDERER_PID}
+	wait ${ORDERER_PID}
 	unset ORDERER_PID
 	rm ${ORDERER_PID_FILE}
     fi
