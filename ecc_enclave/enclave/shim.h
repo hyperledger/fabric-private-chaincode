@@ -149,14 +149,6 @@ int get_func_and_params(
 // transaction APIs
 //-------------------------------------------------
 
-// - getChannelID
-// // TOD0 (possible extensions): might be useful to support and should be easy?
-// //     If this is just the name, would it be useful also to have a variant which
-// //     has the unique id ("content-addressable"/genesis-block-hash)?
-// void get_channel_id(char* channel_id,
-//     uint32_t max_channel_id_len,
-//     shim_ctx_ptr_t ctx);
-
 // - TxID
 // // TODO (possible extensions): at least coming from a Sawtooth/PDO perspective,
 // //   i would think access to this info might be important for cross-cc transactions?

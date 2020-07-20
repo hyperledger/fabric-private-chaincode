@@ -150,11 +150,9 @@ func get_channel_id(channel_id *C.char, max_channel_id_len C.uint32_t, ctx unsaf
 
 //export get_msp_id
 func get_msp_id(msp_id *C.char, max_msp_id_len C.uint32_t, ctx unsafe.Pointer) {
-	//stubs := registry.Get(*(*int)(ctx))
-	//mspIdStr, err := cid.GetMSPID(stubs.shimStub)
 	mspIdStr, err := shim.GetMSPID()
 	if err != nil {
-		logger.Infof("CORE_PEER_LOCALMSPID env var not set, returning empty mspid")
+		logger.Infof("Error while calling shim.GetMSPID, returning empty mspid. err %s", err)
 		mspIdStr = ""
 	}
 	if len(mspIdStr) > int(max_msp_id_len) {

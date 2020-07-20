@@ -39,22 +39,14 @@ void get_creator_name(
 
 void get_channel_id(char* channel_id, uint32_t max_channel_id_len, shim_ctx_ptr_t ctx)
 {
-    if (max_channel_id_len > 0)
-    {
-        channel_id[0] = '\0';
-        ocall_get_channel_id(channel_id, max_channel_id_len, ctx->u_shim_ctx);
-        channel_id[max_channel_id_len - 1] = '\0';
-    }
+    memset(channel_id, 0, max_channel_id_len);
+    internal_get_channel_id(channel_id, max_channel_id_len, ctx);
 }
 
 void get_msp_id(char* msp_id, uint32_t max_msp_id_len, shim_ctx_ptr_t ctx)
 {
-    if (max_msp_id_len > 0)
-    {
-        msp_id[0] = '\0';
-        ocall_get_msp_id(msp_id, max_msp_id_len, ctx->u_shim_ctx);
-        msp_id[max_msp_id_len - 1] = '\0';
-    }
+    memset(msp_id, 0, max_msp_id_len);
+    internal_get_msp_id(msp_id, max_msp_id_len, ctx);
 }
 
 void get_state(

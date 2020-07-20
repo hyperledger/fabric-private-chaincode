@@ -10,6 +10,7 @@ set(SOURCE_FILES
     enclave.cpp
     enclave_t.c
     shim.cpp
+    shim_internals.cpp
     ${COMMON_SOURCE_DIR}/enclave/common.cpp
     ${COMMON_SOURCE_DIR}/base64/base64.cpp
     ${COMMON_SOURCE_DIR}/utils.c
