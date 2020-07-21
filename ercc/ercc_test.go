@@ -10,9 +10,12 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/golang/protobuf/proto"
 	main "github.com/hyperledger-labs/fabric-private-chaincode/ercc"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-chaincode-go/shimtest"
+	"github.com/hyperledger/fabric-chaincode-go/shimtest/mock"
+	"github.com/hyperledger/fabric-protos-go/peer/lifecycle"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -40,6 +43,18 @@ var _ = Describe("ERCC", func() {
 		ercc = main.NewTestErcc()
 		stub = shimtest.NewMockStub("ercc", ercc)
 		stub.Decorations["test"] = []byte("AAA")
+
+		// create mock lifecycle chaincode
+		df := &lifecycle.QueryApprovedChaincodeDefinitionResult{
+			Version: mrenclave,
+		}
+		dfBytes, err := proto.Marshal(df)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		lscc := &mock.Chaincode{}
+		lscc.InvokeReturns(shim.Success(dfBytes))
+		lifecycleStub := shimtest.NewMockStub("_lifecycle", lscc)
+		stub.MockPeerChaincode("_lifecycle", lifecycleStub, stub.ChannelID)
 	})
 
 	Context("instantiate chaincode", func() {

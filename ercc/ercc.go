@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/common/flogging"
@@ -155,6 +156,22 @@ func (ercc *EnclaveRegistryCC) registerEnclave(stub shim.ChaincodeStubInterface,
 	}
 	// set enclave public key in attestation report
 	attestationReport.EnclavePk = enclavePkAsBytes
+
+	// second, check that attestation report contains expectedMrEnclave as defined in chaincode definition
+	// TODO set chaincode name
+	expectedMrEnclave, err := utils.ExtractMrEnclaveFromChaincodeDefinition("chaincode  name", stub)
+	if err != nil {
+		return shim.Error("Error while fetching MrEnclave from chaincode definition, err: " + err.Error())
+	}
+	logger.Debugf("check that attestation matches expected mrenclave = %s", expectedMrEnclave)
+
+	matches, err := ercc.ra.CheckMrEnclave(expectedMrEnclave, attestationReport)
+	if err != nil {
+		return shim.Error("Error while attestation report verification: " + err.Error())
+	}
+	if !matches {
+		return shim.Error("Attestation report does not match MRENCLAVE!")
+	}
 
 	// store attestation report under enclavePk hash in state
 	attestationReportAsBytes, err := json.Marshal(attestationReport)
