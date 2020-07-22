@@ -13,21 +13,10 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-protos-go/peer/lifecycle"
+	"github.com/hyperledger/fabric/protoutil"
 )
 
-func GetMrEnclave(chaincodeId string, stub shim.ChaincodeStubInterface) (string, error) {
-	ccDef, err := GetChaincodeDefinition(chaincodeId, stub)
-	if err != nil {
-		return "", err
-	}
-
-	mrenclave, err := ExtractMrEnclaveFromChaincodeDefinition(ccDef)
-	if err != nil {
-		return "", err
-	}
-
-	return mrenclave, nil
-}
+const MrEnclaveLength = 32
 
 func GetChaincodeDefinition(chaincodeId string, stub shim.ChaincodeStubInterface) (*lifecycle.QueryApprovedChaincodeDefinitionResult, error) {
 	function := "QueryApprovedChaincodeDefinition"
@@ -35,10 +24,7 @@ func GetChaincodeDefinition(chaincodeId string, stub shim.ChaincodeStubInterface
 		Name:     chaincodeId,
 		Sequence: 0, // TODO get current sequence number
 	}
-	argsBytes, err := proto.Marshal(args)
-	if err != nil {
-		return nil, err
-	}
+	argsBytes := protoutil.MarshalOrPanic(args)
 
 	resp := stub.InvokeChaincode("_lifecycle", [][]byte{[]byte(function), argsBytes}, stub.GetChannelID())
 
@@ -54,29 +40,29 @@ func GetChaincodeDefinition(chaincodeId string, stub shim.ChaincodeStubInterface
 	return df, nil
 }
 
-func ExtractMrEnclaveFromChaincodeDefinition(ccDef *lifecycle.QueryApprovedChaincodeDefinitionResult) (string, error) {
-	if ccDef == nil {
-		return "", fmt.Errorf("chaincode definition input is nil")
-	}
-
-	if err := isValidMrEnclave(ccDef.Version); err != nil {
+func GetMrEnclave(chaincodeId string, stub shim.ChaincodeStubInterface) (string, error) {
+	ccDef, err := GetChaincodeDefinition(chaincodeId, stub)
+	if err != nil {
 		return "", err
 	}
 
-	return ccDef.Version, nil
+	mrenclave := ccDef.Version
+	if err = isValidMrEnclaveString(mrenclave); err != nil {
+		return "", err
+	}
+
+	return mrenclave, nil
 }
 
 // checks that mrenclave is encoded as hex string and has correct length
-func isValidMrEnclave(input string) error {
-	expectedLength := 32
-
+func isValidMrEnclaveString(input string) error {
 	mrenclave, err := hex.DecodeString(input)
 	if err != nil {
 		return err
 	}
 
-	if len(mrenclave) != expectedLength {
-		return fmt.Errorf("mrenclave has wrong length! expteced %d but got %d", expectedLength, len(mrenclave))
+	if len(mrenclave) != MrEnclaveLength {
+		return fmt.Errorf("mrenclave has wrong length! expteced %d but got %d", MrEnclaveLength, len(mrenclave))
 	}
 
 	return nil
