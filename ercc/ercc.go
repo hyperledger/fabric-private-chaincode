@@ -177,6 +177,16 @@ func (ercc *EnclaveRegistryCC) registerEnclave(stub shim.ChaincodeStubInterface,
 	//	return shim.Error("Attestation report does not match MRENCLAVE!")
 	//}
 
+	////get the msp identity for the enclave host peer
+	//identityBytes, err := getEnclavePeerIdentity()
+	// ccDef, _ := utils.GetChaincodeDefinition(chaincodeId, stub)
+	//if err = utils.CanEndorse(identityBytes, policyBtes); err != nil {
+	//	logger.Errorf("Cannot endorse, err %s", err)
+	//	return shim.Error(err.Error())
+	//}
+	//
+	//// next check peer identity is covered by the attestation
+
 	// store attestation report under enclavePk hash in state
 	attestationReportAsBytes, err := json.Marshal(attestationReport)
 	if err != nil {
