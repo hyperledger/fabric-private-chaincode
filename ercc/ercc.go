@@ -158,20 +158,24 @@ func (ercc *EnclaveRegistryCC) registerEnclave(stub shim.ChaincodeStubInterface,
 	attestationReport.EnclavePk = enclavePkAsBytes
 
 	// second, check that attestation report contains expectedMrEnclave as defined in chaincode definition
-	// TODO set chaincode name
-	expectedMrEnclave, err := utils.ExtractMrEnclaveFromChaincodeDefinition("chaincode  name", stub)
-	if err != nil {
-		return shim.Error("Error while fetching MrEnclave from chaincode definition, err: " + err.Error())
-	}
-	logger.Debugf("check that attestation matches expected mrenclave = %s", expectedMrEnclave)
+	// TODO chaincodeId must be passed as argument
+	chaincodeID := "targetChaincodeId"
+	expectedMrEnclave, err := utils.GetMrEnclave(chaincodeID, stub)
+	_ = expectedMrEnclave
 
-	matches, err := ercc.ra.CheckMrEnclave(expectedMrEnclave, attestationReport)
-	if err != nil {
-		return shim.Error("Error while attestation report verification: " + err.Error())
-	}
-	if !matches {
-		return shim.Error("Attestation report does not match MRENCLAVE!")
-	}
+	// TODO enable below once chaincodeId is available
+	//if err != nil {
+	//	return shim.Error("Error while fetching MrEnclave from chaincode definition, err: " + err.Error())
+	//}
+	//logger.Debugf("check that attestation matches expected mrenclave = %s", expectedMrEnclave)
+	//
+	//matches, err := ercc.ra.CheckMrEnclave(expectedMrEnclave, attestationReport)
+	//if err != nil {
+	//	return shim.Error("Error while attestation report verification: " + err.Error())
+	//}
+	//if !matches {
+	//	return shim.Error("Attestation report does not match MRENCLAVE!")
+	//}
 
 	// store attestation report under enclavePk hash in state
 	attestationReportAsBytes, err := json.Marshal(attestationReport)

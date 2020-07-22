@@ -27,37 +27,55 @@ func TestChaincode(t *testing.T) {
 var _ = Describe("Chaincode", func() {
 
 	var (
-		stub      *shimtest.MockStub
-		lscc      *mock.Chaincode
-		mrenclave string
+		stub              *shimtest.MockStub
+		lscc              *mock.Chaincode
+		expectedMrEnclave string
 	)
 
 	BeforeEach(func() {
-
-		mrenclave = "helloMrEnclave"
-
 		// create mock err
 		stub = shimtest.NewMockStub("ercc", &mock.Chaincode{})
 		stub.ChannelID = "mockChannel"
 
-		// create mock lifecycle chaincode
-		df := &lifecycle.QueryApprovedChaincodeDefinitionResult{
-			Version: mrenclave,
-		}
-		dfBytes, err := proto.Marshal(df)
-		Expect(err).ShouldNot(HaveOccurred())
-
 		lscc = &mock.Chaincode{}
-		lscc.InvokeReturns(shim.Success(dfBytes))
 		lifecycleStub := shimtest.NewMockStub("_lifecycle", lscc)
-
 		stub.MockPeerChaincode("_lifecycle", lifecycleStub, stub.ChannelID)
 	})
 
-	It("should return a chaincode definition", func() {
-		df, err := utils.ExtractMrEnclaveFromChaincodeDefinition("myFPCChaincode", stub)
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(df).Should(Equal(mrenclave))
+	When("chaincode definition exists", func() {
+		BeforeEach(func() {
+			expectedMrEnclave = "98aed61c91f258a37c68ed4943297695647ec7bbe6008cc111b0a12650ebeb91"
+
+			// create mock lifecycle chaincode
+			df := &lifecycle.QueryApprovedChaincodeDefinitionResult{
+				Version: expectedMrEnclave,
+			}
+			dfBytes, err := proto.Marshal(df)
+			Expect(err).ShouldNot(HaveOccurred())
+			lscc.InvokeReturns(shim.Success(dfBytes))
+		})
+
+		It("should succeed", func() {
+			df, err := utils.GetChaincodeDefinition("myFPCChaincode", stub)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(df).ShouldNot(BeNil())
+
+			mrenclave, err := utils.ExtractMrEnclaveFromChaincodeDefinition(df)
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(mrenclave).Should(Equal(expectedMrEnclave))
+		})
+	})
+
+	When("chaincode definition exists", func() {
+		It("should fail", func() {
+			df, err := utils.GetChaincodeDefinition("myFPCChaincode", stub)
+			Expect(err).Should(HaveOccurred())
+			Expect(df).Should(BeNil())
+
+			mrenclave, err := utils.ExtractMrEnclaveFromChaincodeDefinition(df)
+			Expect(err).Should(HaveOccurred())
+			Expect(mrenclave).Should(BeEmpty())
+		})
 	})
 
 })

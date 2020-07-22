@@ -6,7 +6,7 @@
 TOP = .
 include $(TOP)/build.mk
 
-SUB_DIRS = common utils ercc ecc_enclave ecc tlcc_enclave tlcc fabric examples integration demo # docs
+SUB_DIRS = common utils internal ercc ecc_enclave ecc tlcc_enclave tlcc fabric examples integration demo # docs
 
 FPC_SDK_DEP_DIRS = utils/fabric common ecc_enclave ecc
 FPC_PEER_DEP_DIRS = common ercc tlcc_enclave tlcc fabric ecc_enclave ecc
