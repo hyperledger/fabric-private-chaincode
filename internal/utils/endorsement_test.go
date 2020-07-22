@@ -52,7 +52,7 @@ var _ = Describe("Chaincode", func() {
 		Expect(err).ShouldNot(HaveOccurred())
 	})
 
-	Context("CanEndorse", func() {
+	Context("IsValidEndorserIdentity", func() {
 
 		When("identity satisfies endorsement policy", func() {
 			It("should succeed", func() {
@@ -63,7 +63,7 @@ var _ = Describe("Chaincode", func() {
 				df := &lifecycle.QueryApprovedChaincodeDefinitionResult{
 					ValidationParameter: pp,
 				}
-				err = utils.CanEndorse(serializedId, df)
+				err = utils.IsValidEndorserIdentity(serializedId, df)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})
@@ -77,7 +77,7 @@ var _ = Describe("Chaincode", func() {
 				df := &lifecycle.QueryApprovedChaincodeDefinitionResult{
 					ValidationParameter: pp,
 				}
-				err = utils.CanEndorse(serializedId, df)
+				err = utils.IsValidEndorserIdentity(serializedId, df)
 				Expect(err).Should(HaveOccurred())
 			})
 		})
