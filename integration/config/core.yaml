@@ -570,7 +570,7 @@ chaincode:
         # FPC Addition 0: external builder for fpc-c chaincode
         - path: ../../fabric/externalBuilder
           name: fpc-c
-          propagateEnvironmentp:
+          propagateEnvironment:
               - FPC_HOSTING_MODE
               - FABRIC_LOGGING_SPEC
               - ftp_proxy
