@@ -5,8 +5,13 @@
 GOFLAGS :=
 GO := go $(GOFLAGS)
 
+export DOCKER_BUILDKIT ?= 1 
+# Building with build-kit helps for multi-stage. However,
+# docker files should also build without build-kit. In
+# particular travis explicitly rejects (rather than ignores) it
+# and so we need it (environment) overrideable
 DOCKERFLAGS :=
-DOCKER := docker $(DOCKERFLAGS)
+DOCKER := DOCKER_BUILDKIT=$(DOCKER_BUILDKIT) docker $(DOCKERFLAGS)
 
 PROJECT_NAME=fabric-private-chaincode
 

@@ -32,12 +32,12 @@ is used. Otherwise it will use `core.yaml` and the regular peer image.
    scripts/start.sh
    ```
    This will create all necessary installation artifacts and start the
-   network. 
+   network.
    If your environment variable `SGX_MODE` is set to hardware, the network will run
    the peer also with SGX hardware mode enabled, otherwise it will run in SGX simulation mode.
    If you set the environment variable `USE_EXPLORER` to `true`, the network will include
-   and start the [Hyperledger Explorer](https://www.hyperledger.org/projects/explorer) on 
-   [port 8090](http://localhost:8090). This will enable you to inspect the networks, 
+   and start the [Hyperledger Explorer](https://www.hyperledger.org/projects/explorer) on
+   [port 8090](http://localhost:8090). This will enable you to inspect the networks,
     e.g., processed transactions.
    If you set the environment variable `USE_COUCHDB` to `true`, the peer will use couchdb
    to store the local version of the ledger and you can inspect the peer's ledger state
@@ -49,35 +49,21 @@ is used. Otherwise it will use `core.yaml` and the regular peer image.
 
 
 ### Detailed Steps
-1. Build the peer image in `utils/docker/peer` directory which is defined by the
-   peer [Dockerfile](../docker/peer/Dockerfile). This step
-   assumes you have already built the [fabric-private-chaincode base image](../docker/base/Dockerfile).
-   Take a look at building the docker dev environment in the main [README](../../README.md#docker).
-   After you have created the base image, run the following to create a modified
-   peer image and the plugins necessary to start the peer.  `$FPC_PATH` is the
-   location fabric-private-chaincode repository on your host machine.
-   ```
-   cd $FPC_PATH/utils/docker/peer
-   docker build -t hyperledger/fabric-peer-fpc .
-   ```
-   By default the image will clone the master branch on
-   https://github.com/hyperledger-labs/fabric-private-chaincode. If you want to use
-   a different fork of the repo or a different branch you provide
-   `FPC_REPO_URL` and `FPC_REPO_BRANCH_TAG_OR_COMMIT` as build args.
-   ```
-   cd $FPC_PATH/utils/docker/peer
-   docker build -t hyperledger/fabric-peer-fpc --build-arg FPC_REPO_URL=<repo-url> --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=<repo-branch> .
-   ```
-   If you want to build the peer image using your local copy of your repo you can
-   use the same build args, but specify `file:///tmp/build-src/.git` as the
-   `FPC_REPO_URL`. You will also need to create the image at the root of this repo
-   so that the local repo will be in the build context for the docker daemon.
-   ```
-   cd $FPC_PATH
-   docker build -t hyperledger/fabric-peer-fpc -f utils/docker/peer/Dockerfile --build-arg FPC_REPO_URL=file:///tmp/build-src/.git --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$(git rev-parse HEAD) .
-   ```
-   Note: as this last scenario might be a common development action, it is defined as
-   a makefile target `peer` in `$FPC_PATH/utils/docker/Makefile`.
+1. Build the necessary docker images, in particular the `peer` image
+   by running `make` in the `$FPC_PATH/utils/docker/peer` directory,
+   with `$FPC_PATH` being the location of the fabric-private-chaincode
+   repository on your host machine.
+   If you ran `make` or `make build` on the top-level, this will already be
+   done automatically.
+   In case you haven't done it yet, also make sure to take a look at
+   building the docker dev environment in the main [README](../../README.md#docker).
+
+   By default the image will be based on the commit state of in your
+   workspace `$FPC_PATH`. However, the docker-files also provide you
+   with easy options to change which fpc repo or branch, fabric repo or branch
+   and which versions of prereqs are used. See the header-files of
+   `$FPC_PATH/utils/docker/*/Dockerfile` for the documentation of the
+   corresponding docker build arguments.
 
 2. Download the necessary fabric binaries. Run the
    [bootstrap script](scripts/bootstrap.sh) which will download the Fabric 2.2.0
@@ -137,7 +123,7 @@ The [examples](../../examples) and [demo](../../demo) directories has been
    [auction](../../examples/auction) examples, where the code is provided in the git repo out-of-the-box.
    Follow similar steps as outlined below with corresponding changes of chaincode name and
    queries/transactions.
-   
+
    The rest of these steps should be done within the peer container.
 
 2. Exec into the peer container.
@@ -145,7 +131,7 @@ The [examples](../../examples) and [demo](../../demo) directories has been
    docker exec -it peer0.org1.example.com bash
    ```
 
-3. There also some a number of useful predefined environment variables such as the orderer address, 
+3. There also some a number of useful predefined environment variables such as the orderer address,
    the channel name, the peer command to use and the credentials used by fabric.
    ```
    echo CORE_PEER_MSPCONFIGPATH=${CORE_PEER_MSPCONFIGPATH}\
@@ -156,7 +142,7 @@ The [examples](../../examples) and [demo](../../demo) directories has been
    ```
    Note, though, that the credentials predefined in `docker-compose.yml` in the `CORE_PEER_MSPCONFIGPATH`
    environment variable are peer credentials (`/etc/hyperledger/msp/peer/`).  To execute with admin credentials,
-   e.g., to issue management commands, you will have to redefine `CORE_PEER_MSPCONFIGPATH` to 
+   e.g., to issue management commands, you will have to redefine `CORE_PEER_MSPCONFIGPATH` to
    `/etc/hyperledger/msp/users/Admin@org1.example.com/msp`.
 
 4. package, install, approve & commit your chaincode.

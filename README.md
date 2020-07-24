@@ -166,7 +166,7 @@ hardware-mode later after having tested with simulation mode.
 
 Install the Intel SGX software stack for Linux (including the SGX
 driver and the SGX Platform Software (PSW)) by following the official
-[documentation](https://github.com/intel/linux-sgx).
+[documentation](https://software.intel.com/content/www/us/en/develop/topics/software-guard-extensions/sdk.html).
 
 
 #### Register with Intel Attestation Service (IAS)
@@ -185,7 +185,7 @@ you can find more details on how to register and obtain your SPID plus correspon
 
 We currently support both `linkable` and `unlinkable` signatures for the attestation.
 The type of attestation used is selected based on the `FPC_ATTESTATION_TYPE` environment variable:
-`epid_unlinkable` for unlinkable or `epid_linkable` for linkable signatures. If you 
+`epid_unlinkable` for unlinkable or `epid_linkable` for linkable signatures. If you
 do not define that environment variable, the chosen attestation method is `epid_unlinkable`.
 Note that a mismatch between your IAS credentials and the linkable setting
 will result in an (HTTP) error '400' visible in the log-files when the
@@ -199,7 +199,7 @@ Place your ias api key and your SPID in the ``ias`` folder as follows:
 
 ### Setup your Development Environment
 
-There are 2 different ways to develop Fabric Private Chaincode. Using our preconfigured Docker container development environment or setting up your local system with all required software dependencies to build and develop chaincode locally. 
+There are 2 different ways to develop Fabric Private Chaincode. Using our preconfigured Docker container development environment or setting up your local system with all required software dependencies to build and develop chaincode locally.
 
 ### Option 1: Using the Docker-based FPC Development Environment
 
@@ -224,8 +224,16 @@ A few notes:
   [Working from behind a proxy](#working-from-behind-a-proxy) below for more information.
 * if your local host is SGX enabled, i.e., there is a device `/dev/sgx` or
   `/dev/isgx` and your PSW daemon listens to `/var/run/aesmd`, then the docker image will be sgx-enabled and your settings from `./config/ias` will be used. You will have to manually set `SGX_MODE=HW` before building anything to use HW mode.
-* if you want additional apt packages in your container image, add to the `<absolute-project-path>/fabric-private-chaincode/config.override.mk` file in the fabric-private-chaincode directory. In that file, define `DOCKER_DEV_IMAGE_APT_ADD__PKGS` with a
-  list of packages you want. They will then be automatically added to the docker image
+* if you want additional apt packages to be automatically added to your
+  container images, you can do so by modifying `<absolute-project-path>/fabric-private-chaincode/config.override.mk` file in the fabric-private-chaincode directory.
+  In that file, define
+  `DOCKER_BASE_RT_IMAGE_APT_ADD_PKGS`,
+  `DOCKER_BASE_DEV_IMAGE_APT_ADD_PKGS'`and/or
+  `DOCKER_DEV_IMAGE_APT_ADD_PKGS` with a list of packages you want to be added to you
+  all images,
+  all images where fabric/fpc is built from source and
+  the dev(eloper) container, respectively.
+  They will then be automatically added to the docker image
 * due to the way the peer's port for chaincode connection is managed,
   you will be able to run only a single FPC development container on a
   particular host.
@@ -267,15 +275,17 @@ Make sure that you have the following required dependencies installed:
 
 * Docker 18.x
 
-* Protocol Buffers 
+* Protocol Buffers
     - Protocol Buffers 3.0.x needed for the Intel SGX SDK
     - Protocol Buffers 3.11.x or higher and [Nanopb](http://github.com/nanopb/nanopb) 0.3.9.2
 
-* SGX SDK v2.6 for [Linux](https://github.com/intel/linux-sgx)
+* SGX PSW & SDK v2.10 for [Linux](https://01.org/intel-software-guard-extensions/downloads)
+  (alternatively, you could also install it from the [source](https://github.com/intel/linux-sgx)
 
 * Credentials for Intel Attestation Service, read [here](#intel-attestation-service-ias) (for hardware-mode SGX)
 
-* [SSL](https://github.com/intel/intel-sgx-ssl)  for SGX SDK v2.4.1 (we recommend using OpenSSL 1.1.0j) 
+* [Intel Software Guard Extensions SSL](https://github.com/intel/intel-sgx-ssl) v2.4.1
+  (we recommend using branch `lin_2.10_1.1.1g` OpenSSL `1.1.0g`)
 
 * Hyperledger [Fabric](https://github.com/hyperledger/fabric/tree/v2.2.0) v2.2.0
 
@@ -290,11 +300,11 @@ Make sure that you have the following required dependencies installed:
 
 Fabric Private Chaincode requires the Intel [SGX SDK](https://github.com/intel/linux-sgx) and
 [SGX SSL](https://github.com/intel/intel-sgx-ssl) to build the main components of our framework and to develop and build
-your first private chaincode.     
+your first private chaincode.
 
 Install the Intel SGX software stack for Linux by following the
 official [documentation](https://github.com/intel/linux-sgx). Please make sure that you use the
-SDK version as denoted above in the list of requirements. 
+SDK version as denoted above in the list of requirements.
 
 For SGX SSL, just follow the instructions on the [corresponding
 github page](https://github.com/intel/intel-sgx-Sal). In case you are
@@ -303,15 +313,15 @@ might also want to make sure that [simulation mode is set](https://github.com/in
 when building and installing it.
 
 Once you have installed the SGX SDK and SSL for SGX SDK please double check that ``SGX_SDK`` and ``SGX_SSL`` variables
-are set correctly in your environment. 
+are set correctly in your environment.
 
 
 #### Protocol Buffers
 
-We use *nanopb*, a lightweight implementation of Protocol Buffers, inside the ledger enclave to parse blocks of 
+We use *nanopb*, a lightweight implementation of Protocol Buffers, inside the ledger enclave to parse blocks of
 transactions. Install nanopb by following the instruction below. For this you need a working Google Protocol Buffers
-compiler with python bindings (e.g. via `apt-get install protobuf-compiler python-protobuf libprotobuf-dev`). 
-For more detailed information consult the official nanopb documentation http://github.com/nanopb/nanopb. 
+compiler with python bindings (e.g. via `apt-get install protobuf-compiler python-protobuf libprotobuf-dev`).
+For more detailed information consult the official nanopb documentation http://github.com/nanopb/nanopb.
 
     $ export NANOPB_PATH=/path-to/install/nanopb/
     $ git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH}
@@ -337,14 +347,14 @@ Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in t
 
 #### Prepare Fabric
 
-Fabric Private Chaincode support requires to re-build the Fabric peer. 
+Fabric Private Chaincode support requires to re-build the Fabric peer.
 
 Checkout Fabric 2.2.0 release using the following commands:
 
     $ export FABRIC_PATH=${GOPATH}/src/github.com/hyperledger/fabric
     $ git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
     $ cd $FABRIC_PATH; git checkout tags/v2.2.0
-    
+
 Note that Fabric Private Chaincode currently does not work with the Fabric `master` branch, therefore make sure you use the Fabric
 `v2.2.0` tag. This is important as our build script applies some patches
 to the fabric peer to enable FPC support. Make sure the source of Fabric is in your ``$GOPATH``.
@@ -420,7 +430,7 @@ for version 1.25.4 execute
 Furthermore, for docker-compose networks to work properly with proxies, the `noProxy`
 variable in your `~/.docker/config.json` should at least contain `127.0.0.1,127.0.1.1,localhost,.org1.example.com,.example.com`.
 
-Another problem you might encounter when running the integration tests 
+Another problem you might encounter when running the integration tests
 insofar that some '0.0.0.0' in ``integration/config/core.yaml`` used by
 clients -- e.g., the peer CLI using the ``address: 0.0.0.0:7051`` config
 as part of the ``peer`` section -- result in the client being unable
@@ -432,8 +442,8 @@ ip address such as '127.0.0.1'.
 
 ##### Environment settings
 
-Our build system requires a few variables to be set in your environment. Missing variables may cause `make` to fail. 
-Below you find a summary of all variables which you should carefully check and add to your environment. 
+Our build system requires a few variables to be set in your environment. Missing variables may cause `make` to fail.
+Below you find a summary of all variables which you should carefully check and add to your environment.
 
 ```bash
 # Path to your SGX SDK and SGX SSL
@@ -460,9 +470,9 @@ export FPC_ATTESTATION_TYPE=epid_linkable
 ```
 ##### Clang-format
 
-Some users may experience problems with clang-format. In particular, the error `command not found: clang-format` 
+Some users may experience problems with clang-format. In particular, the error `command not found: clang-format`
 appears even after installing it via `apt-get install clang-format`. See [here](https://askubuntu.com/questions/1034996/vim-clang-format-clang-format-is-not-found)
-for how to fix this.  
+for how to fix this.
 
 ##### ERCC setup failures
 
@@ -524,7 +534,7 @@ FPC related encryption and decryption client-side is transparent to the user, i.
 ## Getting Help
 
 Found a bug? Need help to fix an issue? You have a great idea for a new feature? Talk to us! You can reach us on
-[RocketChat](https://chat.hyperledger.org/) in #fabric-private-chaincode. 
+[RocketChat](https://chat.hyperledger.org/) in #fabric-private-chaincode.
 
 We also have a weekly meeting every Tuesday at 3 pm GMT on [Zoom](https://zoom.us/my/hyperledger.community.3). Please
 see the Hyperledger [community calendar](https://wiki.hyperledger.org/display/HYP/Calendar+of+Public+Meetings) for
@@ -544,7 +554,7 @@ section.
 -  [Fabric Private Chaincode RFC](https://github.com/mbrandenburger/fabric-rfcs/blob/fpc-rfc/text/0000-fabric-private-chaincode.md) <!-- TODO: fix-me with pointer to version in fabric-rfcs once RFC is accepted ... -->
 
 - Presentation at the Hyperledger Fabric contributor meeting August 21, 2019.
-  Slides: https://docs.google.com/presentation/d/1ewl7PcY9t27lScv2O2VaeHMsk13oe5B2MqU-qzDiR80 
+  Slides: https://docs.google.com/presentation/d/1ewl7PcY9t27lScv2O2VaeHMsk13oe5B2MqU-qzDiR80
 
 ## Project Status
 

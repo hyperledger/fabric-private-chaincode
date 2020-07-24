@@ -4,4 +4,4 @@
 
 ARG FPC_VERSION=latest
 
-FROM hyperledger/fabric-private-chaincode-base:${FPC_VERSION}
+FROM hyperledger/fabric-private-chaincode-base-rt:${FPC_VERSION}
