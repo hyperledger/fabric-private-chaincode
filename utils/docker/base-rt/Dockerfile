@@ -39,7 +39,7 @@ ENV GOPATH=/project
 
 
 # Get all necessary apt packages
-RUN apt-get update \
+RUN apt-get update -q \
   && DEBIAN_FRONTEND="noninteractive" \
   # above makes sure any install of 'tzdata' or alike (as e.g., pulled in via ubuntu 20.04) does not hang ...
   apt-get install -y -q\
@@ -57,9 +57,9 @@ RUN apt-get update \
 # Install SGX PSW packages
 RUN echo "deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu ${UBUNTU_NAME} main" >> /etc/apt/sources.list \
   && wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - \
-  && apt-get update \
+  && apt-get update -q \
   && DEBIAN_FRONTEND="noninteractive" \
-  && apt-get install -y \
+  && apt-get install -y -q \
     # We do not need daemons like AESMD as we run them on host (side-steps also
     # issues with config of /etc/aesmd.conf like proxy ..). Without this option
     # aesmd and lots of other plugsin are automatically pulled in. 
@@ -107,7 +107,7 @@ RUN mkdir -p /opt/intel
 WORKDIR /opt/intel
 RUN SGX_SDK_BIN_REPO=https://download.01.org/intel-sgx/sgx-linux/${SGX}/distro/ubuntu${UBUNTU_VERSION}-server \
   && SGX_SDK_BIN_FILE=$(cd /tmp; wget --spider --recursive --level=1 --no-parent ${SGX_SDK_BIN_REPO} 2>&1 | perl  -ne 'if (m|'${SGX_SDK_BIN_REPO}'/(sgx_linux_x64_sdk.*)|) { print "$1\n"; }') \
-  && wget ${SGX_SDK_BIN_REPO}/${SGX_SDK_BIN_FILE} \
+  && wget -q ${SGX_SDK_BIN_REPO}/${SGX_SDK_BIN_FILE} \
   && chmod +x ${SGX_SDK_BIN_FILE} \
   && echo -e "no\n/opt/intel" | ./${SGX_SDK_BIN_FILE} \
   && rm ${SGX_SDK_BIN_FILE}
@@ -122,7 +122,7 @@ ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${SGX_SDK}/sdk_libs
 RUN [ "${UBUNTU_VERSION}" = "18.04" ] \
   && SGX_SDK_BINUTILS_REPO=https://download.01.org/intel-sgx/sgx-linux/${SGX} \
   && SGX_SDK_BINUTILS_FILE=$(cd /tmp; wget --spider --recursive --level=1 --no-parent ${SGX_SDK_BINUTILS_REPO} 2>&1 | perl  -ne 'if (m|'${SGX_SDK_BINUTILS_REPO}'/(as.ld.objdump.*)|) { print "$1\n"; }') \
-  && wget ${SGX_SDK_BINUTILS_REPO}/${SGX_SDK_BINUTILS_FILE} \
+  && wget -q ${SGX_SDK_BINUTILS_REPO}/${SGX_SDK_BINUTILS_FILE} \
   && mkdir sgxsdk.extras \
   && cd sgxsdk.extras \
   && tar -zxf ../${SGX_SDK_BINUTILS_FILE} \
@@ -138,7 +138,7 @@ ENV PATH="/opt/intel/sgxsdk.extras/external/toolset/ubuntu${UBUNTU_VERSION}:${PA
 ENV PROTO_DIR=/usr/local/proto3
 RUN PROTO_ZIP=protoc-${PROTO_VERSION}-linux-x86_64.zip \
   && PROTO_REPO=https://github.com/google/protobuf/releases/download \
-  && wget ${PROTO_REPO}/v${PROTO_VERSION}/${PROTO_ZIP} \
+  && wget -q ${PROTO_REPO}/v${PROTO_VERSION}/${PROTO_ZIP} \
   && unzip ${PROTO_ZIP} -d ${PROTO_DIR} \
   && rm ${PROTO_ZIP}
 ENV PROTOC_CMD=${PROTO_DIR}/bin/protoc

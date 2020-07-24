@@ -34,10 +34,10 @@ ENV SGXSSL_VERSION=${SGXSSL_VERSION}
 
 WORKDIR /tmp
 
-RUN apt-get update \
+RUN apt-get update -q \
   && DEBIAN_FRONTEND="noninteractive" \
   # above makes sure any install of 'tzdata' or alike (as e.g., pulled in via ubuntu 20.04) does not hang ...
-  && apt-get install -y \
+  && apt-get install -y -q \
     # build tools
     build-essential \
     clang-format \
@@ -60,7 +60,7 @@ RUN apt-get update \
 # Install go
 ENV GOROOT=/usr/local/go
 RUN GO_TAR=go${GO_VERSION}.linux-amd64.tar.gz \
-  && wget https://dl.google.com/go/${GO_TAR} \
+  && wget -q https://dl.google.com/go/${GO_TAR} \
   && tar -xf ${GO_TAR} \
   && mv go /usr/local \
   && rm ${GO_TAR} \
@@ -77,14 +77,13 @@ RUN git clone 'https://github.com/intel/intel-sgx-ssl.git' \
   && . /opt/intel/sgxsdk/environment \
   && git checkout lin_${SGXSSL} \
   && cd openssl_source \
-  && wget https://www.openssl.org/source/openssl-${OPENSSL}.tar.gz \
+  && wget -q https://www.openssl.org/source/openssl-${OPENSSL}.tar.gz \
   && cd ../Linux \
   && make SGX_MODE=SIM DESTDIR=${SGX_SSL} all test \
   # Note: we need explicitly set to SIM as default is HW yet during docker
   # build you never have access to HW, regardless of platform. Note, though,
   # that libraries built work for both modes, on tests are executed for SIM only.
-  && make install \
-  && make clean
+  && make install
 
 # Install nanopb
 ENV NANOPB_PATH=/usr/local/nanopb/

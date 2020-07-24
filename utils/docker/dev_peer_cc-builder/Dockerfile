@@ -117,7 +117,7 @@ ENV FPC_CMDS=${FPC_CMDS}
 ENV SGX_MODE=${SGX_MODE}
 
 RUN apt-get update \
-  && apt-get install -y \
+  && apt-get install -y -q \
     docker.io \
     jq \
     ${APT_ADD_PKGS}
@@ -168,7 +168,7 @@ ARG SGX_MODE
 
 ENV SGX_MODE=${SGX_MODE}
 
-RUN apt-get install -y \
+RUN apt-get install -y -q \
 	psmisc \
 	bc \
 	docker-compose\
