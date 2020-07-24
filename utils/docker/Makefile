@@ -7,32 +7,67 @@ include $(TOP)/build.mk
 
 HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
 
+# Names and namespaces
+# ------------------
 FPC_DOCKER_NAMESPACE := hyperledger/fabric-private-chaincode
 FPC_DOCKER_CC_BUILDER_NAME = $(FPC_DOCKER_NAMESPACE)-cc-builder$(HW_EXTENSION)
 FPC_DOCKER_DEV_NAME = $(FPC_DOCKER_NAMESPACE)-dev
 FPC_DOCKER_CCENV_NAME = $(FPC_DOCKER_NAMESPACE)-ccenv
-FPC_DOCKER_BASE_NAME = $(FPC_DOCKER_NAMESPACE)-base
+FPC_DOCKER_BASE_RT_NAME = $(FPC_DOCKER_NAMESPACE)-base-rt
+FPC_DOCKER_BASE_DEV_NAME = $(FPC_DOCKER_NAMESPACE)-base-dev
 
 FPC_DOCKER_PEER_NAMESPACE := hyperledger/fabric-peer-fpc
 FPC_DOCKER_PEER_NAME = $(FPC_DOCKER_PEER_NAMESPACE)$(HW_EXTENSION)
 
-DOCKER_DAEMON_SOCKET ?= /var/run/docker.sock
-FABRIC_PEER_DAEMON_CHAINCODE_PORT ?= 7052
-
 DOCKER_DEV_CONTAINER_NAME = fpc-development-${FPC_VERSION}
-DOCKER_DEV_BUILD_OPTS ?=
-ifdef DOCKER_DEV_IMAGE_APT_ADD__PKGS
-	DOCKER_DEV_BUILD_OPTS += --build-arg APT_ADD_PKGS=$(DOCKER_DEV_IMAGE_APT_ADD__PKGS)
-endif
-# needed because we're doing the apply of fabric patches inside of docker, where git is unconfigured
-DOCKER_DEV_BUILD_OPTS += --build-arg GIT_USER_NAME="$(shell git config user.name)" --build-arg GIT_USER_EMAIL="$(shell git config user.email)"
 
 
-DOCKER_DEV_OPTIONAL_CMD= 
+# Docker & sgx configs
+# ------------------------
+DOCKER_DAEMON_SOCKET ?= /var/run/docker.sock
+
+SGX_DEVICE_PATH ?= $(shell if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx" ]; then echo "/dev/sgx"; fi)
+SGX_PSW_SOCKET ?= /var/run/aesmd
 
 DOCKER_GOPATH=/project
 DOCKER_FPC_PATH=$(DOCKER_GOPATH)/src/github.com/hyperledger-labs/fabric-private-chaincode
 
+
+
+# Docker build options
+# ------------------
+# - docker images are not necessarily rebuild if they exist but are outdated.
+#   To force rebuild you have two options
+#   - do a 'make clobber' first. This ensures you will have the uptodate images
+#     but is a broad and slow brush
+#   - to just fore rebuilding an image, call `make` with FORCE_REBUILD defined
+DOCKER_BUILD_OPTS ?=
+ifdef FORCE_REBUILD
+	DOCKER_BUILD_OPTS += --no-cache
+endif
+DOCKER_BUILD_OPTS += --build-arg FPC_VERSION=$(FPC_VERSION)
+DOCKER_BASE_RT_BUILD_OPTS ?=
+# - allow additional custom apt pkgs for any container derived from base-rt based on DOCKER_BASE_RT_IMAGE_APT_ADD_PKGS
+ifdef DOCKER_BASE_RT_IMAGE_APT_ADD_PKGS
+	DOCKER_BASE_RT_BUILD_OPTS += --build-arg APT_ADD_PKGS=$(DOCKER_BASE_RT_IMAGE_APT_ADD_PKGS)
+endif
+DOCKER_BASE_DEV_BUILD_OPTS ?=
+# - allow additional custom apt pkgs for any container derived from base-dev based on DOCKER_BASE_DEV_IMAGE_APT_ADD_PKGS
+ifdef DOCKER_BASE_DEV_IMAGE_APT_ADD_PKGS
+	DOCKER_BASE_DEV_BUILD_OPTS += --build-arg APT_ADD_PKGS=$(DOCKER_BASE_DEV_IMAGE_APT_ADD_PKGS)
+endif
+DOCKER_DEV_BUILD_OPTS ?=
+# - for all images working on git, e.g., applying of fabric patches inside of docker, we need proper git user config
+DOCKER_DEV_BUILD_OPTS += --build-arg GIT_USER_NAME="$(shell git config user.name)" --build-arg GIT_USER_EMAIL="$(shell git config user.email)"
+# - allow additional custom apt pkgs for 'dev' container based on DOCKER_DEV_IMAGE_APT_ADD_PKGS
+ifdef DOCKER_DEV_IMAGE_APT_ADD_PKGS
+	DOCKER_DEV_BUILD_OPTS += --build-arg APT_ADD_DEV_PKGS=$(DOCKER_DEV_IMAGE_APT_ADD_PKGS)
+endif
+
+
+
+# Docker run options
+# ------------------
 DOCKER_DEV_RUN_OPTS ?=
 # - import docker daemon socket (so dev container can run docker)
 DOCKER_DEV_RUN_OPTS += -v $(DOCKER_DAEMON_SOCKET):$(DOCKER_DAEMON_SOCKET)
@@ -46,17 +81,24 @@ DOCKER_DEV_RUN_OPTS += --env DOCKERD_FPC_PATH=$(FPC_PATH)/
 #   inside dev container as you would outside, we map the host network stack into the container
 DOCKER_DEV_RUN_OPTS += --net=host
 # - if sgx exists, pass also the corresponding device and aesmd socket to dev container
-SGX_DEVICE_PATH ?= $(shell if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx" ]; then echo "/dev/sgx"; fi)
-SGX_PSW_SOCKET ?= /var/run/aesmd
+#   (see above for definitions)
 ifneq ($(SGX_DEVICE_PATH),)
 	DOCKER_DEV_RUN_OPTS += -v "$(DOCKERD_FPC_PATH)/config/ias/":$(DOCKER_FPC_PATH)/config/ias/ -v $(SGX_PSW_SOCKET):$(SGX_PSW_SOCKET) --device $(SGX_DEVICE_PATH)
 endif
 
-.PHONY: base ccenv dev peer cc-builder
+# Run a specific command (rather than bash) with 'make run' by defining
+# the variable DOCKER_DEV_OPTIONAL_CMD
+DOCKER_DEV_OPTIONAL_CMD=
 
-# - overall targets
-# ------------------
-build: base ccenv cc-builder
+
+
+# - overall make targets
+# ------------------------------
+.PHONY: base-rt base-dev ccenv dev peer cc-builder
+
+build: ccenv cc-builder peer
+# note: we do _not_ include dev here as this is not needed in integration tests and 
+# a rebuild could cause trouble for a dev container user ..
 
 run: dev
 	# Cleanup existing but non-running (note absence of --force in rm!) old dev containers
@@ -87,7 +129,8 @@ clobber:
 		$(FPC_DOCKER_CC_BUILDER_NAME) \
 		$(FPC_DOCKER_DEV_NAME) \
 		$(FPC_DOCKER_CCENV_NAME) \
-		$(FPC_DOCKER_BASE_NAME) \
+		$(FPC_DOCKER_BASE_RT_NAME) \
+		$(FPC_DOCKER_BASE_DEV_NAME) \
 	    ; do \
 		if [ ! -z "$$(docker images -q $${img}:$${tag})" ]; then \
 		    ${DOCKER} rmi $${img}:$${tag}; \
@@ -105,58 +148,63 @@ clobber:
 
 # - building individual docker images
 # ------------------------------------------------------
-# Note:
-# - docker images are not necessarily rebuild if they exist but are outdated.
-#   To force rebuild you have two options
-#   - do a 'make clobber' first. This ensures you will have the uptodate images
-#     but is a broad and slow brush
-#   - to just fore rebuilding an image, call `make` with FORCE_REBUILD defined
-DOCKER_BUILD_OPTS ?=
-ifdef FORCE_REBUILD
-	DOCKER_BUILD_OPTS += --no-cache
-endif
-DOCKER_BUILD_OPTS += --build-arg FPC_VERSION=$(FPC_VERSION)
+base-rt:
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) $(DOCKER_BASE_RT_BUILD_OPTS) -t $(FPC_DOCKER_BASE_RT_NAME) base-rt
+	$(DOCKER) tag $(FPC_DOCKER_BASE_RT_NAME) $(FPC_DOCKER_BASE_RT_NAME):${FPC_VERSION}
 
+base-dev: base-rt
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) $(DOCKER_BASE_DEV_BUILD_OPTS) -t $(FPC_DOCKER_BASE_DEV_NAME) base-dev
+	$(DOCKER) tag $(FPC_DOCKER_BASE_DEV_NAME) $(FPC_DOCKER_BASE_DEV_NAME):${FPC_VERSION}
 
-base:
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_BASE_NAME) base
-	$(DOCKER) tag $(FPC_DOCKER_BASE_NAME) $(FPC_DOCKER_BASE_NAME):${FPC_VERSION}
-
-ccenv: base
+ccenv: base-rt
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CCENV_NAME) ccenv
 	$(DOCKER) tag $(FPC_DOCKER_CCENV_NAME) $(FPC_DOCKER_CCENV_NAME):${FPC_VERSION}
 
-# Note: for overall consistency reasons we want the FPC code from the current repo
-# as this will rebuild each time and take a while, we don't add a dependency
-# to the build target above for peer and dev ...
-# To enable docker to maximize build sharing between dev and peer
-# we add DOCKER_DEV_BUILD_OPTS (e.g., to get additional packages) also to peer
-peer: base
-	(cd ${TOP}; \
+# Note: For all docker images, dependencis will cause docker rebuilds.
+# Docker caching though makes this though fast if nothing has changed.
+# However, for below for overall consistency reason, we use $FPC_TOP/.git 
+# for the source to build from. This means that the context is $FPC_TOP
+# (restricted to the bare minimually necessary, in particulart, .git,
+# via ../../.dockerignore) and implies that any change in the context
+# will also cause a rebuild. Given the filtering this mostly applies
+# only to changes in git state (e.g., git pull, git add, git commit ...).
+# The images should also be in a way which minimizes what will be rebuilt
+# in that context. Additionally, the building should happen only as last
+# step before the demo, so any code-induced build failure should happen
+# before any docker rebuild happens.
+peer: base-dev
+	(cd ${TOP} &&\
          $(DOCKER) build $(DOCKER_BUILD_OPTS) -t ${FPC_DOCKER_PEER_NAME}\
          $(DOCKER_DEV_BUILD_OPTS)\
-         -f utils/docker/peer/Dockerfile\
+	 --target peer\
+         -f ./utils/docker/dev_peer_cc-builder/Dockerfile\
          --build-arg FPC_REPO_URL=file:///tmp/cloned-local-fpc-git-repo\
          --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
          . )
 	$(DOCKER) tag $(FPC_DOCKER_PEER_NAME) $(FPC_DOCKER_PEER_NAME):${FPC_VERSION}
 
-dev: base
-	(cd ${TOP}; \
+dev: base-dev
+	(cd ${TOP} &&\
          $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_DEV_NAME)\
          $(DOCKER_DEV_BUILD_OPTS)\
-         -f utils/docker/dev/Dockerfile\
+         -f ./utils/docker/dev_peer_cc-builder/Dockerfile\
+	 --target dev \
          --build-arg FPC_REPO_URL=file:///tmp/cloned-local-fpc-git-repo\
          --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
          . )
 	$(DOCKER) tag $(FPC_DOCKER_DEV_NAME) $(FPC_DOCKER_DEV_NAME):${FPC_VERSION}
 
-cc-builder: dev
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
-		-t $(FPC_DOCKER_CC_BUILDER_NAME)\
-		--build-arg SGX_MODE=${SGX_MODE}\
-		cc-builder
+cc-builder: base-dev
+	(cd ${TOP} &&\
+         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CC_BUILDER_NAME)\
+         $(DOCKER_DEV_BUILD_OPTS)\
+         -f ./utils/docker/dev_peer_cc-builder/Dockerfile\
+	 --target cc-builder \
+         --build-arg FPC_REPO_URL=file:///tmp/cloned-local-fpc-git-repo\
+         --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
+         --build-arg SGX_MODE=${SGX_MODE}\
+         . )
 	$(DOCKER) tag $(FPC_DOCKER_CC_BUILDER_NAME) $(FPC_DOCKER_CC_BUILDER_NAME):${FPC_VERSION}
 

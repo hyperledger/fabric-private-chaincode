@@ -1,0 +1,95 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Description:
+#   Builds the environment with all prerequistes needed to _build_ SGX-enabled apps as needed in FPC
+#
+#  Configuration (build) paramaters
+#  - fpc image version:		FPC_VERSION (default: latest)
+#  - go version:		GO_VERSION (default: 1.14.4)
+#  - nanopb version:		NANOPB_VERSION (default: 0.3.9.2)
+#  - openssl version: 		OPENSSL (default: 1.1.1g)
+#  - sgxssl version: 		SGXSSL  (default: 2.10_1.1.1g)
+#  - additional apt pkgs:	APT_ADD_PKGS (default: )
+
+
+ARG FPC_VERSION=latest
+
+FROM hyperledger/fabric-private-chaincode-base-rt:${FPC_VERSION} as common
+
+# config/build params
+ARG GO_VERSION=1.14.4
+ARG NANOPB_VERSION=0.3.9.2
+ARG OPENSSL=1.1.1g
+ARG SGXSSL=2.10_1.1.1g
+ARG APT_ADD_PKGS=
+
+# for convenience remember all versions as env variables ..
+ENV GO_VERSION=${GO_VERSION}
+ENV NANOPB_VERSION=${NANOPB_VERSION}
+ENV OPENSSL_VERSION=${OPENSSL_VERSION}
+ENV SGXSSL_VERSION=${SGXSSL_VERSION}
+
+
+WORKDIR /tmp
+
+RUN apt-get update \
+  && DEBIAN_FRONTEND="noninteractive" \
+  # above makes sure any install of 'tzdata' or alike (as e.g., pulled in via ubuntu 20.04) does not hang ...
+  && apt-get install -y \
+    # build tools
+    build-essential \
+    clang-format \
+    cmake \
+    git \
+    libcurl4-openssl-dev \
+    libprotobuf-dev \
+    libssl-dev \
+    libtool \
+    pkg-config \
+    protobuf-compiler \
+    python-protobuf \
+    # docker commands (need as we use docker daemon from "outside")
+    docker.io \
+    # jq need for e.g., external-builder
+    jq \
+    ${APT_ADD_PKGS}
+
+
+# Install go
+ENV GOROOT=/usr/local/go
+RUN GO_TAR=go${GO_VERSION}.linux-amd64.tar.gz \
+  && wget https://dl.google.com/go/${GO_TAR} \
+  && tar -xf ${GO_TAR} \
+  && mv go /usr/local \
+  && rm ${GO_TAR} \
+  && mkdir -p /project
+ENV PATH=${GOPATH}/bin:${GOROOT}/bin:${PATH}
+#  Go tools we need
+RUN go get golang.org/x/tools/cmd/goimports
+
+
+# Install SGX SSL
+ENV SGX_SSL /opt/intel/sgxssl
+RUN git clone 'https://github.com/intel/intel-sgx-ssl.git' \
+  && cd intel-sgx-ssl \
+  && . /opt/intel/sgxsdk/environment \
+  && git checkout lin_${SGXSSL} \
+  && cd openssl_source \
+  && wget https://www.openssl.org/source/openssl-${OPENSSL}.tar.gz \
+  && cd ../Linux \
+  && make SGX_MODE=SIM DESTDIR=${SGX_SSL} all test \
+  # Note: we need explicitly set to SIM as default is HW yet during docker
+  # build you never have access to HW, regardless of platform. Note, though,
+  # that libraries built work for both modes, on tests are executed for SIM only.
+  && make install \
+  && make clean
+
+# Install nanopb
+ENV NANOPB_PATH=/usr/local/nanopb/
+RUN git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH} \
+  && cd ${NANOPB_PATH} \
+  && git checkout nanopb-${NANOPB_VERSION} \
+  && cd generator/proto \
+  && make

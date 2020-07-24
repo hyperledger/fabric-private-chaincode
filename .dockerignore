@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+# to maximizes caching and minimize time & size of build time context generation
+# we exclude everything we do not really need
+*
+# peer/dev needs
+!.git/*
+!utils/docker/dev_peer/
+# boilerplate needs
+!ecc/ecc
+!ecc_enclave/_build/lib/libsgxcc.so
+# note: docker seems to have troubles with '+' in filenames in this file, at least in exceptions ..
