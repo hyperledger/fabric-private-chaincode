@@ -13,9 +13,13 @@ DOCKER_IMAGE = ${FPC_DOCKER_NAMESPACE}-auction_client_backend
 #   To force rebuild you have two options
 #   - do a 'make clobber' first. This ensures you will have the uptodate images
 #     but is a broad and slow brush
-#   - to just fore rebuilding an image, call `make` with FORCE_REBUILD defined
+#   - to just fore rebuilding an image, call `make` with DOCKER_FORCE_REBUILD defined
+#   - to keep docker build quiet unless there is an error, call `make` with DOCKER_QUIET_BUILD defined
 DOCKER_BUILD_OPTS ?=
-ifdef FORCE_REBUILD
+ifdef DOCKER_QUIET_BUILD
+	DOCKER_BUILD_OPTS += --quiet
+endif
+ifdef DOCKER_FORCE_REBUILD
 	DOCKER_BUILD_OPTS += --no-cache
 endif
 

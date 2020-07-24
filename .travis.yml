@@ -15,83 +15,17 @@ services:
 addons:
   apt:
     packages:
-      - protobuf-compiler
-      - python-protobuf
 
 go_import_path: github.com/hyperledger-labs/fabric-private-chaincode
 
 env:
   global:
-    # ubuntu for docker
-    - UBUNTU_VERSION=18.04
-    # SGX PSW & SDK
-    - SGX=2.10
-    - SGX_REPO=https://download.01.org/intel-sgx/sgx-linux/${SGX}/distro/ubuntu${UBUNTU_VERSION}-server/
-    - SGX_LIB_COMMON=libsgx-enclave-common_2.10.100.2-bionic1_amd64.deb
-    - SGX_SDK_BIN=sgx_linux_x64_sdk_2.10.100.2.bin
-    - SGX_SDK_BINUTILS=https://download.01.org/intel-sgx/sgx-linux/${SGX}/as.ld.objdump.gold.r2.tar.gz
-      # Above should go away once we move to ubuntu 20.04 ...
-    - SGX_MODE=SIM
-    - SGX_SDK=/opt/intel/sgxsdk
-    - PATH=$PATH:$SGX_SDK/bin:$SGX_SDK/bin/x64
-    - PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$SGX_SDK/pkgconfig
-    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$SGX_SDK/sdk_libs
-    # SGX SSL
-    - OPENSSL_VERSION=1.1.1g
-    - SGXSSL_VERSION=lin_${SGX}_${OPENSSL_VERSION}
-    - SGX_SSL=/opt/intel/sgxssl
-    # NANOPB
-    - NANOPB_VERSION=0.3.9.2
-    - NANOPB_PATH=${HOME}/nanopb
-    # Newer protobuf
-    - PROTO_VERSION=3.11.4
-    - PROTO_ZIP=protoc-${PROTO_VERSION}-linux-x86_64.zip
-    - PROTO_REPO=https://github.com/google/protobuf/releases/download
-    - PROTO_DIR=/usr/local/proto3
-    - PROTOC_CMD=${PROTO_DIR}/bin/protoc
-    # FABRIC
-    - FABRIC_VERSION=2.2.0
-    - FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
-    # FPC
-    - FPC_PATH=$GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
 
 before_install:
-  # git settings
-  - git config --global user.email "fpc_tester@fpc"
-  - git config --global user.name "fpc_tester"
-  # SGX SDK
-  - mkdir -p /opt/intel && mkdir -p /etc/init
-  - pushd /opt/intel; 
-  -  wget ${SGX_REPO}/debian_pkgs/libs/libsgx-enclave-common/${SGX_LIB_COMMON}
-  -  sudo dpkg -i ${SGX_LIB_COMMON}
-  -  wget ${SGX_REPO}/${SGX_SDK_BIN}
-  -  chmod +x ${SGX_SDK_BIN}
-  -  sudo sh -c "echo 'yes' | ./${SGX_SDK_BIN}"
-  - popd
-  - sudo mkdir ${SGX_SDK}/sgxsdk.extras
-  - sudo wget -qO- ${SGX_SDK_BINUTILS} | tar -zxf - -C ${SGX_SDK}/sgxsdk.extras
-  - sudo ln -s ${SGX_SDK}/sgxsdk.extras/external/toolset/ubuntu${UBUNTU_VERSION}/* /usr/local/bin
-  # SGX SSL
-  - pushd $HOME; git clone --branch ${SGXSSL_VERSION} https://github.com/intel/intel-sgx-ssl.git
-  - wget https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz; mv openssl-${OPENSSL_VERSION}.tar.gz intel-sgx-ssl/openssl_source
-  - cd intel-sgx-ssl/Linux; make SGX_MODE=SIM DESTDIR=$SGX_SSL all test
-  - cd intel-sgx-ssl/Linux; make install; popd
-  # NANOPB
-  - git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH}
-  - pushd ${NANOPB_PATH} && git checkout nanopb-${NANOPB_VERSION} && cd generator/proto && make && popd
-  # Newer Protobuf
-  - wget ${PROTO_REPO}/v${PROTO_VERSION}/${PROTO_ZIP}; sudo unzip ${PROTO_ZIP} -d ${PROTO_DIR}
-  # Fabric
-  - git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
-  - pushd $FABRIC_PATH; git checkout v${FABRIC_VERSION}; popd;
 
 script:
-  # * test directly on host
-  # - make all clobber
-  # NOTE: disabled as it will reach the 50 min limits. Testing inside dev container
-  # hopefully/presumably should hopefully be a super-set of the host build/test
-  #
-  # * test that it also runs properly in dev container  
+  # * test that it also properly in dev container
+  #   (this should imply it also works on bare "metal"; in SIM mode only, though; but no SGX HW support in travis anyway?)
   - env DOCKER_QUIET_BUILD=1 DOCKER_BUILDKIT=0 make -C utils/docker run DOCKER_DEV_OPTIONAL_CMD='env DOCKER_QUIET_BUILD=1 DOCKER_BUILDKIT=0 make all clobber'
   #   Note: 
   #   - travis of couse does an implicit clobber but adding it here makes sure
