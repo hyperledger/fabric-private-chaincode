@@ -22,7 +22,6 @@ require (
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.6.1
 	github.com/golang/protobuf v1.3.5
-	github.com/hyperledger-labs/fabric-private-chaincode/ercc v0.0.0-20200708113644-adeb2609f5e7
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20200715015833-3741860ac90f
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20200511190512-bcfeb58dd83a
 	github.com/hyperledger/fabric-protos-go v0.0.0-20200707132912-fee30f3ccd23
@@ -32,4 +31,3 @@ require (
 	golang.org/x/tools v0.0.0-20200323164354-18ea2c8f7359
 )
 
-replace github.com/hyperledger-labs/fabric-private-chaincode/ercc => ./ercc

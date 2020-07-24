@@ -165,7 +165,7 @@ func (v *VerifierImpl) VerifyAttestationReport(verificationPubKey interface{}, r
 	return true, nil
 }
 
-// CheckMrEnclave returns true if mrenclave in attestation report matches the expected value. Expected value input as base64.
+// CheckMrEnclave returns true if mrenclave in attestation report matches the expected value. Expected value input as hex string.
 func (v *VerifierImpl) CheckMrEnclave(mrEnclaveHexString string, report IASAttestationReport) (bool, error) {
 
 	quote, err := QuoteFromAttestationReport(report)
