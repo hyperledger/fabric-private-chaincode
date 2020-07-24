@@ -18,11 +18,10 @@ import (
 
 const MrEnclaveLength = 32
 
-func GetChaincodeDefinition(chaincodeId string, stub shim.ChaincodeStubInterface) (*lifecycle.QueryApprovedChaincodeDefinitionResult, error) {
+func GetChaincodeDefinition(chaincodeId string, stub shim.ChaincodeStubInterface) (*lifecycle.QueryChaincodeDefinitionResult, error) {
 	function := "QueryApprovedChaincodeDefinition"
-	args := &lifecycle.QueryApprovedChaincodeDefinitionArgs{
-		Name:     chaincodeId,
-		Sequence: 0, // TODO get current sequence number
+	args := &lifecycle.QueryChaincodeDefinitionArgs{
+		Name: chaincodeId,
 	}
 	argsBytes := protoutil.MarshalOrPanic(args)
 
@@ -33,7 +32,7 @@ func GetChaincodeDefinition(chaincodeId string, stub shim.ChaincodeStubInterface
 		return nil, fmt.Errorf("no chaincode definition found for chaincode='%s'", chaincodeId)
 	}
 
-	df := &lifecycle.QueryApprovedChaincodeDefinitionResult{}
+	df := &lifecycle.QueryChaincodeDefinitionResult{}
 	if err := proto.Unmarshal(resp.Payload, df); err != nil {
 		return nil, err
 	}

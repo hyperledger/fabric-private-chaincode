@@ -180,7 +180,7 @@ func (ercc *EnclaveRegistryCC) registerEnclave(stub shim.ChaincodeStubInterface,
 	////get the msp identity for the enclave host peer
 	//identityBytes, err := getEnclavePeerIdentity()
 	// ccDef, _ := utils.GetChaincodeDefinition(chaincodeId, stub)
-	//if err = utils.CanEndorse(identityBytes, policyBtes); err != nil {
+	//if err = utils.IsValidEndorserIdentity(identityBytes, policyBtes); err != nil {
 	//	logger.Errorf("Cannot endorse, err %s", err)
 	//	return shim.Error(err.Error())
 	//}

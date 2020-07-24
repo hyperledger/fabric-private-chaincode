@@ -36,7 +36,7 @@ func (id *PolicyEvaluator) EvaluateIdentity(policyBytes []byte, identityBytes []
 	return policy.EvaluateIdentities([]msp.Identity{identity})
 }
 
-func IsValidEndorserIdentity(identityBytes []byte, ccDef *lifecycle.QueryApprovedChaincodeDefinitionResult) error {
+func IsValidEndorserIdentity(identityBytes []byte, ccDef *lifecycle.QueryChaincodeDefinitionResult) error {
 	evaluator := NewPolicyEvaluator()
 	return evaluator.EvaluateIdentity(ccDef.ValidationParameter, identityBytes)
 }

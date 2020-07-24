@@ -60,7 +60,7 @@ var _ = Describe("Chaincode", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				pp := protoutil.MarshalOrPanic(p)
 
-				df := &lifecycle.QueryApprovedChaincodeDefinitionResult{
+				df := &lifecycle.QueryChaincodeDefinitionResult{
 					ValidationParameter: pp,
 				}
 				err = utils.IsValidEndorserIdentity(serializedId, df)
@@ -74,7 +74,7 @@ var _ = Describe("Chaincode", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				pp := protoutil.MarshalOrPanic(p)
 
-				df := &lifecycle.QueryApprovedChaincodeDefinitionResult{
+				df := &lifecycle.QueryChaincodeDefinitionResult{
 					ValidationParameter: pp,
 				}
 				err = utils.IsValidEndorserIdentity(serializedId, df)

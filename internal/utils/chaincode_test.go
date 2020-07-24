@@ -44,7 +44,7 @@ var _ = Describe("Chaincode utils", func() {
 		When("approved chaincode definition exists at _lifecycle", func() {
 			BeforeEach(func() {
 				// register chaincode definition at _lifecycle
-				df := &lifecycle.QueryApprovedChaincodeDefinitionResult{}
+				df := &lifecycle.QueryChaincodeDefinitionResult{}
 				dfBytes, err := proto.Marshal(df)
 				Expect(err).ShouldNot(HaveOccurred())
 				lscc.InvokeReturns(shim.Success(dfBytes))
@@ -83,7 +83,7 @@ var _ = Describe("Chaincode utils", func() {
 	Context("GetMrEnclave", func() {
 		When("mrenclave is valid", func() {
 			BeforeEach(func() {
-				df := &lifecycle.QueryApprovedChaincodeDefinitionResult{
+				df := &lifecycle.QueryChaincodeDefinitionResult{
 					Version: expectedMrEnclave,
 				}
 
@@ -101,7 +101,7 @@ var _ = Describe("Chaincode utils", func() {
 
 		When("mrenclave is empty", func() {
 			BeforeEach(func() {
-				df := &lifecycle.QueryApprovedChaincodeDefinitionResult{
+				df := &lifecycle.QueryChaincodeDefinitionResult{
 					Version: "",
 				}
 
@@ -119,7 +119,7 @@ var _ = Describe("Chaincode utils", func() {
 
 		When("mrenclave is not hexstring", func() {
 			BeforeEach(func() {
-				df := &lifecycle.QueryApprovedChaincodeDefinitionResult{
+				df := &lifecycle.QueryChaincodeDefinitionResult{
 					Version: "mK7WHJHyWKN8aO1JQyl2lWR+x7vmAIzBEbChJlDr65E=",
 				}
 
