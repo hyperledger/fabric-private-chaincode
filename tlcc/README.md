@@ -30,9 +30,3 @@ below.
     $ bin/peer chaincode query -n tlcc -c '{"Args": ["JOIN_CHANNEL", "mychannel"]}' -C mychannel
 
 Your trusted ledger should be up and running now.
-
-
-## Demo
-
-We have prepared an auction demo script available in [fabric/sgxconfig](../fabric/sgxconfig/demo).
-See `start_peer.sh` and `run_sgx_auction.sh` as an example.
