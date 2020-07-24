@@ -25,6 +25,7 @@ require (
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20200715015833-3741860ac90f
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20200511190512-bcfeb58dd83a
 	github.com/hyperledger/fabric-protos-go v0.0.0-20200707132912-fee30f3ccd23
+	github.com/hyperledger/fabric-samples/chaincode/marbles02/go v0.0.0-20200723181750-8c32a85f6617 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v0.0.0-20150908122457-1967d93db724
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
