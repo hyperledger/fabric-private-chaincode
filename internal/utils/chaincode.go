@@ -19,7 +19,7 @@ import (
 const MrEnclaveLength = 32
 
 func GetChaincodeDefinition(chaincodeId string, stub shim.ChaincodeStubInterface) (*lifecycle.QueryChaincodeDefinitionResult, error) {
-	function := "QueryApprovedChaincodeDefinition"
+	function := "QueryChaincodeDefinition"
 	args := &lifecycle.QueryChaincodeDefinitionArgs{
 		Name: chaincodeId,
 	}
