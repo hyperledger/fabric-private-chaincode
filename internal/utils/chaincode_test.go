@@ -41,7 +41,7 @@ var _ = Describe("Chaincode utils", func() {
 	})
 
 	Context("GetChaincodeDefinition", func() {
-		When("approved chaincode definition exists at _lifecycle", func() {
+		When("committed chaincode definition exists at _lifecycle", func() {
 			BeforeEach(func() {
 				// register chaincode definition at _lifecycle
 				df := &lifecycle.QueryChaincodeDefinitionResult{}
@@ -57,7 +57,7 @@ var _ = Describe("Chaincode utils", func() {
 			})
 		})
 
-		When("approved chaincode definition does not exist at _lifecycle", func() {
+		When("committed chaincode definition does not exist at _lifecycle", func() {
 			It("should return error", func() {
 				df, err := utils.GetChaincodeDefinition("myFPCChaincode", stub)
 				Expect(err).Should(MatchError(fmt.Errorf("no chaincode definition found for chaincode='myFPCChaincode'")))
