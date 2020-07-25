@@ -45,7 +45,7 @@ var _ = Describe("ERCC", func() {
 		stub.Decorations["test"] = []byte("AAA")
 
 		// create mock lifecycle chaincode
-		df := &lifecycle.QueryApprovedChaincodeDefinitionResult{
+		df := &lifecycle.QueryChaincodeDefinitionResult{
 			Version: mrenclave,
 		}
 		dfBytes, err := proto.Marshal(df)

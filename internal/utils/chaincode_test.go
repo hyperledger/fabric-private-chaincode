@@ -72,7 +72,7 @@ var _ = Describe("Chaincode utils", func() {
 				lscc.InvokeReturns(shim.Success(dfBytes))
 			})
 
-			It("should return QueryApprovedChaincodeDefinitionResult object", func() {
+			It("should return QueryChaincodeDefinitionResult object", func() {
 				df, err := utils.GetChaincodeDefinition("myFPCChaincode", stub)
 				Expect(err).Should(HaveOccurred())
 				Expect(df).Should(BeNil())
