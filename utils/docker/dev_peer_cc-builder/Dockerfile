@@ -56,8 +56,8 @@ ARG GIT_USER_EMAIL=tester@fpc
 
 
 # make sure we have a valid git user (needed for the git am when patching fabric)
-RUN git config --global user.name ${GIT_USER_NAME} \
- && git config --global user.email ${GIT_USER_EMAIL}
+RUN git config --global user.name "${GIT_USER_NAME}" \
+ && git config --global user.email "${GIT_USER_EMAIL}"
 
 
 # Get Fabric
