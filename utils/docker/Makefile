@@ -63,7 +63,9 @@ ifdef DOCKER_BASE_DEV_IMAGE_APT_ADD_PKGS
 endif
 DOCKER_DEV_BUILD_OPTS ?=
 # - for all images working on git, e.g., applying of fabric patches inside of docker, we need proper git user config
-DOCKER_DEV_BUILD_OPTS += --build-arg GIT_USER_NAME="$(shell git config user.name)" --build-arg GIT_USER_EMAIL="$(shell git config user.email)"
+
+DOCKER_DEV_BUILD_OPTS += $(shell git config user.name >/dev/null && echo --build-arg GIT_USER_NAME=\'$$(git config user.name)\')
+DOCKER_DEV_BUILD_OPTS += $(shell git config user.email >/dev/null && echo --build-arg GIT_USER_EMAIL=\'$$(git config user.email)\')
 # - allow additional custom apt pkgs for 'dev' container based on DOCKER_DEV_IMAGE_APT_ADD_PKGS
 ifdef DOCKER_DEV_IMAGE_APT_ADD_PKGS
 	DOCKER_DEV_BUILD_OPTS += --build-arg APT_ADD_DEV_PKGS=$(DOCKER_DEV_IMAGE_APT_ADD_PKGS)
