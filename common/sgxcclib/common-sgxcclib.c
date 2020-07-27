@@ -6,13 +6,12 @@
  */
 
 #include "common-sgxcclib.h"
-#include <unistd.h>     // access
+
+#include <sgx_uae_epid.h>  // epid-based attestation ...
+#include <unistd.h>        // access
+
 #include "enclave_u.h"  //ecall_init, ...
 #include "sgx_attestation_type.h"
-#include "sgx_eid.h"  // sgx_enclave_id_t
-#include "sgx_error.h"
-#include "sgx_uae_service.h"
-#include "sgx_urts.h"
 
 // TODO: separate logging in sgxcclib
 

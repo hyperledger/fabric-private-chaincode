@@ -285,7 +285,7 @@ Make sure that you have the following required dependencies installed:
 * Credentials for Intel Attestation Service, read [here](#intel-attestation-service-ias) (for hardware-mode SGX)
 
 * [Intel Software Guard Extensions SSL](https://github.com/intel/intel-sgx-ssl) v2.4.1
-  (we recommend using branch `lin_2.10_1.1.1g` OpenSSL `1.1.0g`)
+  (we recommend using branch `lin_2.10_1.1.1g` OpenSSL `1.1.1g`)
 
 * Hyperledger [Fabric](https://github.com/hyperledger/fabric/tree/v2.2.0) v2.2.0
 

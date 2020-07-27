@@ -38,7 +38,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wall -Wno-attrib
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SGX_COMMON_CFLAGS} -fpie -std=c++11 -fpermissive")
 
 target_link_libraries(${TEST_NAME}
-    -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} -L${SGX_SSL_LIBRARY_PATH} -lsgx_usgxssl 
+    -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_LNCH_LIB} -l${SGX_EPID_LIB} -L${SGX_SSL_LIBRARY_PATH} -lsgx_usgxssl 
     -L${CMAKE_BINARY_DIR} -ltl -pthread -lcurl -lcrypto)
 
 add_custom_command(TARGET ${TEST_NAME}

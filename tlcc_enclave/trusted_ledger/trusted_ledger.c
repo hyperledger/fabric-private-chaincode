@@ -13,11 +13,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "sgx_eid.h"  // sgx_enclave_id_t
-#include "sgx_quote.h"
-#include "sgx_uae_service.h"
-#include "sgx_urts.h"
-
 int tlcc_init_with_genesis(enclave_id_t eid, uint8_t* genesis, uint32_t genesis_size)
 {
     int enclave_ret = SGX_ERROR_UNEXPECTED;
