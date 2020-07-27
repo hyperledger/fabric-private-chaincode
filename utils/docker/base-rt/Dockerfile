@@ -79,25 +79,18 @@ RUN echo "deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu ${U
     make \
     # - sgx packages
     #   - runtime
-      libsgx-urts \
-    # (also pulls in libsgx-enclave-common)
+          libsgx-urts \
+    #     (also pulls in libsgx-enclave-common)
     #   - basic architectural services, e.g., launch & attestation
-      # sgx-aesm-service (see above why commented out)
-      libsgx-uae-service
-      # Note: 
-      # - above is "old" style from epid days. Since sdk 2.7 libsgx-uae-service is
-      #   split into subpackages
-      #   - launch service
-      #     libsgx-launch 
-      #   - algorithm agnostic attestation service
-      #     libsgx-quote-ex 
-      #   - EPID-based attestation service 
-      #     libsgx-epid 
-      #   - DCAP-based attesation service
-      #     libsgx-dcap* ...
-      #   correspondingly, also libsgx_uae_service.so and <sgx_uae_service.h>
-      #   is split into corresponding smaller libraries and header-files to make
-      #   integration with DCAP easier and minimize pulling in unnecessary dependencies
+          # sgx-aesm-service (see above why commented out)
+    #   - launch service
+          libsgx-launch \
+    #   - algorithm agnostic attestation service (only need once moving to DCAP)
+    #      libsgx-quote-ex
+    #   - EPID-based attestation service \
+          libsgx-epid
+    #   - DCAP-based attesation service
+    #     libsgx-dcap* ...
 
 # Install SGX SDK
 # Note: not all descendents of this base image, e.g., ccenv, boilerplate and fpc-app, build sgx app.

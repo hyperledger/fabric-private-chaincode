@@ -12,13 +12,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-// for RA:
-#include "sgx_quote.h"
-#include "sgx_report.h"
-#include "sgx_uae_service.h"
-
-#include "sgx_urts.h"
-
 extern void LOG_DEBUG(const char* fmt, ...);
 extern void LOG_ERROR(const char* fmt, ...);
 

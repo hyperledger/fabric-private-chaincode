@@ -53,7 +53,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wall -Wno-attrib
 set_target_properties(libtl PROPERTIES PREFIX "")
 
 target_link_libraries(libtl
-    -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} -L${SGX_SSL_LIBRARY_PATH} -lsgx_usgxssl)
+    -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_LNCH_LIB} -l${SGX_EPID_LIB} -L${SGX_SSL_LIBRARY_PATH} -lsgx_usgxssl)
 
 add_dependencies(libtl enclave)
 
