@@ -1,4 +1,4 @@
-From a6558402c6cf35dfc574b2dd52f5b3382611d7b9 Mon Sep 17 00:00:00 2001
+From 3c222b3a65c85b677d1b965629a868891b8d0414 Mon Sep 17 00:00:00 2001
 From: Marcus Brandenburger <bur@zurich.ibm.com>
 Date: Wed, 8 Jul 2020 10:23:33 +0200
 Subject: [PATCH 1/1] Add FPC validator to library
@@ -9,25 +9,32 @@ peer.
 
 Signed-off-by: Marcus Brandenburger <bur@zurich.ibm.com>
 ---
- core/handlers/library/fpc_lib_handler.go | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+ core/handlers/library/fpc_lib_handler.go | 30 ++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
  create mode 100644 core/handlers/library/fpc_lib_handler.go
 
 diff --git a/core/handlers/library/fpc_lib_handler.go b/core/handlers/library/fpc_lib_handler.go
 new file mode 100644
-index 000000000..92a355522
+index 000000000..850990746
 --- /dev/null
 +++ b/core/handlers/library/fpc_lib_handler.go
-@@ -0,0 +1,23 @@
+@@ -0,0 +1,30 @@
 +//+build FPC
++
++/*
++Copyright IBM Corp. All Rights Reserved.
++Copyright 2020 Intel Corporation
++
++SPDX-License-Identifier: Apache-2.0
++*/
 +
 +package library
 +
 +import (
-+	validation "github.com/hyperledger/fabric/core/handlers/validation/api"
-+	decoration "github.com/hyperledger/fabric/core/handlers/decoration"
-+	"github.com/hyperledger-labs/fabric-private-chaincode/validation/fpc"
 +	"github.com/hyperledger-labs/fabric-private-chaincode/validation/ercc"
++	"github.com/hyperledger-labs/fabric-private-chaincode/validation/fpc"
++	decoration "github.com/hyperledger/fabric/core/handlers/decoration"
++	validation "github.com/hyperledger/fabric/core/handlers/validation/api"
 +)
 +
 +// Adds FPCValidation to HandlerLibrary if FPC build tag is enabled
@@ -43,5 +50,5 @@ index 000000000..92a355522
 +	return ercc.NewDecorator()
 +}
 -- 
-2.27.0
+2.28.0
 

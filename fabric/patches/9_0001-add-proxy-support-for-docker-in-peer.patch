@@ -1,7 +1,7 @@
-From ffabe25186d43af74bf8dd351d5237865cadc68c Mon Sep 17 00:00:00 2001
+From 2c0c61f6c35ef76d6425eb680bb8173a59453d40 Mon Sep 17 00:00:00 2001
 From: Michael Steiner <michael.steiner@intel.com>
 Date: Wed, 18 Mar 2020 19:42:55 -0700
-Subject: [PATCH] add proxy support for docker in peer
+Subject: [PATCH 1/1] add proxy support for docker in peer
 
 Signed-off-by: Michael Steiner <michael.steiner@intel.com>
 ---
@@ -10,14 +10,14 @@ Signed-off-by: Michael Steiner <michael.steiner@intel.com>
  2 files changed, 52 insertions(+), 1 deletion(-)
 
 diff --git a/core/chaincode/platforms/util/utils.go b/core/chaincode/platforms/util/utils.go
-index 2e54e86ba..07fabf965 100644
+index 1d0562463..db7b29524 100644
 --- a/core/chaincode/platforms/util/utils.go
 +++ b/core/chaincode/platforms/util/utils.go
 @@ -10,6 +10,7 @@ import (
  	"bytes"
  	"fmt"
  	"io"
-+        "os"
++	"os"
  	"runtime"
  	"strings"
  
@@ -25,27 +25,27 @@ index 2e54e86ba..07fabf965 100644
  //      - OutputStream: A tarball of files that will be gathered from /chaincode/output
  //                      after successful execution of Cmd.
  //-------------------------------------------------------------------------------------------
-+func getProxyEnv()[]string {
-+        proxyEnv := []string{}
-+        proxyEnvVarNames := []string{
-+                "http_proxy",
-+                "https_proxy",
-+                "no_proxy",
-+                "HTTP_PROXY",
-+                "HTTPS_PROXY",
-+                "NO_PROXY",
-+        }
-+        for _, name := range proxyEnvVarNames {
-+                if val, found := os.LookupEnv(name); found {
-+                        proxyEnv = append(proxyEnv, name+"="+val)
-+                }
-+        }
-+        logger.Debugf("Util Proxy config used for docker: %v", proxyEnv)
-+        return proxyEnv
++func getProxyEnv() []string {
++	proxyEnv := []string{}
++	proxyEnvVarNames := []string{
++		"http_proxy",
++		"https_proxy",
++		"no_proxy",
++		"HTTP_PROXY",
++		"HTTPS_PROXY",
++		"NO_PROXY",
++	}
++	for _, name := range proxyEnvVarNames {
++		if val, found := os.LookupEnv(name); found {
++			proxyEnv = append(proxyEnv, name+"="+val)
++		}
++	}
++	logger.Debugf("Util Proxy config used for docker: %v", proxyEnv)
++	return proxyEnv
 +}
 +
 +var (
-+        proxyEnv = getProxyEnv()
++	proxyEnv = getProxyEnv()
 +)
 +
  func DockerBuild(opts DockerBuildOptions, client *docker.Client) error {
@@ -61,7 +61,7 @@ index 2e54e86ba..07fabf965 100644
  			AttachStderr: true,
  		},
 diff --git a/core/container/dockercontroller/dockercontroller.go b/core/container/dockercontroller/dockercontroller.go
-index 1194ff7dc..497eee369 100644
+index 1194ff7dc..ce7d7c7fd 100644
 --- a/core/container/dockercontroller/dockercontroller.go
 +++ b/core/container/dockercontroller/dockercontroller.go
 @@ -16,6 +16,7 @@ import (
@@ -76,7 +76,7 @@ index 1194ff7dc..497eee369 100644
  	TLSClientRootCertFile string = "/etc/hyperledger/fabric/peer.crt"
  )
  
-+func getProxyEnv()[]string {
++func getProxyEnv() []string {
 +	proxyEnv := []string{}
 +	proxyEnvVarNames := []string{
 +		"http_proxy",
@@ -113,5 +113,5 @@ index 1194ff7dc..497eee369 100644
  	if tlsConfig != nil {
  		envs = append(envs, "CORE_PEER_TLS_ENABLED=true")
 -- 
-2.17.1
+2.28.0
 
