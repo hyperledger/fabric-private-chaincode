@@ -1,0 +1,86 @@
+From 0505d4c4c4f7ac665afced25975840be299fe9dc Mon Sep 17 00:00:00 2001
+From: michael steiner <michael.steiner@intel.com>
+Date: Wed, 19 Aug 2020 15:40:39 -0700
+Subject: [PATCH 4/4] Deploy qscc via opt_scc extension point
+
+Signed-off-by: michael steiner <michael.steiner@intel.com>
+---
+ core/scc/opt_scc/qscc.go    | 28 ++++++++++++++++++++++++++++
+ internal/peer/node/start.go |  5 +----
+ 2 files changed, 29 insertions(+), 4 deletions(-)
+ create mode 100644 core/scc/opt_scc/qscc.go
+
+diff --git a/core/scc/opt_scc/qscc.go b/core/scc/opt_scc/qscc.go
+new file mode 100644
+index 000000000..334e75494
+--- /dev/null
++++ b/core/scc/opt_scc/qscc.go
+@@ -0,0 +1,28 @@
++//+build !test
++
++/*
++Copyright IBM Corp. All Rights Reserved.
++Copyright 2020 Intel Corporation
++
++SPDX-License-Identifier: Apache-2.0
++*/
++
++package opt_scc
++
++import (
++	"github.com/hyperledger/fabric/common/flogging"
++	"github.com/hyperledger/fabric/core/aclmgmt"
++	"github.com/hyperledger/fabric/core/peer"
++	"github.com/hyperledger/fabric/core/scc"
++	"github.com/hyperledger/fabric/core/scc/qscc"
++)
++
++var qscclogger = flogging.MustGetLogger("qscc")
++
++func init() {
++	qscclogger.Debug("Registring qscc as system chaincode")
++	AddFactoryFunc(func(aclProvider aclmgmt.ACLProvider, p *peer.Peer) scc.SelfDescribingSysCC {
++		qscclogger.Debug("Enabling qscc as system chaincode")
++		return qscc.New(aclProvider, p)
++	})
++}
+diff --git a/internal/peer/node/start.go b/internal/peer/node/start.go
+index 5217ce540..9143095e8 100644
+--- a/internal/peer/node/start.go
++++ b/internal/peer/node/start.go
+@@ -74,7 +74,6 @@ import (
+ 	"github.com/hyperledger/fabric/core/scc/cscc"
+ 	"github.com/hyperledger/fabric/core/scc/lscc"
+ 	"github.com/hyperledger/fabric/core/scc/opt_scc"
+-	"github.com/hyperledger/fabric/core/scc/qscc"
+ 	"github.com/hyperledger/fabric/core/transientstore"
+ 	"github.com/hyperledger/fabric/discovery"
+ 	"github.com/hyperledger/fabric/discovery/endorsement"
+@@ -591,7 +590,6 @@ func serve(args []string) error {
+ 
+ 	builtinSCCs := map[string]struct{}{
+ 		"lscc":       {},
+-		"qscc":       {},
+ 		"cscc":       {},
+ 		"_lifecycle": {},
+ 	}
+@@ -707,7 +705,6 @@ func serve(args []string) error {
+ 		peerInstance,
+ 		factory.GetDefault(),
+ 	)
+-	qsccInst := scc.SelfDescribingSysCC(qscc.New(aclProvider, peerInstance))
+ 
+ 	pb.RegisterChaincodeSupportServer(ccSrv.Server(), ccSupSrv)
+ 
+@@ -755,7 +752,7 @@ func serve(args []string) error {
+ 	}
+ 
+ 	// deploy system chaincodes
+-	for _, cc := range append([]scc.SelfDescribingSysCC{lsccInst, csccInst, qsccInst, lifecycleSCC}, optSCCInsts...) {
++	for _, cc := range append([]scc.SelfDescribingSysCC{lsccInst, csccInst, lifecycleSCC}, optSCCInsts...) {
+ 		if enabled, ok := chaincodeConfig.SCCAllowlist[cc.Name()]; !ok || !enabled {
+ 			logger.Infof("not deploying chaincode %s as it is not enabled", cc.Name())
+ 			continue
+-- 
+2.28.0
+

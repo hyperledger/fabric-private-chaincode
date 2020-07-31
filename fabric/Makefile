@@ -20,7 +20,7 @@ build: native
 patch: $(FABRIC_PATCHED)
 
 $(FABRIC_PATCHED): patches/*.patch $(FABRIC_PATH)/.git
-	# Note: .git dependency hopefully captures significant changes in fabric dir requiring repatch (and rebuild)
+        # Note: .git dependency hopefully captures significant changes in fabric dir requiring repatch (and rebuild)
 	@echo "Patching Fabric ..."; \
 	if [ -f $(FABRIC_PATCHED) ]; then \
 		echo "Need to re-apply patch, so try to undo patches first"; \
@@ -33,13 +33,14 @@ $(FABRIC_PATCHED): patches/*.patch $(FABRIC_PATH)/.git
 	fi
 	cd $(FABRIC_PATH) && \
 	git am $(FPC_PATH)/fabric/patches/*.patch && \
-	$(FABRIC_CURRENT_DIFF_COMMITS_CMD) > $@
+	$(FABRIC_CURRENT_DIFF_COMMITS_CMD) > $@ && \
+	go mod vendor
 
 clean-patch:
-	# Note: for below to work with exit 0, this has to be a single shell command!
+        # Note: for below to work with exit 0, this has to be a single shell command!
 	@echo "Cleaning Fabric patches ..."; \
-	echo "(Warning: as go.{mod,sum} are auto-updated, we also (blindly) auto-reset them to committed version!)"; \
-        (cd $(FABRIC_PATH); git checkout -- go.mod go.sum); \
+	echo "(Warning: as go.{mod,sum} and  vendor/ are auto-updated, we also (blindly) auto-reset them to committed version!)"; \
+        (cd $(FABRIC_PATH) && git checkout -- go.mod go.sum && git checkout HEAD -- vendor && git clean -fd vendor) || exit 1; \
 	FABRIC_CURRENT_TAG=$$(cd "$(FABRIC_PATH)"; git tag --points-at HEAD) || exit 2; \
 	FABRIC_TRACKED_CHANGES=$$(cd "$(FABRIC_PATH)"; git status -s | grep -v '\?'); if [ $$? = 2 ]; then exit 3; fi; \
 	if [ "$${FABRIC_CURRENT_TAG}" = "$(FABRIC_VERSION_TAG)" ]; then \
@@ -59,12 +60,12 @@ clean-patch:
 	cd $(FABRIC_PATH); \
 	$(FABRIC_CURRENT_DIFF_COMMITS_CMD) > $(FABRIC_PATCHED).tmp; \
 	if [ ! -z "$$(diff $(FABRIC_PATCHED) $(FABRIC_PATCHED).tmp)" ]; then \
-  		echo "You have other commits than the patches:"; \
+		echo "You have other commits than the patches:"; \
 		echo "- expected: "; cat $(FABRIC_PATCHED); \
 		echo "- found: "; cat $(FABRIC_PATCHED).tmp; \
-   		echo "Please check and resolve manually!"; \
-   		exit 1; \
-  	fi; \
+		echo "Please check and resolve manually!"; \
+		exit 1; \
+	fi; \
 	\
 	echo "Removing the following fpc commits in $(FABRIC_PATH)"; \
 	$(FABRIC_CURRENT_DIFF_COMMITS_CMD); \
@@ -79,11 +80,15 @@ $(TLCC_ENCLAVE_LIB):
 peer: patch $(FABRIC_PEER_BIN)
 
 $(FABRIC_PEER_BIN): $(TLCC_GO_SRC) $(TLCC_ENCLAVE_LIB) $(FABRIC_PATCHED)
-	# Note: above does not have enough dependencies to trigger a rebuild if (recursively)
-	# any TLCC and dependent code changes. however, it should at least make sure it will
-	# build properly if tlcc enclave is not yet built ..
+        # Note: above does not have enough dependencies to trigger a rebuild if (recursively)
+        # any TLCC and dependent code changes. however, it should at least make sure it will
+        # build properly if tlcc enclave is not yet built ..
 	cd $(FABRIC_PATH) && \
-	GOFLAGS="-mod=mod" GO_TAGS=pluginsenabled,FPC $(MAKE) peer
+        env \
+            CGO_CFLAGS="-I${FPC_PATH}/common -I${FPC_PATH}/common/sgxcclib -I${FPC_PATH}/tlcc_enclave/trusted_ledger"  \
+            CGO_LDFLAGS="-L${FPC_PATH}/tlcc_enclave/_build/lib" \
+	   GO_TAGS=FPC \
+        $(MAKE) peer
 
 native: peer
 	cd $(FABRIC_PATH) && \

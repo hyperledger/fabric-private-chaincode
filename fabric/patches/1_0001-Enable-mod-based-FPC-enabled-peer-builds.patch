@@ -1,0 +1,26 @@
+From e9eb8286d5c31493526045fce0ad79f5953c3db9 Mon Sep 17 00:00:00 2001
+From: michael steiner <michael.steiner@intel.com>
+Date: Fri, 31 Jul 2020 14:39:58 -0700
+Subject: [PATCH 1/2] Enable mod-based FPC-enabled peer builds
+
+Signed-off-by: michael steiner <michael.steiner@intel.com>
+---
+ go.mod | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/go.mod b/go.mod
+index c300b3bab..a18f5a616 100644
+--- a/go.mod
++++ b/go.mod
+@@ -32,6 +32,8 @@ require (
+ 	github.com/gorilla/mux v1.7.2
+ 	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
+ 	github.com/hashicorp/go-version v1.2.0
++	// FPC Change:
++	github.com/hyperledger-labs/fabric-private-chaincode v0.0.0-20200725011948-dabbcf48e4a5
+ 	github.com/hyperledger/fabric-amcl v0.0.0-20200128223036-d1aa2665426a
+ 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20200128192331-2d899240a7ed
+ 	github.com/hyperledger/fabric-config v0.0.5
+-- 
+2.28.0
+

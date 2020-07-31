@@ -1,0 +1,30 @@
+From 682390ab1152c4d649c0f09dd9439b1636f7aac8 Mon Sep 17 00:00:00 2001
+From: michael steiner <michael.steiner@intel.com>
+Date: Fri, 31 Jul 2020 14:41:17 -0700
+Subject: [PATCH 2/2] Include FPC in go.mod local/GOPATH relative
+
+Signed-off-by: michael steiner <michael.steiner@intel.com>
+---
+ go.mod | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/go.mod b/go.mod
+index a18f5a616..0bf1bad8c 100644
+--- a/go.mod
++++ b/go.mod
+@@ -5,6 +5,12 @@ go 1.14
+ // https://github.com/golang/go/issues/34610
+ replace golang.org/x/sys => golang.org/x/sys v0.0.0-20190920190810-ef0ce1748380
+ 
++// FPC Change:
++// below replace are here temporarily so
++// - even without having yet committed go.mod reference to fabric in fpc ..
++// - right now to get go module & cgo working we need for now to colocation in GOPATH
++replace github.com/hyperledger-labs/fabric-private-chaincode => ../../hyperledger-labs/fabric-private-chaincode
++
+ require (
+ 	code.cloudfoundry.org/clock v1.0.0
+ 	github.com/DataDog/zstd v1.4.0 // indirect
+-- 
+2.28.0
+

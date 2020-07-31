@@ -14,6 +14,18 @@ import (
 	"github.com/hyperledger/fabric/common/flogging"
 )
 
+/*
+   Note: this file might get vendord in fabric, to build from fabric with FPC build tag, you will have to
+   - in fpc repo $FPC_PATH,
+     make  -C common build; make  -C tlcc_enclave build ; make  -C ercc build;
+  - in fabric repo build peer as
+   CGO_CFLAGS="-I${FPC_PATH}/common -I${FPC_PATH}/common/sgxcclib -I${FPC_PATH}/tlcc_enclave/trusted_ledger"  \
+   CGO_LDFLAGS="-L${FPC_PATH}/tlcc_enclave/_build/lib" \
+   GO_TAGS=FPC \
+   make peer
+
+*/
+
 // #cgo CFLAGS: -I${SRCDIR}/include -I${SRCDIR}/../../common/sgxcclib
 // #cgo LDFLAGS: -L${SRCDIR}/lib -ltl
 // #include "common-sgxcclib.h"
