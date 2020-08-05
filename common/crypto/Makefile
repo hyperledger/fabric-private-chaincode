@@ -25,4 +25,6 @@ test: build
 	$(MAKE) -C $(BUILD_DIR) test
 
 clean:
+	-$(MAKE) -C $(BUILD_DIR) clean 
+	# above makes sure any build-artifacts in source, like ias-certificate.cpp, also get cleaned
 	rm -rf $(BUILD_DIR)
