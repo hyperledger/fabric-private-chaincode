@@ -1,4 +1,4 @@
-
+# Copyright 2019 Intel Corporation
 # Copyright IBM Corp. All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -7,6 +7,8 @@ TOP = ../..
 include $(TOP)/build.mk
 
 HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
+HW_ATTEST_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then if [ "${FPC_ATTESTATION_TYPE}" = "epid_linkable" ]; then echo "-hw-lnk"; elif [ "${FPC_ATTESTATION_TYPE}" = "epid_unlinkable" ]; then echo "-hw-ulnk"; else echo "incorrect FPC_ATTESTATION_TYPE"; exit 1; fi; fi)
+
 
 # Names and namespaces
 # ------------------
@@ -18,7 +20,7 @@ FPC_DOCKER_BASE_RT_NAME = $(FPC_DOCKER_NAMESPACE)-base-rt
 FPC_DOCKER_BASE_DEV_NAME = $(FPC_DOCKER_NAMESPACE)-base-dev
 
 FPC_DOCKER_PEER_NAMESPACE := hyperledger/fabric-peer-fpc
-FPC_DOCKER_PEER_NAME = $(FPC_DOCKER_PEER_NAMESPACE)$(HW_EXTENSION)
+FPC_DOCKER_PEER_NAME = $(FPC_DOCKER_PEER_NAMESPACE)$(HW_ATTEST_EXTENSION)
 
 DOCKER_DEV_CONTAINER_NAME = fpc-development-${FPC_VERSION}
 
@@ -188,6 +190,7 @@ peer: base-dev
          --build-arg FPC_REPO_URL=file:///tmp/cloned-local-fpc-git-repo\
          --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
+         --build-arg FPC_ATTESTATION_TYPE=${FPC_ATTESTATION_TYPE}\
          . )
 	$(DOCKER) tag $(FPC_DOCKER_PEER_NAME) $(FPC_DOCKER_PEER_NAME):${FPC_VERSION}
 
@@ -200,6 +203,7 @@ dev: base-dev
          --build-arg FPC_REPO_URL=file:///tmp/cloned-local-fpc-git-repo\
          --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
+         --build-arg FPC_ATTESTATION_TYPE=${FPC_ATTESTATION_TYPE}\
          . )
 	$(DOCKER) tag $(FPC_DOCKER_DEV_NAME) $(FPC_DOCKER_DEV_NAME):${FPC_VERSION}
 
@@ -212,6 +216,7 @@ cc-builder: base-dev
          --build-arg FPC_REPO_URL=file:///tmp/cloned-local-fpc-git-repo\
          --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
+         --build-arg FPC_ATTESTATION_TYPE=${FPC_ATTESTATION_TYPE}\
          . )
 	$(DOCKER) tag $(FPC_DOCKER_CC_BUILDER_NAME) $(FPC_DOCKER_CC_BUILDER_NAME):${FPC_VERSION}
 

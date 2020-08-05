@@ -1,17 +1,18 @@
 # Copyright IBM Corp. All Rights Reserved.
+# Copyright 2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 
 # Description:
 #   Builds the environment with all prerequistes needed to _build_ SGX-enabled apps as needed in FPC
 #
-#  Configuration (build) paramaters
-#  - fpc image version:		FPC_VERSION (default: latest)
-#  - go version:		GO_VERSION (default: 1.14.4)
-#  - nanopb version:		NANOPB_VERSION (default: 0.3.9.2)
-#  - openssl version: 		OPENSSL (default: 1.1.1g)
-#  - sgxssl version: 		SGXSSL  (default: 2.10_1.1.1g)
-#  - additional apt pkgs:	APT_ADD_PKGS (default: )
+#  Configuration (build) paramaters (for defaults, see below section with ARGs)
+#  - fpc image version:         FPC_VERSION
+#  - go version:                GO_VERSION
+#  - nanopb version:            NANOPB_VERSION
+#  - openssl version:           OPENSSL
+#  - sgxssl version:            SGXSSL
+#  - additional apt pkgs:       APT_ADD_PKGS
 
 
 ARG FPC_VERSION=latest

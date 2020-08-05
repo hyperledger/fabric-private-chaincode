@@ -16,7 +16,7 @@ export SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && p
 #
 if [[ ! $USE_FPC = false ]]; then
     # - existance of FPC peer
-    FPC_PEER_NAME="hyperledger/fabric-peer-fpc$(if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi):${FPC_VERSION}" 
+    FPC_PEER_NAME="hyperledger/fabric-peer-fpc${HW_ATTEST_EXTENSION}:${FPC_VERSION}"
     if [ -z "$(docker images -q ${FPC_PEER_NAME})" ]; then
 	echo "FPC peer container image '${FPC_PEER_NAME}' does not exist, try to build it ..."
 	# if it doesn't exist, build it: note this can take quite some time!!
@@ -25,7 +25,7 @@ if [[ ! $USE_FPC = false ]]; then
 	popd
     fi
     # - existance of boilerplate
-    BOILERPLATE_NAME="hyperledger/fabric-private-chaincode-boilerplate-ecc$(if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi):${FPC_VERSION}"
+    BOILERPLATE_NAME="hyperledger/fabric-private-chaincode-boilerplate-ecc${HW_ATTEST_EXTENSION}:${FPC_VERSION}"
     if [ -z "$(docker images -q ${BOILERPLATE_NAME})" ]; then
 	echo "FPC boilerplate container image '${BOILERPLATE_NAME}' does not exist, try to build it ..."
 	pushd "${FPC_PATH}/" || die "can't go to fpc-sdk and boilerplate build location"
@@ -61,6 +61,7 @@ export \\
  FABRIC_VERSION="${FABRIC_VERSION}"\\
  PEER_CMD="${PEER_CMD}"\\
  FPC_CONFIG="${FPC_CONFIG}"\\
+ HW_ATTEST_EXTENSION=${HW_ATTEST_EXTENSION}"\\
  CHANNEL_NAME="${CHANNEL_NAME}"\\
  DOCKER_COMPOSE="${DOCKER_COMPOSE}"
 

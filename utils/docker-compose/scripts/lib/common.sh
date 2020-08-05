@@ -17,6 +17,7 @@ if [ -z ${DOCKERD_FPC_PATH+x} ]; then export DOCKERD_FPC_PATH=${FPC_PATH}; fi
 # SGX mode: make sure it is set so we consistently use the same value also when we call make
 # Note: make might define in config*.mk its own value without necessarily it being an env variable
 export SGX_MODE=${SGX_MODE:=SIM}
+export HW_ATTEST_EXTENSION=$(if [ "${SGX_MODE}" = "HW" ]; then if [ "${FPC_ATTESTATION_TYPE}" = "epid_linkable" ]; then echo "-hw-lnk"; elif [ "${FPC_ATTESTATION_TYPE}" = "epid_unlinkable" ]; then echo "-hw-ulnk"; else echo "incorrect FPC_ATTESTATION_TYPE"; exit 1; fi; fi)
 
 # Variables which we allow the caller override ..
 export FABRIC_VERSION=${FABRIC_VERSION:=2.2.0}

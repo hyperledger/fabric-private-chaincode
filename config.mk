@@ -9,7 +9,7 @@
 # Go related settings
 #--------------------------------------------------
 GOFLAGS :=
-GO := go $(GOFLAGS)
+GO_CMD := go
 
 
 # Docker related settings
@@ -22,7 +22,7 @@ export DOCKER_BUILDKIT ?= 0
 # as a more robust 0. If you prefer the benefits of buildkit,
 # override default in your `config.override.mk`
 DOCKERFLAGS :=
-DOCKER := DOCKER_BUILDKIT=$(DOCKER_BUILDKIT) docker $(DOCKERFLAGS)
+DOCKER_CMD := docker
 # Note:
 # - to get quiet docker builds, you can define in config.override.mk
 #   DOCKER_QUIET_BUILD=1
@@ -40,7 +40,11 @@ DOCKER := DOCKER_BUILDKIT=$(DOCKER_BUILDKIT) docker $(DOCKERFLAGS)
 
 # SGX related settings
 #--------------------------------------------------
+# (Note: vars are exported as env variables as we also need them in various scripts)
+# alternatives for SGX_MODE: SIM or HW
 export SGX_MODE ?= SIM
+# alternatives for FPC_ATTESTATION_TYPE: epid_linkable or epid_unlinkable
+export FPC_ATTESTATION_TYPE ?= epid_unlinkable
 export SGX_BUILD ?= PRERELEASE
 export SGX_SSL ?= /opt/intel/sgxssl
 export SGX_SDK ?= /opt/intel/sgxsdk
