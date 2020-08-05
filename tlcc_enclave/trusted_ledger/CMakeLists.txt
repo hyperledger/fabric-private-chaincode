@@ -1,18 +1,6 @@
-SET(FPC_ATTESTATION_TYPE "$ENV{FPC_ATTESTATION_TYPE}")
-
-IF("$ENV{FPC_ATTESTATION_TYPE} " STREQUAL " ")
-    #default attestation flag is "epid_unlinkable"
-    SET(SGX_ATTESTATION_FLAG "-DUSE_EPID_UNLINKABLE")
-ELSE()
-    IF("${FPC_ATTESTATION_TYPE} " STREQUAL "epid_linkable ")
-        SET(SGX_ATTESTATION_FLAG "-DUSE_EPID_LINKABLE")
-    ELSEIF("${FPC_ATTESTATION_TYPE} " STREQUAL "epid_unlinkable ")
-        SET(SGX_ATTESTATION_FLAG "-DUSE_EPID_UNLINKABLE")
-    ELSE()
-        message(FATAL_ERROR "if set, FPC_ATTESTATION_TYPE must be 'epid_linkable' or 'epid_unlinkable'")
-    ENDIF()
-ENDIF()
-message(WARNING "TLCC attestation type derived from ECC -- TLCC does not use remote attestation")
+# Copyright 2020 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
 
 set(SOURCE_FILES
     trusted_ledger.c

@@ -1,14 +1,20 @@
 # Copyright IBM Corp. All Rights Reserved.
+# Copyright 2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
+
+# Description:
+#   Sets up the template of a docker environment to run FPC chaincode, just missing the chaincode's enclave.so*
+#
+#  Configuration (build) paramaters (for defaults, see below section with ARGs)
+#  - fpc image version:         FPC_VERSION
+#  - sgxmode:                   SGX_MODE
+#  - sgx attestation mode:      FPC_ATTESTATION_TYPE
+#  - additional dev apt pkgs:   APT_ADD_DEV_PKGS
 
 ARG FPC_VERSION=latest
 
 FROM hyperledger/fabric-private-chaincode-ccenv:${FPC_VERSION}
-
-ARG CC_NAME="ecc"
-ARG CC_PATH="/usr/local/bin"
-ARG CC_LIB_PATH=${CC_PATH}"/enclave/lib"
 
 ARG SGX_MODE
 ENV SGX_MODE=${SGX_MODE}
@@ -16,6 +22,13 @@ ENV SGX_MODE=${SGX_MODE}
 # define here a env which makes it easy recognizable which mode
 # the container is. No default, though, as we do not control
 # the build and rely on a proper value provided from outside.
+ARG FPC_ATTESTATION_TYPE
+ENV FPC_ATTESTATION_TYPE=${FPC_ATTESTATION_TYPE}
+
+
+ARG CC_NAME="ecc"
+ARG CC_PATH="/usr/local/bin"
+ARG CC_LIB_PATH=${CC_PATH}"/enclave/lib"
 
 
 RUN mkdir -p ${CC_LIB_PATH}

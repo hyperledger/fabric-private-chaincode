@@ -1,6 +1,15 @@
 # Copyright IBM Corp. All Rights Reserved.
+# Copyright 2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
+
+# Description:
+#   Docker image for a particular fpc chaincode
+#
+#  Configuration (build) paramaters (for defaults, see below section with ARGs)
+#  - extension identifying sgx mode and attestation type:       BOILERPLATE_EXTENSION
+#  - fpc image version:                                         FPC_VERSION
+#  - path to directory containing chaincode's enclave.so:       enclave_so_path
 
 ARG BOILERPLATE_EXTENSION
 ARG FPC_VERSION=latest
@@ -8,6 +17,8 @@ ARG FPC_VERSION=latest
 FROM hyperledger/fabric-private-chaincode-boilerplate-ecc${BOILERPLATE_EXTENSION}:${FPC_VERSION}
 
 ARG enclave_so_path
+
+
 ARG CC_PATH="/usr/local/bin"
 ARG CC_LIB_PATH=${CC_PATH}"/enclave/lib"
 

@@ -10,7 +10,7 @@ services:
   peer0.org1.example.com:
   # ideally we would extend the definition of 'peer-base:' but alas docker-compose
   # doesn't propagate this to services which 'extend' from peer-base :-(
-    image: hyperledger/fabric-peer-fpc-hw:${FPC_VERSION}
+    image: hyperledger/fabric-peer-fpc${HW_ATTEST_EXTENSION}:${FPC_VERSION}
     # build:
     #   args:
     #     SGX_MODE: HW

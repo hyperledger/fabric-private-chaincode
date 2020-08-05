@@ -187,6 +187,7 @@ We currently support both `linkable` and `unlinkable` signatures for the attesta
 The type of attestation used is selected based on the `FPC_ATTESTATION_TYPE` environment variable:
 `epid_unlinkable` for unlinkable or `epid_linkable` for linkable signatures. If you
 do not define that environment variable, the chosen attestation method is `epid_unlinkable`.
+If you are changing the type, please perform a rebuild with `make clean all`.
 Note that a mismatch between your IAS credentials and the linkable setting
 will result in an (HTTP) error '400' visible in the log-files when the
 code tries to verify the attestation. (Another cause for such error '400'
@@ -459,14 +460,9 @@ export SGX_MODE=SIM
 # SGX simulation mode
 export SGX_MODE=HW
 
-# The attestation type is ignored when SGX_MODE=SIM is set.
-
-# IAS attestation (unlinkable)
-export FPC_ATTESTATION_TYPE=epid_unlinkable
-
-# IAS attestation (linkable)
+# IAS attestation (epid_linkable or epid_unlinkable)
+# Note: The attestation type is ignored when SGX_MODE=SIM is set.
 export FPC_ATTESTATION_TYPE=epid_linkable
-
 ```
 ##### Clang-format
 

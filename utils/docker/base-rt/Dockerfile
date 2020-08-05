@@ -1,16 +1,17 @@
 # Copyright IBM Corp. All Rights Reserved.
+# Copyright 2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 
 # Description:
 #   Builds the environment with all prerequistes needed to _run_ (but not necessarily build) SGX-enabled apps as needed in FPC
 #
-#  Configuration (build) paramaters
-#  - ubuntu version to use: 	UBUNTU_VERSION (default: 18.04)
-#  - ubuntu name to use: 	UBUNTU_VERSION (default: bionic)
-#  - sgx sdk/psw version:	SGX (default: 2.10)
-#  - protobuf version:		PROTO_VERSION (default: 3.11.4)
-#  - additional apt pkgs:	APT_ADD_PKGS (default: )
+#  Configuration (build) paramaters (for defaults, see below section with ARGs)
+#  - ubuntu version to use:     UBUNTU_VERSION
+#  - ubuntu name to use:        UBUNTU_VERSION
+#  - sgx sdk/psw version:       SGX
+#  - protobuf version:          PROTO_VERSION
+#  - additional apt pkgs:       APT_ADD_PKGS
 
 # config/build params (part 1)
 ARG UBUNTU_VERSION=18.04

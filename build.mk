@@ -7,6 +7,12 @@ include $(TOP)/config.mk
 # optionlly allow local overriding defaults
 -include $(TOP)/config.override.mk
 
+# define composites only here and not in config.mk so we can override parts in config.override.mk
+DOCKER := DOCKER_BUILDKIT=$(DOCKER_BUILDKIT) $(DOCKER_CMD) $(DOCKERFLAGS)
+GO := $(GO_CMD) $(GOFLAGS)
+
+
+
 .PHONY: all
 all: build test checks # keep checks last as license test is brittle ...
 

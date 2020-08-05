@@ -1,4 +1,5 @@
 # Copyright IBM Corp. All Rights Reserved.
+# Copyright 2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -31,6 +32,19 @@ set(SGX_SSL "$ENV{SGX_SSL}")
 if("${SGX_SSL} " STREQUAL " ")
     message(FATAL_ERROR "SGX_SSL: undefined environment variable")
 endif()
+
+SET(FPC_ATTESTATION_TYPE "$ENV{FPC_ATTESTATION_TYPE}")
+IF("${FPC_ATTESTATION_TYPE} " STREQUAL " ")
+    message(FATAL_ERROR "FPC_ATTESTATION_TYPE: undefined environment variable")
+ELSE()
+    IF("${FPC_ATTESTATION_TYPE} " STREQUAL "epid_linkable ")
+        SET(SGX_ATTESTATION_FLAG "-DUSE_EPID_LINKABLE")
+    ELSEIF("${FPC_ATTESTATION_TYPE} " STREQUAL "epid_unlinkable ")
+        SET(SGX_ATTESTATION_FLAG "-DUSE_EPID_UNLINKABLE")
+    ELSE()
+        message(FATAL_ERROR "if set, FPC_ATTESTATION_TYPE must be 'epid_linkable' or 'epid_unlinkable'")
+    ENDIF()
+ENDIF()
 
 set(SGX_COMMON_CFLAGS -m64)
 set(SGX_LIBRARY_PATH ${SGX_SDK}/lib64)

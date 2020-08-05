@@ -1,31 +1,38 @@
 # Copyright IBM Corp. All Rights Reserved.
+# Copyright 2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 
 # Description:
-#   Sets up fabric/fpc source environment and builds various derivatives in different stages
+#   Sets up fabric/fpc source environment and builds, in different stages, three different
+#   containers
+#   - peer: a container with an fpc-enhanced fabric peer
+#   - cc-builder: an environment to build fpc chaincode enclave.so
+#   - dev: a fpc-enabled interactive development environment
 #
-#  Configuration (build) paramaters
-#  - fpc image version:		FPC_VERSION (default: latest)
-#  - fabric repo:  		FABRIC_REPO (default: https://github.com/hyperledger/fabric.git)
-#  - fabric branch: 		FABRIC_VERSION (default: 2.2.0)
-#  - fpc repo:		 	FPC_REPO_URL (default: https://github.com/hyperledger-labs/fabric-private-chaincode.git)
-#  - fpc branch/tag/commit	FPC_REPO_BRANCH_TAG_OR_COMMIT (default: master)
-#  - git user:			GIT_USER_NAME (default: tester)
-#  - git user's email:		GIT_USER_EMAIL (default: tester@fpc)
-#  - sgxmode: 			SGX_MODE (default: SIM)
-#  - additional dev apt pkgs:	APT_ADD_DEV_PKGS (default: )
+#  Configuration (build) paramaters (for defaults, see below section with ARGs)
+#  - fpc image version:         FPC_VERSION
+#  - fabric repo:               FABRIC_REPO
+#  - fabric branch:             FABRIC_VERSION
+#  - fpc repo:                  FPC_REPO_URL
+#  - fpc branch/tag/commit      FPC_REPO_BRANCH_TAG_OR_COMMIT
+#  - git user:                  GIT_USER_NAME
+#  - git user's email:          GIT_USER_EMAIL
+#  - sgxmode:                   SGX_MODE
+#  - sgx attestation mode:      FPC_ATTESTATION_TYPE
+#  - additional dev apt pkgs:   APT_ADD_DEV_PKGS
 
 # Note on SGX_MODE:
 # In a docker build environment, we build but cannot _run_ with SGX_MODE=HW!.
 # Moreoever, libraries like sgxssl are be agnostic to the mode in which they are built and
-# can be used in both modes. Hence, even when we define glabally SGX_MODE to be HW, 
+# can be used in both modes. Hence, even when we define glabally SGX_MODE to be HW,
 # we can still build _and test_ them by locally/temporarily defining SGX_MODE to SIM
 # as we do below for sgxssl ...
 
 # global config params
 ARG FPC_VERSION=latest
 ARG SGX_MODE=SIM
+ARG FPC_ATTESTATION_TYPE
 ARG APT_DEV_ADD_PKGS=
 
 # global constants
@@ -85,6 +92,8 @@ FROM common as peer-builder
 # import global vars
 ARG SGX_MODE
 ENV SGX_MODE=${SGX_MODE}
+ARG FPC_ATTESTATION_TYPE
+ENV FPC_ATTESTATION_TYPE=${FPC_ATTESTATION_TYPE}
 
 # Build FPC peer including plugins and tlcc support
 RUN cd ${FPC_PATH} \
@@ -102,6 +111,7 @@ FROM hyperledger/fabric-private-chaincode-base-rt:${FPC_VERSION} as peer
 ARG FABRIC_REL_PATH
 ARG FPC_REL_PATH
 ARG SGX_MODE
+ARG FPC_ATTESTATION_TYPE
 
 # local vars
 # note these envs are _not_ inhereted from above as we start from base-rt !
@@ -115,6 +125,7 @@ ENV FABRIC_BIN_DIR=${FABRIC_BIN_DIR}
 ENV FPC_PATH=${FPC_PATH}
 ENV FPC_CMDS=${FPC_CMDS}
 ENV SGX_MODE=${SGX_MODE}
+ENV FPC_ATTESTATION_TYPE=${FPC_ATTESTATION_TYPE}
 
 RUN apt-get update \
   && apt-get install -y -q \
@@ -151,6 +162,11 @@ FROM common as cc-builder
 # import global vars
 ARG SGX_MODE
 ENV SGX_MODE=${SGX_MODE}
+# Note: Only the untrusted part of the SDK depends on FPC_ATTESTATION_TYPE; the trusted parts
+#  compiled into `enclave.so`, the output of a running cc-builder, do not. So it does not
+#  matter which way the SDK is built regarding attestation and we do not have to "specialize"
+#  for FPC_ATTESTATION_TYPE as we do for `peer`.  But as properties of `enclave.so` depend
+#  on SGX_MODE, we do have to specialize for that ...
 
 WORKDIR ${FPC_PATH}
 
