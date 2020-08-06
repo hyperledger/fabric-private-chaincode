@@ -21,6 +21,15 @@ FILE(GLOB PROJECT_SOURCES
     "$ENV{FPC_PATH}/common/base64/base64.cpp"
     )
 
+#set debug flags for PDO based on FPC flags
+#(COMMON_CXX_FLAGS is inherited, and used, by the pdo crypto tests)
+if("$ENV{PDO_DEBUG_BUILD}" STREQUAL "1")
+    SET(COMMON_CXX_FLAGS "-Og" "-g" "-DPDO_DEBUG_BUILD=1")
+else()
+    SET(COMMON_CXX_FLAGS "-O2" "-DPDO_DEBUG_BUILD=0")
+endif()
+
+
 ###################################################################################################
 # Untrusted crypto adapt library
 ###################################################################################################
@@ -29,6 +38,7 @@ ADD_LIBRARY(${U_CRYPTO_ADAPT_LIB_NAME} STATIC ${PROJECT_HEADERS} ${PROJECT_SOURC
 TARGET_INCLUDE_DIRECTORIES(${U_CRYPTO_ADAPT_LIB_NAME} PRIVATE "${PDO_CRYPTO_DIR}/..")
 TARGET_INCLUDE_DIRECTORIES(${U_CRYPTO_ADAPT_LIB_NAME} PRIVATE "$ENV{FPC_PATH}/common/base64")
 TARGET_INCLUDE_DIRECTORIES(${U_CRYPTO_ADAPT_LIB_NAME} PUBLIC $ENV{SGX_SDK}/include)
+TARGET_COMPILE_OPTIONS(${U_CRYPTO_ADAPT_LIB_NAME} PRIVATE ${COMMON_CXX_FLAGS} "-D_UNTRUSTED_=1")
 
 ###################################################################################################
 # Trusted crypto adapt library
@@ -38,7 +48,7 @@ ADD_LIBRARY(${T_CRYPTO_ADAPT_LIB_NAME} STATIC ${PROJECT_HEADERS} ${PROJECT_SOURC
 TARGET_INCLUDE_DIRECTORIES(${T_CRYPTO_ADAPT_LIB_NAME} PRIVATE "${PDO_CRYPTO_DIR}/..")
 TARGET_INCLUDE_DIRECTORIES(${T_CRYPTO_ADAPT_LIB_NAME} PRIVATE "$ENV{FPC_PATH}/common/base64")
 TARGET_INCLUDE_DIRECTORIES(${T_CRYPTO_ADAPT_LIB_NAME} PUBLIC $ENV{SGX_SDK}/include)
-TARGET_COMPILE_OPTIONS(${T_CRYPTO_ADAPT_LIB_NAME} PRIVATE -nostdinc++)
+TARGET_COMPILE_OPTIONS(${T_CRYPTO_ADAPT_LIB_NAME} PRIVATE ${COMMON_CXX_FLAGS} -nostdinc++)
 TARGET_INCLUDE_DIRECTORIES(${T_CRYPTO_ADAPT_LIB_NAME} PUBLIC ${SGX_SDK}/include/libcxx)
 TARGET_INCLUDE_DIRECTORIES(${T_CRYPTO_ADAPT_LIB_NAME} PUBLIC ${SGX_SDK}/include/tlibc)
 
