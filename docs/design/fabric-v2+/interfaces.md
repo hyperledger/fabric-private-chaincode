@@ -99,7 +99,17 @@ Data types are defined as follows:
 ```protobuf
 syntax = "proto3"
 
-// TODO update UML with this channel hash and tlcc_mrenclave and check at ercc that this hash corresponds to peers view of the channel id
+// TODO update UML:
+// - channel_hash and tlcc_mrenclave fields in protobufs/fpc-components.puml
+// - initialization of these fields from an initial tl_sesion setup
+//   during enclave creation and validation at ercc that these params
+//   are consistent (e.g., all registered entities on same chaincode
+//   agree, tlcc_mrenclave matches version baked into ercc and
+//   channel_hash  corresponds to peers view of the channel id)
+// - cross-check also other fields, currently typing in fpc-components
+//   seems a bit off with subfields as bytes rather than the
+//   corresponding types and we probably also should change field names
+//   to lower-case to not confuse them with names of types?)
 
 message CC_Parameters {
         string chaincode_id   = 1;      // chaincode name
@@ -112,7 +122,7 @@ message Host_Parameters {
         bytes peer_identity = 1;        // peer that hosts the enclave
 }
 
-message AttestedData {
+message Attested_Data {
         CC_Parameters cc_params    = 1;
         Host_Parameter host_params = 2;
         bytes enclave_vk           = 3; // chaincode enclave public key
@@ -121,7 +131,7 @@ message AttestedData {
 }
 
 message Credentials {
-        AttestedData data    = 1;
+        Attested_Data data    = 1;
         bytes evidence_bytes = 2;       // serialized attestation evidence
 }
 
@@ -185,6 +195,7 @@ The TLCC interface is implemented through a "normal" chaincode interface.
 func Invoke(stub shim.ChaincodeStubInterface) pb.Response {}
 
 // functions below are dispatched by Invoke implementation
+// TODO: describe how dispatching happens, in particular how invoke is encoded ...
 
 // used by the admin to join the channel
 // Note: this methods creates a new tlcc_enclave and starts a block listener
@@ -195,82 +206,18 @@ func joinChannel(channel_id string) error {}
 // returns the SHA256 hash of the channel genesis block
 // the tlcc enclave is initialized with
 func getChannelHash(channel_id string) (string, error) {}
+
 ```
+For the tlcc<->ecc channel, the dispatcher also will have to call
+`tl_session_rpc` for corresponding messages. See [Ledger Enclave - FPC
+Stub Secure Channel Module](interfaces.ecc-tlcc-channel.md) for more
+information on this function and related EDL.
+
 
 ```c++
 // Provided/implemented by a common logging module
 // interface exposed to TLCC_enclave via cgo
 void ocall_print_string([in, string] const char *str);
-```
-
-```go
-// interface to establish/close a secure channel between an
-// ECC_Enclave and a TLCC_enclave.
-func session_setup(setup SessionSetup) (SessionSetupResponse, error) {}
-func session_close(close SessionClose) (SessionCloseResponse, error) {}
-
-// interface to invoke a TLCC request, such as, getMetadata and validate_identity
-func session_request(request SessionRequest) (SessionRequestResponse, error) {}
-```
-
-
-```protobuf
-syntax = "proto3"
-
-// Setup and Close messages are used to establish a secure channel between
-// ECC_Enclave and TLCC_Enclave. Once a secure channel is established,
-// Session Requests to TLCC can be issued to invoke TLCC functions such
-// as getMetadata or verifyMSPId.
-
-// TODO How to integrate the the message authenticator?!
-// should we abstract it as signature here even though we may
-// use CMAC once a session is established?
-
-// TODO: update UML and make sure that session
-// establishment is done when ecc is created. In particular,
-// this must happen before attestation. WHy is this? Because this is
-// the way how ECC learns the channel hash and "binds" to it through attestation
-
-message SessionSetup {
-        string channel_id = 1;
-        bytes enclave_vk  = 2;
-}
-
-message SessionSetupResponse {
-        SessionSetup setup   = 1;
-        bytes tlcc_mrenclave = 2;
-        bytes channel_hash   = 3;
-        bytes context        = 4;        // context that references the session
-}
-
-message SessionClose {
-        bytes context = 1;
-}
-
-message SessionCloseResponse {
-}
-
-// TODO add signature or some other for of message
-// authentication to session request/response.
-
-message SessionRequest {
-        bytes context    = 1;
-        bytes tx_context = 2;
-        bytes nonce      = 3;
-        oneof request {
-                GetMetadataRequest metadata               = 1;
-                ValidateIdentityRequest validate_identity = 2;
-        }
-}
-
-message SessionRequestResponse {
-        SessionRequest request = 1;
-        oneof response {
-                GetMetadataResponse metadata               = 1;
-                ValidateIdentityResponse validate_identity = 2;
-        }
-}
-
 ```
 
 ## State:
@@ -304,58 +251,135 @@ public int ecall_next_block(
         [user_check] uint8_t *block_bytes, uint32_t block_size);
 ```
 
-```c++
-// this secure session functions are defined in a secure channel module
-//included from secure_channel.edl
 
-public int session_setup(
-        [in] setup SessionSetup,
-        [out] SessionSetupResponse);
 
-public int session_close(
-        [in] close SessionClose
-        [out] SessionCloseResponse);
-
-public int session_request(
-        [in] request SessionRequest,
-        [out] SessionRequestResponse;
+Over the [Ledger Enclave - FPC Stub Secure Channel](interfaces.ecc-tlcc-channel.md),
+TLCC_Enclave also offers following RPC functionality to ECC, represented as
+protobuf request (`TLCCRequest`) and response (`TLCCResponse`) messages:
 ```
 
+```protobuf
+syntax = "proto3"
 
-Session requests are dispatched to the following interfaces:
-```c++
-// returns a cryptographic hash of the genesis block this tlcc enclave is initialized with.
-public hash get_channel_hash();
 
 // TODO update UMLs: these functions replace "check_ercc_commited_data"
 
-// verify state data
-public metadata get_state_metadata(
-        const char *namespace,
-        const char *key);
+// - verify state data
 
-public metadata get_multi_state_metadata(
-        const char *namespace,
-        const char *comp_key);
+//    public metadata get_state_metadata(
+//            const char *namespace,
+//            const char *key);
+message GetMetadataRequest {
+        string namespace   = 1;
+        string key         = 2;
+}
+message GetMetadataResponse {
+        bytes hash         = 1; 
+        // Note:
+        // - in first FPC implementation, we CMACed the hash; this authentication is done by the transparently by the session
+        // - encoding is SHA-256 over value found by key (or all-zero if key absent)
+}
+
+
+
+//    public metadata get_multi_state_metadata(
+//            const char *namespace,
+//            const char *comp_key);
+message GetMultiMetadataRequest {
+        string namespace   = 1;
+        string compo_key   = 2;
+}
+message GetMultiMetadataResponse {
+        bytes hash         = 1; // SHA-256 over value found by key (or all-zero if key absent)
+        // Note:
+        // - in first FPC implementation, we CMACed the hash; this authentication is done now transparently by the secure session layer
+        // - encoding is SHA-256 over concatentation of key & values for all found keys and their values (or all-zero if no key absent)
+        //   TODO: above encoding is what we do now, but is malleable, so should be improved.
+}
+
+
+// - verify identities
 
 // verify that a given identity is part of a msp
 // the input is a serialized identity proto message as defined in
 // https://github.com/hyperledger/fabric-protos/blob/master/msp/identities.proto#L15
-public bool validate_identity(
-        const uint8_t *serializedIdentity,
-        const uint32_t len);
+//    public bool validate_identity(
+//            const uint8_t *serializedIdentity,
+//            const uint32_t len);
+message ValidateIdentityRequest {
+    bytes serializedIdentity = 1;
+}
+message ValidateIdentityResponse {
+    bool is_valid = 1;
+}
 
 // checks if a given enclave identifier can endorse transactions
 // as defined in the chaincode definition; this checks that the given enclave
 // has correct the MRENCLAVE and enclave is part of an organization that can
 // satisfy the endorsing policy of a given chaincode.
-public bool can_endorse(
-        const char *chaincode_id,
-        const char *enclave_id);
+//    public bool can_endorse(
+//            const char *chaincode_id,
+//            const char *enclave_id);
+message CanEndorseRequest {
+    string chaincode_id = 1 // note: could be implied from session context but still explicit in case we want to expose to ERCC
+    string enclave_id   = 2
+}
+message CanEndorseResponse {
+    bool is_valid = 1;
+}
+
+
+// - wrapper type which is passed to `tl_session_request` and the handler registered with `tl_session_register`
+message TLCCRequest {
+        bytes tx_context = 2;
+        // tx_context is used by TLCC to enforce concsistency across separate requests of
+        // a single chaincode transaction (including potential subtransactions) and is
+        // an arbitrary identifier choosen by ECC_Enclave with following constraints:
+        // - for a given single (top-level) chaincode invocation, it must be the same for any tlcc requests
+        //   triggered by it (whether directly the top-level or from sub-transactions invoked via cc2cc)
+        // - different (top-level) invocations (of same chaincode) must provide different identifiers
+        // Based on this tlcc can achieve view consistency by, e.g., serializing transactions and state
+        // updates or keeping separate views, with each active transaction identifiers mapped to one of
+        // these views.
+        // Note: If TLCC manages snapshots by serializing, we might also have to add an additional
+        // Request/Response type notify tlcc when an chaincode invocation has completed (otherwise
+        // TLCC wouldn't know when it would be safe to start the state update
+        //
+		// An alternative approach could be to replace this field with some view identifier
+		// in TLCCResponse, with ECC enforcing consistency (although in this case it could
+		// only abort in case of inconsistency and there might be the issue that as parallelism
+		// increases, no progress could ever be made ...
+	    // =>
+		// TODO: Above has to be reconciled with the resolution of following issues/PRs
+		//   related to view consistency:
+        //   - [#402](https://github.com/hyperledger-labs/fabric-private-chaincode/issues/402)
+        //   - [#435](https://github.com/hyperledger-labs/fabric-private-chaincode/pull/435)
+        //   - [#361](https://github.com/hyperledger-labs/fabric-private-chaincode/issues/361)
+        oneof request {
+                GetMetadataRequest metadata               = 1;
+                GetMultiMetadataRequest multi_metadata    = 2;
+                ValidateIdentityRequest validate_identity = 3;
+                CanEndorseRequest can_endorse             = 4;
+        }
+}
+
+message TLCCResponse {
+        oneof response {
+                GetMetadataResponse metadata               = 1;
+                GetMultiMetadataResponse multi_metadata    = 2;
+                ValidateIdentityResponse validate_identity = 3;
+                CanEndorseResponse can_endorse             = 4;
+        }
+}
+
 ```
 
+
+
 ## State:
-The internal TLCC state consists of the current ledger state (block number, integrity-metadata, and msp) and sessions information for ecc communication.
+The internal TLCC state consists of the current ledger state (block number, integrity-metadata, and msp).
+Note: Sessions information for ecc communication is maintained by the  [Ledger Enclave - FPC
+Stub Secure Channel Module](interfaces.ecc-tlcc-channel.md) separatedly.
 
 More details on the TLCC state will also be output of [#402](https://github.com/hyperledger-labs/fabric-private-chaincode/issues/402). Therefore, the state representation here is not strict about actually data types, but should illustrate what state is maintained.
 
@@ -364,7 +388,7 @@ More details on the TLCC state will also be output of [#402](https://github.com/
 typedef struct internal_tlcc_state_t {
         uint32_t sequence_number, // block number counter
         string channel_id,
-        uint8_t genesis_hash, // cryptographic identifier of the channel
+        uint8_t channel_hash, // cryptographic identifier of the channel
 
         // integrity metadata
         kvs_t metadata_state,
@@ -377,9 +401,6 @@ typedef struct internal_tlcc_state_t {
         // msp
         X509_STORE* root_certs_orderer, // root cert store for orderer org
         X509_STORE* root_certs_apps, // root cert store for application orgs
-
-        // tlcc session
-        session_keys_t session_keys
 };
 ```
 
@@ -441,23 +462,10 @@ void ocall_get_state_by_partial_composite_key(
         [user_check] void *u_shim_ctx);
 ```
 
-```c++
-// this secure session functions are defined in a secure channel module
-//included from secure_channel.edl
+For the tlcc<->ecc channel, See [Ledger Enclave - FPC
+Stub Secure Channel Module](interfaces.ecc-tlcc-channel.md) for an
+additional ocall provided by that module.
 
-public int session_setup(
-        [in] setup SessionSetup,
-        [out] SessionSetupResponse);
-
-public int session_close(
-        [in] close SessionClose
-        [out] SessionCloseResponse);
-
-// used, for instance, to retrieve integrity metadata for get_state operations
-public int session_request(
-        [in] request SessionRequest,
-        [out] SessionRequestResponse;
-```
 
 
 
@@ -556,7 +564,7 @@ typedef struct internal_ecc_state_t {
         sgx_ec256_private_t chaincode_dk,  // argument decryption key
 
         // tlcc session
-        sgx_cmac_128bit_key_t session_key; // is set during tlcc-ecc binding
+        tl_ecc_ctx_ptr_t tlcc_ctx
 };
 ```
 

@@ -46,6 +46,8 @@ loop
   note over Chaincode
     This loop denotes the application logic as it
     may perform multiple getState and putState operations.
+    Note that these operations are over the secure channel,
+    see fpc-cc-invocation.puml for its establishment.
   end note
 
   alt getState
