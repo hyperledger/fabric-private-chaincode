@@ -107,15 +107,18 @@ group invoke
       ECC1 -> Enclave1 ++: invoke (proposal(args_enc), CTX)
 
       Enclave1 <-> TLCC1: establish secure channel based on local attestation
+      note right Enclave1
+         See interfaces.ecc-tlcc-channel.md for details on secure channel
+      end note
 
       Enclave1 -> Enclave1 : verify proposal
 
       Enclave1 -> TLCC1 ++: verify (proposal.creator, CTX)
       note over TLCC1
-      Ledger_enclave access is needed to check that the creator
-      (client identity) passes MSP validation, that is,
-      it comes with a certificate that is a proper root
-      of trust.
+        Ledger_enclave access is needed to check that the creator
+        (client identity) passes MSP validation, that is,
+        it comes with a certificate that is a proper root
+        of trust.
       end note
       return
 
