@@ -36,10 +36,24 @@ Defined process to:
 
 ### Non-features
 
+- No state-based endorsement
+- No custom MSP (no idemix)
+
 
 ## Design
 
-Access control
+Channel configuration:
+- Parse channel definition
+    - parse consensus definition
+- validate block signatures
+- Maintain msp metadata for signature validation
+- Config blocks are validated by the ordering service ([see code](https://github.com/hyperledger/fabric/blob/f27912f2f419c3b35d2c1df120f19585815eceb0/orderer/common/msgprocessor/standardchannel.go#L131))
+
+- parse Lifecycle policy 
+- validate Lifecycle policy
+    We only support: a majority of Orgs (See [Link](https://hyperledger-fabric.readthedocs.io/en/release-2.2/chaincode_lifecycle.html#install-and-define-a-chaincode))
+
+Access control:
 - check org is "writer"
 
 MSP:
@@ -50,30 +64,68 @@ Endorsing:
 - Phase2: Any enclave that runs a particular FPC chaincode
 
 Versioning:
-- single autonomously monotonously increasing version number
+- single autonomously monotonously increasing version number??
 
-Validation:
+Non-FPC Validation:
+- Transaction submitter identity validation
+    - submitter satisfies channel's writes policy
+- ERCC endorsement signatures verification
+- ERCC endorsement policy validation (same as lifecycle)
+    - Restrict to ERCC namespace only
+
+
+
+FPC Validation:
 - Introduce FPC transaction type (similar to introduce FPC namespace) and create
 a dedicated FPC tx processor; (removes the need of custom validation plugins and interference with existing Fabric validation logic; and also gives more freedom to FPC validation logic as no it not longer bound to the structure and format of endorsement transaction).
+
 - Support for (subset of) endorsing policies
-    - Lifecycle (a majority of Orgs) (See [Link](https://hyperledger-fabric.readthedocs.io/en/release-2.2/chaincode_lifecycle.html#install-and-define-a-chaincode))
-    - ERCC (same as lifecycle)
     - FPC Chaincode (see above)
+
 - Parse chaincode definitions
-- Config blocks are validated by the ordering service ([see code](https://github.com/hyperledger/fabric/blob/f27912f2f419c3b35d2c1df120f19585815eceb0/orderer/common/msgprocessor/standardchannel.go#L131))
-- Validate Signatures:
-    - block signatures
-    - FPC endorsement signatures
-    - ERCC endorsement signatures
+- Transaction submitter identity validation
+    - submitter satisfies channel's writes policy
+
+- FPC endorsement policy validation
+    - Support only: ANY
+- FPC endorsement signatures
+
+### Fabric high-level validation 
+
+TODO pseudo code here
+
+
+Config validation: [source](https://github.com/hyperledger/fabric/blob/f27912f2f419c3b35d2c1df120f19585815eceb0/common/configtx/validator.go#L163)
+
+- check config sequence number increased by 1
+- check is authorized Update [source](https://github.com/hyperledger/fabric/blob/f27912f2f419c3b35d2c1df120f19585815eceb0/common/configtx/update.go#L115)
+    - verify ReadSet [source](https://github.com/hyperledger/fabric/blob/f27912f2f419c3b35d2c1df120f19585815eceb0/common/configtx/update.go#L18)
+    - verify DeltaSet [source](https://github.com/hyperledger/fabric/blob/f27912f2f419c3b35d2c1df120f19585815eceb0/common/configtx/update.go#L68)
+        - for each item validate policy [source](https://github.com/hyperledger/fabric/blob/f27912f2f419c3b35d2c1df120f19585815eceb0/common/policies/policy.go#L133)
+
+Lifecycle validation:
+
+
+Default validation:
+
+- Validating identities that signed the transaction
+    - read/write check?
+- Verifying the signatures of the endorsers on the transaction
+    - can endorse?
+- Ensuring the transaction satisfies the endorsement policies of the namespaces of the corresponding chaincodes.
+
 
 ## Development plan
 
 ### short term
 See approach above
+
+We restrict the supported endorsement policies for lifecycle, ERCC, and FPC chaincodes.
+
 ### mid/long term
 Re-use Fabric code components inside trusted ledger enclave. This requires further development on go-support for SGX. Although some PoC based on graphene for go are already available but seems not be stable yet.
 
-
+We may extend support for more enhanced endorsement policies in the future.
 
 ### QA process
 
