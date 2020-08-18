@@ -3,20 +3,21 @@
 The purpose of TLCC is to establish a trusted view of the ledger (inside an enclave)
 and enable ECC to verify ledger state receiveed from the (untrusted) peer.
 
+
 ## Requirements
 
-- ECC can query integrity metadata to validate ledger state received from the peer.
-- TLCC must maintain a view on the ledger
-- TLCC must be synronized with peer's ledger state
-- Secure (authenticated) channel between ECC and TLCC to query metadata;
-- ECC tx must perform read/write on a stable view of the ledger state
-    - (snapshot during a single transaction invocation)
-- TLCC must detect read/write inconsistency
-- TLCC must be able to perform identity validation (orderer, msp, etc...)
-- TLCC must provide channel metadata (chaincode definition)
-- Maintaining FPC chaincode state only is sufficient
-- Validate "normal" Enclave Registry (ERCC) transactions; however, ERCC comes with "hard-coded" endorsement policy
+- ECC must verify all untrusted ledger state inputs from the peer with the help of TLCC
+    - Secure (authenticated) channel between ECC and TLCC to query metadata;
+    - TLCC must provide integrity metadata for the ledger state
+    - TLCC must provide channel metadata (chaincode definition)
 
+- TLCC must maintain a "trusted" view of the ledger
+    - TLCC must be syncronized with peer's ledger
+    - TLCC must detect transaction read/write conflicts
+    - TLCC must be able to perform identity validation (orderer, msp, etc...)
+    - TLCC must support concurrent execution of transaction processing and ledger updates
+        (ECC tx must perform read/write on a stable view of the ledger state)
+    
 
 ## Fabric high-level validation 
 
@@ -48,11 +49,13 @@ Restrict Fabric functionality:
 
 - keep Fabric validation changes in sync with TLCC
 - Reduces validation logic to a minimum
-    - minimizes catch-up 
+    - minimizes catch-up with Fabric updates
 - Restrict the notion of endorsement policy; 
 - Simplify chaincode versioning (TODO)
     - No chaincode updates for now
 - Support for default MSP only
+- Maintaining FPC chaincode state only is sufficient
+- Validate "normal" Enclave Registry (ERCC) transactions; however, ERCC comes with "hard-coded" endorsement policy
 
 
 Any transactions/blocks with unsupported features are ignored/aborted
@@ -66,19 +69,25 @@ Defined process to develop TLCC:
 
 ### Non-features
 
-- No state-based endorsement
 - No custom MSP (no idemix)
-- No support for custom endorsing/validation plugins for non-FPC and FPC chaincodes
-- Authentication and decorators
-- TODO check for more non-features in RFC
+- Authentication filters and decorators
+- Multiple Implementations for a Single Chaincode
+- Arbitrary endorsement policies
+- State-based endorsement
+- Custom endorsement / validation plugins for FPC
+- Chaincode-to-chaincode invocations (cc2cc)
+- Private Collections
+- Complex (CouchDB) queries like range queries and the like
 
 ## Design
 
 ### Chaincode execution support
-    - secure channel
-    - validate proposal
-        - check org is "write"
-        - replay protection
+
+- secure channel
+- validate proposal
+    - check org is "write"
+    - replay protection
+    - consistent view / snapshot during tx processing on integrity metadata / ledger state
 
 ### Ledger maintainance
 
@@ -93,7 +102,7 @@ Channel configuration:
     We only support: a majority of Org.member (See [Link](https://hyperledger-fabric.readthedocs.io/en/release-2.2/chaincode_lifecycle.html#install-and-define-a-chaincode))
 
 Access control:
-- delegate this "reader/writer/admin" check to admins;
+- the "reader/writer/admin" access check is performed through endorsement, that is, if a valid endorsement for a transaction exists, this implies that the access check was successfully performed by the endorsers; the consortium (e.g., their admins) must ensure that the endorsement policy for a chaincode does not ruling out the authorization policy.
 - TLCC only verifies endorsement policies and thereby implicitly the "writers" check is performed by the endorsers
 
 MSP:
@@ -103,14 +112,14 @@ MSP:
         - no intermediate
         - no CRLs
         - only support member role
-    - any certificate will match to role member
+        - any certificate will match to role member
 
 Endorsing:
 - Phase1: Designated enclave only
 - Phase2: Any enclave that runs a particular FPC chaincode
 
 Versioning:
-- single autonomously monotonously increasing version number??
+- single autonomously monotonously increasing version number (TBD)
 
 Non-FPC Validation:
 - Transaction submitter identity validation
@@ -121,18 +130,15 @@ Non-FPC Validation:
     - Restrict to ERCC namespace only
 
 FPC Validation:
-- Introduce FPC transaction type (similar to introduce FPC namespace) and create
-a dedicated FPC tx processor; (removes the need of custom validation plugins and interference with existing Fabric validation logic; and also gives more freedom to FPC validation logic as no it not longer bound to the structure and format of endorsement transaction).
 
 - Support for (subset of) endorsing policies
     - FPC Chaincode (see above)
-
 - Parse chaincode definitions
 - Transaction submitter identity validation
     - submitter satisfies channel's writes policy
-
 - FPC endorsement policy validation
-    - Support only: ANY
+    - Phase 1: Support only OR with a single ORG.member
+    - Phase 2: Support only OR with multi ORG.member
 - FPC endorsement signatures
 
 
@@ -144,6 +150,9 @@ See approach above
 We restrict the supported endorsement policies for lifecycle, ERCC, and FPC chaincodes.
 
 ### mid/long term
+- Introduce FPC transaction type (similar to introduce FPC namespace) and create
+a dedicated FPC tx processor; (removes the need of custom validation plugins and interference with existing Fabric validation logic; and also gives more freedom to FPC validation logic as no it not longer bound to the structure and format of endorsement transaction).
+
 Re-use Fabric code components inside trusted ledger enclave. This requires further development on go-support for SGX. Although some PoC based on graphene for go are already available but seems not be stable yet.
 
 We may extend support for more enhanced endorsement policies in the future.
@@ -153,7 +162,7 @@ We may extend support for more enhanced endorsement policies in the future.
 ## Implementation
 
 - nanopb to parse fabric protos (alternatively we could try to use real proto for c)
-- data state : levldb
+- data state : leveldb
     - pros:
         + snapshots;
         + batchWrites
