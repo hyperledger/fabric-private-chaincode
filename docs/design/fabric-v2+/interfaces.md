@@ -61,7 +61,7 @@ map[string][]byte
 
 To store data, we use the following key scheme, which is inspired by [_lifecycle](https://github.com/hyperledger/fabric/blob/master/core/chaincode/lifecycle/lifecycle.go#L81). A variable is denoted using <variable_name> annotation. Note that this scheme is defined here as, both, ERCC and TLCC need to parse/retrieve this information.
 
-The `enclave_id` a hex-encoded string of SHA256 hash over `enclave_vk`. 
+The `enclave_id` a hex-encoded string of SHA256 hash over `enclave_vk`.
 
 
 ```go
@@ -99,13 +99,13 @@ Data types are defined as follows:
 ```protobuf
 syntax = "proto3"
 
-// TODO update UML with this channel hash and tlcc_mrenclave and check at ercc that this hash corresponds to peers view of the channel id 
+// TODO update UML with this channel hash and tlcc_mrenclave and check at ercc that this hash corresponds to peers view of the channel id
 
 message CC_Parameters {
         string chaincode_id   = 1;      // chaincode name
         string version        = 2;      // chaincode version, this is the expected mrenclave
         string sequence       = 3;      // chaincode sequence number
-        string channel_id     = 4;      // channel id        
+        string channel_id     = 4;      // channel id
 }
 
 message Host_Parameters {
@@ -116,8 +116,8 @@ message AttestedData {
         CC_Parameters cc_params    = 1;
         Host_Parameter host_params = 2;
         bytes enclave_vk           = 3; // chaincode enclave public key
-        bytes channel_hash         = 4; // cryptographic hash of the channel genesis block;  
-        string tlcc_mrenclave      = 5; // expected TLCC mrenclave  
+        bytes channel_hash         = 4; // cryptographic hash of the channel genesis block;
+        string tlcc_mrenclave      = 5; // expected TLCC mrenclave
 }
 
 message Credentials {
@@ -163,12 +163,12 @@ message AttestationEvidence {
 
 ```
 
-ERCC keeps in instance of an attestation.Verifier to check an attestation evidence message. ERCC just passes the serialized attestation evidence message to the verifier. 
+ERCC keeps in instance of an attestation.Verifier to check an attestation evidence message. ERCC just passes the serialized attestation evidence message to the verifier.
 Depending on the attestation protocol (e.g., EPID- or DCAP-based attestation), the verifier implements the corresponding logic. Details of the evidence verification are defined in [#412](https://github.com/hyperledger-labs/fabric-private-chaincode/issues/412).
 
 ```go
 type EnclaveRegistryCC struct {
-	ra  attestation.Verifier
+    ra  attestation.Verifier
 }
 ```
 
@@ -258,7 +258,7 @@ message SessionRequest {
         bytes tx_context = 2;
         bytes nonce      = 3;
         oneof request {
-                GetMetadataRequest metadata               = 1; 
+                GetMetadataRequest metadata               = 1;
                 ValidateIdentityRequest validate_identity = 2;
         }
 }
@@ -266,8 +266,8 @@ message SessionRequest {
 message SessionRequestResponse {
         SessionRequest request = 1;
         oneof response {
-                GetMetadataResponse metadata               = 1; 
-                ValidateIdentityResponse validate_identity = 2; 
+                GetMetadataResponse metadata               = 1;
+                ValidateIdentityResponse validate_identity = 2;
         }
 }
 
@@ -282,7 +282,7 @@ ledger and read blocks.
 ```go
 type TrustedLedgerCC struct {
         channelMapping map[string]enclave.Stub
-        peer           *peer.Peer              
+        peer           *peer.Peer
 }
 
 type StubImpl struct {
@@ -350,7 +350,7 @@ public bool validate_identity(
 // has correct the MRENCLAVE and enclave is part of an organization that can
 // satisfy the endorsing policy of a given chaincode.
 public bool can_endorse(
-        const char *chaincode_id,       
+        const char *chaincode_id,
         const char *enclave_id);
 ```
 
@@ -368,13 +368,13 @@ typedef struct internal_tlcc_state_t {
 
         // integrity metadata
         kvs_t metadata_state,
-        
+
         // keep ercc and lifecycle separately as TLCC provides
         // additionally, such as `can_endorse`, requiring the information
         kvs_t ercc,
         kvs_t lifecycle,
 
-        // msp 
+        // msp
         X509_STORE* root_certs_orderer, // root cert store for orderer org
         X509_STORE* root_certs_apps, // root cert store for application orgs
 
@@ -395,7 +395,7 @@ func Invoke(stub shim.ChaincodeStubInterface) pb.Response {}
 
 // functions below are dispatched by Invoke implementation
 // some of these functions below may require access to the
-// stub shim.ChaincodeStubInterface 
+// stub shim.ChaincodeStubInterface
 
 // triggered by an admin
 func initEnclave() (Credentials, error) {}
@@ -426,7 +426,7 @@ void ocall_print_string([in, string] const char *str);
 // state access
 // these get_state calls are bound to the chaincode namespace
 void ocall_get_state(
-        [in, string] const char *key, 
+        [in, string] const char *key,
         [out, size=max_val_len] uint8_t *val, uint32_t max_val_len, [out] uint32_t *val_len,
         [user_check] void *u_shim_ctx);
 
@@ -438,7 +438,7 @@ void ocall_put_state(
 void ocall_get_state_by_partial_composite_key(
         [in, string] const char *comp_key,
         [out, size=max_len] uint8_t *values, uint32_t max_len, [out] uint32_t *values_len,
-        [user_check] void *u_shim_ctx); 
+        [user_check] void *u_shim_ctx);
 ```
 
 ```c++
@@ -481,7 +481,7 @@ type EnclaveChaincode struct {
 }
 
 type StubImpl struct {
-	eid C.enclave_id_t
+    eid C.enclave_id_t
 }
 ```
 
@@ -489,7 +489,7 @@ type StubImpl struct {
 # ECC_Enclave
 
 ## Interface:
-The ECC_Enclave interface specifies interface of an FPC chaincode enclave. 
+The ECC_Enclave interface specifies interface of an FPC chaincode enclave.
 
 Note: `sealed credentials` is renamed to `sealed state`
 TODO: Update UML diagrams
@@ -526,7 +526,7 @@ public int ecall_import_cc_keys(
 // Binding interface
 // note this is Post-MVP feature, but exists here for completeness, TBD details
 public int ecall_get_CSR(
-        [in] args   
+        [in] args
         [out] csr);
 ```
 
@@ -549,7 +549,7 @@ typedef struct internal_ecc_state_t {
         // enclave-specific keys
         sgx_ec256_public_t enclave_vk,     // signature verification key
         sgx_ec256_private_t enclave_sk,    // signature key
-         
+
         // chaincode-specific keys
         sgx_aes_gcm_128bit_key_t sek,      // ledger state encryption key
         sgx_ec256_public_t chaincode_ek,   // argument encryption key
