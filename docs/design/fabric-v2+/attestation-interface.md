@@ -26,7 +26,9 @@ The 32-byte statement is the object of the attestation. Its content is entirely 
 ### Details related to EPID-based SGX attestations
 
 FPC can use EPID-based SGX attestations.
-Such attestations have some peculiarities.
+In this case, the `statement` will be included as-is in the report data field of the attestation.
+
+EPID attestations have some peculiarities.
 1. They require to be initialized with some external parameters (SPID, signature revocation list). These parameters are provided through `init_attestation`.
 
 2. They are computed indirectly through a different enclave, called Quoting Enclave. For this reason, the implementation of `get_attestation` uses the following edge functions to retrieve the IAS-verifiable attestation.
