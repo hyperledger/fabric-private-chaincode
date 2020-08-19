@@ -13,13 +13,15 @@ int init_attestation(
     uint32_t params_length);
 
 ```
+The `init_attestation` accepts as input a binary array of (possibly encoded) parameters. It returns `0` on error.
 ```
 int get_attestation(
     uint8_t statement[32],
     uint8_t* attestation,
     uint32_t attestation_length);
 ```
-
+The `get_attestation` accepts as input a 32-byte statement and the buffer where the output attestation will be placed. It return `0` on error.
+The 32-byte statement is the object of the attestation. Its content is entirely up to the caller. Typically, the caller will define such statement as the hash of a set public keys, which belong to the enclave.
 
 ### Details related to EPID-based SGX attestations
 
