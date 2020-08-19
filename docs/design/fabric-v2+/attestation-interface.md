@@ -20,7 +20,7 @@ int get_attestation(
     uint8_t* attestation,
     uint32_t attestation_length);
 ```
-The `get_attestation` accepts as input a 32-byte statement and the buffer where the output attestation will be placed. It return `0` on error.
+The `get_attestation` accepts as input a 32-byte statement and the buffer where the output attestation will be placed. It returns `0` on error.
 The 32-byte statement is the object of the attestation. Its content is entirely up to the caller. Typically, the caller will define such statement as the hash of a set public keys, which belong to the enclave.
 
 ### Details related to EPID-based SGX attestations
@@ -59,6 +59,10 @@ int verify_attestation(
     uint8_t* expected_code_id,
     uint32_t expected_code_id_length);
 ```
+The `verify_attestation` accepts as input the attestation to be verified,
+the expected 32-byte statement computed by the caller (which will have to match the attestation statement),
+and the expected identity of the code computed by the caller (which will have to match the code identity included in the attestation).
+It returns `0` on error.
 
 ### Details related to EPID-based SGX attestations
 
