@@ -8,7 +8,7 @@ include $(TOP)/build.mk
 LD_LIBRARY_PATH := LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$$(pwd)/enclave/lib
 
 test:
-	$(LD_LIBRARY_PATH) $(GO) $@ -test.v ./enclave
+	$(LD_LIBRARY_PATH) $(GO) test $(GOTAGS) -test.v ./enclave
 
 clean:
 	$(GO) clean

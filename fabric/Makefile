@@ -34,7 +34,7 @@ $(FABRIC_PATCHED): patches/*.patch $(FABRIC_PATH)/.git
 	cd $(FABRIC_PATH) && \
 	git am $(FPC_PATH)/fabric/patches/*.patch && \
 	$(FABRIC_CURRENT_DIFF_COMMITS_CMD) > $@ && \
-	go mod vendor
+	$(GO) mod vendor
 
 clean-patch:
         # Note: for below to work with exit 0, this has to be a single shell command!

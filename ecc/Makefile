@@ -35,18 +35,18 @@ sym-links:
 	ln -sfn ../../ecc_enclave/_build/include enclave/ecc-enclave-include
 
 ecc: ecc_enclave
-	$(GO) build -o ecc cmd/main.go
+	$(GO) build $(GOTAGS) -o ecc cmd/main.go
 
 #test:
-#	$(LD_LIBRARY_PATH) $(GO) $@ -test.v ./...
+#	$(LD_LIBRARY_PATH) $(GO) test $(GOTAGS) -test.v ./...
 
 #.PHONY: stress
 #stress:
-#	$(LD_LIBRARY_PATH) $(GO) test -v -run TestEnclaveChaincode_Invoke_Auction
+#	$(LD_LIBRARY_PATH) $(GO) test $(GOTAGS) -v -run TestEnclaveChaincode_Invoke_Auction
 
 #.PHONY: debug
 #debug:
-#	$(LD_LIBRARY_PATH) $(GO) test -c
+#	$(LD_LIBRARY_PATH) $(GO) test $(GOTAGS) -c
 #	$(LD_LIBRARY_PATH) sgx-gdb ecc.test -d $(GOROOT)
 
 clean: docker-clean

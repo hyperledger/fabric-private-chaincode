@@ -11,9 +11,9 @@ GO_CMDS= get-fabric-container-name
 build: ${GO_CMDS}
 
 ${GO_CMDS}: ${GO_CMDS:=.go}
-	$(GO) build $@.go
+	$(GO) build $(GOTAGS) $@.go
 
 test: build
 
 clean: 
-	$(GO) $@
+	$(GO) clean

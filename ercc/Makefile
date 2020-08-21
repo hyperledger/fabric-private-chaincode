@@ -21,13 +21,13 @@ ercc: $(ATTESTATION_PROVIDER)
 	# ERCC's binary is created here.
 	# The binary is then referenced by the fpc-peer cli, inserted in the ERCC package,
 	# and eventually run by the external launcher.
-	$(GO) build
+	$(GO) build $(GOTAGS)
 
 test: build
-	$(GO) test -v ./...
+	$(GO) test $(GOTAGS) -v ./...
 
 clean: docker-clean attestation-clean
-	$(GO) $@
+	$(GO) clean
 
 ERCC_NAME?=ercc
 DOCKER_IMAGE?=$$(docker images | grep -- -$(ERCC_NAME)- | awk '{print $$1;}')
