@@ -12,7 +12,7 @@ run-fpc: build
 	env LD_LIBRARY_PATH=../../../../ecc_enclave/_build/lib:${LD_LIBRARY_PATH} ./mock --debug
 
 build:
-	$(GO) build
+	$(GO) build $(GOTAGS)
 
 clean:
 	rm -rf mock enclave

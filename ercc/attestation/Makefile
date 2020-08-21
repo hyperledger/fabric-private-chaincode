@@ -9,7 +9,7 @@ include $(TOP)/build.mk
 
 IAS_DIR = $(TOP)/config/ias
 
-build: ias-keys provider
+build: ias-keys
 
 .PHONY: .sgx_mode
 
@@ -19,9 +19,6 @@ ifeq (${SGX_MODE}, HW)
 IAS_GO_DEFINES+=-DUSE_SGX_HARDWARE_MODE
 endif
 
-TEMPLATE_SUFFIX=.template
-GO_TARGETS=provider.go
-GO_TEMPLATES=$(addsuffix $(TEMPLATE_SUFFIX), $(GO_TARGETS))
 
 # put a dependency on the SGX_MODE environment variable
 ifneq "$(SGX_MODE)" "$(shell cat .sgx_mode 2>/dev/null)"
@@ -40,17 +37,11 @@ ifeq (${SGX_MODE}, SIM)
 	fi;
 endif
 
-provider: $(SGX_MODE_DEPENDENCY) $(GO_TARGETS)
-
-$(GO_TARGETS): $(SGX_MODE_DEPENDENCY) $(GO_TEMPLATES)
-	$(CC) -E -P $(IAS_GO_DEFINES) - < $@$(TEMPLATE_SUFFIX) > $@
-	gofmt -w $@ && goimports -w $@
-
 test: build
-	$(GO) test -v ./...
+	$(GO) test $(GOTAGS) -v ./...
 
 clean:
-	$(GO) $@
+	$(GO) clean
 	rm -rf $(GO_TARGETS) .sgx_mode
 
 .sgx_mode:

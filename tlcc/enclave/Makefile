@@ -8,11 +8,11 @@
 all: build test
 
 build:
-	go build
+	$(GO) build $(GOTAGS)
 
 test:
-	LD_LIBRARY_PATH=./lib:${LD_LIBRARY_PATH} go test -test.v
+	LD_LIBRARY_PATH=./lib:${LD_LIBRARY_PATH} $(GO) test $(GOTAGS) -test.v
 
 clean:
-	go clean
+	$(GO) clean
 
