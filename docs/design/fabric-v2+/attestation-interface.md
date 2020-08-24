@@ -53,21 +53,23 @@ void ocall_get_quote(
 This interface is available both inside and outside of an enclave.
 
 ```
-int verify_attestation(
-    uint8_t* attestation,
-    uint32_t attestation_length,
+int verify_evidence(
+    uint8_t* evidence,
+    uint32_t evidence_length,
     uint8_t expected_statement,
     uint32_t expected_statement_length,
     uint8_t* expected_code_id,
     uint32_t expected_code_id_length);
 ```
-The `verify_attestation` accepts as input the attestation to be verified,
+The `verify_evidence` accepts as input the (publicly-verifiable) evidence to be verified,
 the expected statement computed by the caller (which will have to match the attestation statement),
 and the expected identity of the code computed by the caller (which will have to match the code identity included in the attestation).
 It returns `0` on error.
 
 ### Details related to EPID-based SGX attestations
 
-The `attestation` parameter contains the publicly verifiable report issued by IAS.
-The function caller computes the expected statement, usually as the hash of some data.
-Such caller also provides the expected code identity which, in this case, is a hash that must match MRENCLAVE field in the attestation.
+The function caller supplies:
+1. the `evidence` parameter containing the publicly-verifiable report issued by IAS.
+This is different than the output of the `get_attestation`, which is the IAS-verifiable quote.
+2. the expected statement, which typically is the concatenation of some public keys.
+3. the expected code identity which, in this case, is a hash that must match MRENCLAVE field in the attestation.
