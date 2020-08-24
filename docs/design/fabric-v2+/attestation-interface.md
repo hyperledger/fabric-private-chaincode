@@ -16,17 +16,18 @@ int init_attestation(
 The `init_attestation` accepts as input a binary array of (possibly encoded) parameters. It returns `0` on error.
 ```
 int get_attestation(
-    uint8_t statement[32],
+    uint8_t* statement,
+    uint32_t statement_length,
     uint8_t* attestation,
     uint32_t attestation_length);
 ```
-The `get_attestation` accepts as input a 32-byte statement and the buffer where the output attestation will be placed. It returns `0` on error.
-The 32-byte statement is the object of the attestation. Its content is entirely up to the caller. Typically, the caller will define such statement as the hash of a set public keys, which belong to the enclave.
+The `get_attestation` accepts as input a statement and the buffer where the output attestation will be placed. It returns `0` on error.
+The statement is the object of the attestation. Its content is entirely up to the caller.
 
 ### Details related to EPID-based SGX attestations
 
 FPC can use EPID-based SGX attestations.
-In this case, the `statement` will be included as-is in the report data field of the attestation.
+In this case, the `statement` will be hashed and included in the report data field of the attestation.
 
 EPID attestations have some peculiarities.
 1. They require to be initialized with some external parameters (SPID, signature revocation list). These parameters are provided through `init_attestation`.
@@ -55,12 +56,13 @@ This interface is available both inside and outside of an enclave.
 int verify_attestation(
     uint8_t* attestation,
     uint32_t attestation_length,
-    uint32_t expected_statement[32],
+    uint8_t expected_statement,
+    uint32_t expected_statement_length,
     uint8_t* expected_code_id,
     uint32_t expected_code_id_length);
 ```
 The `verify_attestation` accepts as input the attestation to be verified,
-the expected 32-byte statement computed by the caller (which will have to match the attestation statement),
+the expected statement computed by the caller (which will have to match the attestation statement),
 and the expected identity of the code computed by the caller (which will have to match the code identity included in the attestation).
 It returns `0` on error.
 
