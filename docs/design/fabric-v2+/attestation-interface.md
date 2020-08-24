@@ -8,20 +8,20 @@ This document defines the interface for producing and verifying an attestation.
 This interface is only available inside an enclave.
 
 ```
-int init_attestation(
+bool init_attestation(
     uint8_t* params,
     uint32_t params_length);
 
 ```
-The `init_attestation` accepts as input a binary array of (possibly encoded) parameters. It returns `0` on error.
+The `init_attestation` accepts as input a binary array of (possibly encoded) parameters. It returns `false` on error.
 ```
-int get_attestation(
+bool get_attestation(
     uint8_t* statement,
     uint32_t statement_length,
     uint8_t* attestation,
     uint32_t attestation_length);
 ```
-The `get_attestation` accepts as input a statement and the buffer where the output attestation will be placed. It returns `0` on error.
+The `get_attestation` accepts as input a statement and the buffer where the output attestation will be placed. It returns `false` on error.
 The statement is the object of the attestation. Its content is entirely up to the caller.
 
 ### Details related to EPID-based SGX attestations
@@ -53,7 +53,7 @@ void ocall_get_quote(
 This interface is available both inside and outside of an enclave.
 
 ```
-int verify_evidence(
+bool verify_evidence(
     uint8_t* evidence,
     uint32_t evidence_length,
     uint8_t expected_statement,
@@ -64,7 +64,7 @@ int verify_evidence(
 The `verify_evidence` accepts as input the (publicly-verifiable) evidence to be verified,
 the expected statement computed by the caller (which will have to match the attestation statement),
 and the expected identity of the code computed by the caller (which will have to match the code identity included in the attestation).
-It returns `0` on error.
+It returns `false` on error.
 
 ### Details related to EPID-based SGX attestations
 
