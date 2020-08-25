@@ -45,7 +45,11 @@ void ocall_get_quote(
     [out] uint32_t *actual_quote_len);
 ```
 
-3. It must to be sent to IAS, which provides a publicly verifiable report. This step thus involves contacting and authenticating with a web service using the ISV's credentials. For this reason, its completion is delegated to a different entity.
+3. The output of `get_attestation` is IAS-verifiable, and not publicly verifiable.
+So it cannot be provided directly to `verify_evidence` for verification.
+Rather, it is delegated to different entity the task of sending the IAS-verifiable attestation to IAS.
+This step involves contacting and authenticating with a web service using the ISV's credentials.
+IAS will then convert the attestation in a publicly-verifiable report, which can be provided to `verify_evidence`.
 
 
 ## Verifying an attestation
