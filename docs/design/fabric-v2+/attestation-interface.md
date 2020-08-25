@@ -3,7 +3,7 @@
 This document defines the interface for producing and verifying an attestation.
 
 
-## Producing an attestation
+## Attestation
 
 This interface is only available inside an enclave.
 
@@ -52,7 +52,23 @@ This step involves contacting and authenticating with a web service using the IS
 IAS will then convert the attestation in a publicly-verifiable report, which can be provided to `verify_evidence`.
 
 
-## Verifying an attestation
+## Attestation-to-Evidence Conversion
+
+Depending on the type of attestation that was originally requested,
+the attestation may not be immediately publicly-verifiable.
+For this reason, it is required an attestation-to-evidence conversion, namely:
+```
+evidence <- AttestationToEvidence(attestation)
+```
+
+### Details related to EPID-based SGX attestations
+
+This step is mainly needed to support EPID-based attestations.
+Such attestations are in fact IAS-verifiable quotes which must be converted by contacting IAS.
+The owner of the SPID (used in the quote) and the API key (used for authenticating with IAS) can directly send the quote to IAS, which will return a publicly verifiable report (if the quote verification is successful).
+
+
+## Evidence Verification
 
 This interface is available both inside and outside of an enclave.
 
