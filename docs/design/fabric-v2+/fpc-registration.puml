@@ -38,7 +38,9 @@ note right Admin
       of FPC chaincode.
 end note
 
-Admin -> Peer_CLI ++: lifecycle chaincode\n createenclave (CC_Id)
+Admin -> Admin: Attestation_Params <- <SPID>
+
+Admin -> Peer_CLI ++: lifecycle chaincode\n createenclave (CC_Id, Attestation_Params)
 
 group enclave creation
   note right Peer_CLI
@@ -54,20 +56,20 @@ group enclave creation
     chaincode definition on the channel as well as in ERCC.
   end note
 
-  Peer_CLI -> ECC1 ++: createEnclave (CC_Id)
+  Peer_CLI -> ECC1 ++: createEnclave (CC_Id, Attestation_Params)
   ref over ECC1
     This might trigger [FPC Chaincode is not running] from fpc-cc-invocation.puml
   end ref
 
   create "FPC_stub_enclave" as Enclave1 order 30 #99FF99
-  ECC1 -> Enclave1 ++: createEnclave (CC_Id)
+  ECC1 -> Enclave1 ++: createEnclave (CC_Id, Attestation_Params)
 
   Enclave1 -> Enclave1: fetch CC_Parameters
   note right Enclave1
     The CC_Parameters help binding the enclave to a specific FPC chaincode,
     as it is registered in Fabric.
 
-    The requirement of CC_Paramenters can be met in practice as follows:
+    The requirement of CC_Parameters can be met in practice as follows:
     CC_Id, version, MSPID, and channel id can be retrieved through Fabric
     shim functions; TLCC_mrenclave can be retrieved through ERCC;
 
@@ -95,10 +97,11 @@ group enclave creation
      the intial from subsequent attestations  based on the onCreation field in Attested_Data.
   end note
 
-  Enclave1 -> Enclave1 +: GetEvidence(Attested_Data)
-  group enclave attestation - evidence creation
+  Enclave1 -> Enclave1: InitAttestation(Attestation_Params)
+  Enclave1 -> Enclave1 +: GetAttestation(Attested_Data)
+  group enclave attestation
   note right Enclave1
-    The GetEvidence method abstracts/generalizes the attestation protocol used here.
+    The GetAttestation method abstracts/generalizes the attestation protocol used here.
     Currently, Intel SGX supports two different attestation schemes, namely,
     EPID-based attestation and DCAP. For more details see Intel SGX docu.
 
@@ -106,31 +109,12 @@ group enclave creation
     involves Intel Attestation Service (IAS). As the EPID attestation requires
     the SPID to generate a quote, the peer provides it through FPC_stub.
   end note
-  Enclave1-> Enclave1 ++: getSPID
-  return SPID
 
-  Enclave1 -> Enclave1 : quote <- create quote using SPID over Hash(Attested_Data)
-  note right Enclave1
-      There are differnt options to implmement getSPID:
-      - FPC_stub could explicitly send the SPID to FPC_stub_enclave
-      - SPID could be an optional argument within an Aux_Data field.
-      - FPC_stub_enclave performs a ocall to fetch the SPID from FPC_stub
-  end note
+  Enclave1 -> Enclave1 : Attestation <- create quote using Attestation_Params.SPID over Hash(Attested_Data)
 
-  Enclave1 -> IAS ++: send quote for verification
-  note right Enclave1
-    This call to IAS will require additional ocalls and helper code in FPC_stub
-    to perform the network interaction with IAS and alike.
-  end note
-  note left IAS
-    IAS verifies the quote produced by the enclave and returns
-    a signed verification report that is used as evidence that
-    the enclave runs a certain FPC enclave in certain security context.
-  end note
-  return Evidence <- Verification_Report
   end group
 
-   return Evidence
+  return Attestation
 
   Enclave1 -> Enclave1 : Sealed_Credentials <- seal <CC_Parameters, Private_Keys, Public_Keys>
   note right Enclave1
@@ -140,7 +124,7 @@ group enclave creation
       so it can be stored outside the enclave for recovery.
   end note
 
-  Enclave1 -> Enclave1 : Credentials <- <Attested_Data, Evidence>
+  Enclave1 -> Enclave1 : Credentials <- <Attested_Data, Attestation>
   return Credentials, Sealed_Credentials
 
 group Org-Enclave binding/certification [Post-MVP: Validation]
@@ -168,6 +152,18 @@ end group
 
 return Credentials
 
+end
+
+Peer_CLI -> Peer_CLI +: AttestationToEvidence(Credentials.Attestation)
+group Attestation-to-Evidence Conversion
+  Peer_CLI -> IAS ++: send Credentials.Attestation for verification
+  note left IAS
+    IAS verifies the quote produced by the enclave and returns
+    a signed verification report that is used as evidence that
+    the enclave runs a certain FPC enclave in certain security context.
+  end note
+  return Verification_Report
+  return Credentials.Evidence <- Verification_Report
 end
 
   loop for all/"enough" endorsers to satisfy ercc endorsement policy
