@@ -38,7 +38,7 @@ note right Admin
       of FPC chaincode.
 end note
 
-Admin -> Admin: Attestation_Params <- <SPID>
+Admin -> Admin: Attestation_Params <- <.e.g, SPID, sig-rl, ....>
 
 Admin -> Peer_CLI ++: lifecycle chaincode\n createenclave (CC_Id, Attestation_Params)
 
