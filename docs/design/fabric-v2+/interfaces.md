@@ -131,8 +131,9 @@ message Attested_Data {
 }
 
 message Credentials {
-        Attested_Data data    = 1;
-        bytes evidence_bytes = 2;       // serialized attestation evidence
+        google.protobuf.Any serialized_attested_data   = 1;  // serialization of type **Attested_Data**
+        bytes attestation           = 2;    // optional attestation/quote 
+        bytes evidence_bytes        = 3;    // serialized attestation evidence
 }
 
 message CCKeyRegistrationMessage {
@@ -419,7 +420,7 @@ func Invoke(stub shim.ChaincodeStubInterface) pb.Response {}
 // stub shim.ChaincodeStubInterface
 
 // triggered by an admin
-func initEnclave() (Credentials, error) {}
+func initEnclave(AttestationParams []byte) (Credentials, error) {}
 
 // key generation
 func generateCCKeys() (SignedCCKeyRegistrationMessage, error) {}
