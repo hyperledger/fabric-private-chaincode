@@ -420,7 +420,7 @@ func Invoke(stub shim.ChaincodeStubInterface) pb.Response {}
 // stub shim.ChaincodeStubInterface
 
 // triggered by an admin
-func initEnclave() (Credentials, error) {}
+func initEnclave(AttestationParams []byte) (Credentials, error) {}
 
 // key generation
 func generateCCKeys() (SignedCCKeyRegistrationMessage, error) {}
