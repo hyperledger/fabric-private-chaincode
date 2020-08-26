@@ -40,6 +40,7 @@ void ocall_init_quote(
 
 void ocall_get_quote(
     [in, size=spid_len] uint8_t *spid, uint32_t spid_len,
+    [in, size=sig_rl_len] uint8_t *sig_rl, uint32_t sig_rl_len,
     [in, size=report_len] uint8_t *report, uint32_t report_len,
     [out, size=max_quote_len] uint8_t *quote, uint32_t max_quote_len,
     [out] uint32_t *actual_quote_len);
