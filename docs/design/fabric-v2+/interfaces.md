@@ -131,7 +131,7 @@ message Attested_Data {
 }
 
 message Credentials {
-        Attested_Data data          = 1;
+        google.protobuf.Any serialized_attested_data   = 1;  // serialization of type **Attested_Data**
         bytes attestation           = 2;    // optional attestation/quote 
         bytes evidence_bytes        = 3;    // serialized attestation evidence
 }
