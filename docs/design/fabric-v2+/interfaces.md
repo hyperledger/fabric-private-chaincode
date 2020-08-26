@@ -131,8 +131,9 @@ message Attested_Data {
 }
 
 message Credentials {
-        Attested_Data data    = 1;
-        bytes evidence_bytes = 2;       // serialized attestation evidence
+        Attested_Data data          = 1;
+        optional bytes attestation  = 2;    // optional attestation/quote 
+        bytes evidence_bytes        = 3;    // serialized attestation evidence
 }
 
 message CCKeyRegistrationMessage {
