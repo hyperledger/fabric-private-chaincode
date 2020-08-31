@@ -20,7 +20,7 @@
 #  - git user's email:          GIT_USER_EMAIL
 #  - sgxmode:                   SGX_MODE
 #  - sgx attestation mode:      FPC_ATTESTATION_TYPE
-#  - additional dev apt pkgs:   APT_ADD_DEV_PKGS
+#  - additional dev apt pkgs:   APT_DEV_ADD_PKGS
 
 # Note on SGX_MODE:
 # In a docker build environment, we build but cannot _run_ with SGX_MODE=HW!.
@@ -181,6 +181,7 @@ FROM common as dev
 # import global vars
 ARG FPC_REL_PATH
 ARG SGX_MODE
+ARG APT_DEV_ADD_PKGS
 
 ENV SGX_MODE=${SGX_MODE}
 
