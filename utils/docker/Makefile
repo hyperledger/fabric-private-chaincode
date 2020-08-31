@@ -70,7 +70,7 @@ DOCKER_DEV_BUILD_OPTS += $(shell git config user.name >/dev/null && echo --build
 DOCKER_DEV_BUILD_OPTS += $(shell git config user.email >/dev/null && echo --build-arg GIT_USER_EMAIL=\'$$(git config user.email)\')
 # - allow additional custom apt pkgs for 'dev' container based on DOCKER_DEV_IMAGE_APT_ADD_PKGS
 ifdef DOCKER_DEV_IMAGE_APT_ADD_PKGS
-	DOCKER_DEV_BUILD_OPTS += --build-arg APT_ADD_DEV_PKGS=$(DOCKER_DEV_IMAGE_APT_ADD_PKGS)
+	DOCKER_DEV_BUILD_OPTS += --build-arg APT_DEV_ADD_PKGS=$(DOCKER_DEV_IMAGE_APT_ADD_PKGS)
 endif
 
 
