@@ -1,0 +1,116 @@
+// Copyright IBM Corp. All Rights Reserved.
+// Copyright 2020 Intel Corporation
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package trusted_ledger;
+option go_package = "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos";
+
+// - verify state data
+
+//    public metadata get_state_metadata(
+//            const char *namespace,
+//            const char *key);
+message GetMetadataRequest {
+    string namespace = 1;
+    string key = 2;
+}
+message GetMetadataResponse {
+    bytes hash = 1;
+    // Note:
+    // - in first FPC implementation, we CMACed the hash; this authentication is done by the transparently by the session
+    // - encoding is SHA-256 over value found by key (or all-zero if key absent)
+}
+
+//    public metadata get_multi_state_metadata(
+//            const char *namespace,
+//            const char *comp_key);
+message GetMultiMetadataRequest {
+    string namespace = 1;
+    string compo_key = 2;
+}
+message GetMultiMetadataResponse {
+    // SHA-256 over value found by key (or all-zero if key absent)
+    bytes hash = 1;
+    // Note:
+    // - in first FPC implementation, we CMACed the hash; this authentication is done now transparently by the secure session layer
+    // - encoding is SHA-256 over concatentation of key & values for all found keys and their values (or all-zero if no key absent)
+    //   TODO: above encoding is what we do now, but is malleable, so should be improved.
+}
+
+// - verify identities
+
+// verify that a given identity is part of a msp
+// the input is a serialized identity proto message as defined in
+// https://github.com/hyperledger/fabric-protos/blob/master/msp/identities.proto#L15
+//    public bool validate_identity(
+//            const uint8_t *serializedIdentity,
+//            const uint32_t len);
+message ValidateIdentityRequest {
+    bytes serializedIdentity = 1;
+}
+message ValidateIdentityResponse {
+    bool is_valid = 1;
+}
+
+// checks if a given enclave identifier can endorse transactions
+// as defined in the chaincode definition; this checks that the given enclave
+// has correct the MRENCLAVE and enclave is part of an organization that can
+// satisfy the endorsing policy of a given chaincode.
+//    public bool can_endorse(
+//            const char *chaincode_id,
+//            const char *enclave_id);
+message CanEndorseRequest {
+    // note: could be implied from session context but still explicit in case we want to expose to ERCC
+    string chaincode_id = 1;
+
+    string enclave_id = 2;
+}
+message CanEndorseResponse {
+    bool is_valid = 1;
+}
+
+// - wrapper type which is passed to `tl_session_request` and the handler registered with `tl_session_register`
+message Request {
+    bytes tx_context = 1;
+    // tx_context is used by TLCC to enforce concsistency across separate requests of
+    // a single chaincode transaction (including potential subtransactions) and is
+    // an arbitrary identifier choosen by ECC_Enclave with following constraints:
+    // - for a given single (top-level) chaincode invocation, it must be the same for any tlcc requests
+    //   triggered by it (whether directly the top-level or from sub-transactions invoked via cc2cc)
+    // - different (top-level) invocations (of same chaincode) must provide different identifiers
+    // Based on this tlcc can achieve view consistency by, e.g., serializing transactions and state
+    // updates or keeping separate views, with each active transaction identifiers mapped to one of
+    // these views.
+    // Note: If TLCC manages snapshots by serializing, we might also have to add an additional
+    // Request/Response type notify tlcc when an chaincode invocation has completed (otherwise
+    // TLCC wouldn't know when it would be safe to start the state update
+    //
+    // An alternative approach could be to replace this field with some view identifier
+    // in TLCCResponse, with ECC enforcing consistency (although in this case it could
+    // only abort in case of inconsistency and there might be the issue that as parallelism
+    // increases, no progress could ever be made ...
+    // =>
+    // TODO: Above has to be reconciled with the resolution of following issues/PRs
+    //   related to view consistency:
+    //   - [#402](https://github.com/hyperledger-labs/fabric-private-chaincode/issues/402)
+    //   - [#435](https://github.com/hyperledger-labs/fabric-private-chaincode/pull/435)
+    //   - [#361](https://github.com/hyperledger-labs/fabric-private-chaincode/issues/361)
+    oneof request {
+        GetMetadataRequest metadata = 2;
+        GetMultiMetadataRequest multi_metadata = 3;
+        ValidateIdentityRequest validate_identity = 4;
+        CanEndorseRequest can_endorse = 5;
+    }
+}
+
+message Response {
+    oneof response {
+        GetMetadataResponse metadata = 1;
+        GetMultiMetadataResponse multi_metadata = 2;
+        ValidateIdentityResponse validate_identity = 3;
+        CanEndorseResponse can_endorse = 4;
+    }
+}

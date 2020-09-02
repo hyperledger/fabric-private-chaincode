@@ -1,5 +1,5 @@
-[submodule "tlcc_enclave/protos/fabric"]
-	path = tlcc_enclave/protos/fabric
+[submodule "protos/fabric"]
+	path = protos/fabric
 	url = https://github.com/hyperledger/fabric-protos.git
 	branch = release-2.0
 [submodule "common/crypto/pdo"]

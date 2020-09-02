@@ -7,7 +7,7 @@
 #ifndef asn1_util_h
 #define asn1_util_h
 
-#include "common/common.pb.h"
+#include "fabric/common/common.pb.h"
 #include "openssl/asn1.h"
 #include "openssl/asn1t.h"
 

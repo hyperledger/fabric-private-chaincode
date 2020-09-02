@@ -9,15 +9,15 @@
 // proto
 #include <pb_decode.h>
 #include <pb_encode.h>
-#include "common/common.pb.h"
-#include "common/configtx.pb.h"
-#include "ledger/rwset/kvrwset/kv_rwset.pb.h"
-#include "ledger/rwset/rwset.pb.h"
-#include "msp/identities.pb.h"
-#include "msp/msp_config.pb.h"
-#include "peer/proposal.pb.h"
-#include "peer/proposal_response.pb.h"
-#include "peer/transaction.pb.h"
+#include "fabric/common/common.pb.h"
+#include "fabric/common/configtx.pb.h"
+#include "fabric/ledger/rwset/kvrwset/kv_rwset.pb.h"
+#include "fabric/ledger/rwset/rwset.pb.h"
+#include "fabric/msp/identities.pb.h"
+#include "fabric/msp/msp_config.pb.h"
+#include "fabric/peer/proposal.pb.h"
+#include "fabric/peer/proposal_response.pb.h"
+#include "fabric/peer/transaction.pb.h"
 
 // openssl
 #include <openssl/x509.h>

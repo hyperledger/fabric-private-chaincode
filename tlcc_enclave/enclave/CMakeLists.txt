@@ -22,30 +22,30 @@ set(COMMON_SOURCE_FILES
 )
 
 set(PROTO_SOURCE_FILES
-    protos/common/common.pb.c
-    protos/common/configtx.pb.c
-    protos/common/configuration.pb.c
-    protos/common/ledger.pb.c
-    protos/common/policies.pb.c
-    protos/google/protobuf/empty.pb.c
-    protos/google/protobuf/timestamp.pb.c
-    protos/ledger/queryresult/kv_query_result.pb.c
-    protos/ledger/rwset/kvrwset/kv_rwset.pb.c
-    protos/ledger/rwset/rwset.pb.c
-    protos/msp/identities.pb.c
-    protos/msp/msp_config.pb.c
-    protos/msp/msp_principal.pb.c
-    protos/peer/chaincode.pb.c
-    protos/peer/chaincode_event.pb.c
-    protos/peer/chaincode_shim.pb.c
-    protos/peer/configuration.pb.c
-    protos/peer/events.pb.c
-    protos/peer/peer.pb.c
-    protos/peer/proposal.pb.c
-    protos/peer/proposal_response.pb.c
-    protos/peer/query.pb.c
-    protos/peer/signed_cc_dep_spec.pb.c
-    protos/peer/transaction.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/common/common.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/common/configtx.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/common/configuration.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/common/ledger.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/common/policies.pb.c
+    ${COMMON_SOURCE_DIR}/protos/google/protobuf/empty.pb.c
+    ${COMMON_SOURCE_DIR}/protos/google/protobuf/timestamp.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/ledger/queryresult/kv_query_result.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/ledger/rwset/kvrwset/kv_rwset.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/ledger/rwset/rwset.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/msp/identities.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/msp/msp_config.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/msp/msp_principal.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/peer/chaincode.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/peer/chaincode_event.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/peer/chaincode_shim.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/peer/configuration.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/peer/events.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/peer/peer.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/peer/proposal.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/peer/proposal_response.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/peer/query.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/peer/signed_cc_dep_spec.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/peer/transaction.pb.c
 )
 
 add_definitions(-DENCLAVE_CODE)
@@ -74,7 +74,8 @@ add_library(enclave SHARED ${SOURCE_FILES} ${COMMON_SOURCE_FILES} ${PROTO_SOURCE
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/protos
+    ${COMMON_SOURCE_DIR}/protos
+    ${COMMON_SOURCE_DIR}/protos/fabric
     ${COMMON_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}/base64
     ${COMMON_SOURCE_DIR}/enclave
