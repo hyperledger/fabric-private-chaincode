@@ -6,10 +6,10 @@
 TOP = .
 include $(TOP)/build.mk
 
-SUB_DIRS = common internal ercc ecc_enclave ecc tlcc_enclave tlcc fabric examples utils integration demo # docs
+SUB_DIRS = protos common internal ercc ecc_enclave ecc tlcc_enclave tlcc fabric examples utils integration demo # docs
 
 FPC_SDK_DEP_DIRS = utils/fabric common ecc_enclave ecc
-FPC_PEER_DEP_DIRS = common ercc tlcc_enclave tlcc fabric ecc_enclave ecc
+FPC_PEER_DEP_DIRS = protos common ercc tlcc_enclave tlcc fabric ecc_enclave ecc
 # FPC_PEER_DEP_DIRS has to include ecc, ecc_enclave, common and ercc only if we run chaincode in external builder directly on host and not indirectly via docker
 FPC_PEER_CLI_WRAPPER_DEP_DIRS = utils/fabric
 
@@ -37,6 +37,7 @@ linter: gotools build
 gotools:
 	# install goimports if not present
 	$(GO) install golang.org/x/tools/cmd/goimports
+	$(GO) install google.golang.org/protobuf/cmd/protoc-gen-go
 
 godeps: gotools
 	$(GO) mod download

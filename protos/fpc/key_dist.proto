@@ -1,0 +1,56 @@
+// Copyright IBM Corp. All Rights Reserved.
+// Copyright 2020 Intel Corporation
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+package key_distribution;
+option go_package = "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos";
+
+message CCKeyRegistrationMessage {
+    // defines the context as SHA256 of cc_params
+    bytes cc_params_hash = 1;
+
+    // public chaincode encryption key
+    bytes chaincode_ek = 2;
+
+    // creator of this message
+    // enclave_id is the SHA256 hash of enclave_vk
+    bytes enclave_id = 3;
+}
+
+message SignedCCKeyRegistrationMessage {
+    // serialization of type CCKeyRegistrationMessage
+    google.protobuf.Any serialized_cckey_reg_msg = 1;
+
+    // signature of the message creator (enclave)
+    bytes signature = 2;
+}
+
+message ExportMessage {
+    // defines the context of this export message as SHA256 of cc_params
+    bytes cc_params_hash = 1;
+
+    // public chaincode encryption key
+    bytes chaincode_ek = 2;
+
+    // chaincode keys encrypted for the receiver
+    bytes cckeys_enc = 3;
+
+    // receiver of this export message
+    bytes receiver_enclave_vk = 4;
+
+    // sender (creator) of this export message
+    bytes sender_enclave_vk = 5;
+}
+
+message SignedExportMessage {
+    // serialization of type ExportMessage
+    google.protobuf.Any serialized_export_msg_bytes = 1;
+
+    // signature of the message creator
+    bytes signature = 2;
+}
