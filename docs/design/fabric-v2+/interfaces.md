@@ -27,7 +27,7 @@ func Invoke(stub shim.ChaincodeStubInterface) pb.Response {}
 // Note: to get the endpoints of FPC endorsing peers do the following:
 // - discover all endorsing peers (and their endpoints) for the FPC chaincode using "normal" lifecycle
 // - query `getEnclaveId` at all the peers discovered
-// - query queryCCInfo with all received enclave_ids
+// - query `queryListEnclaveCredentials` with all received enclave_ids
 // this gives you the endpoints and credentials including enclave_vk, and chaincode_ek
 func queryListEnclaveCredentials(chaincode_id string) (allCredentials []Credentials) {}
 func queryEnclaveCredentials(chaincode_id string, enclave_id string) (credentials Credentials) {}
@@ -97,19 +97,7 @@ credentials, err := getState(k)
 Data types are defined as follows:
 
 ```protobuf
-syntax = "proto3"
-
-// TODO update UML:
-// - channel_hash and tlcc_mrenclave fields in protobufs/fpc-components.puml
-// - initialization of these fields from an initial tl_sesion setup
-//   during enclave creation and validation at ercc that these params
-//   are consistent (e.g., all registered entities on same chaincode
-//   agree, tlcc_mrenclave matches version baked into ercc and
-//   channel_hash  corresponds to peers view of the channel id)
-// - cross-check also other fields, currently typing in fpc-components
-//   seems a bit off with subfields as bytes rather than the
-//   corresponding types and we probably also should change field names
-//   to lower-case to not confuse them with names of types?)
+syntax = "proto3";
 
 message CC_Parameters {
         string chaincode_id   = 1;      // chaincode name
@@ -260,10 +248,7 @@ protobuf request (`TLCCRequest`) and response (`TLCCResponse`) messages:
 ```
 
 ```protobuf
-syntax = "proto3"
-
-
-// TODO update UMLs: these functions replace "check_ercc_commited_data"
+syntax = "proto3";
 
 // - verify state data
 
@@ -280,8 +265,6 @@ message GetMetadataResponse {
         // - in first FPC implementation, we CMACed the hash; this authentication is done by the transparently by the session
         // - encoding is SHA-256 over value found by key (or all-zero if key absent)
 }
-
-
 
 //    public metadata get_multi_state_metadata(
 //            const char *namespace,
@@ -500,14 +483,12 @@ type StubImpl struct {
 ## Interface:
 The ECC_Enclave interface specifies interface of an FPC chaincode enclave.
 
-Note: `sealed credentials` is renamed to `sealed state`
-TODO: Update UML diagrams
-
 ```c++
 // initializes an enclave with chaincode and host parameters
 public int ecall_init(
         [in, size=cc_params_len] uint8_t *cc_params, uint32_t cc_params_len,
         [in, size=host_params_len] uint8_t *host_params, uint32_t host_params_len,
+        [in, size=attestation_params_len] uint8_t *attestation_params, uint32_t attestation_params_len,
         [out] uint8_t *credentials);     // TBD is this a fixed length type?
 
 // invoke a FPC chaincode
@@ -517,6 +498,10 @@ public int ecall_chaincode_invoke(
         [out] uint32_t *response_len_out,
         [out] sgx_ec256_signature_t *signature,
         [user_check] void *u_shim_ctx);
+
+// returns the EnclaveId of this enclave
+public in ecall_get_enclave_id(
+        [out, string] const char *enclave_id);
 
 // key generation and distribution
 public int ecall_generate_cc_keys(

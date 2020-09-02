@@ -56,28 +56,26 @@ group enclave creation
     chaincode definition on the channel as well as in ERCC.
   end note
 
-  Peer_CLI -> ECC1 ++: createEnclave (CC_Id, Attestation_Params)
+  Peer_CLI -> ECC1 ++: initEnclave (Attestation_Params)
   ref over ECC1
     This might trigger [FPC Chaincode is not running] from fpc-cc-invocation.puml
   end ref
 
-  create "FPC_stub_enclave" as Enclave1 order 30 #99FF99
-  ECC1 -> Enclave1 ++: createEnclave (CC_Id, Attestation_Params)
-
-  Enclave1 -> Enclave1: fetch CC_Parameters
-  note right Enclave1
-    The CC_Parameters help binding the enclave to a specific FPC chaincode,
+  ECC1 -> ECC1: fetch CC_Params and Host_Params
+  note right ECC1
+    The CC_Params help binding the enclave to a specific FPC chaincode,
     as it is registered in Fabric.
 
-    The requirement of CC_Parameters can be met in practice as follows:
+    The requirement of CC_Params can be met in practice as follows:
     CC_Id, version, MSPID, and channel id can be retrieved through Fabric
-    shim functions; TLCC_mrenclave can be retrieved through ERCC;
+    shim functions
 
     Note that the validation of these parameters is performed by ERCC.
     If necessary, a pre-validation can be performed through the Ledger Enclave.
-    Another alternative could be to pass these parameters as argument in
-    the createEnclave call.
   end note
+
+  create "FPC_stub_enclave" as Enclave1 order 30 #99FF99
+  ECC1 -> Enclave1 ++: ecall_init(CC_Params, Host_Params, Attestation_Params)
 
   Enclave1 -> Enclave1 : <Public_Keys, Private_Keys>  <- generate keys
   note right Enclave1
@@ -86,7 +84,24 @@ group enclave creation
     See fpc-components.uml diagram for more details
   end note
 
-  Enclave1 -> Enclave1 : Attested_Data <- <CC_Parameters, Public_Keys, onCreation=true>
+  Enclave1 -> Enclave1 : Enclave_Id <- Hash(Enclave_VK)
+  note right Enclave1
+    A sha256 hash of the enclave signature verification key (Enclave_VK)
+    is used as unique enclave identifier
+  end note
+
+  group establish secure channel based on local attestation to retrieve MRENCLAVE of TLCC and cryptographic channel identifier (channel_hash)
+    Enclave1 -> TLCC1 ++: tl_session_setup(Channel_Id, CC_Id, Enclave_Id)
+    return
+
+    Enclave1 -> TLCC1 ++: tl_session_get_tlcc_mrenclave()
+    return tlcc_mrenclave
+
+    Enclave1 -> TLCC1 ++: tl_session_get_channel_hash()
+    return channel_hash
+  end group
+
+  Enclave1 -> Enclave1 : Attested_Data <- <CC_Params, Host_Params, Enclave_VK, Channel_hash, tlcc_mrenclave, onCreation=true>
   note right Enclave1
      In the future an admin might want to request re-attestations: For EPID this would be
      the only way to check for revocations (In DCAP, checking CRLs would enable this as well).
@@ -97,9 +112,9 @@ group enclave creation
      the intial from subsequent attestations  based on the onCreation field in Attested_Data.
   end note
 
-  Enclave1 -> Enclave1: InitAttestation(Attestation_Params)
-  Enclave1 -> Enclave1 +: GetAttestation(Attested_Data)
   group enclave attestation
+  Enclave1 -> Enclave1 : init_attestation(Attestation_Params)
+  Enclave1 -> Enclave1 : get_attestation(Attested_Data)
   note right Enclave1
     The GetAttestation method abstracts/generalizes the attestation protocol used here.
     Currently, Intel SGX supports two different attestation schemes, namely,
@@ -114,18 +129,25 @@ group enclave creation
 
   end group
 
-  return Attestation
+  ' sealing and storing state will eventually performed by a separate secure storage module, that is, details below may change in the future
+  Enclave1 -> Enclave1 : Sealed_State <- seal <CC_Params, Host_Params, Private_Keys, Public_Keys>
+    note right Enclave1
+        The enclave keeps CC_Paramenters, Host_Params, Public_Keys, and Private_Keys as local state
+        in memory during it's lifetime.  Once an enclave restarts, this state is
+        deleted and must be restored. For this reason, the enclave state is sealed
+        so it can be stored outside the enclave for recovery. 
+        Also, a new secure connection with the Ledger Enclave must be established.
+    end note
 
-  Enclave1 -> Enclave1 : Sealed_Credentials <- seal <CC_Parameters, Private_Keys, Public_Keys>
-  note right Enclave1
-      The enclave keeps CC_Paramenters, Public_Keys, and Private_Keys as local state
-      in memory during it's lifetime.  Once an enclave restarts, this state is
-      deleted and must be restored. For this reason, the enclave state is sealed
-      so it can be stored outside the enclave for recovery.
+  Enclave1 -> ECC1 ++: store Sealed_State
+  return
+  note right ECC1
+    FPC_stub stores sealed chaincode state with the help of
+    the external builder on the peer local storage.
   end note
 
   Enclave1 -> Enclave1 : Credentials <- <Attested_Data, Attestation>
-  return Credentials, Sealed_Credentials
+  return Credentials
 
 group Org-Enclave binding/certification [Post-MVP: Validation]
   note right ECC1
@@ -137,25 +159,19 @@ group Org-Enclave binding/certification [Post-MVP: Validation]
   end note
 
   ECC1 -> Enclave1 ++: getCSR
-  Enclave1 -> Enclave1 : csr <- generate_csr(Private_Keys.Enclave_SK, CC_Parameters)
+  Enclave1 -> Enclave1 : csr <- generate_csr(Private_Keys.Enclave_SK, CC_Params)
   return csr /' ECC1 -> Enclave1 '/
   ECC1 -> CA ++: issueCertificate(csr)
   return  cert /' ECC1 -> CA '/
   ECC1 -> ECC1: Credentials.Certificate <- cert
 end group
 
-  ECC1 -> ECC1 : store Sealed_Credentials, Credentials
-  note right ECC1
-    FPC_stub stores sealed chaincode credentials with the help of
-    the external builder on the peer local storage.
-  end note
-
 return Credentials
 
 end
 
-Peer_CLI -> Peer_CLI +: AttestationToEvidence(Credentials.Attestation)
 group Attestation-to-Evidence Conversion
+  Peer_CLI -> Peer_CLI +: AttestationToEvidence(Credentials.Attestation)
   Peer_CLI -> IAS ++: send Credentials.Attestation for verification
   note left IAS
     IAS verifies the quote produced by the enclave and returns
@@ -173,7 +189,7 @@ end
     end note
 
     group enclave attestation - evidence validation
-      ERCC1 -> ERCC1 : check Credentials.Evidence
+      ERCC1 -> ERCC1 : verify_evidence(Credentials.Evidence)
       note right ERCC1
         The evidence check ensures that the evidence is correct (e.g. in
         case of EPID-based attestation the evidence must be signed by IAS)
@@ -184,9 +200,11 @@ end
         key changes, the ERCC must be updated and upgraded through the normal
         chaincode lifecycle upgrade operation.
       end note
-      ERCC1 -> ERCC1 : check Credentials.Attested_Data.CC_Parameters
+      ERCC1 -> ERCC1 : check Credentials.Attested_Data
       note right ERCC1
+        - check that CC_Params match chaincode definition
         - Channel_Id should correspond to ERCC's own view
+        - Channel_hash should corresponds to peers view of the channel id
         - MSPID should correspond to the tx sender
         - TLCC_MRENCLAVE matches the version baked into ERCC
         - CC_Version matches MRENCLAVE from (validated) Credentials.Evidence
@@ -196,18 +214,18 @@ end
   group Org-Enclave binding verification [Post-MVP: Validation]
     ERCC1 -> ERCC1 : check Org-Enclave binding certificate
       note right ERCC1
-        - Credentials.Attested_Data.CC_Parameters == Credentials.Certificate.CC_Parameters
-        - Credentials.Certificate should be issued by CA owned by CC_Parameters.MSPID
+        - Credentials.Attested_Data.CC_Params == Credentials.Certificate.CC_Params
+        - Credentials.Certificate should be issued by CA owned by CC_Params.MSPID
         - Credentials.Certificate.role == 'peer'
       end note
   end group
 
   group check consistency of Credentials
     create Lifecycle order 55
-    ERCC1 -> Lifecycle +: queryChaincodeDefinition (Credentials.Attested_Data.CC_Parameters.CC_Id)
+    ERCC1 -> Lifecycle +: queryChaincodeDefinition (Credentials.Attested_Data.CC_Params.CC_Id)
     return chaincode definition
 
-    ERCC1 -> ERCC1    : check Credentials.Attested_Data.CC_Parameters against chaincode definition
+    ERCC1 -> ERCC1    : check Credentials.Attested_Data.CC_Params against chaincode definition
     note right ERCC1
         This check ensures that:
         1) the chaincode version (i.e., the MREnclave) matches the
@@ -229,7 +247,7 @@ end
     end note
   end group
 
-  ERCC1 -> ERCC1 : putState(CC_Id"."Credentials.Enclave_VK, Credentials)
+  ERCC1 -> ERCC1 : putState(namespaces/credentials/$CC_Id/$Enclave_Id, Credentials)
   note over ERCC1
   end note
 
