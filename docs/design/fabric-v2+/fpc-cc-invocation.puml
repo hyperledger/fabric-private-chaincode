@@ -24,9 +24,9 @@ participant "Peer_CLI/\nClient SDK" as CLI order 10
 participant "Ledger_enclave" as TLCC1 order 45 #99FF99
 
 participant "Peer" as Peer order 25
-participant "ERCC" as ERCC1 order 50
+participant "ERCC" as ERCC1 order 11
 
-ref over User1, ERCC1
+ref over User1, TLCC1
   see fpc-registration-new.puml
   |||
 end ref
@@ -36,25 +36,8 @@ User1 -> CLI ++: invoke <CC_Id, args, ...>
 
 group prepare FPC proposal
 
-CLI -> ERCC1 ++: queryECCInfos(CC_Id)
-return ECCInfos = List<<Enclave_VK, Chaincode_EK, ... , ATTESTATION>, ...>
-
-CLI -> CLI: verify ECCInfos
-note right
-  NOTE ECCInfos contains a list of all FPC enclave registered for CC_Id.
-
-  Verify performs the same verification steps (i.e., attestation
-  verification, etc.) as the registration step performed by ERCC.
-  See fpc-registration.puml for more details.
-
-  Note that this verification is only necessary iff User is not member
-  of Org1, otherwise authenticated response enough. In that case, the
-  user also has to query different peers from different orgs in order
-  to satisfy a quorum as necessary for the lifecycle endorsement policy
-  and channel configuration changes.
-
-  NOTE: For MVP, ECCInfo only contains Chaincode_EK and no ECCInfo verification is needed.
-end note
+CLI -> ERCC1 ++: queryChaincodeEncryptionKey(CC_Id)
+return Chaincode_EK
 
 CLI -> CLI : r_key <- keyGen()
 note right
@@ -62,12 +45,12 @@ note right
     encrypt the FPC chaincode result
 end note
 
-CLI -> CLI : args_ECC <- encrypt <args, r_key> with Chaincode_EK
+CLI -> CLI : args_enc <- encrypt <args, r_key> with Chaincode_EK
 
 end
 
 group invoke
-  CLI -> Peer ++: send proposal <CC_Id, args_enc, ...>
+  CLI -> Peer ++: send proposal <- <chaincodeInvoke, CC_Id, args_enc, ...>
 
   alt FPC Chaincode is not running
       note right Peer
@@ -97,14 +80,18 @@ group invoke
       return
   end
 
-      Peer -> ECC1 ++: invoke (proposal(args_enc), CTX)
+      Peer -> ECC1 ++: invoke (proposal, CTX)
       note right
+        FPC_Stub is called through a normal Fabric invoke which
+        uses the function <i>chaincodeInvoke</i> of the proposal
+        to dispatch the invocation and call the enclave accordingly.
+
         Transaction context (CTX) used for all interactions
         with both, the untrusted ledger und trusted ledger (Ledger_enclave)
         within the invocation. It ensures that all state accesses
         are from the same state view (block height).
       end note
-      ECC1 -> Enclave1 ++: invoke (proposal(args_enc), CTX)
+      ECC1 -> Enclave1 ++: ecall_chaincode_invoke (proposal, CTX)
 
       Enclave1 <-> TLCC1: establish secure channel based on local attestation
       note right Enclave1
@@ -160,7 +147,7 @@ group invoke
 
     else Post-MVP: Validation
       Peer -> Peer : create proposal response <args, read/writeset, result=result_enc, ...>
-      Peer -> Peer : Replace endorsement signature & cert of peer with Sig_enclave & CC_Parameters.Certificate
+      Peer -> Peer : Replace endorsement signature & cert of peer with Sig_enclave & CC_Params.Certificate
       note right Peer
           This step is performed using an FPC-specific endorsement plugin.
       end note
