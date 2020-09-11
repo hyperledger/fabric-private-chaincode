@@ -12,6 +12,7 @@ title FPC Components
 top to bottom direction
 
 package protobufs {
+note "This proto message definition is deprecated\nand replaced with proto files in `protos/fpc"
 
 class CC_Parameters {
     + CC_Id string
@@ -19,7 +20,7 @@ class CC_Parameters {
     + CC_Sequence int
     + Channel_Id string
     + MSPID string
-    + TLCC_MREnclave bytes
+    + TLCC_MREnclave string
 }
 note right of CC_Parameters::CC_Version
         CC_Version should always correspond to the MRENCLAVE of the FPC Chaincode
@@ -39,6 +40,8 @@ class Attested_Data {
     + CC_Parameters bytes
     + Public_Keys bytes
     + onCreation boolean
+    + Channel_hash bytes
+    + TLCC_MREnclave string
 }
 note left of Attested_Data::onCreation
     For semantics and motivation of this field, see
