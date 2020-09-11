@@ -12,19 +12,10 @@ title FPC Components
 top to bottom direction
 
 package protobufs {
-note "This proto message definition is deprecated\nand replaced with proto files in `protos/fpc"
+note "This proto message definition may be deprecated\nand replaced with proto files in `protos/fpc" as M
 
 class CC_Parameters {
-    + CC_Id string
-    + CC_Version string
-    + CC_Sequence int
-    + Channel_Id string
-    + MSPID string
-    + TLCC_MREnclave string
 }
-note right of CC_Parameters::CC_Version
-        CC_Version should always correspond to the MRENCLAVE of the FPC Chaincode
-end note
 
 class Public_Keys {
     Enclave_VK bytes
@@ -37,11 +28,6 @@ class Private_Keys {
 }
 
 class Attested_Data {
-    + CC_Parameters bytes
-    + Public_Keys bytes
-    + onCreation boolean
-    + Channel_hash bytes
-    + TLCC_MREnclave string
 }
 note left of Attested_Data::onCreation
     For semantics and motivation of this field, see
@@ -66,19 +52,7 @@ note right of Private_Keys::Enclave_DK #FFaa00
 end note
 
 class Credentials {
-    + Attestation bytes
-    + Attested_Data
-    + Evidence bytes
-    + Certificate
 }
-note right of Credentials::Certificate
-  [Post-MVP: Validation]:  This will be a X509 peer certificate on
-    Enclave_VK and CC_Parameters signed by a CA rooted in
-    the MSP of the Organization hosting the peer running the FPC
-    Chaincode enclave.  This shows the "ownership" of Org for that
-    particular FPC Chaincode enclave.   See additional information in
-    fpc-registration.puml in the 'Org-Enclave binding/certification' group.
-end note
 
 } /' package protobufs '/
 
