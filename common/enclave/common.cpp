@@ -15,6 +15,9 @@
 
 #include "sgx_utils.h"
 
+#include "attestation-api/attestation/attestation.h"
+#include "error.h"
+
 // enclave sk and pk (both are little endian) used for out signatures
 sgx_ec256_private_t enclave_sk = {0};
 sgx_ec256_public_t enclave_pk = {0};
@@ -45,7 +48,27 @@ int ecall_init(void)
     LOG_DEBUG("Enc: Enclave pk (little endian): %s", base64_pk.c_str());
 
     LOG_DEBUG("Enc: Identity generated!");
+
+    {  // TODO: this block is here temporarily, only meant to test the attestation api
+        char params[] = "{\"attestation_type\":\"simulated\"}";
+        // char params[] = "{\"attestation_type\":\"simulated\"}";
+        bool bb = init_attestation((uint8_t*)params, strlen(params));
+        COND2LOGERR(bb == false, "error init attestation");
+        LOG_DEBUG("init attestation successful");
+
+        char statement[] = "1234567890";
+        uint8_t attestation[2048];
+        uint32_t attestation_length = 0;
+        bool b = get_attestation(
+            (uint8_t*)statement, strlen(statement), attestation, 2048, &attestation_length);
+        COND2LOGERR(b == false, "error getting attestation");
+        LOG_DEBUG("get attestation success, size %d", attestation_length);
+    }
+
     return SGX_SUCCESS;
+
+err:
+    return SGX_ERROR_UNEXPECTED;
 }
 
 // returns report (containing enclave pk hash) and enclave pk in big endian format

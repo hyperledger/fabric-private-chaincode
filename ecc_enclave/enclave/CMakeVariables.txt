@@ -5,4 +5,4 @@
 
 set(SHIM_LIB_NAME shim)
 
-set(T_PDO_CRYPTO_LIB_NAME tpdo-crypto)
+include(${COMMON_SOURCE_DIR}/crypto/CMakeVariables.txt)

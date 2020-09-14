@@ -1,0 +1,10 @@
+# Copyright 2020 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+SET(U_CRYPTO_ADAPT_LIB_NAME updo-crypto-adapt)
+SET(T_CRYPTO_ADAPT_LIB_NAME tpdo-crypto-adapt)
+
+SET(U_CRYPTO_LIB_NAME updo-crypto)
+SET(T_CRYPTO_LIB_NAME tpdo-crypto)
+

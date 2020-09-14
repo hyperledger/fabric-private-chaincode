@@ -7,6 +7,7 @@
 enclave {
     from "sgx_tstdc.edl" import *;
     from "common.edl" import *;
+    from "attestation-api/ocalls/attestation-ocalls.edl" import *;
 
     trusted {
         public int ecall_bind_tlcc(

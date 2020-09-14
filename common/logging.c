@@ -8,7 +8,8 @@
 
 #include <stdio.h>  //for va_list
 #include <string.h>
-#include "enclave_t.h"
+
+void ocall_print_string(const char* str);
 
 int printf(const char* fmt, ...)
 {
