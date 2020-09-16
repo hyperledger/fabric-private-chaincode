@@ -19,7 +19,8 @@ bool get_attestation(
     uint8_t* statement,
     uint32_t statement_length,
     uint8_t* attestation,
-    uint32_t attestation_length);
+    uint32_t attestation_max_length
+    uint32_t* attestation_length);
 ```
 The `get_attestation` accepts as input a statement and the buffer where the output attestation will be placed. It returns `false` on error.
 The statement is the object of the attestation. Its content is entirely up to the caller.
@@ -41,6 +42,7 @@ void ocall_init_quote(
 void ocall_get_quote(
     [in, size=spid_len] uint8_t *spid, uint32_t spid_len,
     [in, size=sig_rl_len] uint8_t *sig_rl, uint32_t sig_rl_len,
+    uint32_t sign_type,
     [in, size=report_len] uint8_t *report, uint32_t report_len,
     [out, size=max_quote_len] uint8_t *quote, uint32_t max_quote_len,
     [out] uint32_t *actual_quote_len);
