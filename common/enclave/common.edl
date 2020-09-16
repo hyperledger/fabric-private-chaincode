@@ -7,7 +7,7 @@
 enclave {
     include "sgx_trts.h"
     include "sgx_tcrypto.h"
-    from "common-output.edl" import *;
+    from "logging.edl" import *;
 
     trusted {
         public int ecall_init(void);
