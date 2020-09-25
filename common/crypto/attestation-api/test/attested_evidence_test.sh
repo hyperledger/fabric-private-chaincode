@@ -11,9 +11,9 @@
 
 set -e
 
-. ../scripts/attestation_to_evidence.sh
-. ../scripts/define_to_variable.sh
-. ../scripts/enclave_to_mrenclave.sh
+. ../conversion/attestation_to_evidence.sh
+. ../conversion/define_to_variable.sh
+. ../conversion/enclave_to_mrenclave.sh
 
 DEFINES_FILEPATH="${FPC_PATH}/common/crypto/attestation-api/test/common/test-defines.h"
 TAGS_FILEPATH="${FPC_PATH}/common/crypto/attestation-api/attestation/attestation_tags.h"
