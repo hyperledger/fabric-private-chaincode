@@ -30,7 +30,7 @@ function orchestrate()
     define_to_variable "${DEFINES_FILEPATH}" "GET_ATTESTATION_OUTPUT"
     [ -f ${GET_ATTESTATION_OUTPUT} ] || die "no output from get_attestation"
 
-    #translate attestation
+    #translate attestation (note: attestation_to_evidence defines the EVIDENCE variable)
     ATTESTATION=$(cat ${GET_ATTESTATION_OUTPUT})
     attestation_to_evidence "${ATTESTATION}"
 
