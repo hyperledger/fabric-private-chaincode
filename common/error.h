@@ -16,12 +16,12 @@
         }                                                      \
     } while (0)
 
-#define COND2LOGERR(b, msg)                \
-    do                                     \
-    {                                      \
-        if (b)                             \
-        {                                  \
-            LOG_ERROR("error: %s\n", msg); \
-            goto err;                      \
-        }                                  \
+#define COND2LOGERR(b, msg)                                             \
+    do                                                                  \
+    {                                                                   \
+        if (b)                                                          \
+        {                                                               \
+            LOG_ERROR("error at %s:%d: %s\n", __FILE__, __LINE__, msg); \
+            goto err;                                                   \
+        }                                                               \
     } while (0)
