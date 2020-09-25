@@ -55,6 +55,12 @@ attestation_state_t g_attestation_state = {0};
 
 bool init_attestation(uint8_t* params, uint32_t params_length)
 {
+    if (params == NULL)
+    {
+        LOG_ERROR("bad attestation init params");
+        return false;
+    }
+
     // open json
     std::string params_string((char*)params, params_length);
     JsonValue root(json_parse_string(params_string.c_str()));
