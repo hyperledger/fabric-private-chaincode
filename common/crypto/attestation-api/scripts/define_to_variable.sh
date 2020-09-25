@@ -14,5 +14,5 @@ function define_to_variable() {
         echo "no file $1 to extract define"
         exit -1
     fi
-    printf -v $2 "$(grep -w "$2" $1 | awk '{print $3}' | sed 's/"//g')"
+    printf -v $2 "$(awk '/.*#define.* '$2' / { print $3 }' < $1 | sed 's/"//g')"
 }
