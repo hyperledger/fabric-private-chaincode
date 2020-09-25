@@ -204,6 +204,8 @@ bool verify_ias_evidence(
             "expected statement mismatch");
     }
 
+    // TODO: check attributes of attestation (e.g., DEBUG flag disabled in release mode)
+
     return true;
 
 err:
