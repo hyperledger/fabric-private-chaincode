@@ -196,7 +196,9 @@ could a mismatch between provided SPID and api key as specified below).
 Place your ias api key and your SPID in the ``ias`` folder as follows:
 
     echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/api_key.txt
+    echo 'YOUR_SPID_TYPE' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/spid_type.txt
     echo 'YOUR_SPID' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/spid.txt
+where `YOUR_SPID_TYPE` must be `epid-linkable` or `epid-unlinkable`, depending on the type of your subscription.
 
 ### Setup your Development Environment
 

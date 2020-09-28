@@ -1,0 +1,21 @@
+/*
+ * Copyright 2020 Intel Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+enclave {
+    from "sgx_tstdc.edl" import *;
+    from "../../../../attestation-api/ocalls/attestation-ocalls.edl" import *;
+    from "../../../../../enclave/logging.edl" import *;
+
+    trusted {
+        public int init_att(
+            [in, size=params_length] uint8_t* params, uint32_t params_length);
+        public int get_att(
+            [in, size=statement_length] uint8_t* statement, uint32_t statement_length,
+            [out, size=attestation_max_length] uint8_t* attestation, uint32_t attestation_max_length,
+            [out] uint32_t* attestation_length);
+    };
+};
+

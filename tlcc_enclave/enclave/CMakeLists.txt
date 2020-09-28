@@ -1,4 +1,5 @@
 include(${CMAKE_MODULE_PATH}/NanoPB.cmake)
+include(${FPC_PATH}/tlcc_enclave/enclave/CMakeVariables.txt)
 
 set(SOURCE_FILES
     asn1_utils.c
@@ -64,6 +65,7 @@ add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/enclave_t.c
     COMMAND ${SGX_EDGER8R} --trusted enclave.edl
     --search-path ${COMMON_SOURCE_DIR}/enclave
+    --search-path ${COMMON_SOURCE_DIR}/crypto
     --search-path ${SGX_SDK}/include
     --search-path ${SGX_SSL}/include
     COMMENT "Generating enclave_t.{c,h}"
@@ -85,6 +87,8 @@ include_directories(
     ${SGX_SDK}/include/tlibc
     ${SGX_SDK}/include/libcxx
     ${SGX_SSL}/include
+    ${FPC_PATH}/common/crypto
+    ${FPC_PATH}/common/crypto/pdo/common
     )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -nostdinc -fno-builtin -fvisibility=hidden -fpie -fstack-protector -std=c11 -include tsgxsslio.h")
@@ -93,6 +97,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SGX_COMMON_CFLAGS} -nostdinc -fno-buil
 set_target_properties(enclave PROPERTIES PREFIX "")
 
 target_link_libraries(enclave "${SGX_COMMON_CFLAGS} -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles \
+-L${COMMON_SOURCE_DIR}/crypto/_build \
+-Wl,--start-group -l${T_CRYPTO_LIB_NAME} -l${T_CRYPTO_ADAPT_LIB_NAME} -Wl,--end-group \
 -L${SGX_SSL_LIBRARY_PATH} \
 -Wl,--whole-archive -lsgx_tsgxssl -Wl,--no-whole-archive -lsgx_tsgxssl_crypto \
 -L${SGX_LIBRARY_PATH} \

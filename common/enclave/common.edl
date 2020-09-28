@@ -7,6 +7,7 @@
 enclave {
     include "sgx_trts.h"
     include "sgx_tcrypto.h"
+    from "logging.edl" import *;
 
     trusted {
         public int ecall_init(void);
@@ -18,9 +19,4 @@ enclave {
 
         public int ecall_get_pk([out, size=64] uint8_t *pubkey);
     };
-
-    untrusted {
-        void ocall_print_string([in, string] const char *str);
-    };
-
 };

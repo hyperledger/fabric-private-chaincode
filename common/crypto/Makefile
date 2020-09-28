@@ -23,9 +23,9 @@ build: $(BUILD_DIR)
 
 test: build
 	$(MAKE) -C $(BUILD_DIR) test || \
-		echo "PDO crypto tests failed. Define PDO_DEBUG_BUILD=1 environment for enabling logging in tests."
+		(echo "PDO crypto tests failed. Define PDO_DEBUG_BUILD=1 environment for enabling logging in tests." && exit 1)
 
 clean:
-	-$(MAKE) -C $(BUILD_DIR) clean 
+	-if [ -d $(BUILD_DIR) ];then $(MAKE) -C $(BUILD_DIR) clean; fi
 	# above makes sure any build-artifacts in source, like ias-certificate.cpp, also get cleaned
 	rm -rf $(BUILD_DIR)

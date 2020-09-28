@@ -1,0 +1,11 @@
+/*
+ * Copyright IBM Corp. All Rights Reserved.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+enclave {
+    untrusted {
+        void ocall_print_string([in, string] const char *str);
+    };
+};

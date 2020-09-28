@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+INCLUDE(CMakeVariables.txt)
+
 set(SOURCE_FILES
     trusted_ledger.c
     enclave_u.c
@@ -20,6 +22,7 @@ add_custom_command(
     COMMAND ${SGX_EDGER8R} --untrusted enclave.edl
     --search-path ../enclave/ # enclave.edl
     --search-path ${COMMON_SOURCE_DIR}/enclave
+    --search-path ${COMMON_SOURCE_DIR}/crypto
     --search-path ${SGX_SDK}/include
     --search-path ${SGX_SSL}/include
     COMMENT "Generating enclave_u.{c,h}"
@@ -41,7 +44,15 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wall -Wno-attrib
 set_target_properties(libtl PROPERTIES PREFIX "")
 
 target_link_libraries(libtl
-    -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_LNCH_LIB} -l${SGX_EPID_LIB} -L${SGX_SSL_LIBRARY_PATH} -lsgx_usgxssl)
+    -L${SGX_LIBRARY_PATH}
+    -l${SGX_URTS_LIB}
+    -l${SGX_LNCH_LIB}
+    -l${SGX_EPID_LIB}
+    -L${SGX_SSL_LIBRARY_PATH}
+    -lsgx_usgxssl
+    # adding crypto adapt because enclave_u uses ocalls which are built into crypto adapt
+    -L${COMMON_SOURCE_DIR}/crypto/_build -l${U_CRYPTO_ADAPT_LIB_NAME}
+    )
 
 add_dependencies(libtl enclave)
 

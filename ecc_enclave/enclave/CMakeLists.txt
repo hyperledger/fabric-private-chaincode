@@ -29,6 +29,7 @@ add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/enclave_t.c
     COMMAND ${SGX_EDGER8R} --trusted enclave.edl
     --search-path ${COMMON_SOURCE_DIR}/enclave
+    --search-path ${COMMON_SOURCE_DIR}/crypto
     --search-path ${SGX_SDK}/include
     --search-path ${SGX_SSL}/include
     COMMENT "Generating enclave_t.{c,h}"
