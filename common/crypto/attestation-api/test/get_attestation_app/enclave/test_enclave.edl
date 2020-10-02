@@ -7,7 +7,7 @@
 enclave {
     from "sgx_tstdc.edl" import *;
     from "../../../../attestation-api/ocalls/attestation-ocalls.edl" import *;
-    from "../../../../../enclave/logging.edl" import *;
+    from "../../../../../logging/ocalls/logging.edl" import *;
 
     trusted {
         public int init_att(

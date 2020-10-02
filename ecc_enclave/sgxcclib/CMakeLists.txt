@@ -24,6 +24,7 @@ add_custom_command(
     --search-path ../enclave/ # enclave.edl
     --search-path ${COMMON_SOURCE_DIR}/enclave
     --search-path ${COMMON_SOURCE_DIR}/crypto
+    --search-path ${COMMON_SOURCE_DIR}/logging/ocalls
     --search-path ${SGX_SDK}/include
     COMMENT "Generating enclave_u.{c,h}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
