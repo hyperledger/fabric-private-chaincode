@@ -35,20 +35,32 @@
 #define DO_ERROR true
 #endif
 
+#if DO_DEBUG == true
 #define LOG_DEBUG(fmt, ...) \
-    if (DO_DEBUG)           \
     printf(CYN "DEBUG " LOC_FMT TAG YEL fmt NRM "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#else  // DO_DEBUG
+#define LOG_DEBUG(fmt, ...)
+#endif  // DO_DEBUG
 
+#if DO_INFO == true
 #define LOG_INFO(fmt, ...) \
-    if (DO_INFO)           \
     printf(CYN "INFO " LOC_FMT TAG NRM fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#else  // DO_INFO
+#define LOG_INFO(fmt, ...)
+#endif  // DO_INFO
 
+#if DO_WARNING == true
 #define LOG_WARNING(fmt, ...) \
-    if (DO_WARNING)           \
     printf(CYN "WARNING " LOC_FMT TAG RED fmt NRM "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#else  // DO_WARNING
+#define LOG_WARNING(fmt, ...)
+#endif  // DO_WARNING
 
+#if DO_ERROR == true
 #define LOG_ERROR(fmt, ...) \
-    if (DO_ERROR)           \
     printf(CYN "ERROR " LOC_FMT TAG RED fmt NRM "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#else  // DO_ERROR
+#define LOG_ERROR(fmt, ...)
+#endif  // DO_ERROR
 
 #endif  // LOG_DEFINES

@@ -24,6 +24,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}/json
+    ${COMMON_SOURCE_DIR}/logging/trusted
     ${ECC_ENCLAVE_DIR}/enclave
     ${SGX_SDK}/include
     ${SGX_SDK}/include/tlibc

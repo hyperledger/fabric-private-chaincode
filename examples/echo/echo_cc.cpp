@@ -5,7 +5,6 @@
  */
 
 #include "echo_cc.h"
-#include "logging.h"
 #include "shim.h"
 
 #include <numeric>

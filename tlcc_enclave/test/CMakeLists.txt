@@ -19,6 +19,7 @@ include_directories(
     ${COMMON_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}/base64
     ${COMMON_SOURCE_DIR}/sgxcclib
+    ${COMMON_SOURCE_DIR}/logging/untrusted
     ${SGX_SDK}/include
     )
 

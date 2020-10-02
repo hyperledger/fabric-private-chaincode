@@ -50,6 +50,7 @@ include_directories(
     ${SGX_SDK}/include/libcxx
     ${SGX_SSL}/include
     ${FPC_PATH}/common/crypto
+    ${FPC_PATH}/common/logging/trusted
     ${FPC_PATH}/common/crypto/pdo/common
     )
 

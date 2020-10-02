@@ -28,12 +28,15 @@ TARGET_INCLUDE_DIRECTORIES(${VERIFY_EVIDENCE_APP} PRIVATE "$ENV{FPC_PATH}/common
 TARGET_INCLUDE_DIRECTORIES(${VERIFY_EVIDENCE_APP} PRIVATE "$ENV{FPC_PATH}/common/crypto/attestation-api/attestation")
 TARGET_INCLUDE_DIRECTORIES(${VERIFY_EVIDENCE_APP} PRIVATE "$ENV{FPC_PATH}/common/crypto/attestation-api/evidence")
 TARGET_INCLUDE_DIRECTORIES(${VERIFY_EVIDENCE_APP} PRIVATE "$ENV{FPC_PATH}/common/crypto/attestation-api/test/common")
+TARGET_INCLUDE_DIRECTORIES(${VERIFY_EVIDENCE_APP} PRIVATE "$ENV{FPC_PATH}/common/logging/untrusted")
 
 # Link the untrusted test application against the untrusted library and openssl
 TARGET_LINK_LIBRARIES(${VERIFY_EVIDENCE_APP}
     "-L$ENV{FPC_PATH}/common/crypto/_build"
     "-Wl,--start-group" ${OPENSSL_LDFLAGS} "-l${U_CRYPTO_ADAPT_LIB_NAME}" "-l${U_CRYPTO_LIB_NAME}" "-Wl,--end-group"
     )
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS}")
 
 ###################################################################################################
 ## Attestation app:
@@ -62,8 +65,11 @@ TARGET_LINK_LIBRARIES(${GET_ATTESTATION_APP} -Wl,-L,${SGX_SSL}/lib64)
 TARGET_LINK_LIBRARIES(${GET_ATTESTATION_APP} ${U_CRYPTO_ADAPT_LIB_NAME})
 TARGET_LINK_LIBRARIES(${GET_ATTESTATION_APP} ${URTS_LIBRARY_NAME} sgx_usgxssl ${SGX_EPID_LIB})
 
-TARGET_INCLUDE_DIRECTORIES(${GET_ATTESTATION_APP} PRIVATE $ENV{FPC_PATH}/common)
+TARGET_INCLUDE_DIRECTORIES(${GET_ATTESTATION_APP} PRIVATE "$ENV{FPC_PATH}/common")
+TARGET_INCLUDE_DIRECTORIES(${GET_ATTESTATION_APP} PRIVATE "$ENV{FPC_PATH}/common/logging/untrusted")
 TARGET_INCLUDE_DIRECTORIES(${GET_ATTESTATION_APP} PRIVATE "$ENV{FPC_PATH}/common/crypto/attestation-api/test/common")
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS}")
 
 SET(ATTESTED_EVIDENCE_TEST_FILE "attested_evidence_test.sh")
 ADD_CUSTOM_COMMAND(

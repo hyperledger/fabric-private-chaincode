@@ -6,7 +6,6 @@
 
 #include "auction_cc.h"
 #include "auction_json.h"
-#include "logging.h"
 #include "shim.h"
 
 #include <numeric>
