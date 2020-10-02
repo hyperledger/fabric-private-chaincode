@@ -97,7 +97,7 @@ void ocall_get_state_by_partial_composite_key(const char* key,
         key, bids_bytes, max_len, bids_bytes_len, (cmac_t*)cmac, ctx);
 }
 
-void ocall_print_string(const char* str)
+void ocall_log(const char* str)
 {
     golog(str);
 }

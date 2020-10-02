@@ -56,7 +56,7 @@ err:
     return -1;
 }
 
-void ocall_print_string(const char* str)
+void ocall_log(const char* str)
 {
     printf("%s", str);
 }

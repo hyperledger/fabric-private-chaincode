@@ -61,7 +61,7 @@ int tlcc_print_state(enclave_id_t eid)
 }
 
 /* OCall functions */
-void ocall_print_string(const char* str)
+void ocall_log(const char* str)
 {
     golog(str);
 }

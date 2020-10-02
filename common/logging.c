@@ -9,7 +9,7 @@
 #include <stdio.h>  //for va_list
 #include <string.h>
 
-void ocall_print_string(const char* str);
+void ocall_log(const char* str);
 
 int printf(const char* fmt, ...)
 {
@@ -18,6 +18,6 @@ int printf(const char* fmt, ...)
     va_start(ap, fmt);
     vsnprintf(buf, BUFSIZ, fmt, ap);
     va_end(ap);
-    ocall_print_string(buf);
+    ocall_log(buf);
     return strlen(buf);
 }
