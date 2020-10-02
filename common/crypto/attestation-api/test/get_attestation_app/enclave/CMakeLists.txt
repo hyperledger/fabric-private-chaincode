@@ -16,7 +16,7 @@ FILE(GLOB ENCLAVE_LDS *.lds)
 FILE(GLOB ENCLAVE_SOURCES 
     *.cpp
     $ENV{FPC_PATH}/common/utils.c
-    $ENV{FPC_PATH}/common/logging.c
+    $ENV{FPC_PATH}/common/logging/trusted/logging.c
     )
 
 SGX_EDGE_TRUSTED(${ENCLAVE_EDL} ENCLAVE_EDGE_SOURCES)

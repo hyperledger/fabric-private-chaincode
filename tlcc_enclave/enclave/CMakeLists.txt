@@ -16,7 +16,7 @@ set(COMMON_SOURCE_FILES
     ${COMMON_SOURCE_DIR}/base64/base64.cpp
     ${COMMON_SOURCE_DIR}/json/parson.c
     ${COMMON_SOURCE_DIR}/utils.c
-    ${COMMON_SOURCE_DIR}/logging.c
+    ${COMMON_SOURCE_DIR}/logging/trusted/logging.c
     ${NANOPB_PATH}/pb_common.c
     ${NANOPB_PATH}/pb_decode.c
     ${NANOPB_PATH}/pb_encode.c
