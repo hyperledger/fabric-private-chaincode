@@ -1,7 +1,8 @@
 /*
-Copyright IBM Corp. All Rights Reserved.
+   Copyright IBM Corp. All Rights Reserved.
+   Copyright 2020 Intel Corporation
 
-SPDX-License-Identifier: Apache-2.0
+   SPDX-License-Identifier: Apache-2.0
 */
 
 package enclave
@@ -26,10 +27,15 @@ import (
 
 */
 
-// #cgo CFLAGS: -I${SRCDIR}/include -I${SRCDIR}/../../common/sgxcclib
+// #cgo CFLAGS: -I${SRCDIR}/include -I${SRCDIR}/../../common/sgxcclib -I${SRCDIR}/../../common/logging/untrusted
 // #cgo LDFLAGS: -L${SRCDIR}/lib -ltl
+// #include "logging.h"
 // #include "common-sgxcclib.h"
 // #include <trusted_ledger.h>
+//
+// extern int golog_cgo_wrapper(const char* str);
+// extern void golog(char*);
+//
 import "C"
 
 const EPID_SIZE = 8
@@ -71,6 +77,10 @@ type StubImpl struct {
 
 // NewEnclave starts a new enclave
 func NewEnclave() Stub {
+	r := C.logging_set_callback(C.log_callback_f(C.golog_cgo_wrapper))
+	if r == false {
+		panic("error initializing logging for cgo")
+	}
 	return &StubImpl{}
 }
 

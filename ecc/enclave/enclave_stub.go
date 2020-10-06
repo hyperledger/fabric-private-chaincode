@@ -1,8 +1,8 @@
 /*
-Copyright 2019 Intel Corporation
-Copyright IBM Corp. All Rights Reserved.
+   Copyright 2019 Intel Corporation
+   Copyright IBM Corp. All Rights Reserved.
 
-SPDX-License-Identifier: Apache-2.0
+   SPDX-License-Identifier: Apache-2.0
 */
 
 /*
@@ -36,10 +36,11 @@ import (
 	"golang.org/x/sync/semaphore"
 )
 
-// #cgo CFLAGS: -I${SRCDIR}/ecc-enclave-include -I${SRCDIR}/../../common/sgxcclib
+// #cgo CFLAGS: -I${SRCDIR}/ecc-enclave-include -I${SRCDIR}/../../common/sgxcclib -I${SRCDIR}/../../common/logging/untrusted
 // #cgo LDFLAGS: -L${SRCDIR}/ecc-enclave-lib -lsgxcc
 // #include "common-sgxcclib.h"
 // #include "sgxcclib.h"
+// #include "logging.h"
 // #include <stdio.h>
 // #include <string.h>
 //
@@ -68,6 +69,9 @@ import (
 //   size_t goStrLen = _GoStringLen(val)+1;
 //   snprintf(target, MIN(max_size, goStrLen), "%s", _GoStringPtr(val));
 // }
+//
+// extern int golog_cgo_wrapper(const char* str);
+// extern void golog(char*);
 //
 import "C"
 
@@ -305,6 +309,10 @@ type StubImpl struct {
 
 // NewEnclave starts a new enclave
 func NewEnclave() Stub {
+	r := C.logging_set_callback(C.log_callback_f(C.golog_cgo_wrapper))
+	if r == false {
+		panic("error initializing logging for cgo")
+	}
 	return &StubImpl{sem: semaphore.NewWeighted(ENCLAVE_TCS_NUM)}
 }
 
