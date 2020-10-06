@@ -8,18 +8,18 @@
 #ifndef logging_h
 #define logging_h
 
-#include <stdbool.h>
-#include "../include/log-defines.h"
-
 #undef TAG
 #define TAG "[Enclave] "
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-int printf(const char* format, ...);
-#ifdef __cplusplus
-}
-#endif
+#include "../include/log-defines.h"
+
+/*
+ * `loggingf` forwards the input string to the ocall function.
+ * Returns a boolean as integer:
+ * 0 false/error
+ * >0 true/success
+ *
+ * The function prototype is in "../include/log-defines.h"
+ */
 
 #endif

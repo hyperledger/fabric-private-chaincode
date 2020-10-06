@@ -1,5 +1,8 @@
+# Copyright 2020 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
 include(${CMAKE_MODULE_PATH}/NanoPB.cmake)
-include(${FPC_PATH}/tlcc_enclave/enclave/CMakeVariables.txt)
 
 set(SOURCE_FILES
     asn1_utils.c
@@ -16,7 +19,6 @@ set(COMMON_SOURCE_FILES
     ${COMMON_SOURCE_DIR}/base64/base64.cpp
     ${COMMON_SOURCE_DIR}/json/parson.c
     ${COMMON_SOURCE_DIR}/utils.c
-    ${COMMON_SOURCE_DIR}/logging/trusted/logging.c
     ${NANOPB_PATH}/pb_common.c
     ${NANOPB_PATH}/pb_decode.c
     ${NANOPB_PATH}/pb_encode.c
@@ -99,6 +101,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SGX_COMMON_CFLAGS} -nostdinc -fno-buil
 set_target_properties(enclave PROPERTIES PREFIX "")
 
 target_link_libraries(enclave "${SGX_COMMON_CFLAGS} -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles \
+-L${COMMON_SOURCE_DIR}/logging/_build -l${U_LOGGING_LIB_NAME} \
 -L${COMMON_SOURCE_DIR}/crypto/_build \
 -Wl,--start-group -l${T_CRYPTO_LIB_NAME} -l${T_CRYPTO_ADAPT_LIB_NAME} -Wl,--end-group \
 -L${SGX_SSL_LIBRARY_PATH} \

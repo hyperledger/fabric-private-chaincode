@@ -3,3 +3,4 @@
 # SPDX-License-Identifier: Apache-2.0
 
 include(${COMMON_SOURCE_DIR}/crypto/CMakeVariables.txt)
+include(${COMMON_SOURCE_DIR}/logging/CMakeVariables.txt)

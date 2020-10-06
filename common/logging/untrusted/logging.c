@@ -1,23 +1,36 @@
 /*
- * Copyright IBM Corp. All Rights Reserved.
  * Copyright 2020 Intel Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
 #include "logging.h"
-#include <stdio.h>  //for va_list
-#include <string.h>
+#include <stdarg.h>
 #include "error.h"
 
-int ocall_log(int* retval, const char* str);
+static log_callback_f g_log_callback = NULL;
+
+bool logging_set_callback(log_callback_f log_callback)
+{
+    COND2ERR(log_callback == NULL);
+
+    g_log_callback = log_callback;
+    return true;
+
+err:
+    return false;
+}
 
 int loggingf(const char* fmt, ...)
 {
+    COND2ERR(g_log_callback == NULL);
+
     char buf[BUFSIZ] = {'\0'};
     va_list ap;
+    int n;
+
     va_start(ap, fmt);
-    int n = vsnprintf(buf, BUFSIZ, fmt, ap);
+    n = vsnprintf(buf, BUFSIZ, fmt, ap);
     va_end(ap);
 
     char* pbuf;
@@ -26,13 +39,12 @@ int loggingf(const char* fmt, ...)
     else
         pbuf = ERROR_LOG_STRING;
 
-    int sgxstatus, ret;
-    sgxstatus = ocall_log(&ret, buf);
-    COND2ERR(sgxstatus != 0);
+    n = g_log_callback(pbuf);
+    COND2ERR(n < 0);
 
     COND2ERR(pbuf != buf);  // if outputted error log, fail
 
-    return ret;
+    return 1;
 
 err:
     return 0;

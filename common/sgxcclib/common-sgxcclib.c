@@ -10,52 +10,10 @@
 #include <sgx_uae_epid.h>  // epid-based attestation ...
 #include <unistd.h>        // access
 
+#include "check-sgx-error.h"
 #include "enclave_u.h"  //ecall_init, ...
+#include "logging.h"
 #include "sgx_attestation_type.h"
-
-// TODO: separate logging in sgxcclib
-
-// Prototypes of CGo functions implemented in ecc/enclave/enclave_stub.go
-// - logging
-#define NRM "\x1B[0m"
-#define RED "\x1B[31m"
-#define CYN "\x1B[36m"
-extern void golog(const char* format, ...);
-
-#include <stdarg.h>
-#include <stdio.h>
-
-#define BUF_SIZE 1024
-#define LARGE_BUF_SIZE (BUF_SIZE * 2)
-void LOG_ERROR(const char* fmt, ...)
-{
-    // create message
-    char msg[BUF_SIZE];
-    va_list ap;
-    va_start(ap, fmt);
-    vsnprintf(msg, BUF_SIZE, fmt, ap);
-    va_end(ap);
-    // color the message
-    char colored_msg[LARGE_BUF_SIZE];
-    snprintf(colored_msg, LARGE_BUF_SIZE, RED "ERROR: %s" NRM "\n", msg);
-    // dump message
-    golog(colored_msg);
-}
-
-void LOG_DEBUG(const char* fmt, ...)
-{
-    // create message
-    char msg[BUF_SIZE];
-    va_list ap;
-    va_start(ap, fmt);
-    vsnprintf(msg, BUF_SIZE, fmt, ap);
-    va_end(ap);
-    // color the message
-    char colored_msg[LARGE_BUF_SIZE];
-    snprintf(colored_msg, LARGE_BUF_SIZE, CYN "DEBUG: %s" NRM "\n", msg);
-    // dump message
-    golog(colored_msg);
-}
 
 int sgxcc_create_enclave(sgx_enclave_id_t* eid, const char* enclave_file)
 {

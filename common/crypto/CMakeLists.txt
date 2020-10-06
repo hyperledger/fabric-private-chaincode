@@ -108,4 +108,4 @@ ADD_SUBDIRECTORY (${PDO_CRYPTO_TEST_DIR})
 ###################################################################################################
 # Local Tests
 ###################################################################################################
-ADD_SUBDIRECTORY (attestation-api/test)
+#ADD_SUBDIRECTORY (attestation-api/test)

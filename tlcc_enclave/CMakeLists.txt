@@ -10,7 +10,7 @@ include(../cmake/Init.cmake)
 
 include(${CMAKE_MODULE_PATH}/ConfigSGX.cmake)
 
-set(COMMON_SOURCE_DIR ${PROJECT_SOURCE_DIR}/../common)
+include(CMakeVariables.txt)
 
 add_subdirectory(enclave)
 add_subdirectory(trusted_ledger)
