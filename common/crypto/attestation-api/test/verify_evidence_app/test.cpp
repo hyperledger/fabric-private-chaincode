@@ -25,6 +25,11 @@ bool test()
     std::string wrong_expected_statement;
     std::string wrong_expected_code_id;
 
+    // set the callback to dump log on stdout
+    logging_set_callback(puts);
+
+    LOG_DEBUG("verify_evidence_app test -- logging enabled");
+
     COND2LOGERR(!load_file(EVIDENCE_FILE, buffer, buffer_length, &filled_size),
         "can't read input evidence " EVIDENCE_FILE);
     jsonevidence = std::string(buffer, filled_size);

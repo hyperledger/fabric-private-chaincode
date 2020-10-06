@@ -35,13 +35,20 @@ int main()
         exit(-1);
     }
 
+    // set logging callback
+    logging_set_callback(puts);
+
+    LOG_DEBUG("get_attestation_app test -- logging enabled");
+
     COND2LOGERR(false == load_file(INIT_DATA_INPUT, params_buf, buffer_length, &params_length),
         "error loading params");
     params = std::string(params_buf, params_length);
 
+    LOG_INFO("Testing init attestation\n");
     init_att(global_eid, &b, (uint8_t*)params.c_str(), params.length());
     COND2LOGERR(!b, "init_attestation failed");
 
+    LOG_INFO("Testing get attestation\n");
     get_att(global_eid, &b, (uint8_t*)STATEMENT, strlen(STATEMENT), attestation, 4096,
         &attestation_length);
     COND2LOGERR(!b, "get_attestation failed");
@@ -49,14 +56,11 @@ int main()
     COND2LOGERR(false == save_file(GET_ATTESTATION_OUTPUT, (char*)attestation, attestation_length),
         "error saving attestation");
     sgx_destroy_enclave(global_eid);
+
+    LOG_INFO("Test Successful\n");
     return 0;
 
 err:
     sgx_destroy_enclave(global_eid);
     return -1;
-}
-
-void ocall_log(const char* str)
-{
-    printf("%s", str);
 }
