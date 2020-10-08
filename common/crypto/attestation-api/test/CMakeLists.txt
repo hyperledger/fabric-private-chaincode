@@ -29,6 +29,8 @@ ADD_EXECUTABLE(${VERIFY_EVIDENCE_APP}
     common/test-utils.cpp
     )
 
+# SGX_COMMON_CFLAGS is set in ConfigSGX.cmake.
+# Also, it sets the DO_DEBUG flag when the SGX_BUILD env var is set to DEBUG.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SGX_COMMON_CFLAGS}")
 
 TARGET_INCLUDE_DIRECTORIES(${VERIFY_EVIDENCE_APP} PRIVATE "$ENV{FPC_PATH}/common")
@@ -66,6 +68,8 @@ ADD_EXECUTABLE(${GET_ATTESTATION_APP}
 # Make sure the enclave builds before the test app that links it
 ADD_DEPENDENCIES(${GET_ATTESTATION_APP} test_enclave)
 
+# SGX_COMMON_CFLAGS is set in ConfigSGX.cmake.
+# Also, it sets the DO_DEBUG flag when the SGX_BUILD env var is set to DEBUG.
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS}")
 
 TARGET_LINK_LIBRARIES(${GET_ATTESTATION_APP} -Wl,-L,${SGX_SDK}/lib64)

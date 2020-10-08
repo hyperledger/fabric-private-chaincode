@@ -19,6 +19,15 @@
 #define YEL "\x1B[33m"
 #define RED "\x1B[31m"
 
+/*
+ * Note: `DO_DEBUG` is set to `false` by default, so no `LOG_DEBUG` is displayed.
+ * At compile time, this behaviour can be changed by defining `-DDO_DEBUG=true` before the header is
+ * included. In SGX deployments, such define should be set "only" when the `SGX_BUILD` environment
+ * variable is set to `DEBUG`. Finally, notice that `DO_INFO`, `DO_WARNING` and `DO_ERROR` are set
+ * to `true` by default. So, unless they are explictly disabled at compile time, the respective logs
+ * will be displayed.
+ */
+
 #ifndef DO_DEBUG
 #define DO_DEBUG false
 #endif

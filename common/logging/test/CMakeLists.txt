@@ -14,6 +14,8 @@ ADD_EXECUTABLE(${TEST_LOG_APP}
     untrusted/test.cpp
     )
 
+# SGX_COMMON_CFLAGS is set in ConfigSGX.cmake.
+# Also, it sets the DO_DEBUG flag when the SGX_BUILD env var is set to DEBUG.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SGX_COMMON_CFLAGS}")
 
 TARGET_INCLUDE_DIRECTORIES(${TEST_LOG_APP} PRIVATE "../untrusted") # for logging.h
