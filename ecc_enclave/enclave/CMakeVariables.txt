@@ -6,3 +6,4 @@
 set(SHIM_LIB_NAME shim)
 
 include(${COMMON_SOURCE_DIR}/crypto/CMakeVariables.txt)
+include(${COMMON_SOURCE_DIR}/logging/CMakeVariables.txt)

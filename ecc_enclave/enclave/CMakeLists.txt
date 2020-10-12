@@ -14,7 +14,6 @@ set(SOURCE_FILES
     ${COMMON_SOURCE_DIR}/base64/base64.cpp
     ${COMMON_SOURCE_DIR}/utils.c
     ${COMMON_SOURCE_DIR}/json/parson.c
-    ${COMMON_SOURCE_DIR}/logging/trusted/logging.c
     )
 
 add_definitions(-DENCLAVE_CODE)
@@ -25,6 +24,8 @@ set(cleanup_files
     )
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${cleanup_files}")
 
+# The SGX edge routines are pre-built here.
+# FPC chaincodes are not allowed to define additional ones, and must use the Fabric shim.
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/enclave_t.c
     COMMAND ${SGX_EDGER8R} --trusted enclave.edl
