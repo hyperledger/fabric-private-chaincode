@@ -9,11 +9,8 @@ INCLUDE ("$ENV{FPC_PATH}/common/crypto/pdo/common/CMakeVariables.txt")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
 
-# Load logging
-SET(LOGGING_PATH "$ENV{FPC_PATH}/common/logging")
-SET(LOGGING_LIB_PATH "${LOGGING_PATH}/_build")
-INCLUDE ("${LOGGING_PATH}/CMakeVariables.txt")
-LINK_DIRECTORIES("${LOGGING_LIB_PATH}")
+# add logging library directory for linking
+LINK_DIRECTORIES("${LOGGING_PATH}/_build")
 
 ##################################################################################################
 ## Verify Evidence test app:
@@ -21,17 +18,12 @@ LINK_DIRECTORIES("${LOGGING_LIB_PATH}")
 ##################################################################################################
 
 SET(VERIFY_EVIDENCE_APP verify_evidence_app)
-PROJECT(${VERIFY_EVIDENCE_APP} CXX)
 
 ADD_EXECUTABLE(${VERIFY_EVIDENCE_APP}
     ${VERIFY_EVIDENCE_APP}/main.cpp
     ${VERIFY_EVIDENCE_APP}/test.cpp
     common/test-utils.cpp
     )
-
-# SGX_COMMON_CFLAGS is set in ConfigSGX.cmake.
-# Also, it sets the DO_DEBUG flag when the SGX_BUILD env var is set to DEBUG.
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SGX_COMMON_CFLAGS}")
 
 TARGET_INCLUDE_DIRECTORIES(${VERIFY_EVIDENCE_APP} PRIVATE "$ENV{FPC_PATH}/common")
 TARGET_INCLUDE_DIRECTORIES(${VERIFY_EVIDENCE_APP} PRIVATE "$ENV{FPC_PATH}/common/base64")
@@ -55,8 +47,6 @@ SET(GET_ATTESTATION_APP "get_attestation_app")
 
 ADD_SUBDIRECTORY(${GET_ATTESTATION_APP}/enclave)
 
-PROJECT(${GET_ATTESTATION_APP} CXX C)
-
 # ENCLAVE_EDL is defined in the enclave subdirectory
 SGX_EDGE_UNTRUSTED(${ENCLAVE_EDL} ENCLAVE_EDGE_SOURCES)
 
@@ -67,10 +57,6 @@ ADD_EXECUTABLE(${GET_ATTESTATION_APP}
 
 # Make sure the enclave builds before the test app that links it
 ADD_DEPENDENCIES(${GET_ATTESTATION_APP} test_enclave)
-
-# SGX_COMMON_CFLAGS is set in ConfigSGX.cmake.
-# Also, it sets the DO_DEBUG flag when the SGX_BUILD env var is set to DEBUG.
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS}")
 
 TARGET_LINK_LIBRARIES(${GET_ATTESTATION_APP} -Wl,-L,${SGX_SDK}/lib64)
 TARGET_LINK_LIBRARIES(${GET_ATTESTATION_APP} -Wl,-L,${SGX_SSL}/lib64)
