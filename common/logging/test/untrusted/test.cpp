@@ -12,11 +12,10 @@ int main()
 {
     int r;
 
-    LOG_INFO("\x1B[31m IF YOU READ THIS, IT'S AN ERROR - 1");  // this should not be displayed
+    LOG_INFO("IF YOU READ THIS, IT'S GOOD - 1");  // this should be displayed
 
-    r = loggingf(
-        "\x1B[31m IF YOU READ THIS, IT'S AN ERROR - 2");  // this fails, should not be displayed
-    COND2ERR(r > 0);
+    r = loggingf("IF YOU READ THIS, IT'S GOOD - 2");  // this should be displayed
+    COND2ERR(r == 0);
 
     r = logging_set_callback(&puts);
     COND2ERR(r == 0);
@@ -27,7 +26,7 @@ int main()
     LOG_DEBUG("If you read this, log DEBUG is enabled");
     LOG_INFO("If you read this, log INFO is enabled");
     LOG_WARNING("If you read this, log WARNING is enabled");
-    LOG_INFO("If you read this, log ERROR is enabled");
+    LOG_ERROR("If you read this, log ERROR is enabled");
 
     puts("Test successful");
     return 0;

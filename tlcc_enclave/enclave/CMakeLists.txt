@@ -101,7 +101,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SGX_COMMON_CFLAGS} -nostdinc -fno-buil
 set_target_properties(enclave PROPERTIES PREFIX "")
 
 target_link_libraries(enclave "${SGX_COMMON_CFLAGS} -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles \
--L${COMMON_SOURCE_DIR}/logging/_build -l${U_LOGGING_LIB_NAME} \
+-L${COMMON_SOURCE_DIR}/logging/_build -l${T_LOGGING_LIB_NAME} \
 -L${COMMON_SOURCE_DIR}/crypto/_build \
 -Wl,--start-group -l${T_CRYPTO_LIB_NAME} -l${T_CRYPTO_ADAPT_LIB_NAME} -Wl,--end-group \
 -L${SGX_SSL_LIBRARY_PATH} \

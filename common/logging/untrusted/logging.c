@@ -8,7 +8,7 @@
 #include <stdarg.h>
 #include "error.h"
 
-static log_callback_f g_log_callback = NULL;
+static log_callback_f g_log_callback = puts;
 
 bool logging_set_callback(log_callback_f log_callback)
 {
