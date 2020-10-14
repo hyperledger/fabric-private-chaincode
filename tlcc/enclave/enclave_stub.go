@@ -12,7 +12,6 @@ import (
 	"unsafe"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
-	"github.com/hyperledger/fabric/common/flogging"
 )
 
 /*
@@ -27,14 +26,10 @@ import (
 
 */
 
-// #cgo CFLAGS: -I${SRCDIR}/include -I${SRCDIR}/../../common/sgxcclib -I${SRCDIR}/../../common/logging/untrusted
+// #cgo CFLAGS: -I${SRCDIR}/include -I${SRCDIR}/../../common/sgxcclib
 // #cgo LDFLAGS: -L${SRCDIR}/lib -ltl
-// #include "logging.h"
 // #include "common-sgxcclib.h"
 // #include <trusted_ledger.h>
-//
-// extern int golog_cgo_wrapper(const char* str);
-// extern void golog(char*);
 //
 import "C"
 
@@ -45,13 +40,6 @@ const PUB_KEY_SIZE = 64
 const REPORT_SIZE = 432
 const TARGET_INFO_SIZE = 512
 const CMAC_SIZE = 16
-
-var logger = flogging.MustGetLogger("tl-enclave")
-
-//export golog
-func golog(str *C.char) {
-	logger.Infof("%s", C.GoString(str))
-}
 
 // Stub interface
 type Stub interface {
@@ -77,10 +65,6 @@ type StubImpl struct {
 
 // NewEnclave starts a new enclave
 func NewEnclave() Stub {
-	r := C.logging_set_callback(C.log_callback_f(C.golog_cgo_wrapper))
-	if r == false {
-		panic("error initializing logging for cgo")
-	}
 	return &StubImpl{}
 }
 

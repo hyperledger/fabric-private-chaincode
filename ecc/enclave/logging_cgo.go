@@ -14,4 +14,5 @@ package enclave
 //      golog((char*)str);
 //      return 1;
 // }
+//
 import "C"

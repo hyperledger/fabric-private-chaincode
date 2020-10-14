@@ -32,15 +32,13 @@ import (
 	sgx_utils "github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-protos-go/msp"
-	"github.com/hyperledger/fabric/common/flogging"
 	"golang.org/x/sync/semaphore"
 )
 
-// #cgo CFLAGS: -I${SRCDIR}/ecc-enclave-include -I${SRCDIR}/../../common/sgxcclib -I${SRCDIR}/../../common/logging/untrusted
+// #cgo CFLAGS: -I${SRCDIR}/ecc-enclave-include -I${SRCDIR}/../../common/sgxcclib
 // #cgo LDFLAGS: -L${SRCDIR}/ecc-enclave-lib -lsgxcc
 // #include "common-sgxcclib.h"
 // #include "sgxcclib.h"
-// #include "logging.h"
 // #include <stdio.h>
 // #include <string.h>
 //
@@ -70,9 +68,6 @@ import (
 //   snprintf(target, MIN(max_size, goStrLen), "%s", _GoStringPtr(val));
 // }
 //
-// extern int golog_cgo_wrapper(const char* str);
-// extern void golog(char*);
-//
 import "C"
 
 const EPID_SIZE = 8
@@ -80,11 +75,10 @@ const SPID_SIZE = 16
 const MAX_RESPONSE_SIZE = 1024 * 100 // Let's be really conservative ...
 const SIGNATURE_SIZE = 64
 const PUB_KEY_SIZE = 64
+
 const TARGET_INFO_SIZE = 512
 const CMAC_SIZE = 16
 const ENCLAVE_TCS_NUM = 8
-
-var logger = flogging.MustGetLogger("ecc_enclave")
 
 // just a container struct used for the callbacks
 type Stubs struct {
@@ -130,16 +124,6 @@ func (r *Registry) Get(i int) *Stubs {
 		panic(fmt.Errorf("No shim for: %d", i))
 	}
 	return stubs
-}
-
-//export golog
-func golog(str *C.char) {
-	logger.Infof("%s", C.GoString(str))
-}
-
-// TODO: this seems dead-code? remove?
-var _logger = func(in string) {
-	logger.Info(in)
 }
 
 //export get_creator_name
@@ -309,10 +293,6 @@ type StubImpl struct {
 
 // NewEnclave starts a new enclave
 func NewEnclave() Stub {
-	r := C.logging_set_callback(C.log_callback_f(C.golog_cgo_wrapper))
-	if r == false {
-		panic("error initializing logging for cgo")
-	}
 	return &StubImpl{sem: semaphore.NewWeighted(ENCLAVE_TCS_NUM)}
 }
 
