@@ -51,7 +51,7 @@ var _ = Describe("Chaincode utils", func() {
 			})
 
 			It("should return chaincode definition", func() {
-				df, err := utils.GetChaincodeDefinition("myFPCChaincode", stub)
+				df, err := utils.GetChaincodeDefinition("myFPCChaincode", "mockChannel", stub)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(df).ShouldNot(BeNil())
 			})
@@ -59,7 +59,7 @@ var _ = Describe("Chaincode utils", func() {
 
 		When("committed chaincode definition does not exist at _lifecycle", func() {
 			It("should return error", func() {
-				df, err := utils.GetChaincodeDefinition("myFPCChaincode", stub)
+				df, err := utils.GetChaincodeDefinition("myFPCChaincode", "mockChannel", stub)
 				Expect(err).Should(MatchError(fmt.Errorf("no chaincode definition found for chaincode='myFPCChaincode'")))
 				Expect(df).Should(BeNil())
 			})
@@ -73,7 +73,7 @@ var _ = Describe("Chaincode utils", func() {
 			})
 
 			It("should return QueryChaincodeDefinitionResult object", func() {
-				df, err := utils.GetChaincodeDefinition("myFPCChaincode", stub)
+				df, err := utils.GetChaincodeDefinition("myFPCChaincode", "mockChannel", stub)
 				Expect(err).Should(HaveOccurred())
 				Expect(df).Should(BeNil())
 			})

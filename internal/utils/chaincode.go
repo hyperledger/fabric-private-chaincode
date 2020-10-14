@@ -18,14 +18,14 @@ import (
 
 const MrEnclaveLength = 32
 
-func GetChaincodeDefinition(chaincodeId string, stub shim.ChaincodeStubInterface) (*lifecycle.QueryChaincodeDefinitionResult, error) {
+func GetChaincodeDefinition(chaincodeId, channelId string, stub shim.ChaincodeStubInterface) (*lifecycle.QueryChaincodeDefinitionResult, error) {
 	function := "QueryChaincodeDefinition"
 	args := &lifecycle.QueryChaincodeDefinitionArgs{
 		Name: chaincodeId,
 	}
 	argsBytes := protoutil.MarshalOrPanic(args)
 
-	resp := stub.InvokeChaincode("_lifecycle", [][]byte{[]byte(function), argsBytes}, stub.GetChannelID())
+	resp := stub.InvokeChaincode("_lifecycle", [][]byte{[]byte(function), argsBytes}, channelId)
 
 	if resp.Payload == nil {
 		// no chaincode definition found
@@ -39,8 +39,29 @@ func GetChaincodeDefinition(chaincodeId string, stub shim.ChaincodeStubInterface
 	return df, nil
 }
 
+//func GetChaincodeDefinition(chaincodeId string, stub shim.ChaincodeStubInterface) (*lifecycle.QueryChaincodeDefinitionResult, error) {
+//	function := "QueryChaincodeDefinition"
+//	args := &lifecycle.QueryChaincodeDefinitionArgs{
+//		Name: chaincodeId,
+//	}
+//	argsBytes := protoutil.MarshalOrPanic(args)
+//
+//	resp := stub.InvokeChaincode("_lifecycle", [][]byte{[]byte(function), argsBytes}, stub.GetChannelID())
+//
+//	if resp.Payload == nil {
+//		// no chaincode definition found
+//		return nil, fmt.Errorf("no chaincode definition found for chaincode='%s'", chaincodeId)
+//	}
+//
+//	df := &lifecycle.QueryChaincodeDefinitionResult{}
+//	if err := proto.Unmarshal(resp.Payload, df); err != nil {
+//		return nil, err
+//	}
+//	return df, nil
+//}
+
 func GetMrEnclave(chaincodeId string, stub shim.ChaincodeStubInterface) (string, error) {
-	ccDef, err := GetChaincodeDefinition(chaincodeId, stub)
+	ccDef, err := GetChaincodeDefinition(chaincodeId, stub.GetChannelID(), stub)
 	if err != nil {
 		return "", err
 	}
