@@ -24,6 +24,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}/json
+    ${COMMON_SOURCE_DIR}/logging/trusted
     ${ECC_ENCLAVE_DIR}/enclave
     ${SGX_SDK}/include
     ${SGX_SDK}/include/tlibc
@@ -38,9 +39,10 @@ add_definitions(-DENCLAVE_CODE)
 set_target_properties(enclave PROPERTIES PREFIX "")
 
 target_link_libraries(enclave "${SGX_COMMON_CFLAGS} -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles \
+-L${COMMON_SOURCE_DIR}/logging/_build \
 -L${COMMON_SOURCE_DIR}/crypto/_build \
 -L${ECC_ENCLAVE_DIR}/_build/lib \
--Wl,--start-group -l${T_CRYPTO_LIB_NAME} -l${SHIM_LIB_NAME} -l${T_CRYPTO_ADAPT_LIB_NAME} -Wl,--end-group \
+-Wl,--start-group -l${T_CRYPTO_LIB_NAME} -l${SHIM_LIB_NAME} -l${T_CRYPTO_ADAPT_LIB_NAME} -l${T_LOGGING_LIB_NAME} -Wl,--end-group \
 -L${SGX_SSL_LIBRARY_PATH} \
 -Wl,--whole-archive -lsgx_tsgxssl -Wl,--no-whole-archive -lsgx_tsgxssl_crypto \
 -L${SGX_LIBRARY_PATH} \

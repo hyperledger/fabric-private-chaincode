@@ -1,8 +1,8 @@
 /*
-Copyright 2019 Intel Corporation
-Copyright IBM Corp. All Rights Reserved.
+   Copyright 2019 Intel Corporation
+   Copyright IBM Corp. All Rights Reserved.
 
-SPDX-License-Identifier: Apache-2.0
+   SPDX-License-Identifier: Apache-2.0
 */
 
 /*
@@ -32,7 +32,6 @@ import (
 	sgx_utils "github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-protos-go/msp"
-	"github.com/hyperledger/fabric/common/flogging"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -76,11 +75,10 @@ const SPID_SIZE = 16
 const MAX_RESPONSE_SIZE = 1024 * 100 // Let's be really conservative ...
 const SIGNATURE_SIZE = 64
 const PUB_KEY_SIZE = 64
+
 const TARGET_INFO_SIZE = 512
 const CMAC_SIZE = 16
 const ENCLAVE_TCS_NUM = 8
-
-var logger = flogging.MustGetLogger("ecc_enclave")
 
 // just a container struct used for the callbacks
 type Stubs struct {
@@ -126,16 +124,6 @@ func (r *Registry) Get(i int) *Stubs {
 		panic(fmt.Errorf("No shim for: %d", i))
 	}
 	return stubs
-}
-
-//export golog
-func golog(str *C.char) {
-	logger.Infof("%s", C.GoString(str))
-}
-
-// TODO: this seems dead-code? remove?
-var _logger = func(in string) {
-	logger.Info(in)
 }
 
 //export get_creator_name

@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "logging.h"
+
 typedef struct t_shim_ctx* shim_ctx_ptr_t;
 
 // Function which FPC chaincode has to implement

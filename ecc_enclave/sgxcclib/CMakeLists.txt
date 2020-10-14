@@ -24,6 +24,7 @@ add_custom_command(
     --search-path ../enclave/ # enclave.edl
     --search-path ${COMMON_SOURCE_DIR}/enclave
     --search-path ${COMMON_SOURCE_DIR}/crypto
+    --search-path ${COMMON_SOURCE_DIR}/logging/ocalls
     --search-path ${SGX_SDK}/include
     COMMENT "Generating enclave_u.{c,h}"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -36,6 +37,7 @@ include_directories(
     ${COMMON_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}/base64
     ${COMMON_SOURCE_DIR}/sgxcclib
+    ${COMMON_SOURCE_DIR}/logging/untrusted
     ${SGX_SDK}/include
     )
 
@@ -52,6 +54,7 @@ target_link_libraries(libsgxcc
     -lsgx_usgxssl
     # adding crypto adapt because enclave_u uses ocalls which are built into crypto adapt
     -L${COMMON_SOURCE_DIR}/crypto/_build -l${U_CRYPTO_ADAPT_LIB_NAME}
+    -L${COMMON_SOURCE_DIR}/logging/_build -l${U_LOGGING_LIB_NAME}
     )
 
 add_custom_command(TARGET libsgxcc

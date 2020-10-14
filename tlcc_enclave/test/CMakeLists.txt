@@ -19,6 +19,7 @@ include_directories(
     ${COMMON_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}/base64
     ${COMMON_SOURCE_DIR}/sgxcclib
+    ${COMMON_SOURCE_DIR}/logging/untrusted
     ${SGX_SDK}/include
     )
 
@@ -27,7 +28,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SGX_COMMON_CFLAGS} -fpie -std=c++11 -f
 
 target_link_libraries(${TEST_NAME}
     -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_LNCH_LIB} -l${SGX_EPID_LIB} -L${SGX_SSL_LIBRARY_PATH} -lsgx_usgxssl 
-    -L${CMAKE_BINARY_DIR} -ltl -pthread -lcurl -lcrypto)
+    -L${CMAKE_BINARY_DIR} -ltl -pthread -lcurl -lcrypto
+    -L${COMMON_SOURCE_DIR}/logging/_build -l${U_LOGGING_LIB_NAME}
+    )
 
 add_custom_command(TARGET ${TEST_NAME}
     POST_BUILD

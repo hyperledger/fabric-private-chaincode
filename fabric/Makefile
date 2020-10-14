@@ -85,7 +85,7 @@ $(FABRIC_PEER_BIN): $(TLCC_GO_SRC) $(TLCC_ENCLAVE_LIB) $(FABRIC_PATCHED)
         # build properly if tlcc enclave is not yet built ..
 	cd $(FABRIC_PATH) && \
         env \
-            CGO_CFLAGS="-I${FPC_PATH}/common -I${FPC_PATH}/common/sgxcclib -I${FPC_PATH}/tlcc_enclave/trusted_ledger"  \
+            CGO_CFLAGS="-I${FPC_PATH}/common -I${FPC_PATH}/common/sgxcclib -I${FPC_PATH}/tlcc_enclave/trusted_ledger -I${FPC_PATH}/common/logging/untrusted"  \
             CGO_LDFLAGS="-L${FPC_PATH}/tlcc_enclave/_build/lib" \
 	   GO_TAGS=FPC \
         $(MAKE) peer

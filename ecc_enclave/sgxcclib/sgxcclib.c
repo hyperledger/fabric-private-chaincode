@@ -6,14 +6,11 @@
  */
 
 #include "sgxcclib.h"
-#include "common-sgxcclib.h"  //CHECK_SGX_ERROR_AND_RETURN_ON_ERROR macro
+#include "check-sgx-error.h"  //CHECK_SGX_ERROR_AND_RETURN_ON_ERROR macro
 #include "enclave_u.h"
 
 #include <stdbool.h>
 #include <string.h>
-
-extern void LOG_DEBUG(const char* fmt, ...);
-extern void LOG_ERROR(const char* fmt, ...);
 
 // - creator access
 extern void get_creator_name(
@@ -95,9 +92,4 @@ void ocall_get_state_by_partial_composite_key(const char* key,
 {
     get_state_by_partial_composite_key(
         key, bids_bytes, max_len, bids_bytes_len, (cmac_t*)cmac, ctx);
-}
-
-void ocall_print_string(const char* str)
-{
-    golog(str);
 }

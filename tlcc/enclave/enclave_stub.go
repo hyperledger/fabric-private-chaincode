@@ -1,7 +1,8 @@
 /*
-Copyright IBM Corp. All Rights Reserved.
+   Copyright IBM Corp. All Rights Reserved.
+   Copyright 2020 Intel Corporation
 
-SPDX-License-Identifier: Apache-2.0
+   SPDX-License-Identifier: Apache-2.0
 */
 
 package enclave
@@ -11,7 +12,6 @@ import (
 	"unsafe"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
-	"github.com/hyperledger/fabric/common/flogging"
 )
 
 /*
@@ -30,6 +30,7 @@ import (
 // #cgo LDFLAGS: -L${SRCDIR}/lib -ltl
 // #include "common-sgxcclib.h"
 // #include <trusted_ledger.h>
+//
 import "C"
 
 const EPID_SIZE = 8
@@ -39,13 +40,6 @@ const PUB_KEY_SIZE = 64
 const REPORT_SIZE = 432
 const TARGET_INFO_SIZE = 512
 const CMAC_SIZE = 16
-
-var logger = flogging.MustGetLogger("tl-enclave")
-
-//export golog
-func golog(str *C.char) {
-	logger.Infof("%s", C.GoString(str))
-}
 
 // Stub interface
 type Stub interface {

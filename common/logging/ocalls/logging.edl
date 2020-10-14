@@ -1,11 +1,12 @@
 /*
  * Copyright IBM Corp. All Rights Reserved.
+ * Copyright 2020 Intel Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
 enclave {
     untrusted {
-        void ocall_print_string([in, string] const char *str);
+        int ocall_log([in, string] const char *str);
     };
 };

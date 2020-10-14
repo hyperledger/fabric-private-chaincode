@@ -6,7 +6,7 @@
  */
 
 #include "trusted_ledger.h"
-#include "common-sgxcclib.h"
+#include "check-sgx-error.h"  // error check macro
 #include "enclave_u.h"
 
 #include <stdbool.h>
@@ -58,10 +58,4 @@ int tlcc_print_state(enclave_id_t eid)
     CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(ret)
     CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(enclave_ret)
     return SGX_SUCCESS;
-}
-
-/* OCall functions */
-void ocall_print_string(const char* str)
-{
-    golog(str);
 }

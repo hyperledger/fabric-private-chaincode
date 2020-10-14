@@ -140,7 +140,7 @@ information on this function and related EDL.
 ```c++
 // Provided/implemented by a common logging module
 // interface exposed to TLCC_enclave via cgo
-void ocall_print_string([in, string] const char *str);
+int ocall_log([in, string] const char *str);
 ```
 
 ## State:
@@ -245,7 +245,7 @@ This interface is implemented by ECC to let a chaincode enclave call into the pe
 ```c++
 // Provided/implemented by a common logging module
 // interface exposed to TLCC_enclave via cgo
-void ocall_print_string([in, string] const char *str);
+int ocall_log([in, string] const char *str);
 ```
 
 ```c++
