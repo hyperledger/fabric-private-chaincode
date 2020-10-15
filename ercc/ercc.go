@@ -22,9 +22,12 @@ import (
 )
 
 // #cgo CFLAGS: -I/opt/intel/sgxsdk/include -I${SRCDIR}/../common/crypto
-// #cgo LDFLAGS: -L${SRCDIR}/../common/crypto/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto
+// #cgo LDFLAGS: -L${SRCDIR}/../common/crypto/_build -L${SRCDIR}/../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++
 // #include "stdlib.h"  /* needed for free */
 // #include "pdo/common/crypto/verify_ias_report/verify-report.h"
+// #include <stdbool.h>
+// #include "attestation-api/evidence/verify-evidence.h"
+//
 import "C"
 
 var logger = flogging.MustGetLogger("ercc")
@@ -103,6 +106,12 @@ func (ercc *EnclaveRegistryCC) registerEnclave(stub shim.ChaincodeStubInterface,
 	if ret != 0 {
 		logger.Debugf("call to pdo crypto failed as expected")
 	}
+	s := []byte{'r', 'a', 'n', 'd', 'o', 'm'}
+	r := C.verify_evidence((*C.uint8_t)(C.CBytes(s)), C.uint32_t(len(s)), (*C.uint8_t)(C.CBytes(s)), C.uint32_t(len(s)), (*C.uint8_t)(C.CBytes(s)), C.uint32_t(len(s)))
+	if r == false {
+		logger.Debugf("call to verify_evidence failed as expected")
+	}
+	// end of block to be removed
 
 	enclavePkAsBytes, err := base64.StdEncoding.DecodeString(args[0])
 	if err != nil {
