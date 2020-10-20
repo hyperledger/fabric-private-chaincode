@@ -20,10 +20,12 @@ import (
 const MrEnclaveStateKey = "MRENCLAVE"
 
 // Response contains the response data and signature produced by the enclave
+// TODO replace this with a proto? TBD
 type Response struct {
 	ResponseData []byte `json:"ResponseData"`
 	Signature    []byte `json:"Signature"`
 	PublicKey    []byte `json:"PublicKey"`
+	//	TODO add read/write set
 }
 
 func UnmarshalResponse(respBytes []byte) (*Response, error) {
@@ -33,6 +35,18 @@ func UnmarshalResponse(respBytes []byte) (*Response, error) {
 		return nil, fmt.Errorf("unmarshaling FPC response err: %s", err)
 	}
 	return response, nil
+}
+
+// TODO replace this with a proto? TBD
+type ChaincodeParams struct {
+	Function            string   `json:"Function"`
+	Args                []string `json:"args"`
+	ResultEncryptionKey []byte   `json:"ResultEncryptionKey"`
+}
+
+// TODO replace this with a proto? TBD
+type AttestationParams struct {
+	Params []string `json:"params"`
 }
 
 const sep = "."
