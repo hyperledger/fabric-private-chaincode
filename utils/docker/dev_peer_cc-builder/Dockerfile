@@ -147,7 +147,7 @@ COPY --from=peer-builder ${FPC_PATH}/tlcc/enclave/lib ${FPC_PATH}/tlcc/enclave/l
 # - ercc binary
 COPY --from=peer-builder ${FPC_PATH}/ercc/ercc ${FPC_PATH}/ercc/ercc
 # - external builders itself ..
-COPY --from=peer-builder ${FPC_PATH}/fabric/externalBuilder ${FPC_PATH}/fabric/externalBuilder
+COPY --from=peer-builder ${FPC_PATH}/fabric/externalBuilder/chaincode ${FPC_PATH}/fabric/externalBuilder/chaincode
 # - and for host-based run also ecc and libs
 COPY --from=peer-builder ${FPC_PATH}/ecc/ecc ${FPC_PATH}/ecc/ecc
 COPY --from=peer-builder ${FPC_PATH}/ecc_enclave/_build/lib/libsgxcc.so ${FPC_PATH}/ecc_enclave/_build/lib/libsgxcc.so
@@ -190,5 +190,8 @@ RUN apt-get install -y -q \
 	bc \
 	docker-compose\
 	${APT_DEV_ADD_PKGS}
+
+RUN GO111MODULE=on \
+    go get github.com/mikefarah/yq/v3
 
 WORKDIR ${FPC_PATH}
