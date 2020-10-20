@@ -24,13 +24,16 @@ require (
 	github.com/golang/protobuf v1.4.1
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20200715015833-3741860ac90f
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20200511190512-bcfeb58dd83a
+	github.com/hyperledger/fabric-contract-api-go v1.1.0
 	github.com/hyperledger/fabric-protos-go v0.0.0-20200707132912-fee30f3ccd23
 	github.com/hyperledger/fabric-samples/chaincode/marbles02/go v0.0.0-20200723181750-8c32a85f6617 // indirect
+	github.com/hyperledger/fabric-sdk-go v1.0.0-beta3.0.20201022122854-2f93a3201bb4
 	github.com/onsi/ginkgo v1.8.0
 	github.com/onsi/gomega v1.9.0
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/viper v0.0.0-20150908122457-1967d93db724
+	github.com/spf13/viper v1.3.2
+	github.com/stretchr/testify v1.5.1
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	golang.org/x/tools v0.0.0-20200323164354-18ea2c8f7359
-	google.golang.org/protobuf v1.25.0 // indirect
+	google.golang.org/protobuf v1.25.0
 )
