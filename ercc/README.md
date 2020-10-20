@@ -12,21 +12,33 @@ in an actual enclave. This enables the peers and the clients to inspect the
 attestation of a chaincode enclave before invoking chaincode operations or
 committing state changes.
 
-The enclave registry is implemented as a normal chaincode and comes with a
-custom validation plugin. Additionally, we use a chaincode decorator to supply
-peer specific attestation metadata to the ercc chaincode when performing
-attestation. Before you can install and use ercc at a peer, you have to build the
-custom-vscc and decorator plugin. See more details in [/plugins/](../plugins/). 
+The enclave registry is implemented as a normal go chaincode. However, since
+we are using our c/c++ based attestation API to verification, we are using
+the external builder functionality of Fabric.
 
-As Fabric creates a docker image for every installed chaincode, it sometimes
-could be useful to delete the ercc docker image as follows.  In particular,
-in Fabric, the peer implements a lazy-build strategy to reduce unnecessary work.
-That is, when you perform `peer install chaincode` for a chaincode that already
-exists (in form of the docker image), the peer does not re-create the docker image.
-There are two ways to update a chaincode (i.e., `ercc`). The first is to specify a
-new version number whenever the chaincode is installed and use it for subsequent 
-invocations. The second approach is to just delete the chaincode docker image and
-then re-install it. You can use the following command. 
+The enclave registry can be run in two modes, as a normal chaincode and as chaincode-as-a-service.
+See more details below.
 
+## Normal Chaincode 
 
-    $ make docker-clean
+TODO
+
+In order to install the enclave registry chaincode at a peer, make sure that
+the FPC dev environment and the fpc externalBuilder is configured in `core.yaml`.
+
+```
+    externalBuilders:
+        # FPC Addition 0: external builder for fpc-c chaincode
+        - path: $FPC_PATH/fabric/externalBuilder
+          name: fpc-c
+          propagateEnvironment:
+              - FPC_HOSTING_MODE
+              - FABRIC_LOGGING_SPEC
+              - ftp_proxy
+              - http_proxy
+              - https_proxy
+              - no_proxy
+```
+
+## Chaincode-as-s-Service
+TODO
