@@ -75,3 +75,20 @@ function attestation_to_evidence() {
 
     say "Output Evidence: $EVIDENCE"
 }
+
+###########################################################
+# Main (if script is directly called rather than included in other script)
+#
+# - expects attestation is sole command-line parameter
+# - on success, return evidence on stdout
+#   Note: evidence is terminated with newline, depending on use-case
+#   this might have to be trimmed by consumer
+#
+###########################################################
+if [ -z "${BASH_SOURCE[1]}" ]; then # i'm directly executed and not sourced in other program
+	function say() { # suppress normal output ...
+		: 
+	}
+	attestation_to_evidence $1
+	echo "${EVIDENCE}"
+fi
