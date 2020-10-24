@@ -27,9 +27,9 @@ fi
 
 PROTOS_DIR=${FPC_PATH}/protos
 
-FABRIC_PROTOS=${PROTOS_DIR}/fabric
+FABRIC_PROTOS_DIR=${PROTOS_DIR}/fabric
 # check that fabric protos are present
-if [[ -z $(find ${FABRIC_PROTOS} -name '*.proto') ]]; then \
+if [[ -z $(find ${FABRIC_PROTOS_DIR} -name '*.proto') ]]; then \
     echo "No Fabric protos found! Try 'git pull --recurse-submodules'"; exit 1; \
 fi
 
@@ -58,8 +58,8 @@ declare -a arr=("common" "ledger" "msp" "peer")
 for i in "${arr[@]}"
 do
     # filter fabric protos
-    for protos in $(find "$FABRIC_PROTOS" -name '*.proto' -path "*/$i/*" -exec dirname {} \; | sort | uniq) ; do
-        $PROTOC_CMD "$PROTOC_OPTS" --proto_path="${PROTOS_DIR}/protos/google" --proto_path="$BUILD_DIR" --proto_path="$FABRIC_PROTOS" "--nanopb_out=-f  ${PROTOS_DIR}/fabric.options:$FABRIC_BUILD_DIR" "$protos"/*.proto
+    for protos in $(find "$FABRIC_PROTOS_DIR" -name '*.proto' -path "*/$i/*" -exec dirname {} \; | sort | uniq) ; do
+        $PROTOC_CMD "$PROTOC_OPTS" --proto_path="${PROTOS_DIR}/protos/google" --proto_path="$BUILD_DIR" --proto_path="$FABRIC_PROTOS_DIR" "--nanopb_out=-f  ${PROTOS_DIR}/fabric.options:$FABRIC_BUILD_DIR" "$protos"/*.proto
     done
 done
 
@@ -68,5 +68,5 @@ sed  -i 's/namespace/ns/g' ${FABRIC_BUILD_DIR}/ledger/rwset/rwset.pb.h
 sed  -i 's/namespace/ns/g' ${FABRIC_BUILD_DIR}/ledger/rwset/rwset.pb.c
 
 # compile fpc protos
-$PROTOC_CMD "$PROTOC_OPTS" --proto_path=${PROTOS_DIR} --nanopb_out=$BUILD_DIR ${PROTOS_DIR}/fpc/*.proto
-$PROTOC_CMD "$PROTOC_OPTS" --proto_path=${PROTOS_DIR} --go_out=${GOPATH}/src ${PROTOS_DIR}/fpc/*.proto
+$PROTOC_CMD "$PROTOC_OPTS" --proto_path=${PROTOS_DIR} --proto_path=${FABRIC_PROTOS_DIR} --nanopb_out=$BUILD_DIR ${PROTOS_DIR}/fpc/*.proto
+$PROTOC_CMD "$PROTOC_OPTS" --proto_path=${PROTOS_DIR} --proto_path=${FABRIC_PROTOS_DIR} --go_out=${GOPATH}/src ${PROTOS_DIR}/fpc/*.proto
