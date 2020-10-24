@@ -29,7 +29,7 @@ the FPC dev environment and the fpc externalBuilder is configured in `core.yaml`
 ```
     externalBuilders:
         # FPC Addition 0: external builder for fpc-c chaincode
-        - path: $FPC_PATH/fabric/externalBuilder
+        - path: $FPC_PATH/fabric/externalBuilder/chaincode_server
           name: fpc-c
           propagateEnvironment:
               - FPC_HOSTING_MODE
