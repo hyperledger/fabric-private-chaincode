@@ -568,7 +568,7 @@ chaincode:
         #      - GOPROXY
     externalBuilders:
         # FPC Addition 0: external builder for fpc-c chaincode
-        - path: ../../fabric/externalBuilder
+        - path: ../../fabric/externalBuilder/chaincode
           name: fpc-c
           propagateEnvironment:
               - FPC_HOSTING_MODE

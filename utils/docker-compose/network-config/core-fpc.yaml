@@ -571,7 +571,7 @@ chaincode:
         #      - GOPROXY
     externalBuilders:
         # FPC Addition 0: external builder for fpc-c chaincode
-        - path: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/externalBuilder
+        - path: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/externalBuilder/chaincode
           name: fpc-c
           propagateEnvironment:
               - FPC_HOSTING_MODE
