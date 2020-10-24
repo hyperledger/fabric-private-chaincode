@@ -15,13 +15,13 @@ The ERCC interface is implemented through a "normal" chaincode interface.
 
 ```go
 // chaincode interface (exposed to ecc and clients)
+// it dispatches client-requests to the functions listed below
+// with a mapping as follows:
+// - the first argument has to be a string which matches the function name
+// - subsequent elements should match the corresponding arguments. 
+//   If the argument is not a string or an array of string, then it should be base64-encoded (binary/default) serialization of the corresponding protobuf object.
+// For example, a call to 'queryListProvisionedEnclaves' using the command-line would could look like '{ "Function": "queryListProvisionedEnclaves", "Args": ["my_chaincode_id"]}' and might return '[ "e1", "e2" ]'
 func Invoke(stub shim.ChaincodeStubInterface) pb.Response {}
-
-// functions below are dispatched by Invoke implementation
-// Note: Maybe use protobuf-to-json mapping
-// (https://developers.google.com/protocol-buffers/docs/proto3#json)
-// to map the methods and their arguments into to chaincode
-// invocation form { "Function": "..", "Args": [....]}
 
 // returns a set of credentials registered for a given chaincode id
 // Note: to get the endpoints of FPC endorsing peers do the following:
@@ -217,11 +217,11 @@ are treated as FPC commands. Normal `invoke` invocations are forwarded to a FPC 
 
 ```go
 // chaincode interface (exposed to admin/clients) implemented by invoke
+// See notes for ERCC.Invoke regarding dispatching and argument encoding
 func Invoke(stub shim.ChaincodeStubInterface) pb.Response {}
 
-// functions below are dispatched by Invoke implementation
-// some of these functions below may require access to the
-// stub shim.ChaincodeStubInterface
+// the implementation of these functions below may require access to the
+// stub shim.ChaincodeStubInterface, but this will be handled transparently by Invoke
 
 // triggered by an admin
 func initEnclave(AttestationParams []byte) (Credentials, error) {}
@@ -237,7 +237,7 @@ func importCCKeys() (SignedCCKeyRegistrationMessage, error) {}
 func getEnclaveId() (string, error) {}
 
 // chaincode invoke
-func chaincodeInvoke(transactionProposal []byte, ctx interface{}) (response, error) {}
+func chaincodeInvoke(request EncryptedChaincodeRequest) (EncryptedChaincodeResponse, error) {}
 ```
 
 This interface is implemented by ECC to let a chaincode enclave call into the peer
