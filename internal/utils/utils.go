@@ -7,10 +7,14 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"strings"
+
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 )
 
 const MrEnclaveStateKey = "MRENCLAVE"
@@ -59,4 +63,10 @@ func SplitFPCCompositeKey(comp_str string) []string {
 	}
 	comp := strings.Split(comp_str, sep)
 	return comp[1 : len(comp)-1]
+}
+
+// returns enclave_id as hex-encoded string of SHA256 hash over enclave_vk.
+func GetEnclaveId(attestedData *protos.Attested_Data) string {
+	h := sha256.Sum256(attestedData.EnclaveVk)
+	return hex.EncodeToString(h[:])
 }

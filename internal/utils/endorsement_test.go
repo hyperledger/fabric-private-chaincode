@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
+	cb "github.com/hyperledger/fabric-protos-go/common"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric-protos-go/peer/lifecycle"
 	"github.com/hyperledger/fabric/bccsp"
 	"github.com/hyperledger/fabric/bccsp/factory"
@@ -32,6 +34,7 @@ var _ = Describe("Chaincode", func() {
 	var (
 		cryptoProvider bccsp.BCCSP
 		serializedId   []byte
+		pe             utils.PolicyEvaluatorInterface
 	)
 
 	BeforeSuite(func() {
@@ -42,6 +45,8 @@ var _ = Describe("Chaincode", func() {
 		cryptoProvider = factory.GetDefault()
 		err = mgmt.GetLocalMSP(cryptoProvider).Setup(testConf)
 		Expect(err).ShouldNot(HaveOccurred())
+
+		pe = utils.NewPolicyEvaluator()
 	})
 
 	BeforeEach(func() {
@@ -58,12 +63,12 @@ var _ = Describe("Chaincode", func() {
 			It("should succeed", func() {
 				p, err := policydsl.FromString("OR('SampleOrg.member', 'AnotherOtherOrg.member')")
 				Expect(err).ShouldNot(HaveOccurred())
-				pp := protoutil.MarshalOrPanic(p)
+				pp := marshalApplicationPolicy(p, "")
 
 				df := &lifecycle.QueryChaincodeDefinitionResult{
 					ValidationParameter: pp,
 				}
-				err = utils.IsValidEndorserIdentity(serializedId, df)
+				err = pe.EvaluateIdentity(df.ValidationParameter, serializedId)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})
@@ -72,14 +77,43 @@ var _ = Describe("Chaincode", func() {
 			It("should return error", func() {
 				p, err := policydsl.FromString("OR('SomeOtherOrg.member', 'AnotherOtherOrg.member')")
 				Expect(err).ShouldNot(HaveOccurred())
-				pp := protoutil.MarshalOrPanic(p)
+				pp := marshalApplicationPolicy(p, "")
 
 				df := &lifecycle.QueryChaincodeDefinitionResult{
 					ValidationParameter: pp,
 				}
-				err = utils.IsValidEndorserIdentity(serializedId, df)
+				err = pe.EvaluateIdentity(df.ValidationParameter, serializedId)
 				Expect(err).Should(HaveOccurred())
 			})
 		})
 	})
 })
+
+func marshalApplicationPolicy(signaturePolicy *cb.SignaturePolicyEnvelope, channelConfigPolicy string) []byte {
+	if signaturePolicy == nil && channelConfigPolicy == "" {
+		panic("inputs empty")
+	}
+
+	if signaturePolicy != nil && channelConfigPolicy != "" {
+		panic("cannot specify both signature policy and channel config policy")
+	}
+
+	var applicationPolicy *pb.ApplicationPolicy
+	if signaturePolicy != nil {
+		applicationPolicy = &pb.ApplicationPolicy{
+			Type: &pb.ApplicationPolicy_SignaturePolicy{
+				SignaturePolicy: signaturePolicy,
+			},
+		}
+	}
+
+	if channelConfigPolicy != "" {
+		applicationPolicy = &pb.ApplicationPolicy{
+			Type: &pb.ApplicationPolicy_ChannelConfigPolicyReference{
+				ChannelConfigPolicyReference: channelConfigPolicy,
+			},
+		}
+	}
+
+	return protoutil.MarshalOrPanic(applicationPolicy)
+}

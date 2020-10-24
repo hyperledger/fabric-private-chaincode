@@ -19,13 +19,15 @@ import (
 const MrEnclaveLength = 32
 
 func GetChaincodeDefinition(chaincodeId string, stub shim.ChaincodeStubInterface) (*lifecycle.QueryChaincodeDefinitionResult, error) {
+	channelId := stub.GetChannelID()
+
 	function := "QueryChaincodeDefinition"
 	args := &lifecycle.QueryChaincodeDefinitionArgs{
 		Name: chaincodeId,
 	}
 	argsBytes := protoutil.MarshalOrPanic(args)
 
-	resp := stub.InvokeChaincode("_lifecycle", [][]byte{[]byte(function), argsBytes}, stub.GetChannelID())
+	resp := stub.InvokeChaincode("_lifecycle", [][]byte{[]byte(function), argsBytes}, channelId)
 
 	if resp.Payload == nil {
 		// no chaincode definition found
