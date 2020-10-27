@@ -230,7 +230,7 @@ func checkAttestedData(ctx contractapi.TransactionContextInterface, v attestatio
 	}
 
 	// check that registration transaction creator has same mspid as the enclave owner
-	if err := ie.EvaluateCreatorIdentity(creatorIdentityBytes, attestedData.HostParams.PeerIdentity); err != nil {
+	if err := ie.EvaluateCreatorIdentity(creatorIdentityBytes, attestedData.HostParams.PeerMspId); err != nil {
 		return fmt.Errorf("creator identity evaluation failed: %s", err)
 	}
 
