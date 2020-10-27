@@ -343,7 +343,7 @@ corresponding message flows, and page 121 and 305ff for the function definitions
   # tlcc_mrenclave == NULL during enclave creation, otherwise it is value from CC_Params
   - ecc_ctx={session_id=NULL, state=INIT1, dh, channel_id=channel_id, channel_hash=NULL, tlcc_mrenclave, enclave_id=enclave_id, chaincode_id=chaincode_id, session_key=NULL}
   - sgx_dh_init_session(initiator, ecc_ctx.dh)
-  - init_req = SessionMsg.stpIntReq{channel_id=ecc_ctx.channel_id, chaincode_id=ecc_ctx.chaincode_id, enclave_id=ecc_ctx.enclave_id}.serialize()
+  - init_req = SessionMsg.stp_int_req{channel_id=ecc_ctx.channel_id, chaincode_id=ecc_ctx.chaincode_id, enclave_id=ecc_ctx.enclave_id}.serialize()
   - ocall_tl_session_rpc(u_shim_ctx, init_req)
     - ecc::session-library
       - initiates cc2scc(init_req) by calling cc2scc_handler(u_shim_ctx, ....)
@@ -355,7 +355,7 @@ corresponding message flows, and page 121 and 305ff for the function definitions
                 - tlcc_ctx = {session_id=next_session_id++, state=INIT, dh, channel_id=init_req.channel_id, channel_hash=channel_hash_for(tlcc_ctx.channel_id), ecc_mrenclave, enclave_id=init_req.enclave_id, chaincode_id=init_req.chaincode_id, session_key=NULL}
                 - tl_sessions.insert(tlcc_ctx.session_id, tlcc_ctx)
                 - sgx_dh_init_session(responder, tlcc_ctx.dh)
-                - init_rsp = SessionMsg.stpIntRsp{session_id=tlcc_ctx.session_id, msg1}
+                - init_rsp = SessionMsg.stp_int_rsp{session_id=tlcc_ctx.session_id, msg1}
                 - sgx_dh_responder_gen_msg1(init_rsp.msg1, tlcc_ctx.dh)
               - return(init_rsp.serialize()}
         - tl::invoke dispatcher (continued)
@@ -364,7 +364,7 @@ corresponding message flows, and page 121 and 305ff for the function definitions
       - returns init_rsp.deserialize() as result of ocall
 - ecc_enclave:tl_session_setup (continued)
   - ecc_ctx.session_id = init_rsp.session_id
-  - compl_req = SessionMsg.stpCmpReq{session_id=ecc_ctx.session_id, msg2}
+  - compl_req = SessionMsg.stp_cmp_req{session_id=ecc_ctx.session_id, msg2}
   - sgx_dh_initiator_proc_msg1(init_rsp.msg1, compl_req.msg2, ecc_ctx.dh)
    - ecc_ctx.state = INIT2
   - ocall_tl_session_rpc(u_shim_ctx, compl_req.serialize())
@@ -376,7 +376,7 @@ corresponding message flows, and page 121 and 305ff for the function definitions
             - tl_enclave:session-library
               - dispatching based on type of compl_req
                 - tlcc_ctx = tl_sessions[compl_req.session_id]
-                - compl_rsp = SessionMsg.stpCmpReq{session_id=tlcc_ctx.session_id, msg3, channel_id=tlcc_ctx.channel_id, channel_hash=tlcc_ctx.channel_hash, chaincode_id=tlcc_ctx.chaincode_id, enclave_id=tlcc_ctx.enclave_id}
+                - compl_rsp = SessionMsg.stp_cmp_req{session_id=tlcc_ctx.session_id, msg3, channel_id=tlcc_ctx.channel_id, channel_hash=tlcc_ctx.channel_hash, chaincode_id=tlcc_ctx.chaincode_id, enclave_id=tlcc_ctx.enclave_id}
                 - sgx_dh_responder_proc_msg2(compl_req.msg2, compl_rsp.msg3, tlcc_ctx.dh, tlcc_ctx.session_key, tlcc_ctx.ecc_mrenclave)
                   # Notes
                   # - tlcc_ctx.enclave_id is at this point still unvalidated!
@@ -410,7 +410,7 @@ corresponding message flows, and page 121 and 305ff for the function definitions
 
 ```
 - ecc_enclave calls tl_session_request(ecc_ctx, u_shim_ctx, request)
-  - tx_req = SessionMsg.txReq{session_id = ecc_ctx.session_id, request = request)
+  - tx_req = SessionMsg.tx_req{session_id = ecc_ctx.session_id, request = request)
   - tx_req.nonce = random()
   - tx_req.mac = MAC(ecc_ctx.session_key, tx_req.payload)
   - ocall_tl_session_rpc(u_shim_ctx, tx_req.serialize())
@@ -423,7 +423,7 @@ corresponding message flows, and page 121 and 305ff for the function definitions
               - dispatching based on type of tx_req
                 - tlcc_ctx = tl_sessions[tx_req.session_id]
                 - verify (tx_req.mac == MAC(tlcc_ctx.session_key,tx_req.payload))
-                - tx_rsp = SessionMsg.txRsp{session_id = tlcc_ctx.session_id, rsp)
+                - tx_rsp = SessionMsg.tx_rsp{session_id = tlcc_ctx.session_id, rsp)
                 - tx_rsp.payload.response = tl_req_handler(tx_req.request)
   -             - tx_rsp.nonce = tx_req.nonce
                 - tx_rsp.mac = MAC(tlcc_ctx.session_key, tx_rsp.payload)
@@ -442,7 +442,7 @@ corresponding message flows, and page 121 and 305ff for the function definitions
 
 ```
 - ecc_enclave calls tl_session_close(ecc_ctx, u_shim_ctx)
-  - cls_req = SessionMsg.clsReq{session_id = ecc_ctx.session_id)
+  - cls_req = SessionMsg.cls_req{session_id = ecc_ctx.session_id)
   - cls_req.mac = MAC(ecc_ctx.session_key, cls_req.payload)
   - ecc_ctx.state = CLOSING
   - ocall_tl_session_rpc(u_shim_ctx, cls_req.serialize())
@@ -455,7 +455,7 @@ corresponding message flows, and page 121 and 305ff for the function definitions
               - dispatching based on type of cls_req
                 - tlcc_ctx = tl_sessions[cls_req.session_id]
                 - verify (cls_req.mac == MAC(tlcc_ctx.session_key,cls_req.payload))
-                - cls_rsp = SessionMsg.clsRsp{session_id = tlcc_ctx.session_id)
+                - cls_rsp = SessionMsg.cls_rsp{session_id = tlcc_ctx.session_id)
                 - cls_rsp.mac = MAC(tlcc_ctx.session_key, cls_rsp.payload)
                 - tlcc_ctx.state = CLOSED
                 - tl_sessions.erase(cls_req.session_id)

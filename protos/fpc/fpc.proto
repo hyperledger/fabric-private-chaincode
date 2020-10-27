@@ -13,7 +13,7 @@ import "fabric/ledger/rwset/kvrwset/kv_rwset.proto";
 package fpc;
 option go_package = "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos";
 
-message CC_Parameters {
+message CCParameters {
     // name of the chaincode
     string chaincode_id = 1;
 
@@ -28,13 +28,13 @@ message CC_Parameters {
     string channel_id = 4;
 }
 
-message Host_Parameters {
+message HostParameters {
     // peer that hosts the enclave
     // this is a serialized msp.SerializedIdentity (see https://github.com/hyperledger/fabric-protos/blob/master/msp/identities.proto#L15)
     bytes peer_identity = 1;
 
     // Post-MVP: This will be a X509 peer certificate on
-    // Enclave_VK and CC_Parameters signed by a CA rooted in
+    // Enclave_VK and CCParameters signed by a CA rooted in
     // the MSP of the Organization hosting the peer running the FPC
     // Chaincode enclave.  This shows the "ownership" of Org for that
     //particular FPC Chaincode enclave.   See additional information in
@@ -43,10 +43,10 @@ message Host_Parameters {
     bytes certificate = 2;
 }
 
-message Attested_Data {
-    CC_Parameters cc_params = 1;
+message AttestedData {
+    CCParameters cc_params = 1;
 
-    Host_Parameters host_params = 2;
+    HostParameters host_params = 2;
 
     // chaincode enclave public key
     bytes enclave_vk = 3;
@@ -60,7 +60,7 @@ message Attested_Data {
 }
 
 message Credentials {
-    // serialization of type **Attested_Data**
+    // serialization of type **AttestedData**
     google.protobuf.Any serialized_attested_data = 1;
 
     // serialized attestation/quote as output by `get_attestatation`, see `interfaces.attestation.md`
