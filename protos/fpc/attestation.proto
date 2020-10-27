@@ -12,9 +12,9 @@ message AttestationEvidence {
     // this message is defined with more detail in #412
     // https://github.com/hyperledger-labs/fabric-private-chaincode/issues/412
     enum Type {
-        SGX_EPID = 0;
-        SGX_DCAP = 1;
-        WHATEVER = 2;
+        TYPE_UNSPECIFIED = 0;
+        TYPE_SGX_EPID = 1;
+        TYPE_SGX_DCAP = 2;
     }
 
     Type type = 1;

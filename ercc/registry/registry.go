@@ -160,7 +160,7 @@ func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface,
 	}
 
 	// get attested data from credentials
-	var attestedData protos.Attested_Data
+	var attestedData protos.AttestedData
 	if err := ptypes.UnmarshalAny(credentials.SerializedAttestedData, &attestedData); err != nil {
 		return errors.Wrap(err, "invalid attested data message")
 	}
@@ -190,7 +190,7 @@ func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface,
 	return nil
 }
 
-func checkAttestedData(ctx contractapi.TransactionContextInterface, v attestation.VerifierInterface, ie utils.IdentityEvaluatorInterface, attestedData *protos.Attested_Data, credentials *protos.Credentials) error {
+func checkAttestedData(ctx contractapi.TransactionContextInterface, v attestation.VerifierInterface, ie utils.IdentityEvaluatorInterface, attestedData *protos.AttestedData, credentials *protos.Credentials) error {
 
 	// check that the enclave channelId matches ERCC channelId
 	if attestedData.CcParams.ChannelId != ctx.GetStub().GetChannelID() {

@@ -72,14 +72,14 @@ message SessionError {
 
 message SessionMsgPayload {
     oneof payload {
-        SessionSetupInitRequest stpIntReq = 1;
-        SessionSetupInitResponse stpIntRsp = 2;
-        SessionSetupCompleteRequest stpCmpReq = 3;
-        SessionSetupCompleteResponse stpCmpRsp = 4;
-        SessionCloseRequest clsReq = 5;
-        SessionCloseResponse clsRsp = 6;
-        SessionTXRequest txReq = 7;
-        SessionTXResponse txRsp = 8;
+        SessionSetupInitRequest stp_int_req = 1;
+        SessionSetupInitResponse stp_int_rsp = 2;
+        SessionSetupCompleteRequest stp_cmp_req = 3;
+        SessionSetupCompleteResponse stp_cmp_rsp = 4;
+        SessionCloseRequest cls_req = 5;
+        SessionCloseResponse cls_rsp = 6;
+        SessionTXRequest tx_req = 7;
+        SessionTXResponse tx_rsp = 8;
         SessionError error = 9;
     }
 }
