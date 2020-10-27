@@ -7,19 +7,12 @@ SPDX-License-Identifier: Apache-2.0
 package enclave
 
 import (
-	"crypto/ecdsa"
-	"crypto/sha256"
-	"crypto/x509"
-	"encoding/base64"
-	"encoding/hex"
-	"reflect"
 	"testing"
-
-	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/ercc"
-	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
 )
 
 const enclaveLibFile = "lib/enclave.signed.so"
+
+/* Disabled as relying on old attestation ...
 
 func TestEnclaveStub_RemoteAttestation(t *testing.T) {
 	stub := NewEnclave()
@@ -85,6 +78,7 @@ func TestEnclaveStub_RemoteAttestation(t *testing.T) {
 	t.Logf("Enclave pk hash base64:\n%s", base64.StdEncoding.EncodeToString(enclavePkHash[:]))
 	t.Logf("Quote base64:\n%s", base64.StdEncoding.EncodeToString(quoteAsBytes))
 }
+*/
 
 func TestEnclaveStub_Invoke(t *testing.T) {
 	stub := NewEnclave()

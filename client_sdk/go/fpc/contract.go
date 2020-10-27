@@ -119,7 +119,7 @@ func (c *Contract) EvaluateTransaction(name string, args ...string) ([]byte, err
 		return nil, err
 	}
 
-        // TODO maybe move this to a sub-function like prepareChaincodeInvocation?! TBD
+	// TODO maybe move this to a sub-function like prepareChaincodeInvocation?! TBD
 	response, err := utils.UnmarshalResponse(responseBytes)
 	if err != nil {
 		return nil, err

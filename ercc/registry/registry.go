@@ -246,8 +246,8 @@ func checkAttestedData(ctx contractapi.TransactionContextInterface, v attestatio
 // This method is used during the key generation and key distribution protocol. In particular, during key generation,
 // this call sets the chaincode_ek for a chaincode if no chaincode_ek is set yet.
 func (rs *Contract) RegisterCCKeys(ctx contractapi.TransactionContextInterface, ccKeyRegistrationMessageBase64 string) error {
-         // TODO: Implement me for MVP
-         
+	// TODO: Implement me for MVP
+
 	//input msg CCKeyRegistrationMessage
 
 	// TODO needs to be implemented for tx args/response encryption
