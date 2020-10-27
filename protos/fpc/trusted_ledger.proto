@@ -49,7 +49,7 @@ message GetMultiMetadataResponse {
 //            const uint8_t *serializedIdentity,
 //            const uint32_t len);
 message ValidateIdentityRequest {
-    bytes serializedIdentity = 1;
+    bytes serialized_identity = 1;
 }
 message ValidateIdentityResponse {
     bool is_valid = 1;

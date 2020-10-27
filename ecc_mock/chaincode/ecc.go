@@ -70,16 +70,16 @@ func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Resp
 	credentials := &protos.Credentials{
 		Attestation: []byte("{\"attestation_type\":\"simulated\",\"attestation\":\"MA==\"}"),
 		SerializedAttestedData: &any.Any{
-			TypeUrl: proto.MessageName(&protos.Attested_Data{}),
-			Value: protoutil.MarshalOrPanic(&protos.Attested_Data{
+			TypeUrl: proto.MessageName(&protos.AttestedData{}),
+			Value: protoutil.MarshalOrPanic(&protos.AttestedData{
 				EnclaveVk: []byte("enclaveVKString"),
-				CcParams: &protos.CC_Parameters{
+				CcParams: &protos.CCParameters{
 					ChaincodeId: "ercc",
 					Version:     "1.0",
 					ChannelId:   "mychannel",
 					Sequence:    1,
 				},
-				HostParams: &protos.Host_Parameters{
+				HostParams: &protos.HostParameters{
 					PeerIdentity: serializedUser,
 				},
 			}),

@@ -14,7 +14,7 @@ top to bottom direction
 package protobufs {
 note "This proto message definition may be deprecated\nand replaced with proto files in `protos/fpc" as M
 
-class CC_Parameters {
+class CCParameters {
 }
 
 class Public_Keys {
@@ -27,15 +27,15 @@ class Private_Keys {
     Enclave_DK bytes
 }
 
-class Attested_Data {
+class AttestedData {
 }
-note left of Attested_Data::onCreation
+note left of AttestedData::onCreation
     For semantics and motivation of this field, see
      comment in createEnclave function in fpc-registration.puml.
 end note
 
-Attested_Data *-down-  CC_Parameters : contains
-Attested_Data *-down-  Public_Keys : contains
+AttestedData *-down-  CCParameters : contains
+AttestedData *-down-  Public_Keys : contains
 Private_Keys *-up- Public_Keys : derives
 
 note right of Public_Keys::Enclave_VK #FFaa00
@@ -56,7 +56,7 @@ class Credentials {
 
 } /' package protobufs '/
 
-Credentials *- Attested_Data : contains
+Credentials *- AttestedData : contains
 
 package registry {
 

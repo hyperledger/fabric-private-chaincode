@@ -101,7 +101,7 @@ group enclave creation
     return channel_hash
   end group
 
-  Enclave1 -> Enclave1 : Attested_Data <- <CC_Params, Host_Params, Enclave_VK, Channel_hash, tlcc_mrenclave, onCreation=true>
+  Enclave1 -> Enclave1 : AttestedData <- <CC_Params, Host_Params, Enclave_VK, Channel_hash, tlcc_mrenclave, onCreation=true>
   note right Enclave1
      In the future an admin might want to request re-attestations: For EPID this would be
      the only way to check for revocations (In DCAP, checking CRLs would enable this as well).
@@ -109,12 +109,12 @@ group enclave creation
      reflected in the attestation (and, hence, ERCC registration) as this determines whether
      enclave secrets might be exposed in case of newly discovered future SGX vulnerabilities.
      We ensure that performing the initial attestation before sealing the state and distinguish
-     the intial from subsequent attestations  based on the onCreation field in Attested_Data.
+     the intial from subsequent attestations  based on the onCreation field in AttestedData.
   end note
 
   group enclave attestation
   Enclave1 -> Enclave1 : init_attestation(Attestation_Params)
-  Enclave1 -> Enclave1 : get_attestation(Attested_Data)
+  Enclave1 -> Enclave1 : get_attestation(AttestedData)
   note right Enclave1
     The GetAttestation method abstracts/generalizes the attestation protocol used here.
     Currently, Intel SGX supports two different attestation schemes, namely,
@@ -125,7 +125,7 @@ group enclave creation
     the SPID to generate a quote, the peer provides it through FPC_stub.
   end note
 
-  Enclave1 -> Enclave1 : Attestation <- create quote using Attestation_Params.SPID over Hash(Attested_Data)
+  Enclave1 -> Enclave1 : Attestation <- create quote using Attestation_Params.SPID over Hash(AttestedData)
 
   end group
 
@@ -146,7 +146,7 @@ group enclave creation
     the external builder on the peer local storage.
   end note
 
-  Enclave1 -> Enclave1 : Credentials <- <Attested_Data, Attestation>
+  Enclave1 -> Enclave1 : Credentials <- <AttestedData, Attestation>
   return Credentials
 
 group Org-Enclave binding/certification [Post-MVP: Validation]
@@ -193,14 +193,14 @@ end
       note right ERCC1
         The evidence check ensures that the evidence is correct (e.g. in
         case of EPID-based attestation the evidence must be signed by IAS)
-        and covers Hash(Credentials.Attested_Data).
+        and covers Hash(Credentials.AttestedData).
 
         Note that the IAS verification key is hardcoded in ERCC. This
         verification key does not change frequently. In the case the verification
         key changes, the ERCC must be updated and upgraded through the normal
         chaincode lifecycle upgrade operation.
       end note
-      ERCC1 -> ERCC1 : check Credentials.Attested_Data
+      ERCC1 -> ERCC1 : check Credentials.AttestedData
       note right ERCC1
         - check that CC_Params match chaincode definition
         - Channel_Id should correspond to ERCC's own view
@@ -214,7 +214,7 @@ end
   group Org-Enclave binding verification [Post-MVP: Validation]
     ERCC1 -> ERCC1 : check Org-Enclave binding certificate
       note right ERCC1
-        - Credentials.Attested_Data.CC_Params == Credentials.Certificate.CC_Params
+        - Credentials.AttestedData.CC_Params == Credentials.Certificate.CC_Params
         - Credentials.Certificate should be issued by CA owned by CC_Params.MSPID
         - Credentials.Certificate.role == 'peer'
       end note
@@ -222,10 +222,10 @@ end
 
   group check consistency of Credentials
     create Lifecycle order 55
-    ERCC1 -> Lifecycle +: queryChaincodeDefinition (Credentials.Attested_Data.CC_Params.CC_Id)
+    ERCC1 -> Lifecycle +: queryChaincodeDefinition (Credentials.AttestedData.CC_Params.CC_Id)
     return chaincode definition
 
-    ERCC1 -> ERCC1    : check Credentials.Attested_Data.CC_Params against chaincode definition
+    ERCC1 -> ERCC1    : check Credentials.AttestedData.CC_Params against chaincode definition
     note right ERCC1
         This check ensures that:
         1) the chaincode version (i.e., the MREnclave) matches the

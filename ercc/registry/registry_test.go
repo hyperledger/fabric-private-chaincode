@@ -109,10 +109,10 @@ func TestRegisterEnclave(t *testing.T) {
 		&protos.Credentials{
 			Evidence: []byte("some mock evidence"),
 			SerializedAttestedData: &any.Any{
-				TypeUrl: proto.MessageName(&protos.Attested_Data{}),
-				Value: protoutil.MarshalOrPanic(&protos.Attested_Data{
+				TypeUrl: proto.MessageName(&protos.AttestedData{}),
+				Value: protoutil.MarshalOrPanic(&protos.AttestedData{
 					EnclaveVk: []byte("enclaveVKString"),
-					CcParams: &protos.CC_Parameters{
+					CcParams: &protos.CCParameters{
 						ChannelId: "WRONG_CHANNEL",
 					},
 				}),
@@ -126,10 +126,10 @@ func TestRegisterEnclave(t *testing.T) {
 		&protos.Credentials{
 			Evidence: []byte("some mock evidence"),
 			SerializedAttestedData: &any.Any{
-				TypeUrl: proto.MessageName(&protos.Attested_Data{}),
-				Value: protoutil.MarshalOrPanic(&protos.Attested_Data{
+				TypeUrl: proto.MessageName(&protos.AttestedData{}),
+				Value: protoutil.MarshalOrPanic(&protos.AttestedData{
 					EnclaveVk: []byte("enclaveVKString"),
-					CcParams: &protos.CC_Parameters{
+					CcParams: &protos.CCParameters{
 						ChannelId: channelId,
 					},
 				}),
@@ -146,10 +146,10 @@ func TestRegisterEnclave(t *testing.T) {
 	credentialBase64 := toBase64(&protos.Credentials{
 		Evidence: []byte("some mock evidence"),
 		SerializedAttestedData: &any.Any{
-			TypeUrl: proto.MessageName(&protos.Attested_Data{}),
-			Value: protoutil.MarshalOrPanic(&protos.Attested_Data{
+			TypeUrl: proto.MessageName(&protos.AttestedData{}),
+			Value: protoutil.MarshalOrPanic(&protos.AttestedData{
 				EnclaveVk: []byte("enclaveVKString"),
-				CcParams: &protos.CC_Parameters{
+				CcParams: &protos.CCParameters{
 					ChaincodeId: chaincodeId,
 					Version:     "WRONG_MRENCLAVE",
 					ChannelId:   channelId,
@@ -169,10 +169,10 @@ func TestRegisterEnclave(t *testing.T) {
 	credentialBase64 = toBase64(&protos.Credentials{
 		Evidence: []byte("some mock evidence"),
 		SerializedAttestedData: &any.Any{
-			TypeUrl: proto.MessageName(&protos.Attested_Data{}),
-			Value: protoutil.MarshalOrPanic(&protos.Attested_Data{
+			TypeUrl: proto.MessageName(&protos.AttestedData{}),
+			Value: protoutil.MarshalOrPanic(&protos.AttestedData{
 				EnclaveVk: []byte("enclaveVKString"),
-				CcParams: &protos.CC_Parameters{
+				CcParams: &protos.CCParameters{
 					ChaincodeId: chaincodeId,
 					Version:     mrenclave,
 					ChannelId:   channelId,
@@ -194,10 +194,10 @@ func TestRegisterEnclave(t *testing.T) {
 	credentialBase64 = toBase64(&protos.Credentials{
 		Evidence: []byte("some mock evidence"),
 		SerializedAttestedData: &any.Any{
-			TypeUrl: proto.MessageName(&protos.Attested_Data{}),
-			Value: protoutil.MarshalOrPanic(&protos.Attested_Data{
+			TypeUrl: proto.MessageName(&protos.AttestedData{}),
+			Value: protoutil.MarshalOrPanic(&protos.AttestedData{
 				EnclaveVk: []byte("enclaveVKString"),
-				CcParams: &protos.CC_Parameters{
+				CcParams: &protos.CCParameters{
 					ChaincodeId: chaincodeId,
 					Version:     mrenclave,
 					ChannelId:   channelId,
@@ -216,16 +216,16 @@ func TestRegisterEnclave(t *testing.T) {
 	credentialBase64 = toBase64(&protos.Credentials{
 		Evidence: []byte("some mock evidence"),
 		SerializedAttestedData: &any.Any{
-			TypeUrl: proto.MessageName(&protos.Attested_Data{}),
-			Value: protoutil.MarshalOrPanic(&protos.Attested_Data{
+			TypeUrl: proto.MessageName(&protos.AttestedData{}),
+			Value: protoutil.MarshalOrPanic(&protos.AttestedData{
 				EnclaveVk: []byte("enclaveVKString"),
-				CcParams: &protos.CC_Parameters{
+				CcParams: &protos.CCParameters{
 					ChaincodeId: chaincodeId,
 					Version:     mrenclave,
 					ChannelId:   channelId,
 					Sequence:    1,
 				},
-				HostParams: &protos.Host_Parameters{
+				HostParams: &protos.HostParameters{
 					PeerIdentity: someSerializedIdentity,
 				},
 			}),
