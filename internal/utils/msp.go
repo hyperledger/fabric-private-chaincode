@@ -14,7 +14,7 @@ import (
 )
 
 type IdentityEvaluatorInterface interface {
-	EvaluateCreatorIdentity(creatorIdentityBytes []byte, ownerIdentityBytes []byte) error
+	EvaluateCreatorIdentity(creatorIdentityBytes []byte, ownerMSP string) error
 }
 
 type IdentityEvaluator struct {
@@ -22,15 +22,10 @@ type IdentityEvaluator struct {
 
 // EvaluateCreatorIdentity check that two identities have the same msp id.
 // This function requires marshalled msp.SerializedIdentity as inputs.
-func (id *IdentityEvaluator) EvaluateCreatorIdentity(creatorIdentityBytes []byte, ownerIdentityBytes []byte) error {
+func (id *IdentityEvaluator) EvaluateCreatorIdentity(creatorIdentityBytes []byte, ownerMSP string) error {
 	creatorMSP, err := extractMSPID(creatorIdentityBytes)
 	if err != nil {
 		return fmt.Errorf("error while deserialzing creator identity, err: %s", err)
-	}
-
-	ownerMSP, err := extractMSPID(ownerIdentityBytes)
-	if err != nil {
-		return fmt.Errorf("error while deserialzing owner identity, err: %s", err)
 	}
 
 	if creatorMSP != ownerMSP {
