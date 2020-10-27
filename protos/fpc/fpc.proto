@@ -6,6 +6,7 @@
 syntax = "proto3";
 
 import "google/protobuf/any.proto";
+import "fabric/discovery/protocol.proto";
 import "fabric/peer/chaincode.proto";
 import "fabric/peer/proposal_response.proto";
 import "fabric/ledger/rwset/kvrwset/kv_rwset.proto";
@@ -29,10 +30,12 @@ message CCParameters {
 }
 
 message HostParameters {
-    // peer that hosts the enclave
-    // this is a serialized msp.SerializedIdentity (see https://github.com/hyperledger/fabric-protos/blob/master/msp/identities.proto#L15)
-    bytes peer_identity = 1;
+    // MSP ID of organization hosting (embracing) the peer with corresponding enclave
+    string peer_msp_id = 1;
 
+    // the (externally accessible) address of the peer endpoint
+    discovery.Endpoint peer_endpoint = 2;
+    
     // Post-MVP: This will be a X509 peer certificate on
     // Enclave_VK and CCParameters signed by a CA rooted in
     // the MSP of the Organization hosting the peer running the FPC
@@ -40,7 +43,7 @@ message HostParameters {
     //particular FPC Chaincode enclave.   See additional information in
     // fpc-registration.puml in the 'Org-Enclave binding/certification' group.
     // Note that this field may be moved elsewhere.
-    bytes certificate = 2;
+    bytes certificate = 3;
 }
 
 message AttestedData {
@@ -70,7 +73,16 @@ message Credentials {
     bytes evidence = 3;
 }
 
-message ChaincodeRequest {
+message InitEnclaveMessage {
+    // the (externally accessible) address of the peer endpoint
+    discovery.Endpoint peer_endpoint = 1;
+
+    // opaque parameters passed for initialization of the attestation API 
+    // (see more in 'attestation.proto', 'interfaces.attestation.md' and 'common/crypto/attestation-api')
+    bytes attestation_params = 2;
+}
+
+message CleartextChaincodeRequest {
     // the function and args to invoke
     protos.ChaincodeInput input = 1;
 
@@ -78,23 +90,23 @@ message ChaincodeRequest {
     bytes return_encryption_key = 3;
 }
 
-message EncryptedChaincodeRequest {
-    // an RSA-encryption of the serialization of ChaincodeRequest with the chaincode encryption key
+message ChaincodeRequestMessage {
+    // an RSA-encryption of the serialization of CleartextChaincodeRequest with the chaincode encryption key
     bytes encrypted_request = 1;
 }
 
-message ChaincodeResponse {
+message CleartextChaincodeResponse {
     // the response of the chaincode invocation
     protos.Response response = 1;
 }
 
-message EncryptedChaincodeResponse {
-    // an aes128-gcm encryption of the serialization of ChaincodeResponse
+message ChaincodeResponseMessage {
+    // an aes128-gcm encryption of the serialization of CleartextChaincodeResponse
     bytes encrypted_response = 1;
 
     // R/W set (of cleartext keys but encrypted values)
     // This field is only valid for the lightweight FPC variant but absent from the full version with in-peer FPC validation
-    kvrwset.KVRWSet encrypted_rw_set = 2;
+    kvrwset.KVRWSet rw_set = 2;
 
     // signature over cleartext response and (hash of) R/W set
     bytes signature = 3;

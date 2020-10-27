@@ -39,18 +39,24 @@ group prepare FPC proposal
 CLI -> ERCC1 ++: queryChaincodeEncryptionKey(CC_Id)
 return Chaincode_EK
 
-CLI -> CLI : r_key <- keyGen()
+CLI -> CLI : ccreq_msg.rsp_key <- keyGen()
 note right
     generate a symmetric key to
     encrypt the FPC chaincode result
 end note
 
-CLI -> CLI : args_enc <- encrypt <args, r_key> with Chaincode_EK
+CLI -> CLI : ccreq_msg.encryped_request <- encrypt <args, r_key> with Chaincode_EK
 
 end
 
 group invoke
-  CLI -> Peer ++: send proposal <- <chaincodeInvoke, CC_Id, args_enc, ...>
+  CLI -> ERCC1 ++: queryListEnclaveCredentials(CC_Id)
+  return list of Credentials
+  note right
+    HostParam in Credentials allows client to identify peers which host enclaves for this Chaincode
+  end note
+
+  CLI -> Peer ++: send proposal <- <chaincodeInvoke, CC_Id, ccreq_msg>
 
   alt FPC Chaincode is not running
       note right Peer
@@ -110,7 +116,7 @@ group invoke
       return
 
 
-      Enclave1 -> Enclave1 : <args, r_key> <- decrypt args_enc with Chaincode_DK
+      Enclave1 -> Enclave1 : <args, r_key> <- decrypt ccreq_msg.encryped_request with Chaincode_DK
 
       note right
         If proposal contains optional Req_ledger_enclave_inst_id parameter,
@@ -127,14 +133,24 @@ group invoke
       end ref
 
 
-      Enclave1 -> Enclave1 : result_enc <- encrypt result with r_key
+      Enclave1 -> Enclave1 : ccrsp_msg.encrypted_response <- encrypt result with r_key
       note right
         The encryption is via authenticated symmetric cipher like aes-gcm
       end note
-      Enclave1 -> Enclave1 : Sig_Enclave <- sign <args, read/writeset, result_enc> with Enclave_SK
-      return <result_enc, Sig_Enclave>
+      Enclave1 -> Enclave1 : ccrsp_msg.signature <- sign <args, read/writeset, result_enc> with Enclave_SK
+      Enclave1 -> Enclave1 : ccrsp_msg.enclave_id <- Enclave_Id
+      return <ccrsp_msg>
 
-    return <result_enc, Sig_Enclave>
+    alt lightweight FPC
+      ccrsp_msg.rw_set <- encrypted_rw_set
+      note right
+        with chaincode-hosted validation, the stub will keep track of the 
+        R/W set (of cleartext keys but encrypted values) and pass it on to
+        the validation transaction as part of the response message.
+      end note
+    end
+
+    return <ccrsp_msg>
 
     alt  MVP
       Peer -> Peer : create proposal response <args, read/writeset, result=<result_enc, Sig_Enclave, Enclave_VK>, ...>

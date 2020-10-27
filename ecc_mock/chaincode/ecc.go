@@ -17,7 +17,6 @@ import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
-	"github.com/hyperledger/fabric-protos-go/msp"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/protoutil"
@@ -61,12 +60,6 @@ func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Resp
 
 	// ecall_init(cc params, host params, and attestation params)
 
-	serializedIdentity := &msp.SerializedIdentity{
-		Mspid:   "Org1MSP",
-		IdBytes: []byte("some bytes"),
-	}
-	serializedUser := protoutil.MarshalOrPanic(serializedIdentity)
-
 	credentials := &protos.Credentials{
 		Attestation: []byte("{\"attestation_type\":\"simulated\",\"attestation\":\"MA==\"}"),
 		SerializedAttestedData: &any.Any{
@@ -80,7 +73,8 @@ func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Resp
 					Sequence:    1,
 				},
 				HostParams: &protos.HostParameters{
-					PeerIdentity: serializedUser,
+					PeerMspId: "org1",
+					// PeerEndpoint:
 				},
 			}),
 		},
