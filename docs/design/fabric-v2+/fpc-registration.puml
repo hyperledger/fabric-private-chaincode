@@ -40,7 +40,7 @@ end note
 
 Admin -> Admin: Attestation_Params <- <.e.g, SPID, sig-rl, ....>
 
-Admin -> Peer_CLI ++: lifecycle chaincode\n createenclave (CC_Id, Attestation_Params)
+Admin -> Peer_CLI ++: lifecycle chaincode\n createenclave (CC_Id, Attestation_Params, Peer_Endpoint)
 
 group enclave creation
   note right Peer_CLI
@@ -56,12 +56,15 @@ group enclave creation
     chaincode definition on the channel as well as in ERCC.
   end note
 
-  Peer_CLI -> ECC1 ++: initEnclave (Attestation_Params)
+  Peer_CLI -> Peer_CLI : init_enclave_msg.attestation_params <- Attestation_Params
+  Peer_CLI -> Peer_CLI : init_enclave_msg.peer_endpoint <- Peer_Endpoint
+
+  Peer_CLI -> ECC1 ++: initEnclave (init_encalve_msg)
   ref over ECC1
     This might trigger [FPC Chaincode is not running] from fpc-cc-invocation.puml
   end ref
 
-  ECC1 -> ECC1: fetch CC_Params and Host_Params
+  ECC1 -> ECC1: fetch CC_Params and Host_Params objects
   note right ECC1
     The CC_Params help binding the enclave to a specific FPC chaincode,
     as it is registered in Fabric.
@@ -69,6 +72,11 @@ group enclave creation
     The requirement of CC_Params can be met in practice as follows:
     CC_Id, version, MSPID, and channel id can be retrieved through Fabric
     shim functions
+
+    The Host_Params has two purposes: enable endpoint discovery for enclaves
+    and capture the endorsement of the organization hosting the enclave.
+    The stub creates it based on 'getCreator' to retrieve the MSP ID and
+    from the endpoint address passed in initEnclave. 
 
     Note that the validation of these parameters is performed by ERCC.
     If necessary, a pre-validation can be performed through the Ledger Enclave.
@@ -211,14 +219,19 @@ end
       end note
    end group
 
-  group Org-Enclave binding verification [Post-MVP: Validation]
+  alt Org-Enclave binding verification [MVP: Validation]
+    ERCC1 -> ERCC1 : check Credentials.Host_Params.peer_msp_id
+      note right ERCC1
+        must match msp ID from getCreator of this request
+      end note
+  else Org-Enclave binding verification [Post-MVP: Validation]
     ERCC1 -> ERCC1 : check Org-Enclave binding certificate
       note right ERCC1
         - Credentials.AttestedData.CC_Params == Credentials.Certificate.CC_Params
         - Credentials.Certificate should be issued by CA owned by CC_Params.MSPID
         - Credentials.Certificate.role == 'peer'
       end note
-  end group
+  end
 
   group check consistency of Credentials
     create Lifecycle order 55

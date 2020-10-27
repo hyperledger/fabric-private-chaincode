@@ -41,15 +41,16 @@ func (fake *AttestationVerifier) VerifyEvidence(arg1 []byte, arg2 []byte, arg3 s
 		arg2 []byte
 		arg3 string
 	}{arg1Copy, arg2Copy, arg3})
+	stub := fake.VerifyEvidenceStub
+	fakeReturns := fake.verifyEvidenceReturns
 	fake.recordInvocation("VerifyEvidence", []interface{}{arg1Copy, arg2Copy, arg3})
 	fake.verifyEvidenceMutex.Unlock()
-	if fake.VerifyEvidenceStub != nil {
-		return fake.VerifyEvidenceStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.verifyEvidenceReturns
 	return fakeReturns.result1
 }
 
