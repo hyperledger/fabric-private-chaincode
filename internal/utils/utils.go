@@ -80,7 +80,7 @@ func SplitFPCCompositeKey(comp_str string) []string {
 }
 
 // returns enclave_id as hex-encoded string of SHA256 hash over enclave_vk.
-func GetEnclaveId(attestedData *protos.Attested_Data) string {
+func GetEnclaveId(attestedData *protos.AttestedData) string {
 	h := sha256.Sum256(attestedData.EnclaveVk)
 	return hex.EncodeToString(h[:])
 }
