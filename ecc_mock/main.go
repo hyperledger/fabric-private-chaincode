@@ -21,7 +21,7 @@ func main() {
 
 	// See chaincode.env.example
 	config := serverConfig{
-		CCID:    os.Getenv("CHAINCODE_ID"),
+		CCID:    os.Getenv("CHAINCODE_PKG_ID"),
 		Address: os.Getenv("CHAINCODE_SERVER_ADDRESS"),
 	}
 

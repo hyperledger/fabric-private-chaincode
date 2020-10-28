@@ -68,7 +68,7 @@ func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Resp
 	serializedUser := protoutil.MarshalOrPanic(serializedIdentity)
 
 	credentials := &protos.Credentials{
-		Evidence: []byte("{\"attestation_type\":\"simulated\",\"evidence\":\"MA==\"}"),
+		Attestation: []byte("{\"attestation_type\":\"simulated\",\"attestation\":\"MA==\"}"),
 		SerializedAttestedData: &any.Any{
 			TypeUrl: proto.MessageName(&protos.Attested_Data{}),
 			Value: protoutil.MarshalOrPanic(&protos.Attested_Data{
