@@ -40,9 +40,23 @@ Install FPC components:
 ```bash
 cd $FPC_PATH/integration/test-network
 ./installFPC.sh
+# copy/past the export statement a successfully install will echo
 ```
 
 Start FPC container
 ```bash
 docker-compose up
+```
+
+Run test program
+```bash
+cd ${FPC_PATH}/client_sdk/go/test
+make
+./test
+```
+
+Shutdown network
+```bash
+cd $FPC_PATH/integration/test-network/fabric-samples
+./network.sh down
 ```

@@ -42,33 +42,36 @@ VERBOSE=${VERBOSE:-}
 
 # Install ERCC and ECC
 
+# Org 1
 setGlobals 1
 peer lifecycle chaincode install $PKG_PATH/ercc.tgz
 peer lifecycle chaincode install $PKG_PATH/ecc.tgz
 peer lifecycle chaincode queryinstalled
+ORG1_ALL_INSTALLED=/tmp/installed_chaincodes.org1
+peer lifecycle chaincode queryinstalled > ${ORG1_ALL_INSTALLED}
+ORG1_ERCC_PKG_ID=$(cat ${ORG1_ALL_INSTALLED} | grep ercc | awk '{print $3}' | sed 's/.$//')
+ORG1_ECC_PKG_ID=$(cat ${ORG1_ALL_INSTALLED}  | grep ecc | awk '{print $3}' | sed 's/.$//')
 
+# Org 2
 setGlobals 2
 peer lifecycle chaincode install $PKG_PATH/ercc.tgz
 peer lifecycle chaincode install $PKG_PATH/ecc.tgz
 peer lifecycle chaincode queryinstalled
+ORG2_ALL_INSTALLED=/tmp/installed_chaincodes.org2
+peer lifecycle chaincode queryinstalled > ${ORG2_ALL_INSTALLED}
+ORG2_ERCC_PKG_ID=$(cat ${ORG2_ALL_INSTALLED} | grep ercc | awk '{print $3}' | sed 's/.$//')
+ORG2_ECC_PKG_ID=$(cat ${ORG2_ALL_INSTALLED}  | grep ecc | awk '{print $3}' | sed 's/.$//')
 
-# Get chaincode PGK IDs
-
-ALL_INSTALLED=/tmp/installed_chaincodes
-peer lifecycle chaincode queryinstalled > ${ALL_INSTALLED}
-
-PKGID_ERCC=$(cat ${ALL_INSTALLED} | grep ercc | awk '{print $3}' | sed 's/.$//')
-PKGID_ECC=$(cat ${ALL_INSTALLED}  | grep ecc | awk '{print $3}' | sed 's/.$//')
 
 # Approve
 
 setGlobals 2
-peer lifecycle chaincode approveformyorg -o ${ORDERER} --channelID ${CHANNEL_ID} --name ercc --signature-policy "${ERCC_EP}" --version 1.0 --package-id ${PKGID_ERCC} --sequence 1
-peer lifecycle chaincode approveformyorg -o ${ORDERER} --channelID ${CHANNEL_ID} --name ecc --signature-policy "${ECC_EP}" --version 1.0 --package-id ${PKGID_ECC} --sequence 1
+peer lifecycle chaincode approveformyorg -o ${ORDERER} --channelID ${CHANNEL_ID} --name ercc --signature-policy "${ERCC_EP}" --version 1.0 --package-id ${ORG2_ERCC_PKG_ID} --sequence 1
+peer lifecycle chaincode approveformyorg -o ${ORDERER} --channelID ${CHANNEL_ID} --name ecc --signature-policy "${ECC_EP}" --version 1.0 --package-id ${ORG2_ECC_PKG_ID} --sequence 1
 
 setGlobals 1
-peer lifecycle chaincode approveformyorg -o ${ORDERER} --channelID ${CHANNEL_ID} --name ercc --signature-policy "${ERCC_EP}" --version 1.0 --package-id ${PKGID_ERCC} --sequence 1
-peer lifecycle chaincode approveformyorg -o ${ORDERER} --channelID ${CHANNEL_ID} --name ecc --signature-policy "${ECC_EP}" --version 1.0 --package-id ${PKGID_ECC} --sequence 1
+peer lifecycle chaincode approveformyorg -o ${ORDERER} --channelID ${CHANNEL_ID} --name ercc --signature-policy "${ERCC_EP}" --version 1.0 --package-id ${ORG1_ERCC_PKG_ID} --sequence 1
+peer lifecycle chaincode approveformyorg -o ${ORDERER} --channelID ${CHANNEL_ID} --name ecc --signature-policy "${ECC_EP}" --version 1.0 --package-id ${ORG1_ECC_PKG_ID} --sequence 1
 
 # Commit
 
@@ -77,7 +80,14 @@ peer lifecycle chaincode commit -o ${ORDERER} --channelID ${CHANNEL_ID} --name e
 
 # Show chaincodes
 
-echo "${PKGID_ERCC}"
 peer lifecycle chaincode querycommitted --output json -o ${ORDERER} --channelID ${CHANNEL_ID} --name ercc
-echo "${PKGID_ECC}"
 peer lifecycle chaincode querycommitted --output json -o ${ORDERER} --channelID ${CHANNEL_ID} --name ecc
+
+cat <<EOF
+# define following environment-variables for docker-compose:
+export \\
+  ORG1_ECC_PKG_ID=${ORG1_ECC_PKG_ID}\\
+  ORG1_ERCC_PKG_ID=${ORG1_ERCC_PKG_ID}\\ 
+  ORG2_ECC_PKG_ID=${ORG2_ECC_PKG_ID}\\
+  ORG2_ERCC_PKG_ID=${ORG2_ERCC_PKG_ID} 
+EOF

@@ -70,7 +70,7 @@ func main() {
 	if fpcPath == "" {
 		panic("FPC_PATH not set")
 	}
-	testNetworkPath = filepath.Join(fpcPath, "integration", "fabric-samples", "test-network")
+	testNetworkPath = filepath.Join(fpcPath, "integration", "test-network", "fabric-samples", "test-network")
 
 	err := os.Setenv("DISCOVERY_AS_LOCALHOST", "true")
 	if err != nil {
