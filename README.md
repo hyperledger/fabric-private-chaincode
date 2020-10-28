@@ -85,8 +85,7 @@ The system consists of the following components:
    attestation result on the blockchain. The attestation demonstrates that a
    specific chaincode executes in an actual enclave. This enables the peers
    and the clients to inspect the attestation of a chaincode enclave before
-   invoking chaincode operations or committing state changes. The enclave
-   registry (``ercc``) comes with a custom validation plugin (``ercc-vscc``).
+   invoking chaincode operations or committing state changes. 
 
 1. *Enclave transaction validator:* The enclave transaction validator
    (``ecc/vscc``) complements the peer’s validation system and is responsible
