@@ -55,7 +55,7 @@ type identityEvaluator interface {
 var (
 	mrenclave              = `98aed61c91f258a37c68ed4943297695647ec7bbe6008cc111b0a12650ebeb91`
 	channelId              = "MY_TEST_CHANNEL"
-	chaincodeId            = "SOME_CHAINCODE_ID"
+	chaincodeId            = "SOME_CHAINCODE_PKG_ID"
 	enclaveId              = "some enclave id"
 	someSerializedIdentity = []byte("some identity")
 )

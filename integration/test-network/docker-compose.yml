@@ -13,8 +13,8 @@ services:
     image: fpc/ecc
     environment:
       - CHAINCODE_SERVER_ADDRESS=ecc.peer0.org1.example.com:9999
-      - CHAINCODE_ID=ecc_1.0:2c4f49232cae2fdd5f86c035659c7a0a2476ba6ec7ff7aba8cad48d84a07cdba
-      - FABRIC_LOGGING_SPEC=DEBUG
+      - CHAINCODE_PKG_ID=${ORG1_ECC_PKG_ID}
+      - FABRIC_LOGGING_SPEC=${FABRIC_LOGGING_SPEC:-DEBUG}
     networks:
       - default
 
@@ -24,8 +24,8 @@ services:
     image: fpc/ercc
     environment:
       - CHAINCODE_SERVER_ADDRESS=ercc.peer0.org1.example.com:9999
-      - CHAINCODE_ID=ercc_1.0:db8357401a6d9cb34e6cd0c820fab21694bdff788f2c9931ffe5827e2d71668f
-      - FABRIC_LOGGING_SPEC=DEBUG
+      - CHAINCODE_PKG_ID=${ORG1_ERCC_PKG_ID}
+      - FABRIC_LOGGING_SPEC=${FABRIC_LOGGING_SPEC:-DEBUG}
     networks:
       - default
 
@@ -36,8 +36,8 @@ services:
     image: fpc/ecc
     environment:
       - CHAINCODE_SERVER_ADDRESS=ecc.peer0.org2.example.com:9999
-      - CHAINCODE_ID=ecc_1.0:2c4f49232cae2fdd5f86c035659c7a0a2476ba6ec7ff7aba8cad48d84a07cdba
-      - FABRIC_LOGGING_SPEC=DEBUG
+      - CHAINCODE_PKG_ID=${ORG2_ECC_PKG_ID}
+      - FABRIC_LOGGING_SPEC=${FABRIC_LOGGING_SPEC:-DEBUG}
     networks:
       - default
 
@@ -47,8 +47,8 @@ services:
     image: fpc/ercc
     environment:
       - CHAINCODE_SERVER_ADDRESS=ercc.peer0.org2.example.com:9999
-      - CHAINCODE_ID=ercc_1.0:db8357401a6d9cb34e6cd0c820fab21694bdff788f2c9931ffe5827e2d71668f
-      - FABRIC_LOGGING_SPEC=DEBUG
+      - CHAINCODE_PKG_ID=${ORG2_ERCC_PKG_ID}
+      - FABRIC_LOGGING_SPEC=${FABRIC_LOGGING_SPEC:-DEBUG}
     networks:
       - default
 
