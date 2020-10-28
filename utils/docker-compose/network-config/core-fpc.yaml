@@ -412,10 +412,6 @@ peer:
         decorators:
           -
             name: DefaultDecorator
-          -
-            # FPC Addition:1
-            name: ERCCDecorator
-            library:
         endorsers:
           escc:
             name: DefaultEndorsement
@@ -424,14 +420,10 @@ peer:
           vscc:
             name: DefaultValidation
             library:
-          # FPC Addition:2
-          ercc-vscc:
-             name: ERCCValidation
-             library:
-          # FPC Addition:3
-          fpc-vscc:
-             name: FPCValidation
-             library:
+          # # FPC Addition:3
+          # fpc-vscc:
+          #    name: FPCValidation
+          #    library:
 
     #    library: /etc/hyperledger/fabric/plugin/escc.so
     # Number of goroutines that will execute transaction validation in parallel.

@@ -411,10 +411,6 @@ peer:
         decorators:
           -
             name: DefaultDecorator
-          -
-            # FPC Addition:1
-            name: ERCCDecorator
-            library:
         endorsers:
           escc:
             name: DefaultEndorsement
@@ -423,14 +419,10 @@ peer:
           vscc:
             name: DefaultValidation
             library:
-          # FPC Addition:2
-          ercc-vscc:
-             name: ERCCValidation
-             library:
           # # FPC Addition:3
-          fpc-vscc:
-             name: FPCValidation
-             library:
+          # fpc-vscc:
+          #    name: FPCValidation
+          #    library:
     # Number of goroutines that will execute transaction validation in parallel.
     # By default, the peer chooses the number of CPUs on the machine. Set this
     # variable to override that choice.
