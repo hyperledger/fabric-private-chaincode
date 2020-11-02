@@ -120,4 +120,8 @@ message ChaincodeResponseMessage {
 
     // identity for public key used to sign
     string enclave_id = 5;
+
+    // let's cary the original proposal with the response
+    bytes proposal_payload = 5;
+    bytes proposal_signature = 6;
 }

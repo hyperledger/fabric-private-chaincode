@@ -8,43 +8,59 @@ SPDX-License-Identifier: Apache-2.0
 package fpc
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc/attestation"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
-
 	"github.com/golang/protobuf/proto"
+	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc/attestation"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
+	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
-	"github.com/hyperledger/fabric/protoutil"
 )
 
 type ManagementInterface interface {
-	CreateEnclave(peer string, attestationParams ...string) error
+	CreateEnclave(peerEndpoint string, attestationParams ...string) error
 }
 
 type ManagementAPI struct {
-	network *gateway.Network
+	contract *gateway.Contract
+	ercc     *gateway.Contract
 }
 
-func (c *Contract) CreateEnclave(peer string, attestationParams ...string) error {
+func GetManagementAPI(network *gateway.Network, chaincodeId string) ManagementInterface {
+	contract := network.GetContract(chaincodeId)
+	ercc := network.GetContract("ercc")
+	return &ManagementAPI{contract: contract, ercc: ercc}
+}
 
-	p, err := json.Marshal(&utils.AttestationParams{Params: attestationParams})
-	attestationParamsBase64 := base64.StdEncoding.EncodeToString(p)
-	log.Printf("Prep attestation params: %s\n", attestationParamsBase64)
-
+func (c *ManagementAPI) CreateEnclave(peerEndpoint string, attestationParams ...string) error {
 	txn, err := c.contract.CreateTransaction(
 		"__initEnclave",
-		gateway.WithEndorsingPeers(peer),
+		gateway.WithEndorsingPeers(peerEndpoint),
 	)
 	if err != nil {
 		return err
 	}
 
-	credentialsBytes, err := txn.Evaluate(attestationParamsBase64)
+	endpoint, err := utils.ToEndpoint(peerEndpoint)
+	if err != nil {
+		shim.Error(err.Error())
+	}
+
+	serializedAttestationParams, err := json.Marshal(&utils.AttestationParams{Params: attestationParams})
+	if err != nil {
+		shim.Error(err.Error())
+	}
+
+	initMsg := &protos.InitEnclaveMessage{
+		PeerEndpoint:      endpoint,
+		AttestationParams: serializedAttestationParams,
+	}
+
+	log.Printf("calling __initEnclave\n")
+	credentialsBytes, err := txn.Evaluate(utils.ProtoAsBase64(initMsg))
 	if err != nil {
 		return fmt.Errorf("evaluation error: %s", err)
 	}
@@ -54,7 +70,6 @@ func (c *Contract) CreateEnclave(peer string, attestationParams ...string) error
 	if err != nil {
 		return fmt.Errorf("cannot unmarshal credentials: %s", err)
 	}
-	log.Printf("Received credentials from enclave: %s\n", credentials)
 
 	// perform attestation evidence transformation
 	credentials, err = attestation.ToEvidence(credentials)
@@ -62,16 +77,11 @@ func (c *Contract) CreateEnclave(peer string, attestationParams ...string) error
 		return err
 	}
 
-	credentialsBytes = protoutil.MarshalOrPanic(credentials)
-	credentialsBase64 := base64.StdEncoding.EncodeToString(credentialsBytes)
-
-	log.Printf("Call registerEnclave at ERCC: %s\n", attestationParamsBase64)
-	_, err = c.ercc.SubmitTransaction("registerEnclave", credentialsBase64)
+	log.Printf("calling registerEnclave\n")
+	_, err = c.ercc.SubmitTransaction("registerEnclave", utils.ProtoAsBase64(credentials))
 	if err != nil {
 		return err
 	}
-
-	c.enclavePeers = append(c.enclavePeers, peer)
 
 	return nil
 }
