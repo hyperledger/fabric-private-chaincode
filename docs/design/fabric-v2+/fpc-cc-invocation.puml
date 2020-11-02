@@ -30,6 +30,10 @@ ref over User1, TLCC1
   see fpc-registration-new.puml
   |||
 end ref
+note over TLCC1
+  "Full" FPC only (Post-MVP)
+end note
+
 |||
 
 User1 -> CLI ++: invoke <CC_Id, args, ...>
@@ -99,22 +103,23 @@ group invoke
       end note
       ECC1 -> Enclave1 ++: ecall_chaincode_invoke (proposal, CTX)
 
-      Enclave1 <-> TLCC1: establish secure channel based on local attestation
-      note right Enclave1
-         See interfaces.ecc-tlcc-channel.md for details on secure channel
-      end note
+      alt "full" FPC (Post-MVP)
+        Enclave1 <-> TLCC1: establish secure channel based on local attestation
+          note right Enclave1
+             See interfaces.ecc-tlcc-channel.md for details on secure channel
+          end note
 
-      Enclave1 -> Enclave1 : verify proposal
+        Enclave1 -> Enclave1 : verify proposal
 
-      Enclave1 -> TLCC1 ++: verify (proposal.creator, CTX)
-      note over TLCC1
-        Ledger_enclave access is needed to check that the creator
-        (client identity) passes MSP validation, that is,
-        it comes with a certificate that is a proper root
-        of trust.
-      end note
-      return
-
+        Enclave1 -> TLCC1 ++: verify (proposal.creator, CTX)
+          note over TLCC1
+            Ledger_enclave access is needed to check that the creator
+            (client identity) passes MSP validation, that is,
+            it comes with a certificate that is a proper root
+            of trust.
+          end note
+        return
+      end
 
       Enclave1 -> Enclave1 : <args, r_key> <- decrypt ccreq_msg.encryped_request with Chaincode_DK
 
@@ -137,23 +142,24 @@ group invoke
       note right
         The encryption is via authenticated symmetric cipher like aes-gcm
       end note
-      Enclave1 -> Enclave1 : ccrsp_msg.signature <- sign <args, read/writeset, result_enc> with Enclave_SK
+      Enclave1 -> Enclave1 : ccrsp_msg.signature <- sign <proposal, read/writeset, result_enc> with Enclave_SK
       Enclave1 -> Enclave1 : ccrsp_msg.enclave_id <- Enclave_Id
       return <ccrsp_msg>
 
-    alt lightweight FPC
-      ccrsp_msg.rw_set <- encrypted_rw_set
-      note right
-        with chaincode-hosted validation, the stub will keep track of the 
-        R/W set (of cleartext keys but encrypted values) and pass it on to
-        the validation transaction as part of the response message.
-      end note
+     alt FPC "light"
+       ECC1 -> ECC1 : ccrsp_msg.rw_set <- encrypted_rw_set
+       note right ECC1
+         with chaincode-hosted validation, the stub will keep track of the 
+         R/W set (of cleartext keys but encrypted values) and pass it on to
+         the validation transaction as part of the response message.
+       end note
+       ECC1 -> ECC1 : ccrsp_msg.proposal <- proposal
     end
 
     return <ccrsp_msg>
 
-    alt  MVP
-      Peer -> Peer : create proposal response <args, read/writeset, result=<result_enc, Sig_Enclave, Enclave_VK>, ...>
+  alt  MVP
+    Peer -> Peer : create proposal-response <proposal, read/writeset, result=ccrsp_msg, ...>
       note right Peer
           Note that the result field of the proposal response contains
           a message that comprises the encrypted result produced by the
@@ -161,50 +167,44 @@ group invoke
           verification key.
       end note
 
-    else Post-MVP: Validation
-      Peer -> Peer : create proposal response <args, read/writeset, result=result_enc, ...>
-      Peer -> Peer : Replace endorsement signature & cert of peer with Sig_enclave & CC_Params.Certificate
+  else Post-MVP: Validation
+    Peer -> Peer : create proposal-response <proposal, read/writeset, result=ccrsp_msg.result_enc, ...>
+    Peer -> Peer : Replace in proposal-response endorsement signature & cert of peer with ccrsp_msg.signature & CC_Params.Certificate
       note right Peer
           This step is performed using an FPC-specific endorsement plugin.
       end note
-    end
+  end
 
-    return proposal response
+  return proposal-response
+
+  loop for all/"enough" enclave endorsers
+    note right CLI
+      Invoke at enough endorsing peers to satisfy enclave endorsement policy 
+      and collect { proposal-response }.
+
+      NOTE: For MVP we support a (single) designated enclave only
+    end note
+    ref over CLI
+      invoke
+    end
+  end
+
 end
 
 group complete transaction
-    note right CLI
-        Invoke at enough endorsing peers to satisfy
-        endorsement policy and collect proposal responses.
-
-        NOTE: For MVP we support a designated endorsing peer only
-    end note
-    loop for all/"enough" endorsers
-
-        ref over CLI
-            invoke
-        end
-    end
-    CLI -> CLI : form transaction
-
-    create entity Orderer order 100
-    CLI -> Orderer : submit transaction
+    ref over CLI, ECC1
+      continue with transaction submission/validation
+      see fpc-validation.puml
+      |||
+    end ref
 end
 
 group result decryption
-    CLI -> CLI : result_enc <- extract from proposal response
+    CLI -> CLI : result_enc <- extract from proposal-response
     CLI -> CLI : result <- decrypt result_enc with r_key
 end
 
 
 return result
-
-|||
-
-ref over User1, Orderer
-    continue with validation phase after ordering
-    see fpc-validation.puml
-    |||
-end ref
 
 @enduml

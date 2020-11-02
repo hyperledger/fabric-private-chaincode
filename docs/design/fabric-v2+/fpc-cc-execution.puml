@@ -31,6 +31,10 @@ ref over Enclave1, TLCC1
     see fpc-cc-invocation.puml
 end
 
+note over TLCC1
+  "Full" FPC only (Post-MVP)
+end note
+
 
 Enclave1 -> Chaincode : invoke (args, CTX)
 activate Chaincode
@@ -52,40 +56,39 @@ loop
 
   alt getState
     Chaincode -> Enclave1 ++ : getState(key, CTX)
-    Enclave1 -> Enclave1 : update readset
-    Enclave1 -> ECC1 ++ : getState(key, CTX)
-    ECC1 -> storage1 ++ : getState(key, CTX)
-    return value_enc
-    ECC1 -> TLCC1 ++ : getMetadata(key, CTX)
-    return integrity-metadata
-    return value_enc, integrity-metadata
-    Enclave1 -> Enclave1 : check value_enc using integrity-data
+      Enclave1 -> Enclave1 : update readset
+      Enclave1 -> ECC1 ++ : getState(key, CTX)
+        ECC1 -> storage1 ++ : getState(key, CTX)
+        return value_enc
+        return value_enc
+      alt "Full" FPC (Post-MVP)
+        Enclave1 -> TLCC1 ++ : getMetadata(key, CTX)
+          note over Enclave1: this request is via the enclave-tlcc secure channel
+          return integrity-metadata
+        Enclave1 -> Enclave1 : check value_enc using integrity-data
+      end
 
-    note right: also check that integrity-metadata comes from Ledger_enclave
-    Enclave1 -> Enclave1 : value <- decrypt value_enc with SEK
-    Enclave1 -> Enclave1 : update readset
-    return value
+      Enclave1 -> Enclave1 : value <- decrypt value_enc with SEK
+      Enclave1 -> Enclave1 : update readset
+      return value
     note right
         Application logic can now use value for
         some computation; the value is in clear
         and validated with the help of Ledger_enclave.
     end note
 
-
   else putState
     Chaincode -> Enclave1 ++ : putState(key, value, CTX)
-    Enclave1 -> Enclave1 : value_enc <- encrypt value with SEK
-    Enclave1 -> ECC1 ++: putState(key, value_enc, CTX)
-    note right
-        NOTE that with putState operations, only encrypted
-        data leaves the enclave.
-    end note
-    ECC1 -> ECC1 : putState(key, value_enc, CTX)
-    return
-
-    Enclave1 -> Enclave1 : update writeset
-    return
-
+      Enclave1 -> Enclave1 : value_enc <- encrypt value with SEK
+      Enclave1 -> ECC1 ++: putState(key, value_enc, CTX)
+        note right
+          NOTE that with putState operations, only encrypted
+          data leaves the enclave.
+        end note
+        ECC1 -> ECC1 : putState(key, value_enc, CTX)
+        return
+      Enclave1 -> Enclave1 : update writeset
+      return
   end
 end
 

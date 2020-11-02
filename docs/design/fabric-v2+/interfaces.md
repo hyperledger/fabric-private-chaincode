@@ -108,6 +108,8 @@ type EnclaveRegistryCC struct {
 
 # TLCC
 
+_This is a feature of (post-MVP) "Full" FPC and not part of the MVP FPC "light" variant._
+
 Some notes on TLCC. The TLCC instance is currently implemented as a system chaincode, that is, there exists only a single instance. As a peer can participate in many channels, there is a separate TLCC_enclave per each channel. The TLCC chaincode is responsible to multiplex requests for a given channel to the corresponding TLCC_enclave. Note for MVP, we only support a single channel but the interface specified here should already take multi-channel support into account.
 
 ## Interface:
@@ -161,6 +163,8 @@ type StubImpl struct {
 ```
 
 # TLCC_Enclave
+
+_This is a feature of (post-MVP) "Full" FPC and not part of the MVP FPC "light" variant._
 
 ## Interface:
 Defined in the TLCC EDL.
@@ -224,7 +228,7 @@ func Invoke(stub shim.ChaincodeStubInterface) pb.Response {}
 // stub shim.ChaincodeStubInterface, but this will be handled transparently by Invoke
 
 // triggered by an admin
-func initEnclave(AttestationParams []byte) (Credentials, error) {}
+func initEnclave(init InitEnclaveMessage) (Credentials, error) {}
 
 // key generation
 func generateCCKeys() (SignedCCKeyRegistrationMessage, error) {}
@@ -237,7 +241,10 @@ func importCCKeys() (SignedCCKeyRegistrationMessage, error) {}
 func getEnclaveId() (string, error) {}
 
 // chaincode invoke
-func chaincodeInvoke(request EncryptedChaincodeRequest) (EncryptedChaincodeResponse, error) {}
+func chaincodeInvoke(request ChaincodeRequestMessage) (ChaincodeResponseMessage, error) {}
+
+// validate enclave endorsement (FPC "light" only)
+func validateEnclaveEndorsement(response ChaincodeResponseMessage)(error) {}
 ```
 
 This interface is implemented by ECC to let a chaincode enclave call into the peer
@@ -267,7 +274,7 @@ void ocall_get_state_by_partial_composite_key(
         [user_check] void *u_shim_ctx);
 ```
 
-For the tlcc<->ecc channel, See [Ledger Enclave - FPC
+For "Full" FPC (post-MVP), see also [Ledger Enclave - FPC
 Stub Secure Channel Module](interfaces.ecc-tlcc-channel.md) for an
 additional ocall provided by that module.
 
