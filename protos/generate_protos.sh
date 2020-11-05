@@ -47,7 +47,7 @@ mkdir -p $FABRIC_BUILD_DIR
 GO_BUILD_DIR=${FPC_PATH}/internal/protos
 mkdir -p $GO_BUILD_DIR
 
-PROTOC_OPTS="--plugin=protoc-gen-nanopb=$NANOPB_PATH/generator/protoc-gen-nanopb"
+PROTOC_OPTS="--plugin=protoc-gen-nanopb=$NANOPB_PATH/generator/protoc-gen-nanopb-py2"
 
 # compile google protos
 $PROTOC_CMD "$PROTOC_OPTS" --proto_path=${PROTOS_DIR} --nanopb_out=$BUILD_DIR ${PROTOS_DIR}/google/protobuf/*.proto
