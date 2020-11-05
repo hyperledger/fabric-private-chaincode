@@ -279,7 +279,7 @@ Make sure that you have the following required dependencies installed:
 
 * Protocol Buffers
     - Protocol Buffers 3.0.x needed for the Intel SGX SDK
-    - Protocol Buffers 3.11.x or higher and [Nanopb](http://github.com/nanopb/nanopb) 0.4.1
+    - Protocol Buffers 3.11.x or higher and [Nanopb](http://github.com/nanopb/nanopb) 0.4.3
 
 * SGX PSW & SDK v2.10 for [Linux](https://01.org/intel-software-guard-extensions/downloads)
   (alternatively, you could also install it from the [source](https://github.com/intel/linux-sgx)
@@ -328,7 +328,7 @@ For more detailed information consult the official nanopb documentation http://g
     $ export NANOPB_PATH=/path-to/install/nanopb/
     $ git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH}
     $ cd ${NANOPB_PATH}
-    $ git checkout nanopb-0.4.1
+    $ git checkout nanopb-0.4.3
     $ cd generator/proto && make
 
 Make sure that you set `$NANOPB_PATH` as it is needed to build Fabric Private Chaincode.
