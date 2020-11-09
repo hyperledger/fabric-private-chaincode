@@ -46,7 +46,7 @@ group endorsement
         see fpc-cc-invocation.puml
     end ref
 
-    alt FPC "light"
+    alt FPC Lite
         group enclave endorsement validation transaction
             CLI -> ECC1 ++: invoke "validateEnclaveEndorsement" ({ ccrsp_msg })
                 group enclave endorsement validation
@@ -65,7 +65,7 @@ group endorsement
                     ECC1 -> ECC1 : extract CC_Params from Credentials.AttestedData
                     ECC1 -> ECC1 : check CC_Params matches chaincode definition
                     note right of ECC1
-                        All these check validate for FPC "light" the implicitly defined "designated enclave" 
+                        All these check validate for FPC Lite the implicitly defined "designated enclave" 
                         enclave endorsement policy, the only enclave endorsement policy supported in MVP.
                     end note
                 end group
@@ -88,7 +88,7 @@ group endorsement
 end group
 
 group transaction submission
-    CLI -> CLI : form transaction from { validation-proposal-response } (FPC "light") or from { proposal-response } (otherwise)
+    CLI -> CLI : form transaction from { validation-proposal-response } (FPC Lite) or from { proposal-response } (otherwise)
 
     CLI -> Orderer++ : send transaction
     deactivate CLI

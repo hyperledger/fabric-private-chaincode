@@ -108,7 +108,7 @@ type EnclaveRegistryCC struct {
 
 # TLCC
 
-_This is a feature of (post-MVP) "Full" FPC and not part of the MVP FPC "light" variant._
+_This is a feature of (post-MVP) "Full" FPC and not part of the MVP FPC Lite variant._
 
 Some notes on TLCC. The TLCC instance is currently implemented as a system chaincode, that is, there exists only a single instance. As a peer can participate in many channels, there is a separate TLCC_enclave per each channel. The TLCC chaincode is responsible to multiplex requests for a given channel to the corresponding TLCC_enclave. Note for MVP, we only support a single channel but the interface specified here should already take multi-channel support into account.
 
@@ -164,7 +164,7 @@ type StubImpl struct {
 
 # TLCC_Enclave
 
-_This is a feature of (post-MVP) "Full" FPC and not part of the MVP FPC "light" variant._
+_This is a feature of (post-MVP) "Full" FPC and not part of the MVP FPC Lite variant._
 
 ## Interface:
 Defined in the TLCC EDL.
@@ -243,7 +243,7 @@ func getEnclaveId() (string, error) {}
 // chaincode invoke
 func chaincodeInvoke(request ChaincodeRequestMessage) (ChaincodeResponseMessage, error) {}
 
-// validate enclave endorsement (FPC "light" only)
+// validate enclave endorsement (FPC Lite only)
 func validateEnclaveEndorsement(response ChaincodeResponseMessage)(error) {}
 ```
 

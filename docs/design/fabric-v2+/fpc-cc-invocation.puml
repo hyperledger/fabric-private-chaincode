@@ -146,7 +146,7 @@ group invoke
       Enclave1 -> Enclave1 : ccrsp_msg.enclave_id <- Enclave_Id
       return <ccrsp_msg>
 
-     alt FPC "light"
+     alt FPC Lite
        ECC1 -> ECC1 : ccrsp_msg.rw_set <- encrypted_rw_set
        note right ECC1
          with chaincode-hosted validation, the stub will keep track of the 

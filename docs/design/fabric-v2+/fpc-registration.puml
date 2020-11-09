@@ -108,7 +108,7 @@ group enclave creation
   end note
 
   group attestation preparation
-    alt FPC "light"
+    alt FPC Lite
       Enclave1 -> Enclave1 : AttestedData <- <CC_Params, Host_Params, Enclave_VK, Channel_hash, onCreation=true>
       note right Enclave1
       In the future an admin might want to request re-attestations: For EPID this would be

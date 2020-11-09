@@ -92,10 +92,10 @@ group approveformyorg
     Version: **mrenclave**,
     Sequence: sequence_number,
     Endorsement Policy: (2of3),
-    Plugins: fpc-vscc (FPC validation plugin, absent in FPC light (MVP))
+    Plugins: fpc-vscc (FPC validation plugin, absent in FPC Lite (MVP))
 
     NOTE: the (fabric) endorsement policy has different meanings depending
-    on whether FPC runs in "light" (MVP) or "full" mode (post-MVP):
+    on whether FPC runs in FPC Lite (MVP) or "full" FPC mode (post-MVP):
     - in former case it specifies "validation endorsement policy", i.e. 
       how many organization have to be trusted to validate the enclave 
       endorsements in the validation chaincode transaction. For MPV, the 

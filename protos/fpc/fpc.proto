@@ -110,7 +110,7 @@ message ChaincodeResponseMessage {
     bytes encrypted_response = 1;
 
     // R/W set (of cleartext keys but encrypted values)
-    // This field is only valid for the FPC "light" variant but absent from the full version with in-peer FPC validation
+    // This field is only valid for the FPC Lite variant but absent from the full version with in-peer FPC validation
     kvrwset.KVRWSet rw_set = 2;
 
     // signed proposal for this request

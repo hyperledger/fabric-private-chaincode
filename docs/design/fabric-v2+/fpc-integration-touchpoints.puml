@@ -112,7 +112,7 @@ group Per FPC chaincode FCC
         Peer1 <- ecc1
         & Client1 <- Peer1 : endorsement Peer1, enclave signature & result
 
-        alt FPC "light"
+        alt FPC Lite
           Client1 -> Peer1 : chaincode invoke "validateEnclaveEndorsement"
             note over Peer1
   	          - Validate enclave signatures, enclave endorsement policies evaluated
