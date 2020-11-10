@@ -21,3 +21,7 @@ message AttestationEvidence {
 
     bytes payload = 2;
 }
+
+message AttestationParameters {
+    bytes parameters = 1;
+}

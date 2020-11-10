@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.5.1)
 project(ecclib)
 
 include(../cmake/Init.cmake)
+include(../cmake/NanoPB.cmake)
 
 include(${CMAKE_MODULE_PATH}/ConfigSGX.cmake)
 

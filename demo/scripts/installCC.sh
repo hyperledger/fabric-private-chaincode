@@ -45,4 +45,4 @@ ${REMOTE_PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-i
 ${REMOTE_PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
 ${REMOTE_PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER}  --sequence ${CC_SEQ} --signature-policy ${CC_EP}
 ${REMOTE_PEER_CMD} lifecycle chaincode querycommitted -C ${CHAN_ID}
-${REMOTE_PEER_CMD} lifecycle chaincode createenclave --name ${CC_ID}
+${REMOTE_PEER_CMD} lifecycle chaincode initEnclave --name ${CC_ID}

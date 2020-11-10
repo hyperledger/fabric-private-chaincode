@@ -49,7 +49,7 @@ end note
 
 Admin -> Admin: Attestation_Params <- <.e.g, SPID, sig-rl, ....>
 
-Admin -> Peer_CLI ++: lifecycle chaincode\n createenclave (CC_Id, Attestation_Params, Peer_Endpoint)
+Admin -> Peer_CLI ++: lifecycle chaincode\n initEnclave (CC_Id, Attestation_Params, Peer_Endpoint)
 
 group enclave creation
   note right Peer_CLI

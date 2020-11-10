@@ -44,8 +44,8 @@ run_test() {
     try ${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name auction_test --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
 
     #first call negated as it fails
-    try_fail ${PEER_CMD} lifecycle chaincode createenclave -o ${ORDERER_ADDR} --name wrong-cc-id
-    try ${PEER_CMD} lifecycle chaincode createenclave -o ${ORDERER_ADDR} --name auction_test
+    try_fail ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name wrong-cc-id
+    try ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name auction_test
 
     # install something non-fpc
     CC_PATH="github.com/hyperledger/fabric-samples/chaincode/marbles02/go"
@@ -90,8 +90,8 @@ run_test() {
     try ${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name echo_test --version ${CC_VER} --sequence ${CC_SEQ}
 
     #first call negated as it fails
-    try_fail ${PEER_CMD} lifecycle chaincode createenclave -o ${ORDERER_ADDR} --name wrong-cc-id
-    try ${PEER_CMD} lifecycle chaincode createenclave -o ${ORDERER_ADDR} --name echo_test
+    try_fail ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name wrong-cc-id
+    try ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name echo_test
 
     try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -c '{"Args": ["moin"]}' --waitForEvent
     check_result "moin"

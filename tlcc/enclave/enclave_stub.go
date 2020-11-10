@@ -35,6 +35,7 @@ import "C"
 
 const EPID_SIZE = 8
 const SPID_SIZE = 16
+const MAX_RESPONSE_SIZE = 1024 * 100 // Let's be really conservative ...
 const SIGNATURE_SIZE = 64
 const PUB_KEY_SIZE = 64
 const REPORT_SIZE = 432
@@ -181,11 +182,18 @@ func (e *StubImpl) GetStateMetadata(key string, nonce []byte, isRangeQuery bool)
 func (e *StubImpl) Create(enclaveLibFile string) error {
 	var eid C.enclave_id_t
 
+	arr := []byte{0, 0}
+	// prepare output buffer for credentials
+	credentialsBuffer := C.malloc(MAX_RESPONSE_SIZE)
+	credentialsBufferMaxSize := C.uint32_t(0)
+	defer C.free(credentialsBuffer)
+	credentialsSize := C.uint32_t(0)
+
 	f := C.CString(enclaveLibFile)
 	defer C.free(unsafe.Pointer(f))
 
 	// todo read error
-	ret := C.sgxcc_create_enclave(&eid, f)
+	ret := C.sgxcc_create_enclave(&eid, f, (*C.uint8_t)(C.CBytes(arr)), C.uint32_t(0), (*C.uint8_t)(C.CBytes(arr)), C.uint32_t(0), (*C.uint8_t)(C.CBytes(arr)), C.uint32_t(0), (*C.uint8_t)(credentialsBuffer), credentialsBufferMaxSize, &credentialsSize)
 	if ret != 0 {
 		return fmt.Errorf("C.sgxcc_create_enclave (lib %s) failed. Reason: %d", enclaveLibFile, ret)
 	}
