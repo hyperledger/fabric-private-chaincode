@@ -22,6 +22,10 @@ entity CA order 90
 entity IAS order 100
 participant Orderer as Orderer order 100
 
+note over TLCC1
+  "Full" FPC (Post-MVP)
+end note
+
 note right Admin
 Types are shown in the fpc-components diagram.
 end note
@@ -30,12 +34,17 @@ note right Admin
   It is assumed that:
     - Channel has already been created;
     - ERCC has been installed -- approved by the participating organizations;
-    - ERCC contains hard-coded the TLCC_MRenclave and the IAS Root Certificate;
-    - ERCC has an Endorsement Policy that is identical with the Lifecycle Policy
-      governing the FPC chaincode, e.g., the Majority of Organizations.
-      This is necessary as ERCC transactions are essentially extensions to the
-      chaincode lifecycle and ERCC-managed data is paramount for the overall security
-      of FPC chaincode.
+    - ERCC contains hard-coded the IAS Root Certificate and, for the 
+      "full" FPC version (post-MVP), the TLCC_MRenclave.
+    - ERCC should have an Endorsement Policy which subsumes the organizational trust
+      assumptions for any FPC chaincode executed on this channel. Hence, a suitable
+      choice might be to keep it the same as the the Lifecycle Policy, e.g., the 
+      majority of Organizations.
+      Note: While ERCC transactions are essentially extensions to the chaincode 
+      lifecycle and ERCC-managed data is paramount for the overall security of FPC 
+      chaincode, ERCC performs strict test on crucial data "baked" into the ERCC
+      chaincode definition and such data is already automatically protected by the 
+      lifecycle policy.  
 end note
 
 Admin -> Admin: Attestation_Params <- <.e.g, SPID, sig-rl, ....>
@@ -70,13 +79,13 @@ group enclave creation
     as it is registered in Fabric.
 
     The requirement of CC_Params can be met in practice as follows:
-    CC_Id, version, MSPID, and channel id can be retrieved through Fabric
+    CC_Id, version, and channel id can be retrieved through Fabric
     shim functions
 
     The Host_Params has two purposes: enable endpoint discovery for enclaves
     and capture the endorsement of the organization hosting the enclave.
-    The stub creates it based on 'getCreator' to retrieve the MSP ID and
-    from the endpoint address passed in initEnclave. 
+    The stub creates it based on 'getCreator' to retrieve the MSP ID 
+    (for Host_Params.Peer_MSP_ID) and from the endpoint address passed in initEnclave. 
 
     Note that the validation of these parameters is performed by ERCC.
     If necessary, a pre-validation can be performed through the Ledger Enclave.
@@ -98,27 +107,32 @@ group enclave creation
     is used as unique enclave identifier
   end note
 
-  group establish secure channel based on local attestation to retrieve MRENCLAVE of TLCC and cryptographic channel identifier (channel_hash)
-    Enclave1 -> TLCC1 ++: tl_session_setup(Channel_Id, CC_Id, Enclave_Id)
-    return
+  group attestation preparation
+    alt FPC Lite
+      Enclave1 -> Enclave1 : AttestedData <- <CC_Params, Host_Params, Enclave_VK, Channel_hash, onCreation=true>
+      note right Enclave1
+      In the future an admin might want to request re-attestations: For EPID this would be
+      the only way to check for revocations (In DCAP, checking CRLs would enable this as well).
+      For security reasoning, it is crucial that the TCB level (CPUSVN) of the seal operation is
+      reflected in the attestation (and, hence, ERCC registration).
+      We ensure that performing the initial attestation before sealing the state and distinguish
+      the intial from subsequent attestations  based on the onCreation field in AttestedData.
+      end note
+    else "full" FPC (Post-MVP)
+      group establish secure channel based on local attestation to retrieve MRENCLAVE of TLCC and cryptographic channel identifier (channel_hash)
+        Enclave1 -> TLCC1 ++: tl_session_setup(Channel_Id, CC_Id, Enclave_Id)
+        return
 
-    Enclave1 -> TLCC1 ++: tl_session_get_tlcc_mrenclave()
-    return tlcc_mrenclave
+        Enclave1 -> TLCC1 ++: tl_session_get_tlcc_mrenclave()
+        return tlcc_mrenclave
 
-    Enclave1 -> TLCC1 ++: tl_session_get_channel_hash()
-    return channel_hash
+        Enclave1 -> TLCC1 ++: tl_session_get_channel_hash()
+        return channel_hash
+      end group
+
+      Enclave1 -> Enclave1 : AttestedData <- <CC_Params, Host_Params, Enclave_VK, Channel_hash, tlcc_mrenclave, onCreation=true>
+    end
   end group
-
-  Enclave1 -> Enclave1 : AttestedData <- <CC_Params, Host_Params, Enclave_VK, Channel_hash, tlcc_mrenclave, onCreation=true>
-  note right Enclave1
-     In the future an admin might want to request re-attestations: For EPID this would be
-     the only way to check for revocations (In DCAP, checking CRLs would enable this as well).
-     For security reasoning, it is crucial that the TCB level (CPUSVN) of the seal operation is
-     reflected in the attestation (and, hence, ERCC registration) as this determines whether
-     enclave secrets might be exposed in case of newly discovered future SGX vulnerabilities.
-     We ensure that performing the initial attestation before sealing the state and distinguish
-     the intial from subsequent attestations  based on the onCreation field in AttestedData.
-  end note
 
   group enclave attestation
   Enclave1 -> Enclave1 : init_attestation(Attestation_Params)
@@ -161,7 +175,7 @@ group Org-Enclave binding/certification [Post-MVP: Validation]
   note right ECC1
      In MVP, the attestation will be carried in the fabric transaction response payload in addition to the normal peer endorsement signature.
      To enable cleaner integration into Fabric and, in particular, support multi-enclave endorsement, post-MVP we will provide the enclave
-     with a peer-certificate on Private_keys.Enclave_VK rooted in the organizations MSP -- explicitly expressing that the Org take
+     with a peer-certificate on Private_keys.Enclave_VK rooted in the organizations MSP -- more cleanly expressing that the Org take
      "ownership" of this enclave -- and replace the normal peer endorsement signature with the enclave signature.
      The corresponding changes will be marked with '[Post-MVP: Validation]'.
   end note
@@ -214,13 +228,13 @@ end
         - Channel_Id should correspond to ERCC's own view
         - Channel_hash should corresponds to peers view of the channel id
         - MSPID should correspond to the tx sender
-        - TLCC_MRENCLAVE matches the version baked into ERCC
+        - TLCC_MRENCLAVE matches the version baked into ERCC ("full" FPC only, Post-MVP)
         - CC_Version matches MRENCLAVE from (validated) Credentials.Evidence
       end note
    end group
 
   alt Org-Enclave binding verification [MVP: Validation]
-    ERCC1 -> ERCC1 : check Credentials.Host_Params.peer_msp_id
+    ERCC1 -> ERCC1 : check Credentials.Host_Params.Peer_MSP_ID
       note right ERCC1
         must match msp ID from getCreator of this request
       end note
@@ -228,7 +242,7 @@ end
     ERCC1 -> ERCC1 : check Org-Enclave binding certificate
       note right ERCC1
         - Credentials.AttestedData.CC_Params == Credentials.Certificate.CC_Params
-        - Credentials.Certificate should be issued by CA owned by CC_Params.MSPID
+        - Credentials.Certificate should be issued by CA owned by Credentials.Host_Params.Peer_MSP_ID
         - Credentials.Certificate.role == 'peer'
       end note
   end

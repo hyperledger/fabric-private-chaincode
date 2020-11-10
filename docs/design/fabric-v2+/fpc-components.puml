@@ -68,11 +68,13 @@ class ERCC {
 
 note right of ERCC::IAS_Root_Certificate
     Constant string hard-coded in ERCC's code.
-    It is a private member since orgs approve ERCC package.
+    It is a private member but explictly approved by orgs during installation.
 end note
 
 note right of ERCC::TLCC_MREnclave
-    (same as IAS_Root_Certificate)
+    "Full" FPC only (Post-MVP)
+    Constant string hard-coded in ERCC's code.
+    It is a private member but explictly approved by orgs during installation.
 end note
 
 interface ERCC_Admin_Interface {
@@ -159,6 +161,9 @@ interface FPCChaincode {
 } /' package enclave chaincode '/
 
 package tlcc {
+Note right
+    "Full" FPC only (Post-MVP)
+end note
 
 interface TLCC {
     + getMetadata(key string) Metadata

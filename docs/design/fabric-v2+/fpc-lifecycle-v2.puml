@@ -82,7 +82,7 @@ end
 
 ref over Admin, Peer_CLI, Peer2
     Admin installs chaincode on Peer2
-end
+end ref
 
 group approveformyorg
     Admin -> Peer_CLI++ : lifecycle\nchaincode approveformyorg\n(version=**mrenclave**)
@@ -92,17 +92,21 @@ group approveformyorg
     Version: **mrenclave**,
     Sequence: sequence_number,
     Endorsement Policy: (2of3),
-    Plugins: fpc-vscc (FPC validation plugin)
+    Plugins: fpc-vscc (FPC validation plugin, absent in FPC Lite (MVP))
 
-    NOTE: the endorsement policy specifies how many
-    enclaves are expected to run the chaincode. The MVP
-    implementation will support a "designated" endorsing
-    peer only.
-    Hence, initially, the endorsement policy will require
-    a single endorser. FPC is expected to support
-    multiple endorsers in the future. To have an
-    idea of how FPC will enable multiple endorsers,
-    please check out key distribution diagram.
+    NOTE: the (fabric) endorsement policy has different meanings depending
+    on whether FPC runs in FPC Lite (MVP) or "full" FPC mode (post-MVP):
+    - in former case it specifies "validation endorsement policy", i.e. 
+      how many organization have to be trusted to validate the enclave 
+      endorsements in the validation chaincode transaction. For MPV, the 
+      "enclave endorsement policy" is implicit and requires an enclave
+      signature from a single enclave registered at ERCC and hosted at
+      an organization participating in the underlying channel.
+    - in the latter case, it specifies the "enclave endorsement policy",
+      i.e., how many (and with which proporties) enclaves are expected 
+      to endorse FPC chaincode transactions. The "validation endorsement 
+      policy" is implicit as each peer will validate transactions (via
+      validation plugin extension point.)
 
     NOTE: FPC does not support custom user plugins.
     end note

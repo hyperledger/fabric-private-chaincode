@@ -5,10 +5,12 @@ https://creativecommons.org/licenses/by/4.0/
 
 # Ledger Enclave - FPC Stub Secure Channel Module
 
+_This is a feature of (post-MVP) "Full" FPC and not part of the MVP FPC Lite variant._
+
 This document describes the external APIs, the properties and the
 high-level design of the module implementing a secure channel between
 the FPC Stub (ECC_Enclave) and the Ledger Enclave (TLCC_Enclave)
-enclaves.
+enclaves. 
 
 ## Public API
 
