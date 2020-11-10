@@ -161,6 +161,7 @@ group invoke
   alt  MVP
     Peer -> Peer : create proposal-response <proposal, read/writeset, result=ccrsp_msg, ...>
       note right Peer
+          This is the standard Fabric response generation.
           Note that the result field of the proposal response contains
           a message that comprises the encrypted result produced by the
           enclave, the enclave signature, and the corresponding
@@ -171,7 +172,7 @@ group invoke
     Peer -> Peer : create proposal-response <proposal, read/writeset, result=ccrsp_msg.result_enc, ...>
     Peer -> Peer : Replace in proposal-response endorsement signature & cert of peer with ccrsp_msg.signature & CC_Params.Certificate
       note right Peer
-          This step is performed using an FPC-specific endorsement plugin.
+          These steps are performed using an FPC-specific endorsement plugin.
       end note
   end
 

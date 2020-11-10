@@ -20,9 +20,9 @@ title Fabric Private Chaincode - Transaction validation using FPC validation plu
 actor "User Org1" as User1 order 9
 participant "Peer_CLI/\nClient SDK" as CLI order 10
 
-participant "Peer Org1" as ECC1 order 30
-participant "Peer Org2" as ECC2 order 60
-participant "Peer Org3" as ECC3 order 70
+participant "Peer Org1" as Peer1 order 25
+participant "Peer Org2" as Peer2 order 60
+participant "Peer Org3" as Peer3 order 70
 
 entity Orderer order 100
 
@@ -40,7 +40,7 @@ group endorsement
     activate CLI
 
     User1 -> CLI : send proposal
-    ref over CLI, ECC1, ECC2, ECC3
+    ref over CLI, Peer1, Peer2, Peer3
         invoke chaincode enclave and collect enough enclave endorsements { proposal-response }
         and corresponding results { ccrsp_msg } to satisfy enclave endorsement policy
         see fpc-cc-invocation.puml
@@ -48,30 +48,36 @@ group endorsement
 
     alt FPC Lite
         group enclave endorsement validation transaction
-            CLI -> ECC1 ++: invoke "validateEnclaveEndorsement" ({ ccrsp_msg })
-                group enclave endorsement validation
-                    ECC1 -> ECC1 : <ECC_result, read/writeset, proposal, Sig_Enclave, Enclave_Id> <- extract from  ccrsp_msg
-  
-                    create participant ERCC order 30
-                    ECC1 -> ERCC++ : queryEnclaveCredentials(CC_Id, Enclave_Id)
-                        note right
-                            If FPC enclave is registered, ERCC will
-                            return the corresponding Credentials,
-                            otherwise Credentials is empty and validation will abort.
+            CLI -> Peer1 ++: invoke "validateEnclaveEndorsement" ({ ccrsp_msg })
+                create participant "FPC_stub" as ECC1 order 26
+                Peer1 -> ECC1 ++:
+                    group enclave endorsement validation
+                        ECC1 -> ECC1 : <ECC_result, read/writeset, proposal, Sig_Enclave, Enclave_Id> <- extract from  ccrsp_msg
+    
+                        create participant ERCC order 30
+                        ECC1 -> ERCC++ : queryEnclaveCredentials(CC_Id, Enclave_Id)
+                            note right
+                                If FPC enclave is registered, ERCC will
+                                return the corresponding Credentials,
+                                otherwise Credentials is empty and validation will abort.
+                            end note
+                        return Credentials
+                        ECC1 -> ECC1 : extract Enclave_VK from Credentials.attesated_data
+                        ECC1 -> ECC1 : verify Sig_Enclave over <proposal, read/writeset, ECC_result> with Enclave_VK
+                        ECC1 -> ECC1 : extract CC_Params from Credentials.AttestedData
+                        ECC1 -> ECC1 : check CC_Params matches own chaincode definition
+                        note right of ECC1
+                            All these check validate for FPC Lite the implicitly defined "designated enclave" 
+                            enclave endorsement policy, the only enclave endorsement policy supported in MVP.
                         end note
-                    return Credentials
-                    ECC1 -> ECC1 : extract Enclave_VK from Credentials.attesated_data
-                    ECC1 -> ECC1 : verify Sig_Enclave over <proposal, read/writeset, ECC_result> with Enclave_VK
-                    ECC1 -> ECC1 : extract CC_Params from Credentials.AttestedData
-                    ECC1 -> ECC1 : check CC_Params matches chaincode definition
+                    end group
+                    group transaction replay
+                        ECC1 -> ECC1 : re-create reads and writes based on read/writeset from input proposal
+                    end group
                     note right of ECC1
-                        All these check validate for FPC Lite the implicitly defined "designated enclave" 
-                        enclave endorsement policy, the only enclave endorsement policy supported in MVP.
+                        any validation or replay failure results in a transaction abort
                     end note
-                end group
-                group transaction replay
-                    ECC1 -> ECC1 : re-create reads and writes based on read/writeset from input proposal
-                end group
+                return
             return validation-proposal-response
         end group
         loop for all/"enough" enclave endorsers
@@ -79,7 +85,7 @@ group endorsement
                 Invoke at enough endorsing peers to satisfy validation endorsement policy
                 and collect { validation-proposal-response }.
             end note
-            ref over CLI,ECC2,ECC3
+            ref over CLI,Peer2,Peer3
                 enclave endorsementt validation transaction
             end ref
         end
@@ -96,25 +102,25 @@ group transaction submission
     Orderer -> Orderer : form block
 end group
 
-Orderer -> ECC1+ : broadcast
-& Orderer -> ECC2+ : broadcast
-& Orderer -> ECC3+ : broadcast
+Orderer -> Peer1+ : broadcast
+& Orderer -> Peer2+ : broadcast
+& Orderer -> Peer3+ : broadcast
 deactivate Orderer
 
 group validation & commit
-    ECC1 -> ECC1 : validate block signature
+    Peer1 -> Peer1 : validate block signature
     loop for each tx in block
 
-        note over ECC1
+        note over Peer1
             For every FPC transaction, we first perform
             default validation and then FPC validation
         end note
 
         group default validation
-            ECC1 -> ECC1 : perform default validation
-            ECC1 -> ECC1 : validate tx (client) signature
-            ECC1 -> ECC1 : MVCC check
-            ECC1 -> ECC1 : validate endorsements
+            Peer1 -> Peer1 : perform default validation
+            Peer1 -> Peer1 : validate tx (client) signature
+            Peer1 -> Peer1 : MVCC check
+            Peer1 -> Peer1 : validate endorsements
         end group
 
         alt "Full" FPC (Post-MVP)
@@ -125,11 +131,11 @@ group validation & commit
                     group enclave endorsement validation, but read/write-set extracted from ledger rather 
                     than from ccrsp_msg.
                 '/
-                note over ECC1
+                note over Peer1
                     fpc-vscc is a validation plugin associated with each FPC Chaincode.
                     Any failure below will result in an invalidation of the transaction.
                 end note
-                note right of ECC1
+                note right of Peer1
                     The enclave's signature was already verified against the (enclave's) PeerCertificate.
                     Similarly, the enclave endorsement policy is encoded in the (fabric) endorsement policy
                     and already validate.
@@ -137,9 +143,11 @@ group validation & commit
                     registered enclave for that chaincode
                 end note
 
-                ECC1 -> ERCC++ : queryEnclaveCredentials(CC_Id, Hash(PeerCertificate.Public_key))
+                Peer1 -> ERCC++ : queryEnclaveCredentials(CC_Id, Hash(PeerCertificate.Public_key))
                 return Credentials
-                fail if no credential is return
+		note right of Peer1
+                    fail if no credential is returned
+                end note
                 /' 
                     we could also verify ..
                      Credentials.Attesteddata.HostParams.Certificate == PeerCertificate
@@ -150,15 +158,15 @@ group validation & commit
     end loop
 
     loop for each tx in block
-        ECC1 -> ECC1 : apply valid tx writeset
+        Peer1 -> Peer1 : apply valid tx writeset
     end loop
 
-    ECC1 -> ECC1 : append block to ledger
+    Peer1 -> Peer1 : append block to ledger
 
     alt "Full" FPC (Post-MVP)
         create "Ledger_enclave Peer_Org1" as TLCC1 order 31 #99FF99
-        ECC1 -> TLCC1 : new block
-        deactivate ECC1
+        Peer1 -> TLCC1 : new block
+        deactivate Peer1
         |||
         ref over TLCC1
             validation & commit
@@ -179,17 +187,17 @@ group validation & commit
 
 end group /' validation & commit '/
 
-ref over ECC2
+ref over Peer2
     validation & commit
 end ref
 |||
-deactivate ECC2
+deactivate Peer2
 
-ref over ECC3
+ref over Peer3
     validation & commit
 end ref
 |||
-deactivate ECC3
+deactivate Peer3
 
 
 @enduml
