@@ -16,6 +16,7 @@ set(SOURCE_FILES
 
 set(COMMON_SOURCE_FILES
     ${COMMON_SOURCE_DIR}/enclave/common.cpp
+    ${COMMON_SOURCE_DIR}/enclave/cc_data.cpp
     ${COMMON_SOURCE_DIR}/base64/base64.cpp
     ${COMMON_SOURCE_DIR}/json/parson.c
     ${COMMON_SOURCE_DIR}/utils.c

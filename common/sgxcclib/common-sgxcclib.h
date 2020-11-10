@@ -14,7 +14,17 @@
 extern "C" {
 #endif
 
-int sgxcc_create_enclave(enclave_id_t* eid, const char* enclave_file);
+int sgxcc_create_enclave(enclave_id_t* eid,
+    const char* enclave_file,
+    uint8_t* attestation_parameters,
+    uint32_t ap_size,
+    uint8_t* cc_parameters,
+    uint32_t ccp_size,
+    uint8_t* host_parameters,
+    uint32_t hp_size,
+    uint8_t* credentials,
+    uint32_t credentials_max_size,
+    uint32_t* credentials_size);
 int sgxcc_destroy_enclave(enclave_id_t eid);
 int sgxcc_get_quote_size(uint8_t* p_sig_rl, uint32_t sig_rl_size, uint32_t* p_quote_size);
 int sgxcc_get_target_info(enclave_id_t eid, target_info_t* target_info);

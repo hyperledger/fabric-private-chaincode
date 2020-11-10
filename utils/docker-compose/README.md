@@ -168,7 +168,7 @@ The [examples](../../examples) and [demo](../../demo) directories has been
 
 5. Instantiate chaincode enclave
    ```
-   ${PEER_CMD} lifecycle chaincode createenclave --name ${CC_ID}
+   ${PEER_CMD} lifecycle chaincode initEnclave --name ${CC_ID}
    ```
 
 ## Interact with the FPC Chaincode

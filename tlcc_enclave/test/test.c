@@ -131,7 +131,10 @@ int main(int argc, char** argv)
 
     LOG_INFO("Test: Create enclave and send blocks");
     enclave_id_t eid;
-    if (sgxcc_create_enclave(&eid, ENCLAVE_FILENAME) < 0)
+    uint8_t buffer[1];
+    uint32_t size = 0;
+    if (sgxcc_create_enclave(
+            &eid, ENCLAVE_FILENAME, buffer, 0, buffer, 0, buffer, 0, buffer, 0, &size) < 0)
     {
         LOG_ERROR("Test: Can not create enclave!!!");
         failNow();

@@ -1,7 +1,8 @@
 /*
-Copyright IBM Corp. All Rights Reserved.
+   Copyright IBM Corp. All Rights Reserved.
+   Copyright 2020 Intel Corporation
 
-SPDX-License-Identifier: Apache-2.0
+   SPDX-License-Identifier: Apache-2.0
 */
 
 package ecc
@@ -11,14 +12,19 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/enclave"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/ercc"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/tlcc"
+	fpcpb "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
+	"github.com/hyperledger/fabric-chaincode-go/pkg/cid"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/common/flogging"
+	"github.com/hyperledger/fabric/core/endorser"
 )
 
 const enclaveLibFile = "enclave/lib/enclave.signed.so"
@@ -71,6 +77,8 @@ func (t *EnclaveChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response 
 		return t.setup(stub)
 	} else if function == "__getEnclavePk" { //get Enclave PK
 		return t.getEnclavePk(stub)
+	} else if function == "initEnclave" {
+		return t.initEnclave(stub)
 	}
 
 	// Remaining functions are user functions, so pass them on the enclave and
@@ -88,19 +96,6 @@ func (t *EnclaveChaincode) setup(stub shim.ChaincodeStubInterface) pb.Response {
 	sigRl := []byte(nil)
 	sigRlSize := uint(0)
 	channelName := stub.GetChannelID()
-
-	// check if there is already an enclave
-	if t.enclave == nil {
-		return shim.Error("ecc: Enclave has already been initialized! Destroy first!!")
-	}
-
-	// create new Enclave
-	// TODO we should return error in case there is any :)
-	if err := t.enclave.Create(enclaveLibFile); err != nil {
-		errMsg := fmt.Sprintf("t.enclave.Create  failed: %s", err)
-		logger.Errorf(errMsg)
-		return shim.Error(errMsg)
-	}
 
 	// write mrenclave to ledger
 	mrenclave, err := t.enclave.MrEnclave()
@@ -172,6 +167,187 @@ func (t *EnclaveChaincode) setup(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 
 	return shim.Success([]byte(enclavePkBase64))
+}
+
+// ============================================================
+// initEnclave -
+// ============================================================
+func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Response {
+	// TODO admin authentication?
+	// TODO check one time create?
+	logger.Debugf("initEnclave")
+
+	// check if there is already an enclave
+	if t.enclave == nil {
+		return shim.Error("ecc: Enclave has already been initialized! Destroy first!!")
+	}
+
+	args := stub.GetStringArgs()
+
+	if len(args) != 2 {
+		errMsg := fmt.Sprintf("initEnclave: unexpected params number")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+
+	// grab initenclave proto <<<
+	b64InitEnclave := args[1]
+	logger.Debugf("b64InitEnclave: %s", b64InitEnclave)
+	initEnclaveBytes, err := base64.StdEncoding.DecodeString(b64InitEnclave)
+	if err != nil {
+		errMsg := fmt.Sprintf("initEnclave: initEnclaveBytes: %s", err)
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+
+	initEnclaveProto := &fpcpb.InitEnclaveMessage{}
+	err = proto.Unmarshal(initEnclaveBytes, initEnclaveProto)
+	if err != nil {
+		errMsg := fmt.Sprintf("initEnclave: cannot unmarshall initEnclave proto")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+
+	hostParamsString := initEnclaveProto.GetPeerEndpoint()
+	if hostParamsString == "" {
+		errMsg := fmt.Sprintf("initEnclave: empty peer endpoint")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+	logger.Debugf("HostParams: %s", hostParamsString)
+
+	b64AttestationParamsBytes := initEnclaveProto.GetAttestationParams()
+	if b64AttestationParamsBytes == nil {
+		errMsg := fmt.Sprintf("initEnclave: null attestation params")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+
+	attestationParamsBytes, err := base64.StdEncoding.DecodeString(string(b64AttestationParamsBytes))
+	if err != nil {
+		errMsg := fmt.Sprintf("initEnclave: bad input b64 attestation parameters")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+	// grab initenclave proto >>>
+
+	// create Host_Parameters <<<
+	creatorMspId, err := cid.GetMSPID(stub)
+	if err != nil {
+		errMsg := fmt.Sprintf("initEnclave: get creator's mspid: %s", err)
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+	logger.Debugf("Creator MSPID: %s", creatorMspId)
+
+	hostParametersProto := &fpcpb.HostParameters{
+		//TODO: rename PeerMspId to CreatorMspId, because the value is the creator's mspid, not the peer's
+		PeerMspId:    creatorMspId,
+		PeerEndpoint: hostParamsString,
+	}
+	hostParametersProtoBytes, err := proto.Marshal(hostParametersProto)
+	if err != nil {
+		errMsg := fmt.Sprintf("initEnclave: cannot marshall host params")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+	// create HostParameters >>>
+
+	// create CCParameters <<<
+	// get signed proposal to extract chaicode id
+	signedProposal, err := stub.GetSignedProposal()
+	if err != nil {
+		errMsg := fmt.Sprintf("initEnclave: cannot get signed proposal")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+	unpackedProposal, err := endorser.UnpackProposal(signedProposal)
+	if err != nil {
+		errMsg := fmt.Sprintf("initEnclave: cannot unpack proposal")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+	logger.Debugf("Chaincode id: %s", unpackedProposal.ChaincodeName)
+
+	//get chaincode definition
+	ccDef, err := utils.GetChaincodeDefinition(unpackedProposal.ChaincodeName, stub)
+	if err != nil {
+		errMsg := fmt.Sprintf("initEnclave: cannot get ccdefinition")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+	logger.Debugf("Chaincode definition: %d %s", ccDef.Sequence, ccDef.Version)
+
+	//get channel id
+	channelName := stub.GetChannelID()
+	logger.Debugf("Channel ID: %s", channelName)
+
+	// produce cc params
+	ccParametersProto := &fpcpb.CCParameters{
+		ChaincodeId: unpackedProposal.ChaincodeName,
+		Version:     ccDef.Version,
+		Sequence:    ccDef.Sequence,
+		ChannelId:   channelName,
+	}
+	ccParametersBytes, err := proto.Marshal(ccParametersProto)
+	if err != nil {
+		errMsg := fmt.Sprintf("initEnclave: cannot marshall cc params")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+	// create CCParameters >>>
+
+	// create new Enclave
+	credentials, err := t.enclave.Create(enclaveLibFile, ccParametersBytes, attestationParamsBytes, hostParametersProtoBytes)
+	if err != nil {
+		errMsg := fmt.Sprintf("initEnclave: failed: %s", err)
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+
+	// debug credentials, print enclave verification key <<<
+	credentialsProto := &fpcpb.Credentials{}
+	err = proto.Unmarshal(credentials, credentialsProto)
+	if err != nil {
+		errMsg := fmt.Sprintf("initEnclave: cannot unmarshall credentials")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+	attestedDataAny := credentialsProto.GetSerializedAttestedData()
+	if attestedDataAny == nil {
+		errMsg := fmt.Sprintf("initEnclave: no attested data")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+	attestedDataProto := &fpcpb.AttestedData{}
+	err = ptypes.UnmarshalAny(attestedDataAny, attestedDataProto)
+	if err != nil {
+		errMsg := fmt.Sprintf("initEnclave: cannot unmarshall attested data")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+	ccParams := attestedDataProto.GetCcParams()
+	if ccParams == nil {
+		errMsg := fmt.Sprintf("initEnclave: error getting cc params from attested data")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+	ccId := ccParams.GetChaincodeId()
+	enclaveVKBytes := attestedDataProto.GetEnclaveVk()
+	logger.Debugf("initEnclave: enclave verification key: %s", string(enclaveVKBytes))
+	logger.Debugf("initEnclave: chaincode id (from attested data): %s", ccId)
+	if ccId != unpackedProposal.ChaincodeName {
+		errMsg := fmt.Sprintf("initEnclave: wrong serialized chaincode id in attested data")
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
+	}
+	// debug credentials, print enclave verification key >>>
+
+	// build return value
+	b64Credentials := base64.StdEncoding.EncodeToString([]byte(credentials))
+	logger.Debugf("initEnclave b64 response: %s", b64Credentials)
+
+	return shim.Success([]byte(b64Credentials))
 }
 
 // ============================================================

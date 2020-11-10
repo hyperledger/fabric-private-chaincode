@@ -7,8 +7,6 @@ syntax = "proto3";
 
 import "google/protobuf/any.proto";
 // Imports from fabric ..
-// - 'discovery' package
-import "discovery/protocol.proto";
 // - 'protos' package
 import "peer/chaincode.proto";
 import "peer/proposal.proto";
@@ -36,10 +34,11 @@ message CCParameters {
 
 message HostParameters {
     // MSP ID of organization hosting (embracing) the peer with corresponding enclave
+    // TODO: rename to `creator_msp_id` because this value will be set to the creator's mspid (not the peer's)
     string peer_msp_id = 1;
 
-    // the (externally accessible) address of the peer endpoint
-    discovery.Endpoint peer_endpoint = 2;
+    // the (externally accessible) address of the peer endpoint in format <ip-addr|hostname>:<port-number>
+    string peer_endpoint = 2;
 
     // Post-MVP: This will be a X509 peer certificate on
     // Enclave_VK and CCParameters signed by a CA rooted in
@@ -79,8 +78,8 @@ message Credentials {
 }
 
 message InitEnclaveMessage {
-    // the (externally accessible) address of the peer endpoint
-    discovery.Endpoint peer_endpoint = 1;
+    // the (externally accessible) address of the peer endpoint in format <ip-addr|hostname>:<port-number>
+    string peer_endpoint = 1;
 
     // opaque parameters passed for initialization of the attestation API
     // (see more in 'attestation.proto', 'interfaces.attestation.md' and 'common/crypto/attestation-api')

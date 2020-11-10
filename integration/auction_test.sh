@@ -45,8 +45,8 @@ auction_test() {
     try ${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
 
     # first call negated as it fails
-    try_fail ${PEER_CMD} lifecycle chaincode createenclave -o ${ORDERER_ADDR} --name wrong-cc-id
-    try ${PEER_CMD} lifecycle chaincode createenclave -o ${ORDERER_ADDR} --name ${CC_ID}
+    try_fail ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name wrong-cc-id
+    try ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name ${CC_ID}
 
     try ${PEER_CMD} lifecycle chaincode querycommitted -C ${CHAN_ID}
 
