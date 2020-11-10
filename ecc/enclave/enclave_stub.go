@@ -29,7 +29,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/tlcc"
-	sgx_utils "github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
+	utils "github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-protos-go/msp"
 	"golang.org/x/sync/semaphore"
@@ -167,8 +167,8 @@ func get_state(key *C.char, val *C.uint8_t, max_val_len C.uint32_t, val_len *C.u
 
 	// check if composite key
 	key_str := C.GoString(key)
-	if sgx_utils.IsFPCCompositeKey(key_str) {
-		comp := sgx_utils.SplitFPCCompositeKey(key_str)
+	if utils.IsFPCCompositeKey(key_str) {
+		comp := utils.SplitFPCCompositeKey(key_str)
 		key_str, _ = stubs.shimStub.CreateCompositeKey(comp[0], comp[1:])
 	}
 
@@ -202,8 +202,8 @@ func put_state(key *C.char, val unsafe.Pointer, val_len C.int, ctx unsafe.Pointe
 
 	// check if composite key
 	key_str := C.GoString(key)
-	if sgx_utils.IsFPCCompositeKey(key_str) {
-		comp := sgx_utils.SplitFPCCompositeKey(key_str)
+	if utils.IsFPCCompositeKey(key_str) {
+		comp := utils.SplitFPCCompositeKey(key_str)
 		key_str, _ = stubs.shimStub.CreateCompositeKey(comp[0], comp[1:])
 	}
 
@@ -217,7 +217,7 @@ func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max
 	stubs := registry.Get(*(*int)(ctx))
 
 	// split and get a proper composite key
-	comp := sgx_utils.SplitFPCCompositeKey(C.GoString(comp_key))
+	comp := utils.SplitFPCCompositeKey(C.GoString(comp_key))
 	iter, err := stubs.shimStub.GetStateByPartialCompositeKey(comp[0], comp[1:])
 	if err != nil {
 		panic("error while range query")
@@ -232,7 +232,7 @@ func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max
 			panic("Error " + err.Error())
 		}
 		buf.WriteString("{\"key\":\"")
-		buf.WriteString(sgx_utils.TransformToFPCKey(item.Key))
+		buf.WriteString(utils.TransformToFPCKey(item.Key))
 		buf.WriteString("\",\"value\":\"")
 		buf.Write(item.Value)
 		if iter.HasNext() {
@@ -274,7 +274,7 @@ type Stub interface {
 	// Returns enclave PK in DER-encoded PKIX formatk
 	GetPublicKey() ([]byte, error)
 	// Creates an enclave from a given enclave lib file
-	Create(enclaveLibFile string) error
+	Create(enclaveLibFile string, ccParametersBytes []byte, attestationParametersBytes []byte, hostParametersBytes []byte) ([]byte, error)
 	// Gets Enclave Target Information
 	GetTargetInfo() ([]byte, error)
 	// Bind to tlcc
@@ -429,16 +429,37 @@ func (e *StubImpl) GetPublicKey() ([]byte, error) {
 }
 
 // Create starts a new enclave instance
-func (e *StubImpl) Create(enclaveLibFile string) error {
+func (e *StubImpl) Create(enclaveLibFile string, ccParametersBytes []byte, attestationParametersBytes []byte, hostParametersBytes []byte) ([]byte, error) {
 	var eid C.enclave_id_t
+
+	// prepare output buffer for credentials
+	credentialsBuffer := C.malloc(MAX_RESPONSE_SIZE)
+	credentialsBufferMaxSize := C.uint32_t(MAX_RESPONSE_SIZE)
+	defer C.free(credentialsBuffer)
+	credentialsSize := C.uint32_t(0)
+
 	e.sem.Acquire(context.Background(), 1)
-	if ret := C.sgxcc_create_enclave(&eid, C.CString(enclaveLibFile)); ret != 0 {
-		return fmt.Errorf("Can not create enclave (lib %s): Reason: %d", enclaveLibFile, ret)
+
+	if ret := C.sgxcc_create_enclave(
+		&eid,
+		C.CString(enclaveLibFile),
+		(*C.uint8_t)(C.CBytes(attestationParametersBytes)),
+		C.uint32_t(len(attestationParametersBytes)),
+		(*C.uint8_t)(C.CBytes(ccParametersBytes)),
+		C.uint32_t(len(ccParametersBytes)),
+		(*C.uint8_t)(C.CBytes(hostParametersBytes)),
+		C.uint32_t(len(hostParametersBytes)),
+		(*C.uint8_t)(credentialsBuffer),
+		credentialsBufferMaxSize,
+		&credentialsSize); ret != 0 {
+		return nil, fmt.Errorf("Can not create enclave (lib %s): Reason: %d", enclaveLibFile, ret)
 	}
 	e.eid = eid
 	e.sem.Release(1)
 	logger.Infof("Enclave created with %d", e.eid)
-	return nil
+
+	// return credential bytes from sgx call
+	return C.GoBytes(credentialsBuffer, C.int(credentialsSize)), nil
 }
 
 func (e *StubImpl) GetTargetInfo() ([]byte, error) {

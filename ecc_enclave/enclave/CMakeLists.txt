@@ -11,9 +11,13 @@ set(SOURCE_FILES
     enclave_t.c
     shim.cpp
     ${COMMON_SOURCE_DIR}/enclave/common.cpp
+    ${COMMON_SOURCE_DIR}/enclave/cc_data.cpp
     ${COMMON_SOURCE_DIR}/base64/base64.cpp
     ${COMMON_SOURCE_DIR}/utils.c
     ${COMMON_SOURCE_DIR}/json/parson.c
+    ${NANOPB_PATH}/pb_common.c
+    ${NANOPB_PATH}/pb_encode.c
+    ${NANOPB_PATH}/pb_decode.c
     )
 
 add_definitions(-DENCLAVE_CODE)
@@ -51,8 +55,11 @@ include_directories(
     ${SGX_SDK}/include/libcxx
     ${SGX_SSL}/include
     ${FPC_PATH}/common/crypto
+    ${FPC_PATH}/common/protos
+    ${FPC_PATH}/common/protos/fabric
     ${FPC_PATH}/common/logging/trusted
     ${FPC_PATH}/common/crypto/pdo/common
+    ${NANOPB_PATH}
     )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -nostdinc -fno-builtin -fvisibility=hidden -fpie -fstack-protector -std=c11")

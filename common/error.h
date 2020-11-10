@@ -25,3 +25,17 @@
             goto err;                                                   \
         }                                                               \
     } while (0)
+
+#define CATCH(b, expr) \
+    do                 \
+    {                  \
+        try            \
+        {              \
+            expr;      \
+            b = true;  \
+        }              \
+        catch (...)    \
+        {              \
+            b = false; \
+        }              \
+    } while (0);
