@@ -11,7 +11,13 @@ enclave {
     from "logging.edl" import *;
 
     trusted {
-        public int ecall_init(void);
+        public int ecall_init(
+                [in, size=ap_size] const uint8_t* attestation_parameters, uint32_t ap_size,
+                [in, size=ccp_size] const uint8_t* cc_parameters, uint32_t ccp_size,
+                [in, size=hp_size] const uint8_t* host_parameters, uint32_t hp_size,
+                [out, size=credentials_max_size] uint8_t *credentials, uint32_t credentials_max_size,
+                [out] uint32_t *credentials_size
+        );
 
         public int ecall_create_report(
                 [in] const sgx_target_info_t *target_info,

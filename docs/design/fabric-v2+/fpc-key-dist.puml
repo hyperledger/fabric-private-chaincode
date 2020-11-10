@@ -35,7 +35,7 @@ note right Admin1
       on messages, Params and cryptographic keys used below.
 end note
 
-Admin1 -> Peer1_CLI ++: lifecycle chaincode\n createenclave (CC_Id)
+Admin1 -> Peer1_CLI ++: lifecycle chaincode\n initEnclave (CC_Id)
 
 ref over Peer1_CLI
     Enclave creation and registration as described in fpc-registration diagram.

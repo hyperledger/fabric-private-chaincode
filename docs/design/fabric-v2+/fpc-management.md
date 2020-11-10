@@ -37,7 +37,7 @@ This command has the same requirements *when it is used for FPC chaincodes* as d
 
 ### Create Chaincode Enclave
 
-```peer lifecycle chaincode createenclave -n <chaincode id>```
+```peer lifecycle chaincode initEnclave -n <chaincode id> --peerAddresses <ip addr:port> --sgx-credentials <path>```
 
 This command performs the following operations:
 * the creation of a new chaincode enclave,
@@ -85,6 +85,6 @@ For example:
 
     peer lifecycle chaincode approveformyorg --channelID mychannel --name myfpc --signature-policy "OR('SampleOrg.peer')" ...
 
-An admin of SampleOrg is then responsible to invoke `lifecycle chaincode createenclave` at
+An admin of SampleOrg is then responsible to invoke `lifecycle chaincode initEnclave` at
 a single peer and thereby determine the designated endorser for the `myfpc` chaincode.  Clients
 of the consortium have to make sure that they invoke transactions only at the designed endorser.

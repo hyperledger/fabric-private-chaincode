@@ -417,7 +417,7 @@ handle_lifecycle_chaincode_commit() {
     exit 0
 }
 
-handle_lifecycle_chaincode_createenclave() {
+handle_lifecycle_chaincode_initEnclave() {
     # - remember variables we might need later
     while [[ $# > 0 ]]; do
     case "$1" in
@@ -433,23 +433,62 @@ handle_lifecycle_chaincode_createenclave() {
         ORDERER_ADDR=$2;
         shift; shift
         ;;
+        -s|--sgx-credentials-path)
+        SGX_CREDENTIALS_PATH=$2
+        shift; shift
+        ;;
+        --peerAddresses)
+        PEER_ADDRESS=$2
+        shift; shift
+        ;;
         *)
-        die "createenclave: invalid option"
+        die "initEnclave: invalid option"
         ;;
         esac
     done
 
-    # - createenclave can only be run on FPC chaincodes
-    FILES_NUM=$(ls -1 ${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.* 2> /dev/null | wc -l) 
-    if [ ${FILES_NUM} -eq 0 ]; then
-        die "createenclave: $CC_NAME is not written in language 'fpc-c'"
+    if [ "${SGX_MODE}" = "SIM" ] ; then
+        # set the default attestation params
+        ATTESTATION_PARAMS=$(jq -c -n --arg atype "simulated" '{attestation_type: $atype}' | base64 --wrap=0)
+    else
+        SPID_FILE_PATH="${SGX_CREDENTIALS_PATH}/spid.txt"
+        SPID_TYPE_FILE_PATH="${SGX_CREDENTIALS_PATH}/spid_type.txt"
+        [ -f "${SPID_FILE_PATH}" ] || die "no spid file ${SPID_FILE_PATH}"
+        [ -f "${SPID_TYPE_FILE_PATH}" ] || die "no spid type file ${SPID_TYPE_FILE_PATH}"
+        # set hw-mode attestation params
+        # it is assumed that sig_rl is empty
+        ATTESTATION_PARAMS=$(jq -c -n --arg atype "$(cat ${SPID_TYPE_FILE_PATH})" --arg spid "$(cat ${SPID_FILE_PATH})" --arg sig_rl "" '{attestation_type: $atype, hex_spid: $spid, sig_rl: $sig_rl}' | base64 --wrap=0)
     fi
 
+    # peer address must be specified in initEnclave
+    [ -z "${PEER_ADDRESS}" ] && die "No peer address specified in initEnclave"
+    # and there must be only one
+    [ $(echo "${PEER_ADDRESS}" | awk -F"," '{print NF-1}') == 0 ] || die "one and only one peer address allowed"
+    [ $(echo "${PEER_ADDRESS}" | awk -F":" '{print NF-1}') == 1 ] || die "one and only one port allowed"
+
+    # - initEnclave can only be run on FPC chaincodes
+    FILES_NUM=$(ls -1 ${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.* 2> /dev/null | wc -l) 
+    if [ ${FILES_NUM} -eq 0 ]; then
+        die "initEnclave: $CC_NAME is not written in language 'fpc-c'"
+    fi
+
+    # embed json in protobuf message and b64 encode it
+    ATTESTATION_PARAMS_PROTO=$(echo "parameters: \"${ATTESTATION_PARAMS}\"" | protoc --encode attestation.AttestationParameters --proto_path=${FPC_TOP_DIR}/protos/fpc ${FPC_TOP_DIR}/protos/fpc/attestation.proto | base64 --wrap=0)
+
+    # create host params
+    HOST_PARAMS="${PEER_ADDRESS}"
+
+    # create init enclave message
+    INIT_ENCLAVE_PROTO=$( (echo "peer_endpoint: \"${HOST_PARAMS}\""; echo "attestation_params: \"${ATTESTATION_PARAMS_PROTO}\"") | protoc --encode fpc.InitEnclaveMessage --proto_path=${FPC_TOP_DIR}/protos/fpc ${FPC_TOP_DIR}/protos/fpc/fpc.proto | base64 --wrap=0)
+
+    # trigger initEnclave
+    try_out_r $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} --peerAddresses "${PEER_ADDRESS}" -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["initEnclave", "'${INIT_ENCLAVE_PROTO}'"]}'
+    echo "initEnclave response (b64): ${RESPONSE}"
+    echo "initEnclave response (decoded): $(echo "${RESPONSE}" | base64 -d)"
+
+    # TODO: remove __setup, deprecate
     # - setup internal ecc state, e.g., register chaincode
     try ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__setup", "'${ERCC_ID}'"]}' --waitForEvent
-
-    # - retrieve public-key (just for fun of it ...)
-    try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__getEnclavePk"]}'
 
     # - exit (otherwise main function will invoke operation again!)
     exit 0
@@ -580,9 +619,9 @@ case "$1" in
 			shift
 			handle_lifecycle_chaincode_commit "$@"
 			;;
-		    createenclave)
+		    initEnclave)
 			shift
-			handle_lifecycle_chaincode_createenclave "$@"
+			handle_lifecycle_chaincode_initEnclave "$@"
 			;;
 		    *)
 			# fall through, nothing to do

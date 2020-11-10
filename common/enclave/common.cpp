@@ -18,13 +18,29 @@
 #include "attestation-api/attestation/attestation.h"
 #include "error.h"
 
+#include <pb_decode.h>
+#include "protos/fpc/attestation.pb.h"
+#include "protos/fpc/fpc.pb.h"
+
+#include "cc_data.h"
+
 // enclave sk and pk (both are little endian) used for out signatures
 sgx_ec256_private_t enclave_sk = {0};
 sgx_ec256_public_t enclave_pk = {0};
 
 // creates new identity if not exists
-int ecall_init(void)
+int ecall_init(const uint8_t* attestation_parameters,
+    uint32_t ap_size,
+    const uint8_t* cc_parameters,
+    uint32_t ccp_size,
+    const uint8_t* host_parameters,
+    uint32_t hp_size,
+    uint8_t* credentials,
+    uint32_t credentials_max_size,
+    uint32_t* credentials_size)
 {
+    bool b;
+
     // create new pub/prv key pair
     sgx_ecc_state_handle_t ecc_handle = NULL;
     sgx_status_t sgx_ret = sgx_ecc256_open_context(&ecc_handle);
@@ -49,20 +65,26 @@ int ecall_init(void)
 
     LOG_DEBUG("Enc: Identity generated!");
 
-    {  // TODO: this block is here temporarily, only meant to test the attestation api
-        char params[] = "{\"attestation_type\":\"simulated\"}";
-        // char params[] = "{\"attestation_type\":\"simulated\"}";
-        bool bb = init_attestation((uint8_t*)params, strlen(params));
-        COND2LOGERR(bb == false, "error init attestation");
-        LOG_DEBUG("init attestation successful");
+    // NOTE:
+    // cc_data is a global pointer, meant to reference a global variable of cc_data type.
+    // If g_cc_data is implemented as a simple global variable, cgo seems to crash (on enclave
+    // destroy). This seems due to constructor/destructor issues -- if the variable is declared
+    // in a function, it works. For this reason, we allocate it here dynamically.
+    // TODO: free this memory when necessary.
+    COND2LOGERR(g_cc_data != NULL, "cc data already created");
 
-        char statement[] = "1234567890";
-        uint8_t attestation[2048];
-        uint32_t attestation_length = 0;
-        bool b = get_attestation(
-            (uint8_t*)statement, strlen(statement), attestation, 2048, &attestation_length);
-        COND2LOGERR(b == false, "error getting attestation");
-        LOG_DEBUG("get attestation success, size %d", attestation_length);
+    g_cc_data = new cc_data;
+    COND2LOGERR(g_cc_data == NULL, "error creating cc data object");
+
+    b = g_cc_data->generate();
+    COND2LOGERR(!b, "error generating cc data");
+
+    // if a credential buffer was provided, then get credentials, else ignore
+    if (credentials_max_size > 0)
+    {
+        b = g_cc_data->get_credentials(attestation_parameters, ap_size, cc_parameters, ccp_size,
+            host_parameters, hp_size, credentials, credentials_max_size, credentials_size);
+        COND2LOGERR(!b, "error getting credentials");
     }
 
     return SGX_SUCCESS;

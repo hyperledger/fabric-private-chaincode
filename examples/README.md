@@ -369,7 +369,7 @@ In the next step, the FPC chaincode must be approved by the organizations on the
 To complete the installation, we need to create an enclave that runs the FPC Chaincode.
 ```
     # create an FPC Chaincode enclave
-    try ${PEER_CMD} lifecycle chaincode createenclave --name ${CC_ID}
+    try ${PEER_CMD} lifecycle chaincode initEnclave --name ${CC_ID}
 ```
 
 Add the following content to the function, `helloworld_test()` in test.sh.  Please note the inline comments for each of the commands.
@@ -393,7 +393,7 @@ helloworld_test() {
     try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
 
     # create an FPC Chaincode enclave
-    try ${PEER_CMD} lifecycle chaincode createenclave --name ${CC_ID}
+    try ${PEER_CMD} lifecycle chaincode initEnclave --name ${CC_ID}
 
     # store the value of 100 in asset1
     say "- invoke storeAsset transaction to store value 100 in asset1"
@@ -445,7 +445,7 @@ helloworld_test() {
     try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
 
     # create an FPC Chaincode enclave
-    try ${PEER_CMD} lifecycle chaincode createenclave --name ${CC_ID}
+    try ${PEER_CMD} lifecycle chaincode initEnclave --name ${CC_ID}
 
     # store the value of 100 in asset1
     say "- invoke storeAsset transaction to store value 100 in asset1"

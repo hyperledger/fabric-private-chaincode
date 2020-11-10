@@ -79,3 +79,9 @@ try_r() {
     echo $RESPONSE
 }
 
+try_out_r() {
+    echo "$@"
+    export RESPONSE=$("$@") || die "test failed: $*"
+    echo $RESPONSE
+}
+

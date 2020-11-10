@@ -16,7 +16,8 @@ const enclaveLibFile = "lib/enclave.signed.so"
 
 func TestEnclaveStub_RemoteAttestation(t *testing.T) {
 	stub := NewEnclave()
-	err := stub.Create(enclaveLibFile)
+	arr := []byte{}
+	_, err := stub.Create(enclaveLibFile, arr, arr, arr)
 	if err != nil {
 		t.Fatalf("Create returned error %s", err)
 	}
@@ -82,7 +83,8 @@ func TestEnclaveStub_RemoteAttestation(t *testing.T) {
 
 func TestEnclaveStub_Invoke(t *testing.T) {
 	stub := NewEnclave()
-	err := stub.Create(enclaveLibFile)
+	arr := []byte{}
+	_, err := stub.Create(enclaveLibFile, arr, arr, arr)
 	if err != nil {
 		t.Fatalf("Create returned error %s", err)
 	}
@@ -98,7 +100,8 @@ func TestEnclaveStub_Invoke(t *testing.T) {
 
 func TestEnclaveStub_GetPublicKey(t *testing.T) {
 	stub := NewEnclave()
-	err := stub.Create(enclaveLibFile)
+	arr := []byte{}
+	_, err := stub.Create(enclaveLibFile, arr, arr, arr)
 	if err != nil {
 		t.Fatalf("Create returned error %s", err)
 	}
@@ -117,7 +120,8 @@ func TestEnclaveStub_GetPublicKey(t *testing.T) {
 
 func TestEnclaveStub_Create(t *testing.T) {
 	stub := NewEnclave()
-	err := stub.Create(enclaveLibFile)
+	arr := []byte{}
+	_, err := stub.Create(enclaveLibFile, arr, arr, arr)
 	if err != nil {
 		t.Fatalf("Create returned error %s", err)
 	}
@@ -125,7 +129,8 @@ func TestEnclaveStub_Create(t *testing.T) {
 
 func TestEnclaveStub_Destroy(t *testing.T) {
 	stub := NewEnclave()
-	err := stub.Create(enclaveLibFile)
+	arr := []byte{}
+	_, err := stub.Create(enclaveLibFile, arr, arr, arr)
 	if err != nil {
 		t.Fatalf("Create returned error %s", err)
 	}

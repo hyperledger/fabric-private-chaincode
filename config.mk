@@ -77,3 +77,7 @@ export FPC_PATH=$(abspath $(TOP))
 # below variable is used for volume mounts and can hence be
 # re-defined to point to the FPC path as seen by the docker daemon
 export DOCKERD_FPC_PATH ?= $(FPC_PATH)
+
+# Additional SGX related settings
+#--------------------------------------------------
+export SGX_CREDENTIALS_PATH ?= $(FPC_PATH)/config/ias
