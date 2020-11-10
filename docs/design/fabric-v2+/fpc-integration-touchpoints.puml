@@ -25,31 +25,34 @@ database tlcc2
 'entity	Orderer
 'database Ledger
 
+note over tlcc2
+  "Full" FPC only (Post-MVP)
+end note
+
 group System setup
 
-   Client1 -> Peer1 : start
-   Client1 -> Peer2 : start
+  Client1 -> Peer1 : start
+  Client1 -> Peer2 : start
 
-   Client1 -> Peer1 : channel create
-   note over Client1
+  Client1 -> Peer1 : channel create
+    note over Client1
       Includes additional FPC metadata to genesis block (enclave registry, trusted ledger code-identity)
-   end note
+    end note
 
-   Client1 -> Peer1 : channel join
-   Peer1 -> tlcc1 : start
-   activate tlcc1
-   note over tlcc1
-     attach to channel
-   end note
+  Client1 -> Peer1 : channel join
+  alt "Full" FPC (Post-MVP)
+    Peer1 -> tlcc1 : start
+    activate tlcc1
+      note over tlcc1
+        attach to channel
+      end note
+  end
 
-   Client1 -> Peer2 : channel join
-   Peer2 -> tlcc2 : start
-   activate tlcc2
-   /'
-    ' note over tlcc2
-    '   attach to channel
-    ' end note
-    '/
+  Client1 -> Peer2 : channel join
+  alt "Full" FPC (Post-MVP)
+    Peer2 -> tlcc2 : start
+    activate tlcc2
+  end
 
 end
 
@@ -76,7 +79,7 @@ group Per FPC chaincode FCC
 
    loop
      alt query
-        Client1 -> Peer1 : chaincode query FPC
+        Client1 -> Peer1 : chaincode invoke FPC
           note over Client1
             retrieve encryption-keys from enclave registry
           end note
@@ -84,36 +87,53 @@ group Per FPC chaincode FCC
             FPC-specific sgx-enabled docker-image with FPC-specific runtime & shim
           end note
         Peer1 -> ecc1
-        ecc1 <-> tlcc1: inspect ledger state
-          note over tlcc1
-            any state must be validated via trusted ledger enclave
-          end note
+        alt "full" FPC (Post-MVP)
+          ecc1 <-> tlcc1: inspect ledger state
+            note over tlcc1
+              any state must be validated via trusted ledger enclave
+            end note
+        end
+        note over ecc1
+  	      enclave signatures as (enclave) endorsement (of result)
+        end note
         Peer1 <- ecc1
-        & Client1 <- Peer1 : result
+        & Client1 <- Peer1 : enclave signature & result
 
      else transactions
         Client1 -> Peer1 : chaincode invoke FPC
         & Peer1 -> ecc1
-        ecc1 <-> tlcc1: inspect ledger state
+        alt "full" FPC (Post-MVP)
+          ecc1 <-> tlcc1: inspect ledger state
+        end
         note over ecc1
-  	  encrypted rw-set
-  	  enclave signatures as endorsement
+  	      rw-set (encrypted values, cleartext keys)
+  	      enclave signatures as (enclave) endorsement (of result and transaction)
         end note
         Peer1 <- ecc1
-        & Client1 <- Peer1 : endorsement Peer1 & result
+        & Client1 <- Peer1 : endorsement Peer1, enclave signature & result
 
-        Client1 -> Peer2 : chaincode invoke FPC
-        & Peer2 -> ecc2
-        ecc2 <-> tlcc2: inspect ledger state
-        Peer2 <- ecc2
-        & Client1 <- Peer2 : endorsement Peer2 & result
-        Client1 -> Orderer : {endorsement Peer1, endorsement Peer2}
-        Peer1 <- Orderer : ordered {endorsement Peer1, endorsement Peer2}
-        note over Peer1
-  	  Validate enclave signatures, endorsement policies evaluated
-          over enclave signatures, not peer signatures!
-        end note
-        Peer2 <- Orderer : ordered {endorsement Peer1, endorsement Peer2}
+        alt FPC Lite
+          Client1 -> Peer1 : chaincode invoke "validateEnclaveEndorsement"
+            note over Peer1
+  	          - Validate enclave signatures, enclave endorsement policies evaluated
+                over enclave signatures, not peer signatures!
+              - Re-execute rw-set
+            end note
+          Client1 <- Peer1 : validation endorsement Peer1
+          Client1 -> Peer2 : chaincode invoke "validateEnclaveEndorsement"
+          Client1 <- Peer2 : validation endorsement Peer2
+          Client1 -> Orderer : {validation endorsement Peer1, validation endorsement Peer2}
+          Peer1 <- Orderer : ordered {validation endorsement Peer1, validation endorsement Peer2}
+          Peer2 <- Orderer : ordered {validation endorsement Peer1, validation endorsement Peer2}       
+        else "full" FPC (Post-MVP)
+          Client1 -> Orderer : {endorsement Peer1, endorsement Peer2}
+          Peer1 <- Orderer : ordered {endorsement Peer1, endorsement Peer2}
+            note over Peer1
+  	          Validate enclave signatures, endorsement policies evaluated
+              over enclave signatures, not peer signatures!
+            end note
+          Peer2 <- Orderer : ordered {endorsement Peer1, endorsement Peer2}
+        end
      end
    end
 
