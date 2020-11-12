@@ -41,7 +41,7 @@ ENV GOPATH=/project
 
 # Get all necessary apt packages
 RUN apt-get update -q \
-  && DEBIAN_FRONTEND="noninteractive" \
+  && env DEBIAN_FRONTEND="noninteractive" TZ="UTC" \
   # above makes sure any install of 'tzdata' or alike (as e.g., pulled in via ubuntu 20.04) does not hang ...
   apt-get install -y -q\
     basez \
@@ -59,8 +59,8 @@ RUN apt-get update -q \
 RUN echo "deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu ${UBUNTU_NAME} main" >> /etc/apt/sources.list \
   && wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add - \
   && apt-get update -q \
-  && DEBIAN_FRONTEND="noninteractive" \
-  && apt-get install -y -q \
+  && env DEBIAN_FRONTEND="noninteractive" TZ="UTC" \
+    apt-get install -y -q \
     # We do not need daemons like AESMD as we run them on host (side-steps also
     # issues with config of /etc/aesmd.conf like proxy ..). Without this option
     # aesmd and lots of other plugsin are automatically pulled in. 
@@ -113,8 +113,10 @@ ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${SGX_SDK}/sdk_libs
 # LVI mitigations, needed to compile sgxssl, requires a
 #   recent version of binutils (>= 2.32). Ubuntu 18.04 only
 #   has 2.30 but Intel ships binary distro for 2.32.51.20190719
-RUN [ "${UBUNTU_VERSION}" = "18.04" ] \
-  && SGX_SDK_BINUTILS_REPO=https://download.01.org/intel-sgx/sgx-linux/${SGX} \
+#   As sgx ships tools also for 20.04, use these for simplicity 
+#   and uniformity reason
+RUN \
+     SGX_SDK_BINUTILS_REPO=https://download.01.org/intel-sgx/sgx-linux/${SGX} \
   && SGX_SDK_BINUTILS_FILE=$(cd /tmp; wget --spider --recursive --level=1 --no-parent ${SGX_SDK_BINUTILS_REPO} 2>&1 | perl  -ne 'if (m|'${SGX_SDK_BINUTILS_REPO}'/(as.ld.objdump.*)|) { print "$1\n"; }') \
   && wget -q ${SGX_SDK_BINUTILS_REPO}/${SGX_SDK_BINUTILS_FILE} \
   && mkdir sgxsdk.extras \
