@@ -36,9 +36,9 @@ ENV SGXSSL_VERSION=${SGXSSL_VERSION}
 WORKDIR /tmp
 
 RUN apt-get update -q \
-  && DEBIAN_FRONTEND="noninteractive" \
+  && env DEBIAN_FRONTEND="noninteractive" TZ="UTC" \
   # above makes sure any install of 'tzdata' or alike (as e.g., pulled in via ubuntu 20.04) does not hang ...
-  && apt-get install -y -q \
+    apt-get install -y -q \
     # build tools
     build-essential \
     clang-format \
@@ -49,6 +49,7 @@ RUN apt-get update -q \
     libssl-dev \
     libtool \
     pkg-config \
+    python \ 
     protobuf-compiler \
     python-protobuf \
     # docker commands (need as we use docker daemon from "outside")
