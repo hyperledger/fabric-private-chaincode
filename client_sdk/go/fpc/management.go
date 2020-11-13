@@ -15,13 +15,15 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc/attestation"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
+	pbatt "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos/attestation"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
+	"github.com/hyperledger/fabric/protoutil"
 )
 
 type ManagementInterface interface {
-	CreateEnclave(peerEndpoint string, attestationParams ...string) error
+	InitEnclave(peerEndpoint string, attestationParams ...string) error
 }
 
 type ManagementAPI struct {
@@ -35,7 +37,7 @@ func GetManagementAPI(network *gateway.Network, chaincodeId string) ManagementIn
 	return &ManagementAPI{contract: contract, ercc: ercc}
 }
 
-func (c *ManagementAPI) CreateEnclave(peerEndpoint string, attestationParams ...string) error {
+func (c *ManagementAPI) InitEnclave(peerEndpoint string, attestationParams ...string) error {
 	txn, err := c.contract.CreateTransaction(
 		"__initEnclave",
 		gateway.WithEndorsingPeers(peerEndpoint),
@@ -44,19 +46,19 @@ func (c *ManagementAPI) CreateEnclave(peerEndpoint string, attestationParams ...
 		return err
 	}
 
-	endpoint, err := utils.ToEndpoint(peerEndpoint)
-	if err != nil {
-		shim.Error(err.Error())
+	if err := utils.ValidateEndpoint(peerEndpoint); err != nil {
+		return err
 	}
 
-	serializedAttestationParams, err := json.Marshal(&utils.AttestationParams{Params: attestationParams})
+	// TODO revisit this once it becomes clear what attestationParams ...string is here
+	serializedJsonParams, err := json.Marshal(&utils.AttestationParams{Params: attestationParams})
 	if err != nil {
 		shim.Error(err.Error())
 	}
 
 	initMsg := &protos.InitEnclaveMessage{
-		PeerEndpoint:      endpoint,
-		AttestationParams: serializedAttestationParams,
+		PeerEndpoint:      peerEndpoint,
+		AttestationParams: protoutil.MarshalOrPanic(&pbatt.AttestationParameters{Parameters: serializedJsonParams}),
 	}
 
 	log.Printf("calling __initEnclave\n")

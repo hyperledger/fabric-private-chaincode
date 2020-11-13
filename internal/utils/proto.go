@@ -8,39 +8,25 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
-	"github.com/hyperledger/fabric-protos-go/discovery"
 	"github.com/hyperledger/fabric/protoutil"
-	"github.com/pkg/errors"
 )
 
 func ProtoAsBase64(msg proto.Message) string {
 	return base64.StdEncoding.EncodeToString(protoutil.MarshalOrPanic(msg))
 }
 
-func ToEndpoint(endpoint string) (*discovery.Endpoint, error) {
-	colon := strings.LastIndexByte(endpoint, ':')
-	if colon == -1 {
-		return nil, fmt.Errorf("invalid format")
-	}
-
-	host := endpoint[:colon]
-	port, err := strconv.Atoi(endpoint[colon+1:])
-	if err != nil {
-		return nil, errors.Wrap(err, "invalid port")
-	}
-
-	return &discovery.Endpoint{
-		Host: host,
-		Port: uint32(port),
-	}, nil
+// returns enclave_id as hex-encoded string of SHA256 hash over enclave_vk.
+func GetEnclaveId(attestedData *protos.AttestedData) string {
+	h := sha256.Sum256(attestedData.EnclaveVk)
+	return hex.EncodeToString(h[:])
 }
 
 func ExtractEndpoint(credentials *protos.Credentials) (string, error) {
@@ -50,8 +36,7 @@ func ExtractEndpoint(credentials *protos.Credentials) (string, error) {
 		return "", err
 	}
 
-	endpoint := attestedData.HostParams.PeerEndpoint
-	return fmt.Sprintf("%s:%d", endpoint.Host, endpoint.Port), nil
+	return attestedData.HostParams.PeerEndpoint, nil
 }
 
 func UnmarshalCredentials(credentialsBase64 string) (*protos.Credentials, error) {

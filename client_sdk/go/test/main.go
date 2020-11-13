@@ -121,7 +121,7 @@ func main() {
 	// Setup Chaincode Enclave
 	log.Println("--> Create FPC chaincode enclave: ")
 	attestationParams := []string{"some params"}
-	err = admin.CreateEnclave("peer0.peer1.example.com:7051", attestationParams...)
+	err = admin.InitEnclave("peer0.peer1.example.com:7051", attestationParams...)
 	if err != nil {
 		log.Fatalf("Failed to create enclave: %v", err)
 	}

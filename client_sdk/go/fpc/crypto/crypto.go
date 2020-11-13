@@ -55,8 +55,8 @@ func (e EncryptionProviderImpl) NewEncryptionContext() (EncryptionContext, error
 }
 
 type EncryptionContext interface {
-	ChaincodeArgs(function string, args []string) (string, error)
-	Response(r []byte) ([]byte, error)
+	Conceal(function string, args []string) (string, error)
+	Reveal(r []byte) ([]byte, error)
 }
 
 type EncryptionContextImpl struct {
@@ -64,7 +64,7 @@ type EncryptionContextImpl struct {
 	chaincodeEncryptionKey []byte
 }
 
-func (e *EncryptionContextImpl) Response(responseBytes []byte) ([]byte, error) {
+func (e *EncryptionContextImpl) Reveal(responseBytes []byte) ([]byte, error) {
 	response := &protos.ChaincodeResponseMessage{}
 	err := proto.Unmarshal(responseBytes, response)
 	if err != nil {
@@ -74,7 +74,7 @@ func (e *EncryptionContextImpl) Response(responseBytes []byte) ([]byte, error) {
 	return Decrypt(response.EncryptedResponse, e.resultEncryptionKey)
 }
 
-func (e *EncryptionContextImpl) ChaincodeArgs(function string, args []string) (string, error) {
+func (e *EncryptionContextImpl) Conceal(function string, args []string) (string, error) {
 	args = append([]string{function}, args...)
 	bytes := make([][]byte, len(args))
 	for i, v := range args {

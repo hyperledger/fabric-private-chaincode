@@ -55,6 +55,20 @@ A successful command execution returns `0`,
 indicating that the chaincode enclave is ready to endorse transaction proposals.
 
 
+## Admin Client SDK
+
+In addition to the CLI based admin commands there exists a FPC management API based on the Fabric Client SDK for Go.
+
+```go
+type ManagementInterface interface {
+	InitEnclave(peerEndpoint string, attestationParams ...string) error
+}
+```
+
+**TODO Describe here**
+
+See more details in `client_sdk/go/fpc/management.go`
+
 ### Key Distribution
 
 Key distribution commands are not supported in the initial version of FPC.

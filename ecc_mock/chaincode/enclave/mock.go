@@ -33,7 +33,7 @@ type MockEnclave struct {
 }
 
 func (m *MockEnclave) Init(chaincodeParams *protos.CCParameters, hostParams *protos.HostParameters, attestationParams []byte) ([]byte, error) {
-
+	// create some dummy keys for our mock enclave
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		return nil, err
@@ -114,8 +114,7 @@ func (m *MockEnclave) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte,
 		RwSet:             rwset,
 		Signature:         nil,
 		EnclaveId:         m.enclaveId,
-		ProposalPayload:   signedProposal.ProposalBytes,
-		ProposalSignature: signedProposal.Signature,
+		Proposal:          signedProposal,
 	}
 
 	// get the read/write set in the same format as processed by the chaincode enclaves
@@ -124,6 +123,7 @@ func (m *MockEnclave) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte,
 		shim.Error(err.Error())
 	}
 
+	// create signature
 	hash := utils.ComputedHash(response, readset, writeset)
 	sig, err := ecdsa.SignASN1(rand.Reader, m.privateKey, hash[:])
 	if err != nil {

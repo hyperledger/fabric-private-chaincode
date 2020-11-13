@@ -30,27 +30,29 @@ func GetContract(network *gateway.Network, chaincodeId string) ContractInterface
 	contract := network.GetContract(chaincodeId)
 	ercc := network.GetContract("ercc")
 	return &Contract{
-		contract:     contract,
-		ercc:         ercc,
-		enclavePeers: nil,
+		contract:      contract,
+		ercc:          ercc,
+		peerEndpoints: nil,
 		ep: &crypto.EncryptionProviderImpl{GetCcEncryptionKey: func() ([]byte, error) {
 			return ercc.EvaluateTransaction("queryChaincodeEncryptionKey", chaincodeId)
 		}}}
 }
 
 type Contract struct {
-	contract     *gateway.Contract
-	ercc         *gateway.Contract
-	enclavePeers []string
-	ep           crypto.EncryptionProvider
+	contract      *gateway.Contract
+	ercc          *gateway.Contract
+	peerEndpoints []string
+	ep            crypto.EncryptionProvider
 }
 
 func (c *Contract) Name() string {
 	return c.contract.Name()
 }
 
-func (c *Contract) getEnclavePeers() ([]string, error) {
-	if len(c.enclavePeers) == 0 {
+// Returns an array of peer endpoints that host the FPC chaincode enclave
+// An endpoint is a simple string with the format `host:port`
+func (c *Contract) getPeerEndpoints() ([]string, error) {
+	if len(c.peerEndpoints) == 0 {
 		resp, err := c.ercc.EvaluateTransaction("queryListEnclaveCredentials", c.Name())
 		if err != nil {
 			return nil, err
@@ -73,11 +75,11 @@ func (c *Contract) getEnclavePeers() ([]string, error) {
 				return nil, err
 			}
 
-			c.enclavePeers = append(c.enclavePeers, endpoint)
+			c.peerEndpoints = append(c.peerEndpoints, endpoint)
 		}
 
 	}
-	return c.enclavePeers, nil
+	return c.peerEndpoints, nil
 }
 
 func (c *Contract) EvaluateTransaction(name string, args ...string) ([]byte, error) {
@@ -86,19 +88,19 @@ func (c *Contract) EvaluateTransaction(name string, args ...string) ([]byte, err
 		return nil, err
 	}
 
-	argsBase64, err := ctx.ChaincodeArgs(name, args)
+	encryptedRequest, err := ctx.Conceal(name, args)
 	if err != nil {
 		return nil, err
 	}
 
 	// call __invoke
-	responseBytes, err := c.evaluateTransaction(argsBase64)
+	encryptedResponse, err := c.evaluateTransaction(encryptedRequest)
 
-	return ctx.Response(responseBytes)
+	return ctx.Reveal(encryptedResponse)
 }
 
 func (c *Contract) evaluateTransaction(args ...string) ([]byte, error) {
-	peers, err := c.getEnclavePeers()
+	peers, err := c.getPeerEndpoints()
 	if err != nil {
 		return nil, err
 	}
@@ -123,21 +125,21 @@ func (c *Contract) SubmitTransaction(name string, args ...string) ([]byte, error
 		return nil, err
 	}
 
-	argsBase64, err := ctx.ChaincodeArgs(name, args)
+	encryptedRequest, err := ctx.Conceal(name, args)
 	if err != nil {
 		return nil, err
 	}
 
 	// call __invoke
-	responseBytes, err := c.evaluateTransaction(argsBase64)
+	encryptedResponse, err := c.evaluateTransaction(encryptedRequest)
 
 	log.Printf("calling __endorse!\n")
-	_, err = c.contract.SubmitTransaction("__endorse", base64.StdEncoding.EncodeToString(responseBytes))
+	_, err = c.contract.SubmitTransaction("__endorse", base64.StdEncoding.EncodeToString(encryptedResponse))
 	if err != nil {
 		return nil, err
 	}
 
-	return ctx.Response(responseBytes)
+	return ctx.Reveal(encryptedResponse)
 }
 
 //func (c *Contract) CreateTransaction(name string, opts ...gateway.TransactionOption) (*gateway.Transaction, error) {

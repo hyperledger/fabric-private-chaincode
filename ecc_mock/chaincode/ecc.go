@@ -120,7 +120,6 @@ func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) pb.Response
 
 	// check cc params match credentials
 	// check cc params chaincode def
-	// TODO does this check make sense like that? TBD
 	if ccParamsMatch(attestedData.CcParams, chaincodeParams) {
 		shim.Error("ccParams don't match")
 	}
@@ -140,6 +139,7 @@ func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) pb.Response
 	hash := utils.ComputedHash(responseMsg, readset, writeset)
 
 	// perform enclave signature validation
+	// TODO refactor this to function
 	pub, err := x509.ParsePKIXPublicKey(attestedData.EnclaveVk)
 	valid := ecdsa.VerifyASN1(pub.(*ecdsa.PublicKey), hash[:], responseMsg.Signature)
 	fmt.Println("signature verified:", valid)
