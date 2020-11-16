@@ -15,14 +15,15 @@
 
 title Fabric Private Chaincode Integration Touchpoints
 
-actor	Client1
-entity	Peer1
-entity	Peer2
+actor	"Client\n(Org1)" as Client1
+actor	"Client\n(Org2)" as Client2
+entity	"Peer\n(Org1)" as Peer1
+entity	"Peer\n(Org2)" as Peer2
 entity ecc1
 entity ecc2
 database tlcc1
 database tlcc2
-'entity	Orderer
+entity	Orderer
 'database Ledger
 
 note over tlcc2
@@ -32,7 +33,7 @@ end note
 group System setup
 
   Client1 -> Peer1 : start
-  Client1 -> Peer2 : start
+  Client2 -> Peer2 : start
 
   Client1 -> Peer1 : channel create
     note over Client1
@@ -48,7 +49,7 @@ group System setup
       end note
   end
 
-  Client1 -> Peer2 : channel join
+  Client2 -> Peer2 : channel join
   alt "Full" FPC (Post-MVP)
     Peer2 -> tlcc2 : start
     activate tlcc2
@@ -63,19 +64,29 @@ group Per FPC chaincode FCC
    note over Client1
      extend CC definition with additional meta-data
    end note
+   Client2 -> Client2: chaincode package FPC
+   
+   Client1 -> Peer1: chaincode install FPC
+   Client2 -> Peer2: chaincode install FPC
 
    Client1 -> Peer1 : chaincode approveformyorg FPC
-   Client1 -> Peer2 : chaincode approveformyorg FPC
+   Client2 -> Peer2 : chaincode approveformyorg FPC
 
    Client1 -> Peer1 : chaincode commit FPC
-   note over Peer1
-     trigger preparation of execution enclaves & key-distribute for all peers
-   end note
-   Peer1 <-> Peer2
-   & Peer2 <-> ecc1 
-   & ecc1 <-> ecc2
+
+   Client1 -> Peer1 : chaincode initEnclave FPC
+   & Peer1 <-> ecc1 
    activate ecc1
-   activate ecc2
+
+   alt "full" FPC (Post-MVP)
+      Client2 -> Peer2 : chaincode initEnclave FPC
+      & Peer2 <-> ecc2 
+      activate ecc2
+      Client1 -> Peer1 : chaincode exportCCKeys FPC
+      & Peer1 <-> ecc1 
+      Client2 -> Peer2 : chaincode importCCKeys FPC
+      & Peer2 <-> ecc2 
+   end
 
    loop
      alt query
