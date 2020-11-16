@@ -15,6 +15,37 @@
 
 typedef struct t_shim_ctx* shim_ctx_ptr_t;
 
+/*
+  FPC Lite Constraints
+  =========================
+
+  The 'FPC Lite' variant of FPC does not provide a proof-of-commitment-on-ledger
+  and, hence, does not support rollback protection.  As a consequence,
+  applications should _not_ release any sensitive information conditioned
+  on private ledger data.
+  For example: if at some point in time the FPC chaincode executed `put_state` of
+  a key-value pair `<k,v>`, the developer should assume that the value `v` might be
+  returned at any future execution of `get_state` over the key `k` -- no matter
+  whether `<k,v>` was actually committed or not. Similarly, you also might _not_ get
+  the value back, regardless of whether it was committed or not.
+
+  Additionally, some of below functions have additional restrictions:
+  - `get_state`/`put_state` can be securely supported only for a single key.
+    Note, though, that for additional security and the hiding of access
+    patterns, a single key is in general a good strategy.
+    To illustrate the security issue with more than one key:
+    Let us assume that the FPC chaincode writes two key-value
+    pairs `<k1,v1>, <k2,v2>`. Also, in another execution, the chaincode
+    writes `<k1,v1'>, <k2,v2'>`. In subsequent executions, the developer
+    should assume that `get_state` of `k1` might return any value
+    between `none`, `v1`, `v1'`, in _any possible combination_
+    with `get_state` of `k2` returning `none`, `v2` or `v2'`.
+  - the composite key variants are not supported
+  - the value returned from `get_creator_name` will be unvalidated, i.e.,
+    identity management has to be done on the application level.
+
+*/
+
 // Function which FPC chaincode has to implement
 // ==================================================
 // - invoke, called when a transaction query or invocation is executed
