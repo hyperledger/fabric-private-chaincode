@@ -16,15 +16,15 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func Encrypt(input []byte, encryptionKey []byte) ([]byte, error) {
+func encrypt(input []byte, encryptionKey []byte) ([]byte, error) {
 	return input, nil
 }
 
-func KeyGen() ([]byte, error) {
+func keyGen() ([]byte, error) {
 	return []byte("fake key"), nil
 }
 
-func Decrypt(encryptedResponse []byte, resultEncryptionKey []byte) ([]byte, error) {
+func decrypt(encryptedResponse []byte, resultEncryptionKey []byte) ([]byte, error) {
 	return encryptedResponse, nil
 }
 
@@ -38,7 +38,7 @@ type EncryptionProviderImpl struct {
 
 func (e EncryptionProviderImpl) NewEncryptionContext() (EncryptionContext, error) {
 	// pick response encryption key
-	resultEncryptionKey, err := KeyGen()
+	resultEncryptionKey, err := keyGen()
 	if err != nil {
 		return nil, err
 	}
@@ -54,6 +54,10 @@ func (e EncryptionProviderImpl) NewEncryptionContext() (EncryptionContext, error
 	}, nil
 }
 
+// EncryptionContext defines the interface of an object responsible to encrypt the contents of a transaction invocation
+// and decrypt the corresponding response.
+// Conceal and Reveal must be called only once during the lifetime of an object that implements this interface. That is,
+// an EncryptionContext is only valid for a single transaction invocation.
 type EncryptionContext interface {
 	Conceal(function string, args []string) (string, error)
 	Reveal(r []byte) ([]byte, error)
@@ -71,7 +75,7 @@ func (e *EncryptionContextImpl) Reveal(responseBytes []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	return Decrypt(response.EncryptedResponse, e.resultEncryptionKey)
+	return decrypt(response.EncryptedResponse, e.resultEncryptionKey)
 }
 
 func (e *EncryptionContextImpl) Conceal(function string, args []string) (string, error) {
@@ -92,7 +96,7 @@ func (e *EncryptionContextImpl) Conceal(function string, args []string) (string,
 		return "", err
 	}
 
-	encryptedParams, err := Encrypt(serializedCcRequest, e.chaincodeEncryptionKey)
+	encryptedParams, err := encrypt(serializedCcRequest, e.chaincodeEncryptionKey)
 	if err != nil {
 		return "", err
 	}

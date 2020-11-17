@@ -7,8 +7,6 @@ SPDX-License-Identifier: Apache-2.0
 package chaincode
 
 import (
-	"crypto/ecdsa"
-	"crypto/x509"
 	"fmt"
 
 	"github.com/golang/protobuf/ptypes"
@@ -127,22 +125,16 @@ func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) pb.Response
 	// check cc param.MSPID matches MSPID of endorser (Post-MVP)
 
 	// extract read/writes from kvrwset,
-	readset, writeset, err := utils.PerformReadWrites(stub, responseMsg.RwSet)
+	readset, writeset, err := utils.ReplayReadWrites(stub, responseMsg.RwSet)
 	if err != nil {
 		shim.Error(err.Error())
 	}
 
-	// Note: below signature was created in ecc_enclave/enclave/enclave.cpp::gen_response
-	// see also replicated verification in tlcc_enclave/enclave/ledger.cpp::int parse_endorser_transaction (for TLCC)
-
-	// H(proposal_payload || proposal_signature || response || read set || write set)
-	hash := utils.ComputedHash(responseMsg, readset, writeset)
-
-	// perform enclave signature validation
-	// TODO refactor this to function
-	pub, err := x509.ParsePKIXPublicKey(attestedData.EnclaveVk)
-	valid := ecdsa.VerifyASN1(pub.(*ecdsa.PublicKey), hash[:], responseMsg.Signature)
-	fmt.Println("signature verified:", valid)
+	// validate enclave endorsement signature
+	err = utils.Validate(responseMsg, readset, writeset, attestedData)
+	if err != nil {
+		shim.Error(err.Error())
+	}
 
 	return shim.Success(nil)
 }

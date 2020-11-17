@@ -118,7 +118,7 @@ func (m *MockEnclave) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte,
 	}
 
 	// get the read/write set in the same format as processed by the chaincode enclaves
-	readset, writeset, err := utils.PerformReadWrites(stub, response.RwSet)
+	readset, writeset, err := utils.ReplayReadWrites(stub, response.RwSet)
 	if err != nil {
 		shim.Error(err.Error())
 	}

@@ -8,13 +8,17 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
+	"crypto/ecdsa"
+	"crypto/x509"
+	"fmt"
 	"sort"
 
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
 )
 
-func PerformReadWrites(stub shim.ChaincodeStubInterface, rwset *kvrwset.KVRWSet) (readset [][]byte, writeset [][]byte, err error) {
+func ReplayReadWrites(stub shim.ChaincodeStubInterface, rwset *kvrwset.KVRWSet) (readset [][]byte, writeset [][]byte, err error) {
 	// normal reads
 	var readKeys []string
 	readsetMap := make(map[string][]byte)
@@ -66,4 +70,25 @@ func PerformReadWrites(stub shim.ChaincodeStubInterface, rwset *kvrwset.KVRWSet)
 	}
 
 	return readset, writeset, nil
+}
+
+func Validate(responseMsg *protos.ChaincodeResponseMessage, readset, writeset [][]byte, attestedData protos.AttestedData) error {
+	// Note: below signature was created in ecc_enclave/enclave/enclave.cpp::gen_response
+	// see also replicated verification in tlcc_enclave/enclave/ledger.cpp::int parse_endorser_transaction (for TLCC)
+	hash := ComputedHash(responseMsg, readset, writeset)
+
+	// perform enclave signature validation
+	// TODO refactor this to function
+	pub, err := x509.ParsePKIXPublicKey(attestedData.EnclaveVk)
+	if err != nil {
+		return err
+	}
+
+	valid := ecdsa.VerifyASN1(pub.(*ecdsa.PublicKey), hash[:], responseMsg.Signature)
+	fmt.Println("signature verified:", valid)
+	if !valid {
+		return fmt.Errorf("signature invalid")
+	}
+
+	return nil
 }

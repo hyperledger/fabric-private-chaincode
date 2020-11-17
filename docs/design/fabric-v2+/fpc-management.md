@@ -67,7 +67,7 @@ type ManagementInterface interface {
 
 **TODO Describe here**
 
-See more details in `client_sdk/go/fpc/management.go`
+See more details in [`client_sdk/go/fpc/management.go`](../../../client_sdk/go/fpc/management.go)
 
 ### Key Distribution
 
