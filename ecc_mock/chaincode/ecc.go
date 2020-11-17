@@ -131,7 +131,7 @@ func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) pb.Response
 	}
 
 	// validate enclave endorsement signature
-	err = utils.Validate(responseMsg, readset, writeset, attestedData)
+	err = utils.Validate(responseMsg, readset, writeset, &attestedData)
 	if err != nil {
 		shim.Error(err.Error())
 	}
