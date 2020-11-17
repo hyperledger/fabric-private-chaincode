@@ -7,25 +7,23 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 	"strings"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
+	"github.com/pkg/errors"
 )
 
 const MrEnclaveStateKey = "MRENCLAVE"
 
 // Response contains the response data and signature produced by the enclave
-// TODO replace this with a proto? TBD
+// TODO remove once ecc uses new ChaincodeResponseMessage
 type Response struct {
 	ResponseData []byte `json:"ResponseData"`
 	Signature    []byte `json:"Signature"`
 	PublicKey    []byte `json:"PublicKey"`
-	//	TODO add read/write set
 }
 
 func UnmarshalResponse(respBytes []byte) (*Response, error) {
@@ -35,13 +33,6 @@ func UnmarshalResponse(respBytes []byte) (*Response, error) {
 		return nil, fmt.Errorf("unmarshaling FPC response err: %s", err)
 	}
 	return response, nil
-}
-
-// TODO replace this with a proto? TBD
-type ChaincodeParams struct {
-	Function            string   `json:"Function"`
-	Args                []string `json:"args"`
-	ResultEncryptionKey []byte   `json:"ResultEncryptionKey"`
 }
 
 // TODO replace this with a proto? TBD
@@ -79,8 +70,16 @@ func SplitFPCCompositeKey(comp_str string) []string {
 	return comp[1 : len(comp)-1]
 }
 
-// returns enclave_id as hex-encoded string of SHA256 hash over enclave_vk.
-func GetEnclaveId(attestedData *protos.AttestedData) string {
-	h := sha256.Sum256(attestedData.EnclaveVk)
-	return hex.EncodeToString(h[:])
+func ValidateEndpoint(endpoint string) error {
+	colon := strings.LastIndexByte(endpoint, ':')
+	if colon == -1 {
+		return fmt.Errorf("invalid format")
+	}
+
+	_, err := strconv.Atoi(endpoint[colon+1:])
+	if err != nil {
+		return errors.Wrap(err, "invalid port")
+	}
+
+	return nil
 }

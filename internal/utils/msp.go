@@ -23,7 +23,7 @@ type IdentityEvaluator struct {
 // EvaluateCreatorIdentity check that two identities have the same msp id.
 // This function requires marshalled msp.SerializedIdentity as inputs.
 func (id *IdentityEvaluator) EvaluateCreatorIdentity(creatorIdentityBytes []byte, ownerMSP string) error {
-	creatorMSP, err := extractMSPID(creatorIdentityBytes)
+	creatorMSP, err := ExtractMSPID(creatorIdentityBytes)
 	if err != nil {
 		return fmt.Errorf("error while deserialzing creator identity, err: %s", err)
 	}
@@ -35,7 +35,7 @@ func (id *IdentityEvaluator) EvaluateCreatorIdentity(creatorIdentityBytes []byte
 	return nil
 }
 
-func extractMSPID(serializedIdentityRaw []byte) (string, error) {
+func ExtractMSPID(serializedIdentityRaw []byte) (string, error) {
 	sID := &msp.SerializedIdentity{}
 	err := proto.Unmarshal(serializedIdentityRaw, sID)
 	if err != nil {
