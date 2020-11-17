@@ -7,26 +7,23 @@ SPDX-License-Identifier: Apache-2.0
 package chaincode
 
 import (
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes/any"
-	enclave2 "github.com/hyperledger-labs/fabric-private-chaincode/ecc_mock/chaincode/enclave"
+	"github.com/golang/protobuf/ptypes"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ecc_mock/chaincode/enclave"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ecc_mock/chaincode/ercc"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/common/flogging"
-	"github.com/hyperledger/fabric/protoutil"
 )
 
 var logger = flogging.MustGetLogger("ecc")
 
 // EnclaveChaincode struct
 type EnclaveChaincode struct {
-	enclave enclave2.MockEnclave
+	enclave enclave.StubInterface
 }
 
 // Init sets the chaincode state to "init"
@@ -52,103 +49,99 @@ func (t *EnclaveChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response 
 }
 
 func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Response {
-	// attestationParamsBase64 := stub.GetStringArgs()[0]
 
 	// fetch cc params and host params
-
-	// create enclave
-
-	// ecall_init(cc params, host params, and attestation params)
-
-	credentials := &protos.Credentials{
-		Attestation: []byte("{\"attestation_type\":\"simulated\",\"attestation\":\"MA==\"}"),
-		SerializedAttestedData: &any.Any{
-			TypeUrl: proto.MessageName(&protos.AttestedData{}),
-			Value: protoutil.MarshalOrPanic(&protos.AttestedData{
-				EnclaveVk: []byte("enclaveVKString"),
-				CcParams: &protos.CCParameters{
-					ChaincodeId: "ercc",
-					Version:     "1.0",
-					ChannelId:   "mychannel",
-					Sequence:    1,
-				},
-				HostParams: &protos.HostParameters{
-					PeerMspId: "org1",
-					// PeerEndpoint:
-				},
-			}),
-		},
-	}
-
-	credentialBytes, err := proto.Marshal(credentials)
+	chaincodeParams, err := ExtractChaincodeParams(stub)
 	if err != nil {
 		shim.Error(err.Error())
 	}
 
-	logger.Infof("return some credentials: %s", credentials)
+	hostParams, err := extractHostParams(stub)
+	if err != nil {
+		shim.Error(err.Error())
+	}
+
+	attestationParams, err := extractAttestationParams(stub)
+	if err != nil {
+		shim.Error(err.Error())
+	}
+
+	credentialsBytes, err := t.enclave.Init(chaincodeParams, hostParams, attestationParams)
+	if err != nil {
+		shim.Error(err.Error())
+	}
 
 	// return credentials
-	return shim.Success(credentialBytes)
+	return shim.Success(credentialsBytes)
 }
 
 func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	argsBase64 := stub.GetStringArgs()[1]
-	if argsBase64 == "" {
-		logger.Errorf("empty arguments")
-		return shim.Error("empty arguments")
-	}
-
-	args, err := base64.StdEncoding.DecodeString(argsBase64)
-	if err != nil {
-		logger.Errorf(err.Error())
-		return shim.Error(err.Error())
-	}
 
 	// call enclave
-	var errMsg string
-	responseData, signature, errInvoke := t.enclave.Invoke(args, nil, stub)
+	responseBytes, errInvoke := t.enclave.ChaincodeInvoke(stub)
 	if errInvoke != nil {
-		errMsg = fmt.Sprintf("t.enclave.Invoke failed: %s", errInvoke)
+		errMsg := fmt.Sprintf("t.enclave.ChaincodeInvoke failed: %s", errInvoke)
 		logger.Errorf(errMsg)
-		// likely a chaincode error, so we stil want response go back ...
-	}
-
-	fpcResponse := &utils.Response{
-		ResponseData: responseData,
-		Signature:    signature,
-		PublicKey:    []byte("TODO enclave public key"),
-	}
-	responseBytes, _ := json.Marshal(fpcResponse)
-
-	var response pb.Response
-	if errInvoke == nil {
-		response = pb.Response{
-			Status:  shim.OK,
-			Payload: responseBytes,
-			Message: errMsg,
-		}
-	} else {
-		response = pb.Response{
+		// likely a chaincode error, so we still want response go back ...
+		return pb.Response{
 			Status:  shim.ERROR,
 			Payload: responseBytes,
 			Message: errMsg,
 		}
 	}
-	return response
+
+	return shim.Success(responseBytes)
 }
 
 func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) pb.Response {
 
-	// TODO
+	chaincodeParams, err := ExtractChaincodeParams(stub)
+	if err != nil {
+		shim.Error(err.Error())
+	}
 
-	// check again chaincode definition and enclave registry
+	responseMsg, err := extractChaincodeResponseMessage(stub)
+	if err != nil {
+		shim.Error(err.Error())
+	}
 
-	// perform enclave signature validation
+	// get corresponding enclave credentials from ercc
+	credentials, err := ercc.QueryEnclaveCredentials(stub, chaincodeParams.ChannelId, chaincodeParams.ChaincodeId, responseMsg.EnclaveId)
+	if err != nil {
+		shim.Error(err.Error())
+	}
 
-	// perform reads and writes
-	// for each  readwriteset
-	// 	putState()
-	// 	getState()
+	var attestedData protos.AttestedData
+	if err := ptypes.UnmarshalAny(credentials.SerializedAttestedData, &attestedData); err != nil {
+		shim.Error(err.Error())
+	}
+
+	// check cc params match credentials
+	// check cc params chaincode def
+	if ccParamsMatch(attestedData.CcParams, chaincodeParams) {
+		shim.Error("ccParams don't match")
+	}
+
+	// check cc param.MSPID matches MSPID of endorser (Post-MVP)
+
+	// replay read/writes from kvrwset from enclave (to prepare commitment to ledger) and extract kvrwset for subsequent validation
+	readset, writeset, err := utils.ReplayReadWrites(stub, responseMsg.RwSet)
+	if err != nil {
+		shim.Error(err.Error())
+	}
+
+	// validate enclave endorsement signature
+	err = utils.Validate(responseMsg, readset, writeset, &attestedData)
+	if err != nil {
+		shim.Error(err.Error())
+	}
 
 	return shim.Success(nil)
+}
+
+func ccParamsMatch(expected, actual *protos.CCParameters) bool {
+	return expected.ChaincodeId != actual.ChaincodeId ||
+		expected.ChannelId != actual.ChannelId ||
+		expected.Version != actual.Version ||
+		expected.Sequence != actual.Sequence
 }

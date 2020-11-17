@@ -47,8 +47,12 @@ func GetMrEnclave(chaincodeId string, stub shim.ChaincodeStubInterface) (string,
 		return "", err
 	}
 
+	return ExtractMrEnclave(ccDef)
+}
+
+func ExtractMrEnclave(ccDef *lifecycle.QueryChaincodeDefinitionResult) (string, error) {
 	mrenclave := ccDef.Version
-	if err = isValidMrEnclaveString(mrenclave); err != nil {
+	if err := isValidMrEnclaveString(mrenclave); err != nil {
 		return "", err
 	}
 

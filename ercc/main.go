@@ -27,6 +27,7 @@ func main() {
 	c := &registry.Contract{}
 	c.Verifier = attestation.NewVerifier()
 	c.IEvaluator = &utils.IdentityEvaluator{}
+	c.BeforeTransaction = registry.MyBeforeTransaction
 
 	ercc, err := contractapi.NewChaincode(c)
 	if err != nil {

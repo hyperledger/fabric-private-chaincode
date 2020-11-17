@@ -293,7 +293,7 @@ func TestQueryListEnclaveCredentials(t *testing.T) {
 	stateQueryIterator.NextReturns(&queryresult.KV{Value: []byte("some item")}, nil)
 	chaincodeStub.GetStateByPartialCompositeKeyReturns(stateQueryIterator, nil)
 	resp, err = ercc.QueryListEnclaveCredentials(transactionContext, chaincodeId)
-	require.Contains(t, resp, []byte("some item"))
+	require.Contains(t, resp, base64.StdEncoding.EncodeToString([]byte("some item")))
 	require.NoError(t, err)
 
 	stateQueryIterator = &fakes.StateQueryIterator{}
@@ -304,8 +304,8 @@ func TestQueryListEnclaveCredentials(t *testing.T) {
 	stateQueryIterator.NextReturnsOnCall(1, &queryresult.KV{Value: []byte("some item-2")}, nil)
 	chaincodeStub.GetStateByPartialCompositeKeyReturns(stateQueryIterator, nil)
 	resp, err = ercc.QueryListEnclaveCredentials(transactionContext, chaincodeId)
-	require.Contains(t, resp, []byte("some item-1"))
-	require.Contains(t, resp, []byte("some item-2"))
+	require.Contains(t, resp, base64.StdEncoding.EncodeToString([]byte("some item-1")))
+	require.Contains(t, resp, base64.StdEncoding.EncodeToString([]byte("some item-1")))
 	require.Equal(t, len(resp), 2)
 	require.NoError(t, err)
 }
@@ -336,7 +336,7 @@ func TestQueryEnclaveCredentials(t *testing.T) {
 
 	chaincodeStub.GetStateReturns([]byte("credentialBytes"), nil)
 	resp, err = ercc.QueryEnclaveCredentials(transactionContext, chaincodeId, enclaveId)
-	require.Equal(t, resp, []byte("credentialBytes"))
+	require.Equal(t, resp, base64.StdEncoding.EncodeToString([]byte("credentialBytes")))
 	require.NoError(t, err)
 
 	chaincodeStub.GetStateReturns(nil, nil)
