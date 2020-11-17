@@ -30,7 +30,7 @@ func NewPolicyEvaluator() PolicyEvaluatorInterface {
 // EvaluateIdentity checks that the provided identity is a valid endorser as specified in the endorsement policy
 // This function requires a marshalled pb.ApplicationPolicy and a marshalled msp.SerializedIdentity as input.
 func (id *PolicyEvaluator) EvaluateIdentity(policyBytes []byte, identityBytes []byte) error {
-	aMsp, err := extractMSPID(identityBytes)
+	aMsp, err := ExtractMSPID(identityBytes)
 	if err != nil {
 		return fmt.Errorf("error while deserialzing creator identity, err: %s", err)
 	}

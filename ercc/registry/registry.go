@@ -29,6 +29,12 @@ type Contract struct {
 	IEvaluator utils.IdentityEvaluatorInterface
 }
 
+func MyBeforeTransaction(ctx contractapi.TransactionContextInterface) error {
+	function, _ := ctx.GetStub().GetFunctionAndParameters()
+	log.Printf("Invoke [%s]", function)
+	return nil
+}
+
 // returns a set of credentials registered for a given chaincode id
 // Note: to get the endpoints of FPC endorsing peers do the following:
 // - discover all endorsing peers (and their endpoints) for the FPC chaincode using "normal" lifecycle
@@ -39,9 +45,7 @@ type Contract struct {
 // Note that this implementation returns a set of (base64-encoded) protobuf-serialized `Credential` objects in order to send it to the receiver.
 // That is, the receiver needs to deserialize the return value into []Credentials
 // TODO look into custom serializer to make this call more aligned with the FPC API in `interfaces.md`
-func (rs *Contract) QueryListEnclaveCredentials(ctx contractapi.TransactionContextInterface, chaincodeId string) ([][]byte, error) {
-	log.Printf("QueryListEnclaveCredentials")
-
+func (rs *Contract) QueryListEnclaveCredentials(ctx contractapi.TransactionContextInterface, chaincodeId string) ([]string, error) {
 	iter, err := ctx.GetStub().GetStateByPartialCompositeKey("namespaces/credentials", []string{chaincodeId})
 	if iter != nil {
 		defer iter.Close()
@@ -53,33 +57,31 @@ func (rs *Contract) QueryListEnclaveCredentials(ctx contractapi.TransactionConte
 	// note that we store serialized credential objects in the chaincode state.
 	// since the returns value(s) of this message is sent to the caller (client), it has to serialized anyway.
 	// the client needs to deserialize the return value into []Credentials
-	var allCredentials [][]byte
+	var allCredentials []string
 	for iter.HasNext() {
 		q, err := iter.Next()
 		if err != nil {
 			return nil, err
 		}
 
-		allCredentials = append(allCredentials, q.Value)
+		allCredentials = append(allCredentials, base64.StdEncoding.EncodeToString(q.Value))
 	}
 
 	return allCredentials, nil
 }
 
-func (rs *Contract) QueryEnclaveCredentials(ctx contractapi.TransactionContextInterface, chaincodeId, enclaveId string) ([]byte, error) {
-	log.Printf("QueryEnclaveCredentials")
-
+func (rs *Contract) QueryEnclaveCredentials(ctx contractapi.TransactionContextInterface, chaincodeId, enclaveId string) (string, error) {
 	key, err := ctx.GetStub().CreateCompositeKey("namespaces/credentials", []string{chaincodeId, enclaveId})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	credentials, err := ctx.GetStub().GetState(key)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return credentials, nil
+	return base64.StdEncoding.EncodeToString(credentials), nil
 }
 
 // Optional Post-MVP;
@@ -128,11 +130,12 @@ func (rs *Contract) QueryListProvisionedEnclaves(ctx contractapi.TransactionCont
 }
 
 // returns the chaincode encryption key for a given chaincode id
-func (rs *Contract) QueryChaincodeEncryptionKey(ctx contractapi.TransactionContextInterface, chaincodeId string) ([]byte, error) {
+func (rs *Contract) QueryChaincodeEncryptionKey(ctx contractapi.TransactionContextInterface, chaincodeId string) (string, error) {
 	//input chaincodeId string
 	// TODO implement me
 	//return chaincode_ek []byte
-	return nil, fmt.Errorf("not implemented yet")
+	chaincodeEkBase64 := base64.StdEncoding.EncodeToString([]byte("some key"))
+	return chaincodeEkBase64, nil
 }
 
 // register a new FPC chaincode enclave instance
@@ -262,9 +265,9 @@ func (rs *Contract) PutKeyExport(ctx contractapi.TransactionContextInterface, ex
 	return fmt.Errorf("not implemented yet")
 }
 
-func (rs *Contract) GetKeyExport(ctx contractapi.TransactionContextInterface, chaincodeId, enclaveId string) ([]byte, error) {
+func (rs *Contract) GetKeyExport(ctx contractapi.TransactionContextInterface, chaincodeId, enclaveId string) (string, error) {
 	//input chaincodeId string, enclaveId string
 	//return *ExportMessage or  error
 	// TODO implement me
-	return nil, fmt.Errorf("not implemented yet")
+	return "", fmt.Errorf("not implemented yet")
 }

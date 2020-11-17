@@ -8,58 +8,129 @@ SPDX-License-Identifier: Apache-2.0
 package enclave
 
 import (
-	"encoding/json"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/hex"
 
+	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes/any"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
 	"github.com/hyperledger/fabric/common/flogging"
+	"github.com/hyperledger/fabric/protoutil"
 )
-
-type MockEnclave struct{}
 
 var logger = flogging.MustGetLogger("enclave")
 
-func (MockEnclave) GetRemoteAttestationReport(spid []byte, sig_rl []byte, sig_rl_size uint) ([]byte, []byte, error) {
-	panic("implement me")
+type MockEnclave struct {
+	privateKey *ecdsa.PrivateKey
+	enclaveId  string
 }
 
-func (MockEnclave) GetLocalAttestationReport(targetInfo []byte) ([]byte, []byte, error) {
-	panic("implement me")
-}
-
-func (MockEnclave) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInterface) ([]byte, []byte, error) {
-
-	params := &utils.ChaincodeParams{}
-	err := json.Unmarshal(args, params)
+func (m *MockEnclave) Init(chaincodeParams *protos.CCParameters, hostParams *protos.HostParameters, attestationParams []byte) ([]byte, error) {
+	// create some dummy keys for our mock enclave
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
+	}
+	m.privateKey = privateKey
+
+	pubBytes, err := x509.MarshalPKIXPublicKey(privateKey.Public())
+	if err != nil {
+		return nil, err
 	}
 
-	logger.Debugf("received args %s", params)
+	hash := sha256.Sum256(pubBytes)
+	m.enclaveId = hex.EncodeToString(hash[:])
 
-	return []byte("some response"), []byte("enclave signature"), nil
+	logger.Debug("Init")
+	credentials := &protos.Credentials{
+		Attestation: []byte("{\"attestation_type\":\"simulated\",\"attestation\":\"MA==\"}"),
+		SerializedAttestedData: &any.Any{
+			TypeUrl: proto.MessageName(&protos.AttestedData{}),
+			Value: protoutil.MarshalOrPanic(&protos.AttestedData{
+				EnclaveVk:  pubBytes,
+				CcParams:   chaincodeParams,
+				HostParams: hostParams,
+			}),
+		},
+	}
+	logger.Infof("Create credentials: %s", credentials)
+
+	return proto.Marshal(credentials)
 }
 
-func (MockEnclave) GetPublicKey() ([]byte, error) {
+func (m MockEnclave) GenerateCCKeys() (*protos.SignedCCKeyRegistrationMessage, error) {
 	panic("implement me")
 }
 
-func (MockEnclave) Create(enclaveLibFile string) error {
+func (m MockEnclave) ExportCCKeys(credentials *protos.Credentials) (*protos.SignedExportMessage, error) {
 	panic("implement me")
 }
 
-func (MockEnclave) GetTargetInfo() ([]byte, error) {
+func (m MockEnclave) ImportCCKeys() (*protos.SignedCCKeyRegistrationMessage, error) {
 	panic("implement me")
 }
 
-func (MockEnclave) Bind(report, pk []byte) error {
-	panic("implement me")
+func (m *MockEnclave) GetEnclaveId() (string, error) {
+	pubBytes, err := x509.MarshalPKIXPublicKey(m.privateKey.Public())
+	if err != nil {
+		return "", err
+	}
+	hash := sha256.Sum256(pubBytes)
+	return hex.EncodeToString(hash[:]), nil
 }
 
-func (MockEnclave) Destroy() error {
-	panic("implement me")
-}
+func (m *MockEnclave) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte, error) {
+	logger.Debug("ChaincodeInvoke")
 
-func (MockEnclave) MrEnclave() (string, error) {
-	panic("implement me")
+	signedProposal, err := stub.GetSignedProposal()
+	if err != nil {
+		shim.Error(err.Error())
+	}
+
+	v, _ := stub.GetState("SomeOtherKey")
+	logger.Debug("get state: %s", v)
+
+	rwset := &kvrwset.KVRWSet{
+		Reads: []*kvrwset.KVRead{{
+			Key:     "helloKey",
+			Version: nil,
+		}},
+		Writes: []*kvrwset.KVWrite{{
+			Key:      "SomeOtherKey",
+			IsDelete: false,
+			Value:    []byte("some value"),
+		}},
+	}
+
+	response := &protos.ChaincodeResponseMessage{
+		EncryptedResponse: []byte("some response"),
+		RwSet:             rwset,
+		Signature:         nil,
+		EnclaveId:         m.enclaveId,
+		Proposal:          signedProposal,
+	}
+
+	// get the read/write set in the same format as processed by the chaincode enclaves
+	readset, writeset, err := utils.ReplayReadWrites(stub, response.RwSet)
+	if err != nil {
+		shim.Error(err.Error())
+	}
+
+	// create signature
+	hash := utils.ComputedHash(response, readset, writeset)
+	sig, err := ecdsa.SignASN1(rand.Reader, m.privateKey, hash[:])
+	if err != nil {
+		return nil, err
+	}
+
+	response.Signature = sig
+
+	return proto.Marshal(response)
 }

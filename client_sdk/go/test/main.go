@@ -115,28 +115,23 @@ func main() {
 	// FPC example starts here
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// Get FPC Contract
-	contract := fpc.GetContract(network, "ecc")
+	//ercc := network.GetContract("ercc")
+	admin := fpc.GetManagementAPI(network, "ecc")
 
 	// Setup Chaincode Enclave
 	log.Println("--> Create FPC chaincode enclave: ")
 	attestationParams := []string{"some params"}
-	err = contract.CreateEnclave("peer0.peer1.example.com:7051", attestationParams...)
+	err = admin.InitEnclave("peer0.peer1.example.com:7051", attestationParams...)
 	if err != nil {
 		log.Fatalf("Failed to create enclave: %v", err)
 	}
 
-	log.Println("--> QueryListEnclaveCredentials: ")
-	ercc := network.GetContract("ercc")
-	result, err := ercc.EvaluateTransaction("QueryListEnclaveCredentials", "ecc")
-	if err != nil {
-		log.Fatalf("Failed to Submit transaction: %v", err)
-	}
-	log.Printf("--> Result: %s\n", string(result))
+	// Get FPC Contract
+	contract := fpc.GetContract(network, "ecc")
 
 	// Invoke FPC Chaincode
 	log.Println("--> Invoke FPC chaincode: ")
-	result, err = contract.SubmitTransaction("myFunction", "arg1", "arg2", "arg3")
+	result, err := contract.SubmitTransaction("myFunction", "arg1", "arg2", "arg3")
 	if err != nil {
 		log.Fatalf("Failed to Submit transaction: %v", err)
 	}
