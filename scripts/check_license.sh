@@ -19,6 +19,7 @@ function filterExcludedAndGeneratedFiles {
     excluded_files=(
         '\.block$'
         '^\.build/'
+	'^\.gitmodules'
         '^build/'
         '_build/'
         '(^|/)ci\.properties$'
