@@ -72,7 +72,7 @@ func ReplayReadWrites(stub shim.ChaincodeStubInterface, rwset *kvrwset.KVRWSet) 
 	return readset, writeset, nil
 }
 
-func Validate(responseMsg *protos.ChaincodeResponseMessage, readset, writeset [][]byte, attestedData protos.AttestedData) error {
+func Validate(responseMsg *protos.ChaincodeResponseMessage, readset, writeset [][]byte, attestedData *protos.AttestedData) error {
 	// Note: below signature was created in ecc_enclave/enclave/enclave.cpp::gen_response
 	// see also replicated verification in tlcc_enclave/enclave/ledger.cpp::int parse_endorser_transaction (for TLCC)
 	hash := ComputedHash(responseMsg, readset, writeset)
