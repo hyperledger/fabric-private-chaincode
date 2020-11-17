@@ -124,7 +124,7 @@ func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) pb.Response
 
 	// check cc param.MSPID matches MSPID of endorser (Post-MVP)
 
-	// extract read/writes from kvrwset,
+	// replay read/writes from kvrwset from enclave (to prepare commitment to ledger) and extract kvrwset for subsequent validation
 	readset, writeset, err := utils.ReplayReadWrites(stub, responseMsg.RwSet)
 	if err != nil {
 		shim.Error(err.Error())
