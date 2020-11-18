@@ -22,22 +22,36 @@ import (
 	"github.com/hyperledger/fabric/protoutil"
 )
 
-type ManagementInterface interface {
+// ManagementAPI provides FPC specific chaincode management functionality.
+// ManagementAPI objects should be created using the GetManagementAPI() factory method.
+// For an example of its use, see https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/client_sdk/go/test/main.go
+type ManagementAPI interface {
+	// InitEnclave initializes and registers an enclave for a particular chaincode.
+	//  Parameters:
+	//  peerEndpoint is the endpoint on which the enclave should be instantiated.
+	//  attestationParams are parameters used during attestation of the instantiated enclave.
 	InitEnclave(peerEndpoint string, attestationParams ...string) error
 }
 
-type ManagementAPI struct {
+// GetManagementAPI is the factory method for ManagementAPI objects.
+//  Parameters:
+//  network is an initialized Fabric network object
+//  chaincodeID is the ID of the target chaincode
+//
+//  Returns:
+//  The ManagementAPI object
+func GetManagementAPI(network *gateway.Network, chaincodeID string) ManagementAPI {
+	contract := network.GetContract(chaincodeID)
+	ercc := network.GetContract("ercc")
+	return &managementState{contract: contract, ercc: ercc}
+}
+
+type managementState struct {
 	contract *gateway.Contract
 	ercc     *gateway.Contract
 }
 
-func GetManagementAPI(network *gateway.Network, chaincodeId string) ManagementInterface {
-	contract := network.GetContract(chaincodeId)
-	ercc := network.GetContract("ercc")
-	return &ManagementAPI{contract: contract, ercc: ercc}
-}
-
-func (c *ManagementAPI) InitEnclave(peerEndpoint string, attestationParams ...string) error {
+func (c *managementState) InitEnclave(peerEndpoint string, attestationParams ...string) error {
 	txn, err := c.contract.CreateTransaction(
 		"__initEnclave",
 		gateway.WithEndorsingPeers(peerEndpoint),
@@ -51,14 +65,14 @@ func (c *ManagementAPI) InitEnclave(peerEndpoint string, attestationParams ...st
 	}
 
 	// TODO revisit this once it becomes clear what attestationParams ...string is here
-	serializedJsonParams, err := json.Marshal(&utils.AttestationParams{Params: attestationParams})
+	serializedJSONParams, err := json.Marshal(&utils.AttestationParams{Params: attestationParams})
 	if err != nil {
 		shim.Error(err.Error())
 	}
 
 	initMsg := &protos.InitEnclaveMessage{
 		PeerEndpoint:      peerEndpoint,
-		AttestationParams: protoutil.MarshalOrPanic(&pbatt.AttestationParameters{Parameters: serializedJsonParams}),
+		AttestationParams: protoutil.MarshalOrPanic(&pbatt.AttestationParameters{Parameters: serializedJSONParams}),
 	}
 
 	log.Printf("calling __initEnclave\n")
