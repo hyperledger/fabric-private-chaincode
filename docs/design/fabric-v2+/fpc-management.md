@@ -57,17 +57,16 @@ indicating that the chaincode enclave is ready to endorse transaction proposals.
 
 ## Admin Client SDK
 
-In addition to the CLI based admin commands there exists a FPC management API based on the Fabric Client SDK for Go.
+In addition to the CLI based admin commands there exists also a FPC management API for Go.
 
 ```go
-type ManagementInterface interface {
+type ManagementAPI interface {
 	InitEnclave(peerEndpoint string, attestationParams ...string) error
 }
 ```
 
-**TODO Describe here**
-
-See more details in [`client_sdk/go/fpc/management.go`](../../../client_sdk/go/fpc/management.go)
+See the details of the API in [`client_sdk/go/fpc/management.go`](../../../client_sdk/go/fpc/management.go)
+and an example of its use in  [`client_sdk/go/test/main.go`](../../../client_sdk/go/test/main.go).
 
 ### Key Distribution
 

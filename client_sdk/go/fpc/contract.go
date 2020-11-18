@@ -1,5 +1,6 @@
 /*
 Copyright 2020 IBM All Rights Reserved.
+Copyright 2020 Intel Corporation
 
 SPDX-License-Identifier: Apache-2.0
 */
@@ -17,41 +18,85 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )
 
-type ContractInterface interface {
+// Contract provides functions to query/invoke FPC chaincodes.
+// Contract is modeled after the Contract object of the gateway package in the standard Fabric Go SDK (https://godoc.org/github.com/hyperledger/fabric-sdk-go/pkg/gateway#Contract),
+// but in addition to the normal FPC operations also will perform any FPC specific steps such as encryption/decryption of chaincode requests/responses.
+// A Contract object is created using the GetContract() factory method.
+// For an example of its use, see https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/client_sdk/go/test/main.go
+type Contract interface {
+	// Name returns the name of the smart contract
 	Name() string
+
+	// EvaluateTransaction will evaluate a transaction function and return its results.
+	// The transaction function 'name'
+	// will be evaluated on the endorsing peers but the responses will not be sent to
+	// the ordering service and hence will not be committed to the ledger.
+	// This can be used for querying the world state.
+	//  Parameters:
+	//  name is the name of the transaction function to be invoked in the smart contract.
+	//  args are the arguments to be sent to the transaction function.
+	//
+	//  Returns:
 	EvaluateTransaction(name string, args ...string) ([]byte, error)
+
+	// SubmitTransaction will submit a transaction to the ledger. The transaction function 'name'
+	// will be evaluated on the endorsing peers and then submitted to the ordering service
+	// for committing to the ledger.
+	//  Parameters:
+	//  name is the name of the transaction function to be invoked in the smart contract.
+	//  args are the arguments to be sent to the transaction function.
+	//
+	//  Returns:
+	//  The return value of the transaction function in the smart contract.
 	SubmitTransaction(name string, args ...string) ([]byte, error)
-	//CreateTransaction(name string, opts ...gateway.TransactionOption) (*gateway.Transaction, error)
+
+	// RegisterEvent registers for chaincode events. Unregister must be called when the registration is no longer needed.
+	//  Parameters:
+	//  eventFilter is the chaincode event filter (regular expression) for which events are to be received
+	//
+	//  Returns:
+	//  the registration and a channel that is used to receive events. The channel is closed when Unregister is called.
 	RegisterEvent(eventFilter string) (fab.Registration, <-chan *fab.CCEvent, error)
+
+	// Unregister removes the given registration and closes the event channel.
+	//  Parameters:
+	//  registration is the registration handle that was returned from RegisterContractEvent method
 	Unregister(registration fab.Registration)
 }
 
-func GetContract(network *gateway.Network, chaincodeId string) ContractInterface {
-	contract := network.GetContract(chaincodeId)
+// GetContract is the factory method for creating FPC Contract objects.
+//  Parameters:
+//  network is an initialized Fabric network object
+//  chaincodeID is the ID of the target chaincode
+//
+//  Returns:
+//  The contract object
+func GetContract(network *gateway.Network, chaincodeID string) Contract {
+	contract := network.GetContract(chaincodeID)
 	ercc := network.GetContract("ercc")
-	return &Contract{
+	return &contractState{
 		contract:      contract,
 		ercc:          ercc,
 		peerEndpoints: nil,
 		ep: &crypto.EncryptionProviderImpl{GetCcEncryptionKey: func() ([]byte, error) {
-			return ercc.EvaluateTransaction("queryChaincodeEncryptionKey", chaincodeId)
+			return ercc.EvaluateTransaction("queryChaincodeEncryptionKey", chaincodeID)
 		}}}
 }
 
-type Contract struct {
+type contractState struct {
 	contract      *gateway.Contract
 	ercc          *gateway.Contract
 	peerEndpoints []string
 	ep            crypto.EncryptionProvider
 }
 
-func (c *Contract) Name() string {
+func (c *contractState) Name() string {
 	return c.contract.Name()
 }
 
-// Returns an array of peer endpoints that host the FPC chaincode enclave
+// getPeerEndpoints returns an array of peer endpoints that host the FPC chaincode enclave
 // An endpoint is a simple string with the format `host:port`
-func (c *Contract) getPeerEndpoints() ([]string, error) {
+func (c *contractState) getPeerEndpoints() ([]string, error) {
 	if len(c.peerEndpoints) == 0 {
 		resp, err := c.ercc.EvaluateTransaction("queryListEnclaveCredentials", c.Name())
 		if err != nil {
@@ -82,7 +127,7 @@ func (c *Contract) getPeerEndpoints() ([]string, error) {
 	return c.peerEndpoints, nil
 }
 
-func (c *Contract) EvaluateTransaction(name string, args ...string) ([]byte, error) {
+func (c *contractState) EvaluateTransaction(name string, args ...string) ([]byte, error) {
 	ctx, err := c.ep.NewEncryptionContext()
 	if err != nil {
 		return nil, err
@@ -99,7 +144,7 @@ func (c *Contract) EvaluateTransaction(name string, args ...string) ([]byte, err
 	return ctx.Reveal(encryptedResponse)
 }
 
-func (c *Contract) evaluateTransaction(args ...string) ([]byte, error) {
+func (c *contractState) evaluateTransaction(args ...string) ([]byte, error) {
 	peers, err := c.getPeerEndpoints()
 	if err != nil {
 		return nil, err
@@ -119,7 +164,7 @@ func (c *Contract) evaluateTransaction(args ...string) ([]byte, error) {
 	return txn.Evaluate(args...)
 }
 
-func (c *Contract) SubmitTransaction(name string, args ...string) ([]byte, error) {
+func (c *contractState) SubmitTransaction(name string, args ...string) ([]byte, error) {
 	ctx, err := c.ep.NewEncryptionContext()
 	if err != nil {
 		return nil, err
@@ -146,10 +191,10 @@ func (c *Contract) SubmitTransaction(name string, args ...string) ([]byte, error
 //	return c.CreateTransaction(name, opts...)
 //}
 
-func (c *Contract) RegisterEvent(eventFilter string) (fab.Registration, <-chan *fab.CCEvent, error) {
+func (c *contractState) RegisterEvent(eventFilter string) (fab.Registration, <-chan *fab.CCEvent, error) {
 	return c.contract.RegisterEvent(eventFilter)
 }
 
-func (c *Contract) Unregister(registration fab.Registration) {
+func (c *contractState) Unregister(registration fab.Registration) {
 	c.contract.Unregister(registration)
 }
