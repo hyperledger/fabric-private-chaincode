@@ -3,10 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 dist: bionic
-language: go
-
-go:
-  - 1.14.4
 
 sudo: required
 services:

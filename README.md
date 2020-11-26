@@ -273,7 +273,7 @@ Make sure that you have the following required dependencies installed:
 
 * CMake v3.5.1 or higher
 
-* [Go](https://golang.org/) 1.14.4 or higher
+* [Go](https://golang.org/) 1.15.4 or higher
 
 * Docker 18.x
 
