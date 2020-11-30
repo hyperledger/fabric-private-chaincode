@@ -12,8 +12,6 @@ addons:
   apt:
     packages:
 
-go_import_path: github.com/hyperledger-labs/fabric-private-chaincode
-
 env:
   global:
 
