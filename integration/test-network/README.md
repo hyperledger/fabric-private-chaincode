@@ -18,11 +18,11 @@ make && make docker
 
 ## Prepare network
 
-Go to `$FPC_PATH/integration/fabric-samples` and follow the [instructions](https://hyperledger-fabric.readthedocs.io/en/latest/install.html) to get the fabric binaries and docker images.
+Setup fabric sample network, binaries and docker images (this follow the [instructions](https://hyperledger-fabric.readthedocs.io/en/latest/install.html)).
 
 ```bash
 cd $FPC_PATH/integration/test-network/fabric-samples
-curl -sSL https://bit.ly/2ysbOFE | bash -s -- -s
+curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.2.0 1.4.9 -s
 ```
  
 ```bash
@@ -33,7 +33,7 @@ cd $FPC_PATH/integration/test-network
 Start network:
 ```bash
 cd $FPC_PATH/integration/test-network/fabric-samples/test-network
-./network.sh up createChannel -c mychannel -ca
+./network.sh up createChannel -c mychannel -ca -cai 1.4.9 -i 2.2.0
 ```
 
 Install FPC components:
@@ -45,7 +45,8 @@ cd $FPC_PATH/integration/test-network
 
 Start FPC container
 ```bash
-docker-compose up
+cd $FPC_PATH/integration/test-network
+docker-compose up -d
 ```
 
 Run test program
@@ -57,6 +58,9 @@ make
 
 Shutdown network
 ```bash
+cd $FPC_PATH/integration/test-network
+docker-compose down
 cd $FPC_PATH/integration/test-network/fabric-samples
 ./network.sh down
+rm -f ${FPC_PATH}/client_sdk/go/test/wallet/appUser.id
 ```

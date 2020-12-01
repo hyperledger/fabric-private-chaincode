@@ -8,8 +8,12 @@ include $(TOP)/build.mk
 
 build: ecc
 
-ecc: main.go
+ecc: ecc_dependencies
 	$(GO) build $(GOTAGS) -o ecc main.go
+
+ecc_dependencies:
+	# hard to list explicitly, so just leave empty target,
+	# which forces ecc to always be built
 
 test: build
 	$(GO) test $(GOTAGS) -v ./...
@@ -18,5 +22,5 @@ clean:
 	$(GO) clean
 	$(RM) ecc
 
-docker:
+docker: ecc
 	${DOCKER} build --no-cache -t fpc/ecc .

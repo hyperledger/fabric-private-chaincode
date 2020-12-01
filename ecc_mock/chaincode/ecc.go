@@ -23,7 +23,7 @@ var logger = flogging.MustGetLogger("ecc")
 
 // EnclaveChaincode struct
 type EnclaveChaincode struct {
-	enclave enclave.StubInterface
+	enclave enclave.MockEnclave
 }
 
 // Init sets the chaincode state to "init"

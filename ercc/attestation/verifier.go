@@ -37,7 +37,7 @@ func (v *VerifierImpl) VerifyEvidence(evidenceBytes, expectedStatementBytes []by
 
 	expectedMrEnclaveBytes := []byte(expectedMrEnclave)
 	expectedMrEnclavePtr := C.CBytes(expectedMrEnclaveBytes)
-	defer C.free(expectedStatementPtr)
+	defer C.free(expectedMrEnclavePtr)
 	expectedMrEnclaveLen := len(expectedMrEnclaveBytes)
 
 	if !C.verify_evidence(
