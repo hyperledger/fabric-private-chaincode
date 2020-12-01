@@ -25,7 +25,18 @@ backup() {
 
 FABRIC_SAMPLES=${FPC_PATH}/integration/test-network/fabric-samples/
 
-#cd ${FABRIC_SAMPLES} && curl -sSL https://bit.ly/2ysbOFE | bash -s -- -s
+if [ ! -d "${FABRIC_SAMPLES}/bin" ]; then
+  echo "Error: environment not properly setup, see README.md"
+  #cd ${FABRIC_SAMPLES} && curl -sSL https://bit.ly/2ysbOFE | bash -s -- -s
+fi
+
+# patch fabric-sample
+
+# - network script (for more meaningful debugging options)
+(cd ${FABRIC_SAMPLES} && git am --3way ../*.patch)
+
+
+# - config and docker-compose files (for fpc lite enablement)
 
 CORE_PATH=${FABRIC_SAMPLES}/config/core.yaml
 DOCKER_PATH=${FABRIC_SAMPLES}/test-network/docker/docker-compose-test-net.yaml
@@ -38,9 +49,9 @@ backup ${CORE_PATH}
 
 yq m -i -a=append ${CORE_PATH} core_ext.yaml
 
-peers=("peer0.org1.example.com" "peer0.org2.example.com")
-
 backup ${DOCKER_PATH}
+
+peers=("peer0.org1.example.com" "peer0.org2.example.com")
 
 # Also there is another issue with this approach here. When working completely inside the FPC dev-container,
 # the volume mounts won't work. The reason is that the docker daemon provided by the host cannot parse volume paths.

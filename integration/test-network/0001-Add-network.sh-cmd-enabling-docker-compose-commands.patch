@@ -1,0 +1,121 @@
+From ef15370e72ca8a8414ca7e64679ace1923d558f8 Mon Sep 17 00:00:00 2001
+From: michael steiner <michael.steiner@intel.com>
+Date: Mon, 30 Nov 2020 16:09:57 -0800
+Subject: [PATCH] Add network.sh cmd enabling docker-compose commands
+
+* much facilitates debugging and alike
+
+Signed-off-by: michael steiner <michael.steiner@intel.com>
+---
+ test-network/network.sh     | 21 +++++++++++++++++++++
+ test-network/scriptUtils.sh | 20 ++++++++++++++++++++
+ 2 files changed, 41 insertions(+)
+
+diff --git a/test-network/network.sh b/test-network/network.sh
+index 4cb19dd..05d3b5f 100755
+--- a/test-network/network.sh
++++ b/test-network/network.sh
+@@ -289,6 +289,16 @@ function networkUp() {
+   fi
+ }
+ 
++function dockerComposeCommand() {
++
++  if [ "$CRYPTO" == "Certificate Authorities" ]; then
++      IMAGE_TAG=${CA_IMAGETAG} docker-compose -f $COMPOSE_FILE_CA -f $COMPOSE_FILE_CA_ORG3 "${ARGS[@]}"
++  else
++      IMAGE_TAG=${IMAGETAG}    docker-compose -f ${COMPOSE_FILE_BASE} -f ${COMPOSE_FILE_COUCH} -f $COMPOSE_FILE_COUCH_ORG3 -f $COMPOSE_FILE_ORG3 "${ARGS[@]}"
++  fi
++}
++
++
+ ## call the script to join create the channel and join the peers of org1 and org2
+ function createChannel() {
+ 
+@@ -381,6 +391,8 @@ COMPOSE_FILE_CA=docker/docker-compose-ca.yaml
+ COMPOSE_FILE_COUCH_ORG3=addOrg3/docker/docker-compose-couch-org3.yaml
+ # use this as the default docker-compose yaml definition for org3
+ COMPOSE_FILE_ORG3=addOrg3/docker/docker-compose-org3.yaml
++# use this as the certificate authorities docker-compose yaml definition for org3
++COMPOSE_FILE_CA_ORG3=addOrg3/docker/docker-compose-ca-org3.yaml
+ #
+ # use go as the default language for chaincode
+ CC_SRC_LANGUAGE="go"
+@@ -487,6 +499,11 @@ while [[ $# -ge 1 ]] ; do
+     VERBOSE=true
+     shift
+     ;;
++  -- )
++    shift
++    ARGS=( "$@" )
++    break 2
++    ;;
+   * )
+     errorln "Unknown flag: $key"
+     printHelp
+@@ -509,6 +526,8 @@ if [ "$MODE" == "up" ]; then
+ elif [ "$MODE" == "createChannel" ]; then
+   infoln "Creating channel '${CHANNEL_NAME}'."
+   infoln "If network is not up, starting nodes with CLI timeout of '${MAX_RETRY}' tries and CLI delay of '${CLI_DELAY}' seconds and using database '${DATABASE} ${CRYPTO_MODE}"
++elif [ "$MODE" == "dc-command" ]; then
++  infoln "docker-compose command execution"
+ elif [ "$MODE" == "down" ]; then
+   infoln "Stopping network"
+ elif [ "$MODE" == "restart" ]; then
+@@ -526,6 +545,8 @@ elif [ "${MODE}" == "createChannel" ]; then
+   createChannel
+ elif [ "${MODE}" == "deployCC" ]; then
+   deployCC
++elif [ "${MODE}" == "dc-command" ]; then
++  dockerComposeCommand
+ elif [ "${MODE}" == "down" ]; then
+   networkDown
+ else
+diff --git a/test-network/scriptUtils.sh b/test-network/scriptUtils.sh
+index 043d33f..1c20e2c 100755
+--- a/test-network/scriptUtils.sh
++++ b/test-network/scriptUtils.sh
+@@ -71,6 +71,19 @@ function printHelp() {
+     println " Examples:"
+     println "   network.sh deployCC -ccn basic -ccl javascript"
+     println "   network.sh deployCC -ccn mychaincode -ccp ./user/mychaincode -ccv 1 -ccl javascript"
++  elif [ "$USAGE" == "dc-command" ]; then
++    println "Usage: "
++    println "  network.sh \033[0;32mdc-command\033[0m [Flags]"
++    println "    -- <args> - pass following arguments to docker-compose"
++    println "    -ca - run command for CA docker-compose network (instead of network for orderer and peers)"
++    println "    -i <imagetag> - Docker image tag of Fabric to deploy (defaults to \"latest\")"
++    println "    -cai <ca_imagetag> - Docker image tag of Fabric CA to deploy (defaults to \"${CA_IMAGETAG}\")"
++    println
++    println "    -h - Print this message"
++    println
++    println " Examples:"
++    println "   network.sh dc-command -- logs -f orderer.example.com"
++    println "   network.sh dc-command -ca -- ps"
+   else
+     println "Usage: "
+     println "  network.sh <Mode> [Flags]"
+@@ -80,6 +93,7 @@ function printHelp() {
+     println "      \033[0;32mcreateChannel\033[0m - Create and join a channel after the network is created"
+     println "      \033[0;32mdeployCC\033[0m - Deploy a chaincode to a channel (defaults to asset-transfer-basic)"
+     println "      \033[0;32mdown\033[0m - Bring down the network"
++    println "      \033[0;32mdc-command\033[0m - Run docker-compose commands, e.g., for logging"
+     println
+     println "    Flags:"
+     println "    Used with \033[0;32mnetwork.sh up\033[0m, \033[0;32mnetwork.sh createChannel\033[0m:"
+@@ -103,6 +117,12 @@ function printHelp() {
+     println "    -cccg <collection-config>  - (Optional) File path to private data collections configuration file"
+     println "    -cci <fcn name>  - (Optional) Name of chaincode initialization function. When a function is provided, the execution of init will be requested and the function will be invoked."
+     println
++    println "    Used with \033[0;32mnetwork.sh dc-command\033[0m"
++    println "    -- <args> - pass following arguments to docker-compose"
++    println "    -ca - run command for CA docker-compose network (instead of network for orderer and peers)"
++    println "    -i <imagetag> - Docker image tag of Fabric to deploy (defaults to \"latest\")"
++    println "    -cai <ca_imagetag> - Docker image tag of Fabric CA to deploy (defaults to \"${CA_IMAGETAG}\")"
++    println
+     println "    -h - Print this message"
+     println
+     println " Possible Mode and flag combinations"
+-- 
+2.29.2
+
