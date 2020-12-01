@@ -191,6 +191,8 @@ func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface,
 		return fmt.Errorf("cannot store credentials: %s", err)
 	}
 
+	log.Printf("RegisterEnclave successful")
+
 	return nil
 }
 

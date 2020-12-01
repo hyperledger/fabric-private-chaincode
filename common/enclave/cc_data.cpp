@@ -191,7 +191,7 @@ bool cc_data::get_credentials(const uint8_t* attestation_parameters,
                     !pb_encode_tag(&ostream_any, PB_WT_STRING, google_protobuf_Any_type_url_tag));
                 // NOTE: the url type string is necessary,
                 //       and the type after last '/' must match the serialized message type
-                std::string s("github.com/fpc/fpc.Attested_Data");
+                std::string s("github.com/fpc/fpc.AttestedData");
                 COND2ERR(
                     !pb_encode_string(&ostream_any, (const unsigned char*)s.c_str(), s.length()));
 

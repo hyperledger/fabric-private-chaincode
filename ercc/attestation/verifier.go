@@ -26,7 +26,7 @@ func NewVerifier() VerifierInterface {
 type VerifierImpl struct {
 }
 
-func (v *VerifierImpl) VerifyEvidence(evidenceBytes, expectedStatementBytes []byte, expectedMrEnclave string) error {
+func (v *VerifierImpl) VerifyEvidence(evidenceBytes []byte, expectedStatementBytes []byte, expectedMrEnclave string) error {
 	evidencePtr := C.CBytes(evidenceBytes)
 	defer C.free(evidencePtr)
 	evidenceLen := len(evidenceBytes)

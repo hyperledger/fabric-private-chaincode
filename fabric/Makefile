@@ -90,9 +90,9 @@ $(FABRIC_PEER_BIN): $(TLCC_GO_SRC) $(TLCC_ENCLAVE_LIB) $(FABRIC_PATCHED)
 	   GO_TAGS=FPC \
         $(MAKE) peer
 
-native: peer
+native:
 	cd $(FABRIC_PATH) && \
-	GOFLAGS="-mod=mod" $(MAKE) -j orderer cryptogen configtxgen
+	GOFLAGS="-mod=mod" $(MAKE) -j orderer cryptogen configtxgen peer
 
 clean: clean-native clean-patch
 
