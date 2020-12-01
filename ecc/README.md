@@ -20,11 +20,6 @@ First, build the chaincode and the validation plugin
 
     $ make
 
-Note that when you are running the tests, you will observe some error messages
-produced by the enclave ``ERROR [Enclave] VIOLATIONoh oh! cmac does not
-match!``. Don't worry this is expected as the test does create a proper cmac on
-the state data that is consumed by the chaincode when `getState` is called.
-
 ## Chaincode docker image
 
 Fabric uses docker to deploy and run chaincodes in isolated containers. Normally, the peer creates the docker image

@@ -8,11 +8,6 @@
 
 #include "sgx_tcrypto.h"
 
-int check_cmac(const char* key,
-    uint8_t* nonce,
-    sgx_sha256_hash_t* state_hash,
-    sgx_cmac_128bit_key_t* cmac_key,
-    sgx_cmac_128bit_tag_t* cmac);
 int encrypt_state(sgx_aes_gcm_128bit_key_t* key,
     uint8_t* plain,
     uint32_t plain_len,

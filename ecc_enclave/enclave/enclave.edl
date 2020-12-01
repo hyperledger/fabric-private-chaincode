@@ -33,7 +33,6 @@ enclave {
         void ocall_get_state(
                 [in, string] const char *key,
                 [out, size=max_val_len] uint8_t *val, uint32_t max_val_len, [out] uint32_t *val_len,
-                [in, out] sgx_cmac_128bit_tag_t *cmac,
                 [user_check] void *u_shim_ctx);
 
         void ocall_put_state(
@@ -44,7 +43,6 @@ enclave {
         void ocall_get_state_by_partial_composite_key(
                 [in, string] const char *comp_key,
                 [out, size=max_len] uint8_t *values, uint32_t max_len, [out] uint32_t *values_len,
-                [in, out] sgx_cmac_128bit_tag_t *cmac,
                 [user_check] void *u_shim_ctx);
     };
 

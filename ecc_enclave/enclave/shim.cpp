@@ -20,7 +20,6 @@
 static sgx_thread_mutex_t global_mutex = SGX_THREAD_MUTEX_INITIALIZER;
 
 extern sgx_ec256_public_t tlcc_pk;
-extern sgx_cmac_128bit_key_t session_key;
 extern sgx_aes_gcm_128bit_key_t state_encryption_key;
 
 void get_creator_name(
@@ -95,9 +94,7 @@ void get_public_state(
     // read state
     ctx->read_set.insert(std::string(key));
 
-    sgx_cmac_128bit_tag_t cmac = {0};
-
-    ocall_get_state(key, val, max_val_len, val_len, (sgx_cmac_128bit_tag_t*)cmac, ctx->u_shim_ctx);
+    ocall_get_state(key, val, max_val_len, val_len, ctx->u_shim_ctx);
     if (*val_len > max_val_len)
     {
         char s[] = "Enclave: val_len greater than max_val_len";
@@ -188,9 +185,7 @@ void get_public_state_by_partial_composite_key(
     uint8_t json[262144];  // 128k needed for 1000 bids
     uint32_t len = 0;
 
-    sgx_cmac_128bit_tag_t cmac = {0};
-    ocall_get_state_by_partial_composite_key(
-        comp_key, json, sizeof(json), &len, (sgx_cmac_128bit_tag_t*)cmac, ctx->u_shim_ctx);
+    ocall_get_state_by_partial_composite_key(comp_key, json, sizeof(json), &len, ctx->u_shim_ctx);
     if (len > sizeof(json))
     {
         char s[] = "Enclave: len greater than json buffer size";

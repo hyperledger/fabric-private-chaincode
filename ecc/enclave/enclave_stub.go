@@ -162,7 +162,7 @@ func get_creator_name(msp_id *C.char, max_msp_id_len C.uint32_t, dn *C.char, max
 }
 
 //export get_state
-func get_state(key *C.char, val *C.uint8_t, max_val_len C.uint32_t, val_len *C.uint32_t, cmac *C.uint8_t, ctx unsafe.Pointer) {
+func get_state(key *C.char, val *C.uint8_t, max_val_len C.uint32_t, val_len *C.uint32_t, ctx unsafe.Pointer) {
 	stubs := registry.Get(*(*int)(ctx))
 
 	// check if composite key
@@ -205,7 +205,7 @@ func put_state(key *C.char, val unsafe.Pointer, val_len C.int, ctx unsafe.Pointe
 }
 
 //export get_state_by_partial_composite_key
-func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max_values_len C.uint32_t, values_len *C.uint32_t, cmac *C.uint8_t, ctx unsafe.Pointer) {
+func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max_values_len C.uint32_t, values_len *C.uint32_t, ctx unsafe.Pointer) {
 	stubs := registry.Get(*(*int)(ctx))
 
 	// split and get a proper composite key
