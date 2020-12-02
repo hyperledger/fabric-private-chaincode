@@ -131,11 +131,57 @@ func (rs *Contract) QueryListProvisionedEnclaves(ctx contractapi.TransactionCont
 
 // returns the chaincode encryption key for a given chaincode id
 func (rs *Contract) QueryChaincodeEncryptionKey(ctx contractapi.TransactionContextInterface, chaincodeId string) (string, error) {
-	//input chaincodeId string
-	// TODO implement me
-	//return chaincode_ek []byte
-	chaincodeEkBase64 := base64.StdEncoding.EncodeToString([]byte("some key"))
-	return chaincodeEkBase64, nil
+	// retrieve the enclave id
+	iter, err := ctx.GetStub().GetStateByPartialCompositeKey("namespaces/credentials", []string{chaincodeId})
+	if iter != nil {
+		defer iter.Close()
+	}
+	if err != nil {
+		return "", err
+	}
+
+	// pick the first one from the list
+	q, err := iter.Next()
+	if err != nil {
+		return "", err
+	}
+	_, res, err := ctx.GetStub().SplitCompositeKey(q.Key)
+	if err != nil {
+		log.Printf("no split")
+		return "", err
+	}
+	enclaveId := res[1]
+
+	// recreate composite key of credentials
+	k, err := ctx.GetStub().CreateCompositeKey("namespaces/credentials", []string{chaincodeId, enclaveId})
+	if err != nil {
+		return "", err
+	}
+
+	// get credentials from state
+	credentialBytes, err := ctx.GetStub().GetState(k)
+	if err != nil {
+		return "", err
+	}
+
+	// retrieve chaincode ek from credentials
+	var credentials protos.Credentials
+	if err := proto.Unmarshal(credentialBytes, &credentials); err != nil {
+		return "", err
+	}
+
+	var attestedData protos.AttestedData
+	if err := ptypes.UnmarshalAny(credentials.SerializedAttestedData, &attestedData); err != nil {
+		return "", err
+	}
+
+	chaincodeEKBytes := attestedData.GetChaincodeEk()
+
+	// b64 encoded chaincode key
+	b64ChaincodeEK := base64.StdEncoding.EncodeToString(chaincodeEKBytes)
+	log.Printf("QueryChaincodeEncryptionKey:\nEK: %s\nEK b64: %s", string(chaincodeEKBytes), b64ChaincodeEK)
+
+	return b64ChaincodeEK, nil
 }
 
 // register a new FPC chaincode enclave instance
