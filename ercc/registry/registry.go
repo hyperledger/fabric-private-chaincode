@@ -168,7 +168,7 @@ func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface,
 		return errors.Wrap(err, "invalid attested data message")
 	}
 
-	log.Printf("- verifying attested data (%v) against evidence (%s)", attestedData, credentials.Evidence)
+	log.Printf("- verifying attested data (%s) against evidence (%s)", attestedData.String(), string(credentials.Evidence))
 	if err := checkAttestedData(ctx, rs.Verifier, rs.IEvaluator, &attestedData, &credentials); err != nil {
 		return err
 	}
