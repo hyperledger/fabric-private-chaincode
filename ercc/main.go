@@ -66,7 +66,7 @@ func main() {
 			log.Panicf("Error starting registry chaincode: %v", err)
 		}
 	} else {
-        log.Panicf("invalid input parameters")
-    }
+		log.Panicf("invalid input parameters")
+	}
 
 }
