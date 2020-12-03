@@ -61,10 +61,7 @@ func main() {
 	}
 
 	if len(ccid) == 0 && len(addr) == 0 {
-		// alternatively we can start the chaincode in the normal way and let it connect the its peer
-		// TODO integrate the code below
-		// some switch is needed (e.g., via --arg or ENV_VAR) to start the chaincode in one or the other mode
-		// note that this code will also be shared with ecc
+		// start the chaincode in the traditional way
 
 		log.Printf("starting enclave registry\n")
 		if err := ercc.Start(); err != nil {
