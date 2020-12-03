@@ -22,8 +22,8 @@ extern sgx_ec256_public_t enclave_pk;
 // this is tlcc binding
 sgx_ec256_public_t tlcc_pk = {0};
 
-// TODO: replace with secure key generated in `common/enclave/cc_data.cpp` when we also create cc-encryption/decryption key-pair ..
-// state encryption key; hardcoded for debugging
+// TODO: replace with secure key generated in `common/enclave/cc_data.cpp` when we also create
+// cc-encryption/decryption key-pair .. state encryption key; hardcoded for debugging
 sgx_aes_gcm_128bit_key_t state_encryption_key = {
     0x6A, 0xB0, 0x46, 0xB3, 0x8D, 0x14, 0x2D, 0x17, 0x3F, 0x52, 0xF3, 0x9F, 0xDA, 0x1D, 0x63, 0x4A};
 
