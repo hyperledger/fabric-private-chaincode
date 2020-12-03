@@ -58,15 +58,15 @@ func main() {
 		if err := server.Start(); err != nil {
 			log.Panicf("error starting enclave registry chaincode: %s", err)
 		}
-	}
-
-	if len(ccid) == 0 && len(addr) == 0 {
+	} else if len(ccid) == 0 && len(addr) == 0 {
 		// start the chaincode in the traditional way
 
 		log.Printf("starting enclave registry\n")
 		if err := ercc.Start(); err != nil {
 			log.Panicf("Error starting registry chaincode: %v", err)
 		}
-	}
+	} else {
+        log.Panicf("invalid input parameters")
+    }
 
 }
