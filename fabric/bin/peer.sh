@@ -501,7 +501,15 @@ handle_lifecycle_chaincode_initEnclave() {
     say "initEnclave converted response (b64): ${B64CREDS}"
 
     say "Registering with Enclave Registry"
-    try $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${ERCC_ID} -c '{"Args":["RegisterEnclave", "'${B64CREDS}'"]}'
+    try $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${ERCC_ID} -c '{"Args":["RegisterEnclave", "'${B64CREDS}'"]}' --waitForEvent
+
+    # NOTE: the chaincode encryption key is retrieved here for testing purposes
+    say "Querying Chaincode Encryption Key"
+    try_out_r $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${ERCC_ID} -c '{"Args":["QueryChaincodeEncryptionKey", "'${CC_NAME}'"]}'
+    B64CCEK=${RESPONSE}
+    CCEK=$(echo ${B64CCEK} | base64 -d)
+    say "Chaincode EK (b64): ${B64CCEK}"
+    say "Chaincode EK: ${CCEK}"
 
     # - exit (otherwise main function will invoke operation again!)
     exit 0

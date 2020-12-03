@@ -30,13 +30,14 @@ bool cc_data::generate_keys()
 {
     try
     {
-        signature_key_.Generate();  // private key
-        verification_key_ = signature_key_.GetPublicKey();
-        decryption_key_.Generate();  // private key
-        encryption_key_ = decryption_key_.GetPublicKey();
-        cc_decryption_key_.Generate();  // private key
-        cc_encryption_key_ = cc_decryption_key_.GetPublicKey();
-
+        signature_key_.Generate();                          // enclave_sk, private signing key
+        verification_key_ = signature_key_.GetPublicKey();  // enclave_vk, public verifying key
+        decryption_key_.Generate();                         // enclave_dk, private decryption key
+        encryption_key_ = decryption_key_.GetPublicKey();   // enclave_ek, public encryption key
+        cc_decryption_key_.Generate();                      // chaincode_dk, private decryption key
+        cc_encryption_key_ =
+            cc_decryption_key_.GetPublicKey();  // chaincode_ek, public encryption key
+        // TODO: create chaincode state encryption key ...
         // debug
         std::string s = verification_key_.Serialize();
         LOG_DEBUG("enclave verification key: %s", s.c_str());
@@ -85,6 +86,19 @@ bool cc_data::build_attested_data(ByteArray& attested_data)
         // fpc_AttestedData_enclave_vk_tag
         std::string s = verification_key_.Serialize();
         COND2ERR(!pb_encode_tag(&ostream, PB_WT_STRING, fpc_AttestedData_enclave_vk_tag));
+        COND2ERR(!pb_encode_string(&ostream, (const unsigned char*)s.c_str(), s.length()));
+    }
+
+    {
+        // NOTE: for the one-chaincode-one-enclave FPC-Lite version, the chaincode encryption key
+        // is serialized directly in the attested data message.
+        // This is a (momentary) short-cut over the FPC and FPC Lite specification in
+        // `docs/design/fabric-v2+/fpc-registration.puml` and
+        // `docs/design/fabric-v2+/fpc-key-dist.puml`
+
+        // fpc_AttestedData_chaincode_ek_tag
+        std::string s = cc_encryption_key_.Serialize();
+        COND2ERR(!pb_encode_tag(&ostream, PB_WT_STRING, fpc_AttestedData_chaincode_ek_tag));
         COND2ERR(!pb_encode_string(&ostream, (const unsigned char*)s.c_str(), s.length()));
     }
 
