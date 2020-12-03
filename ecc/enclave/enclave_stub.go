@@ -162,7 +162,7 @@ func get_creator_name(msp_id *C.char, max_msp_id_len C.uint32_t, dn *C.char, max
 }
 
 //export get_state
-func get_state(key *C.char, val *C.uint8_t, max_val_len C.uint32_t, val_len *C.uint32_t, cmac *C.uint8_t, ctx unsafe.Pointer) {
+func get_state(key *C.char, val *C.uint8_t, max_val_len C.uint32_t, val_len *C.uint32_t, ctx unsafe.Pointer) {
 	stubs := registry.Get(*(*int)(ctx))
 
 	// check if composite key
@@ -186,14 +186,6 @@ func get_state(key *C.char, val *C.uint8_t, max_val_len C.uint32_t, val_len *C.u
 	}
 	C._cpy_bytes(val, (*C.uint8_t)(C.CBytes(data)), C.uint32_t(len(data)))
 	C._set_int(val_len, C.uint32_t(len(data)))
-
-	// ask tlcc for verification
-	// TODO note that TLCC is currently hardcoded
-	genCMAC, err := stubs.tlccStub.VerifyState(stubs.shimStub, "tlcc", stubs.shimStub.GetChannelID(), key_str, nil, false)
-	if err != nil {
-		panic("error while getting cmac: " + err.Error())
-	}
-	C._cpy_bytes(cmac, (*C.uint8_t)(C.CBytes(genCMAC)), C.uint32_t(CMAC_SIZE))
 }
 
 //export put_state
@@ -213,7 +205,7 @@ func put_state(key *C.char, val unsafe.Pointer, val_len C.int, ctx unsafe.Pointe
 }
 
 //export get_state_by_partial_composite_key
-func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max_values_len C.uint32_t, values_len *C.uint32_t, cmac *C.uint8_t, ctx unsafe.Pointer) {
+func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max_values_len C.uint32_t, values_len *C.uint32_t, ctx unsafe.Pointer) {
 	stubs := registry.Get(*(*int)(ctx))
 
 	// split and get a proper composite key
@@ -254,13 +246,6 @@ func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max
 	}
 	C._cpy_bytes(values, (*C.uint8_t)(C.CBytes(data)), C.uint32_t(len(data)))
 	C._set_int(values_len, C.uint32_t(len(data)))
-
-	// ask tlcc for verification
-	genCMAC, err := stubs.tlccStub.VerifyState(stubs.shimStub, "tlcc", stubs.shimStub.GetChannelID(), C.GoString(comp_key), nil, true)
-	if err != nil {
-		panic("error while getting cmac: " + err.Error())
-	}
-	C._cpy_bytes(cmac, (*C.uint8_t)(C.CBytes(genCMAC)), C.uint32_t(CMAC_SIZE))
 }
 
 // Stub interface

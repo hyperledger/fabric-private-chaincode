@@ -20,7 +20,6 @@
 static sgx_thread_mutex_t global_mutex = SGX_THREAD_MUTEX_INITIALIZER;
 
 extern sgx_ec256_public_t tlcc_pk;
-extern sgx_cmac_128bit_key_t session_key;
 extern sgx_aes_gcm_128bit_key_t state_encryption_key;
 
 void get_creator_name(
@@ -95,9 +94,7 @@ void get_public_state(
     // read state
     ctx->read_set.insert(std::string(key));
 
-    sgx_cmac_128bit_tag_t cmac = {0};
-
-    ocall_get_state(key, val, max_val_len, val_len, (sgx_cmac_128bit_tag_t*)cmac, ctx->u_shim_ctx);
+    ocall_get_state(key, val, max_val_len, val_len, ctx->u_shim_ctx);
     if (*val_len > max_val_len)
     {
         char s[] = "Enclave: val_len greater than max_val_len";
@@ -107,26 +104,6 @@ void get_public_state(
 
     LOG_DEBUG("Enclave: got state for key=%s len=%d val='%s'", key, *val_len,
         (*val_len > 0 ? (std::string((const char*)val, *val_len)).c_str() : ""));
-
-    // create state hash
-    sgx_sha256_hash_t state_hash = {0};
-    if (val_len > 0)
-    {
-        sgx_sha256_msg(val, *val_len, &state_hash);
-    }
-
-    if (check_cmac(key, NULL, &state_hash, &session_key, &cmac) != 0)
-    {
-        LOG_ERROR("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
-        // TODO: proper error handling. Below throw should probably do the right
-        //   thing but for now we leave it out as as the mock-server relies on
-        //   bogus MACs for it to work ....
-        // throw std::runtime_error("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
-    }
-    else
-    {
-        LOG_DEBUG("Enclave: State verification: cmac correct!! :D");
-    }
 }
 
 void put_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t ctx)
@@ -208,9 +185,7 @@ void get_public_state_by_partial_composite_key(
     uint8_t json[262144];  // 128k needed for 1000 bids
     uint32_t len = 0;
 
-    sgx_cmac_128bit_tag_t cmac = {0};
-    ocall_get_state_by_partial_composite_key(
-        comp_key, json, sizeof(json), &len, (sgx_cmac_128bit_tag_t*)cmac, ctx->u_shim_ctx);
+    ocall_get_state_by_partial_composite_key(comp_key, json, sizeof(json), &len, ctx->u_shim_ctx);
     if (len > sizeof(json))
     {
         char s[] = "Enclave: len greater than json buffer size";
@@ -219,35 +194,6 @@ void get_public_state_by_partial_composite_key(
     }
 
     unmarshal_values(values, (const char*)json, len);
-
-    // create state hash
-    sgx_sha256_hash_t state_hash = {0};
-    sgx_sha_state_handle_t sha_handle;
-    sgx_sha256_init(&sha_handle);
-
-    for (auto& u : values)
-    {
-        ctx->read_set.insert(u.first);
-
-        sgx_sha256_update((const uint8_t*)u.first.c_str(), u.first.size(), sha_handle);
-        sgx_sha256_update((const uint8_t*)u.second.c_str(), u.second.size(), sha_handle);
-    }
-
-    sgx_sha256_get_hash(sha_handle, &state_hash);
-    sgx_sha256_close(sha_handle);
-
-    if (check_cmac(comp_key, NULL, &state_hash, &session_key, &cmac) != 0)
-    {
-        LOG_ERROR("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
-        // TODO: proper error handling. Below throw should probably do the right
-        //   thing but for now we leave it out as as the mock-server relies on
-        //   bogus MACs for it to work ....
-        // throw std::runtime_error("Enclave: VIOLATION!!! Oh oh! cmac does not match!");
-    }
-    else
-    {
-        LOG_DEBUG("Enclave: State verification: cmac correct!! :D");
-    }
 }
 
 int get_string_args(std::vector<std::string>& argss, shim_ctx_ptr_t ctx)

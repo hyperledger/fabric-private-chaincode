@@ -419,10 +419,6 @@ peer:
           vscc:
             name: DefaultValidation
             library:
-          # # FPC Addition:3
-          # fpc-vscc:
-          #    name: FPCValidation
-          #    library:
     # Number of goroutines that will execute transaction validation in parallel.
     # By default, the peer chooses the number of CPUs on the machine. Set this
     # variable to override that choice.
@@ -613,7 +609,6 @@ chaincode:
         escc: enable
         vscc: enable
         qscc: enable
-        tlcc: enable  # FPC Addition:4
 
     # Logging section for the chaincode container
     logging:
@@ -756,19 +751,3 @@ metrics:
 
         # prefix is prepended to all emitted statsd metrics
         prefix:
-
-###############################################################################
-#
-#    SGX section - includes configuration for the Intel Attestation service
-#    FPC Addition:5
-#
-###############################################################################
-sgx:
-    enclave:
-        library: ../../tlcc/enclave/lib/enclave.signed.so
-    ias:
-        url: https://api.trustedservices.intel.com/sgx/dev/attestation/v3/report
-        apiKey:
-            file: ias/api_key.txt
-        spid:
-            file: ias/spid.txt

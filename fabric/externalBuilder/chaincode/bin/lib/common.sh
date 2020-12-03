@@ -4,8 +4,9 @@
 
 # assumes SCRIPTDIR is defined ...
 
-FPC_TOP_DIR=$(readlink -f "${SCRIPTDIR}/../../../")
+FPC_TOP_DIR=$(readlink -f "${SCRIPTDIR}/../../../../")
 FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
+say "FPC_TOP_DIR ${FPC_TOP_DIR} , FABRIC_SCRIPTDIR ${FABRIC_SCRIPTDIR}"
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 
 FPC_CC_TYPE="fpc-c"

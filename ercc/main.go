@@ -34,39 +34,39 @@ func main() {
 		log.Panicf("error create enclave registry chaincode: %s", err)
 	}
 
-	// start chaincode as a service
-	config := serverConfig{
-		CCID:    os.Getenv("CHAINCODE_PKG_ID"),
-		Address: os.Getenv("CHAINCODE_SERVER_ADDRESS"),
-	}
+	ccid := os.Getenv("CHAINCODE_PKG_ID")
+	addr := os.Getenv("CHAINCODE_SERVER_ADDRESS")
 
-	server := &shim.ChaincodeServer{
-		CCID:    config.CCID,
-		Address: config.Address,
-		CC:      ercc,
-		TLSProps: shim.TLSProperties{
-			Disabled: true,
-		},
-	}
+	if len(ccid) > 0 && len(addr) > 0 {
+		// start chaincode as a service
+		config := serverConfig{
+			CCID:    ccid,
+			Address: addr,
+		}
 
-	log.Printf("starting enclave registry (%s)\n", config.CCID)
+		server := &shim.ChaincodeServer{
+			CCID:    config.CCID,
+			Address: config.Address,
+			CC:      ercc,
+			TLSProps: shim.TLSProperties{
+				Disabled: true,
+			},
+		}
 
-	if err := server.Start(); err != nil {
-		log.Panicf("error starting enclave registry chaincode: %s", err)
-	}
+		log.Printf("starting enclave registry (%s)\n", config.CCID)
 
-	// alternatively we can start the chaincode in the normal way and let it connect the its peer
-	// TODO integrate the code below
-	// some switch is needed (e.g., via --arg or ENV_VAR) to start the chaincode in one or the other mode
-	// note that this code will also be shared with ecc
+		if err := server.Start(); err != nil {
+			log.Panicf("error starting enclave registry chaincode: %s", err)
+		}
+	} else if len(ccid) == 0 && len(addr) == 0 {
+		// start the chaincode in the traditional way
 
-	//ercc, err := contractapi.NewChaincode(&registry.Contract{})
-	//if err != nil {
-	//	log.Panicf("Error creating registry chaincode: %v", err)
-	//}
-	//
-	//if err := ercc.Start(); err != nil {
-	//	log.Panicf("Error starting registry chaincode: %v", err)
-	//}
+		log.Printf("starting enclave registry\n")
+		if err := ercc.Start(); err != nil {
+			log.Panicf("Error starting registry chaincode: %v", err)
+		}
+	} else {
+        log.Panicf("invalid input parameters")
+    }
 
 }

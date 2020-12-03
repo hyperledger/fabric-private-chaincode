@@ -300,9 +300,6 @@ handle_lifecycle_chaincode_approveformyorg() {
         [ -z "${VALIDATION_PLUGIN_NAME}" ] || die "Validation plugins are disabled for FPC chaincodes"
 
         # all check passed
-
-        # add FPC default validation plugin to argument list
-        ARGS_EXEC=( "${ARGS_EXEC[@]}" "-V" "fpc-vscc" )
     fi
 
     # - do normal approve (and exit if not successfull)
@@ -357,9 +354,6 @@ handle_lifecycle_chaincode_checkcommitreadiness() {
         [ -z "${VALIDATION_PLUGIN_NAME}" ] || die "Validation plugins are disabled for FPC chaincodes"
 
         # all check passed
-
-        # add FPC default validation plugin to argument list
-        ARGS_EXEC=( "${ARGS_EXEC[@]}" "-V" "fpc-vscc" )
     fi
 
     # - call real peer so channel is joined
@@ -406,9 +400,6 @@ handle_lifecycle_chaincode_commit() {
         [ -z "${VALIDATION_PLUGIN_NAME}" ] || die "Validation plugins are disabled for FPC chaincodes"
 
         # all check passed
-
-        # add FPC default validation plugin to argument list
-        ARGS_EXEC=( "${ARGS_EXEC[@]}" "-V" "fpc-vscc" )
     fi
 
     # - call real peer so chaincode is committed
@@ -451,6 +442,8 @@ handle_lifecycle_chaincode_initEnclave() {
         # set the default attestation params
         ATTESTATION_PARAMS=$(jq -c -n --arg atype "simulated" '{attestation_type: $atype}' | base64 --wrap=0)
     else
+        die "initEnclave unavailable in HW mode -- need format fix in attestation conversion"
+
         SPID_FILE_PATH="${SGX_CREDENTIALS_PATH}/spid.txt"
         SPID_TYPE_FILE_PATH="${SGX_CREDENTIALS_PATH}/spid_type.txt"
         [ -f "${SPID_FILE_PATH}" ] || die "no spid file ${SPID_FILE_PATH}"
@@ -473,22 +466,42 @@ handle_lifecycle_chaincode_initEnclave() {
     fi
 
     # embed json in protobuf message and b64 encode it
-    ATTESTATION_PARAMS_PROTO=$(echo "parameters: \"${ATTESTATION_PARAMS}\"" | protoc --encode attestation.AttestationParameters --proto_path=${FPC_TOP_DIR}/protos/fpc ${FPC_TOP_DIR}/protos/fpc/attestation.proto | base64 --wrap=0)
+    ATTESTATION_PARAMS_PROTO=$(echo "parameters: \"${ATTESTATION_PARAMS}\"" | protoc --encode attestation.AttestationParameters --proto_path=${FPC_TOP_DIR}/protos/fpc --proto_path=${FPC_TOP_DIR}/protos/fabric ${FPC_TOP_DIR}/protos/fpc/attestation.proto | base64 --wrap=0)
+    [ -z ${ATTESTATION_PARAMS_PROTO} ] && die "attestation params proto is empty"
 
     # create host params
     HOST_PARAMS="${PEER_ADDRESS}"
 
     # create init enclave message
-    INIT_ENCLAVE_PROTO=$( (echo "peer_endpoint: \"${HOST_PARAMS}\""; echo "attestation_params: \"${ATTESTATION_PARAMS_PROTO}\"") | protoc --encode fpc.InitEnclaveMessage --proto_path=${FPC_TOP_DIR}/protos/fpc ${FPC_TOP_DIR}/protos/fpc/fpc.proto | base64 --wrap=0)
+    INIT_ENCLAVE_PROTO=$( (echo "peer_endpoint: \"${HOST_PARAMS}\""; echo "attestation_params: \"${ATTESTATION_PARAMS_PROTO}\"") | protoc --encode fpc.InitEnclaveMessage --proto_path=${FPC_TOP_DIR}/protos/fpc --proto_path=${FPC_TOP_DIR}/protos/fabric ${FPC_TOP_DIR}/protos/fpc/fpc.proto | base64 --wrap=0)
+    [ -z ${INIT_ENCLAVE_PROTO} ] && die "init enclave proto is empty"
 
     # trigger initEnclave
     try_out_r $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} --peerAddresses "${PEER_ADDRESS}" -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["initEnclave", "'${INIT_ENCLAVE_PROTO}'"]}'
-    echo "initEnclave response (b64): ${RESPONSE}"
-    echo "initEnclave response (decoded): $(echo "${RESPONSE}" | base64 -d)"
+    B64CREDS=${RESPONSE}
+    say "initEnclave response (b64): ${B64CREDS}"
+    say "initEnclave response (decoded): $(echo "${B64CREDS}" | base64 -d)"
 
-    # TODO: remove __setup, deprecate
-    # - setup internal ecc state, e.g., register chaincode
-    try ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__setup", "'${ERCC_ID}'"]}' --waitForEvent
+    say "Convert credentials"
+    TMPCREDSFILE=$(mktemp)
+    say "temp file: ${TMPCREDSFILE}"
+    echo ${B64CREDS} | base64 -d | protoc --decode fpc.Credentials --proto_path=${FPC_TOP_DIR}/protos/fpc --proto_path=${FPC_TOP_DIR}/protos/fabric ${FPC_TOP_DIR}/protos/fpc/fpc.proto > ${TMPCREDSFILE}
+    DECODED_CREDENTIALS=$(cat ${TMPCREDSFILE})
+    ATTESTATION=${DECODED_CREDENTIALS##*attestation: \"}
+    ATTESTATION=${ATTESTATION%%\"}
+    ATTESTATION=$(echo ${ATTESTATION} | sed 's/\\//g')
+    source ${FPC_TOP_DIR}/common/crypto/attestation-api/conversion/attestation_to_evidence.sh
+    attestation_to_evidence ${ATTESTATION}
+    # escape non-escaped quotes: (i) escape all quotes, replace double-escaped quotes with single-escaped quotes
+    EVIDENCE=$(echo ${EVIDENCE} | sed 's/\"/\\\"/g')
+    EVIDENCE=$(echo ${EVIDENCE} | sed 's/\\\\\"/\\\"/g')
+    echo "evidence: \"${EVIDENCE}\"" >> ${TMPCREDSFILE}
+    DECODED_CREDENTIALS=$(cat ${TMPCREDSFILE})
+    B64CREDS=$(echo ${DECODED_CREDENTIALS} | protoc --encode fpc.Credentials --proto_path=${FPC_TOP_DIR}/protos/fpc --proto_path=${FPC_TOP_DIR}/protos/fabric ${FPC_TOP_DIR}/protos/fpc/fpc.proto | base64 --wrap=0)
+    say "initEnclave converted response (b64): ${B64CREDS}"
+
+    say "Registering with Enclave Registry"
+    try $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${ERCC_ID} -c '{"Args":["RegisterEnclave", "'${B64CREDS}'"]}'
 
     # - exit (otherwise main function will invoke operation again!)
     exit 0
@@ -569,16 +582,6 @@ handle_channel_join() {
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode querycommitted --channelID ${CHAN_ID}
     para
     sleep 3
-    say "call chaincode query ..."
-    try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -n ${ERCC_ID} -c '{"function":"getSPID","args":[]}' -C ${CHAN_ID}
-    sleep 3
-
-
-    # - ask tlcc to join channel
-    #   IMPORTANT: right now a join is _not_ persistant, so on restart of peer,
-    #   it will re-join old channels but tlcc will not!
-    say "Attaching TLCC to channel '${CHAN_ID}' ..."
-    try $RUN ${FABRIC_BIN_DIR}/peer chaincode query -n tlcc -c '{"Args": ["JOIN_CHANNEL"]}' -C ${CHAN_ID}
 
     # - exit (otherwise main function will invoke operation again!)
     exit 0

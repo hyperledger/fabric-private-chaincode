@@ -22,13 +22,8 @@ extern sgx_ec256_public_t enclave_pk;
 // this is tlcc binding
 sgx_ec256_public_t tlcc_pk = {0};
 
-// state verification key; hardcoded for debugging
-// note that key must be negociated during "binding phase" with the ledger enclave; for prototyping
-// its is hardcoded at the moment!!!!
-sgx_cmac_128bit_key_t session_key = {
-    0x3F, 0xE2, 0x59, 0xDF, 0x62, 0x7F, 0xEF, 0x99, 0x5B, 0x4B, 0x00, 0xDE, 0x44, 0xC1, 0x26, 0x33};
-
-// state encryption key; hardcoded for debugging
+// TODO: replace with secure key generated in `common/enclave/cc_data.cpp` when we also create
+// cc-encryption/decryption key-pair .. state encryption key; hardcoded for debugging
 sgx_aes_gcm_128bit_key_t state_encryption_key = {
     0x6A, 0xB0, 0x46, 0xB3, 0x8D, 0x14, 0x2D, 0x17, 0x3F, 0x52, 0xF3, 0x9F, 0xDA, 0x1D, 0x63, 0x4A};
 
