@@ -1,5 +1,6 @@
 /*
  * Copyright IBM Corp. All Rights Reserved.
+ * Copyright 2020 Intel Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -11,16 +12,18 @@
 #include "shim_internals.h"
 
 #include "crypto.h"
+#include "pdo/common/crypto/crypto.h"
 
 #include "base64.h"
 #include "parson.h"
 
 #include "sgx_thread.h"
 
-static sgx_thread_mutex_t global_mutex = SGX_THREAD_MUTEX_INITIALIZER;
+#include <mbusafecrt.h> /* for memcpy_s etc */
+#include "cc_data.h"
+#include "error.h"
 
-extern sgx_ec256_public_t tlcc_pk;
-extern sgx_aes_gcm_128bit_key_t state_encryption_key;
+static sgx_thread_mutex_t global_mutex = SGX_THREAD_MUTEX_INITIALIZER;
 
 void get_creator_name(
     char* msp_id, uint32_t max_msp_id_len, char* dn, uint32_t max_dn_len, shim_ctx_ptr_t ctx)
@@ -39,53 +42,49 @@ void get_creator_name(
 void get_state(
     const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* val_len, shim_ctx_ptr_t ctx)
 {
-    uint8_t encoded_cipher[(max_val_len + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE + 2) / 3 * 4];
+    // estimate max encrypted val length
+    uint32_t max_encrypted_val_len =
+        (max_val_len + pdo::crypto::constants::IV_LEN + pdo::crypto::constants::TAG_LEN) * 2;
+    uint8_t encoded_cipher[max_encrypted_val_len];
     uint32_t encoded_cipher_len = 0;
+    std::string encoded_cipher_s;
+    std::string cipher;
 
     get_public_state(key, encoded_cipher, sizeof(encoded_cipher), &encoded_cipher_len, ctx);
 
     // if nothing read, no need for decryption
-    if (encoded_cipher_len == 0)
-    {
-        *val_len = 0;
-        return;
-    }
-    if (encoded_cipher_len > sizeof(encoded_cipher))
-    {
-        char s[] = "Enclave: encoded_cipher_len greater than buffer length";
-        LOG_ERROR("%s", s);
-        throw std::runtime_error(s);
-    }
+    COND2LOGERR(encoded_cipher_len == 0, "no value read");
+
+    // if got value size larger than input array, report error
+    COND2LOGERR(encoded_cipher_len > sizeof(encoded_cipher),
+        "encoded_cipher_len greater than buffer length");
 
     // build the encoded cipher string
-    std::string encoded_cipher_s((const char*)encoded_cipher, encoded_cipher_len);
-
-    // check string length
-    if (encoded_cipher_len != encoded_cipher_s.size())
-    {
-        LOG_ERROR("Unexpected string length: received %u bytes, computed %u bytes",
-            encoded_cipher_len, encoded_cipher_s.size());
-        throw std::runtime_error("Unexpected string length");
-    }
+    encoded_cipher_s = std::string((const char*)encoded_cipher, encoded_cipher_len);
+    COND2LOGERR(encoded_cipher_len != encoded_cipher_s.size(), "Unexpected string length");
 
     // base64 decode
-    std::string cipher = base64_decode(encoded_cipher_s);
-    if (cipher.size() < SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE)
-    {
-        LOG_ERROR(
-            "Enclave: base64 decoding failed/produced too short a value with %d", cipher.size());
-        throw std::runtime_error("Enclave: base64 decoding failed/produced too short a value");
-    }
+    cipher = base64_decode(encoded_cipher_s);
+    COND2LOGERR(cipher.size() <= pdo::crypto::constants::IV_LEN + pdo::crypto::constants::TAG_LEN,
+        "base64 decoding failed/produced too short a value");
 
     // decrypt
-    *val_len = cipher.size() - SGX_AESGCM_IV_SIZE - SGX_AESGCM_MAC_SIZE;
-    int ret = decrypt_state(
-        &state_encryption_key, (uint8_t*)cipher.c_str(), cipher.size(), val, *val_len);
-    if (ret != SGX_SUCCESS)
+    try
     {
-        LOG_ERROR("Enclave: Error decrypting state: %d", ret);
-        throw std::runtime_error("Enclave: Error decrypting state");
+        ByteArray value = pdo::crypto::skenc::DecryptMessage(g_cc_data->get_state_encryption_key(),
+            ByteArray(cipher.c_str(), cipher.c_str() + cipher.size()));
+        COND2ERR(memcpy_s(val, max_val_len, value.data(), value.size()) != 0);
+        *val_len = value.size();
     }
+    catch (...)
+    {
+        COND2LOGERR(true, "Error decrypting state");
+    }
+
+    return;
+
+err:
+    *val_len = 0;
 }
 
 void get_public_state(
@@ -108,17 +107,22 @@ void get_public_state(
 
 void put_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t ctx)
 {
+    ByteArray encrypted_val;
+
     // encrypt
-    uint32_t cipher_len = val_len + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE;
-    uint8_t cipher[cipher_len];
-    int ret = encrypt_state(&state_encryption_key, val, val_len, cipher, cipher_len);
-    if (ret != SGX_SUCCESS)
+    try
+    {
+        encrypted_val = pdo::crypto::skenc::EncryptMessage(
+            g_cc_data->get_state_encryption_key(), ByteArray(val, val + val_len));
+    }
+    catch (...)
     {
         LOG_ERROR("Enclave: Error encrypting state");
+        return;
     }
 
     // base64 encode
-    std::string base64 = base64_encode((unsigned char*)cipher, cipher_len);
+    std::string base64 = base64_encode((unsigned char*)encrypted_val.data(), encrypted_val.size());
 
     // write state
     put_public_state(key, (uint8_t*)base64.c_str(), base64.size(), ctx);
@@ -164,19 +168,26 @@ void get_state_by_partial_composite_key(
         std::string cipher = base64_decode(u.second.c_str());
 
         // decrypt
-        uint32_t plain_len = cipher.size() - SGX_AESGCM_IV_SIZE - SGX_AESGCM_MAC_SIZE;
-        uint8_t plain[plain_len];
-        int ret = decrypt_state(
-            &state_encryption_key, (uint8_t*)cipher.c_str(), cipher.size(), plain, plain_len);
-        if (ret != SGX_SUCCESS)
+        try
         {
-            LOG_ERROR("Enclave: Error decrypting state: %d", ret);
-            throw std::runtime_error("Enclave: Error decrypting state");
+            ByteArray value =
+                pdo::crypto::skenc::DecryptMessage(g_cc_data->get_state_encryption_key(),
+                    ByteArray(cipher.c_str(), cipher.c_str() + cipher.size()));
+            std::string s((const char*)value.data(), value.size());
+            u.second = s;
         }
-
-        std::string s((const char*)plain, plain_len);
-        u.second = s;
+        catch (...)
+        {
+            COND2LOGERR(true, "Error decrypting state");
+        }
     }
+
+    return;
+
+err:
+    // delete all values
+    for (auto& u : values)
+        u.second.clear();
 }
 
 void get_public_state_by_partial_composite_key(
