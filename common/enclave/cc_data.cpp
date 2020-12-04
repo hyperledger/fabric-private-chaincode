@@ -37,7 +37,10 @@ bool cc_data::generate_keys()
         cc_decryption_key_.Generate();                      // chaincode_dk, private decryption key
         cc_encryption_key_ =
             cc_decryption_key_.GetPublicKey();  // chaincode_ek, public encryption key
-        // TODO: create chaincode state encryption key ...
+
+        // generate state encryption key
+        state_encryption_key_ = pdo::crypto::skenc::GenerateKey();
+
         // debug
         std::string s = verification_key_.Serialize();
         LOG_DEBUG("enclave verification key: %s", s.c_str());
@@ -236,4 +239,9 @@ bool cc_data::get_credentials(const uint8_t* attestation_parameters,
 
 err:
     return false;
+}
+
+ByteArray cc_data::get_state_encryption_key()
+{
+    return state_encryption_key_;
 }

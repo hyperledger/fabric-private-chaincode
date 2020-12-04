@@ -19,6 +19,8 @@ private:
     pdo::crypto::pkenc::PublicKey cc_encryption_key_;   // chaincode_ek
     pdo::crypto::pkenc::PrivateKey cc_decryption_key_;  // chaincode_dk
 
+    ByteArray state_encryption_key_;  // or sek, for encrypting key-value pairs
+
     ByteArray attestation_parameters_;
     ByteArray cc_parameters_;
     ByteArray host_parameters_;
@@ -39,6 +41,8 @@ public:
         uint8_t* credentials,
         uint32_t credentials_max_size,
         uint32_t* credentials_size);
+
+    ByteArray get_state_encryption_key();
 };
 
 extern cc_data* g_cc_data;
