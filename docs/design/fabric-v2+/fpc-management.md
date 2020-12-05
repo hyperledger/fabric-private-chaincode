@@ -20,7 +20,7 @@ This commands has a new option `--lang fpc-c` to specify the FPC chaincode type.
 #### Approveformyorg
 
 This command has the following requirements *when it is used for FPC chaincodes*:
-* `--version <MRENCLAVE as hexadecimal string>`, the version of the FPC chaincode must contain a string that represent the identity of the enclave. This is the same identity which the trusted hardware computes and attests to. The string can be conveniently found in the `mrenclave` output file of the `generate_mrenclave.sh` script.
+* `--version <MRENCLAVE as (upper-case) hexadecimal string>`, the version of the FPC chaincode must contain a string that represent the identity of the enclave. This is the same identity which the trusted hardware computes and attests to. The string can be conveniently found in the `mrenclave` output file of the `generate_mrenclave.sh` script.
 * `--signature-policy string`, the endorsement policy must be a valid FPC endorsement policy.
 FPC currently supports only a single enclave as endorser, running at a designated peer. See more details below in the [FPC Endorsement Policies](#fpc-endorsement-policies) section.
 * `--endorsement-plugin string`, this flag is not supported in FPC.

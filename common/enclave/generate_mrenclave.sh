@@ -19,7 +19,7 @@ go_name=mrenclave.go
 cd $build_dir
 sgx_sign gendata -enclave enclave.so -config $enclave_dir/enclave.config.xml -out $tmp_name
 dd if=$tmp_name bs=1 skip=188 of=$hex_out_name count=32
-hex $hex_out_name > $hex_string_out_name
+hex --upper-case $hex_out_name > $hex_string_out_name
 rm $hex_out_name
 rm $tmp_name
 echo "Enclave hash extracted."

@@ -187,6 +187,8 @@ bool verify_ias_evidence(
                  extract_hex_from_report(ias_report,
                      offsetof(sgx_quote_t, report_body) + offsetof(sgx_report_body_t, mr_enclave),
                      sizeof(sgx_measurement_t), hex_id));
+        LOG_DEBUG("code id comparision: found '%s' (len=%d) / expected '%s' (len=%d)",
+            hex_id.c_str(), hex_id.length(), expected_hex_id.c_str(), expected_hex_id.length());
         COND2LOGERR(0 != hex_id.compare(expected_hex_id), "expected code id mismatch");
     }
 
