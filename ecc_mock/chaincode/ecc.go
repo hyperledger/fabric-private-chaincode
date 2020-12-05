@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package chaincode
 
 import (
+	"encoding/base64"
 	"fmt"
 
 	"github.com/golang/protobuf/ptypes"
@@ -72,7 +73,7 @@ func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Resp
 	}
 
 	// return credentials
-	return shim.Success(credentialsBytes)
+	return shim.Success([]byte(base64.StdEncoding.EncodeToString(credentialsBytes)))
 }
 
 func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response {

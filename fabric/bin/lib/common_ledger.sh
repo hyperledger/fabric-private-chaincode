@@ -13,6 +13,7 @@
 
 : ${FABRIC_PATH:="${FPC_TOP_DIR}/../../hyperledger/fabric/"}
 : ${FABRIC_BIN_DIR:="${FABRIC_PATH}/build/bin"}
+: ${FABRIC_UTIL_BIN_DIR:="${FPC_TOP_DIR}/utils/fabric"}
 
 FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 
@@ -27,6 +28,7 @@ ledger_precond_check() {
 	[ -x "${FABRIC_BIN_DIR}/peer" ] || die "peer command does not exist in '${FABRIC_BIN_DIR}'"
 	[ -x "${FABRIC_BIN_DIR}/orderer" ] || die "orderer command does not exist in '${FABRIC_BIN_DIR}'"
 	[ -x "${FABRIC_BIN_DIR}/configtxgen" ] || die "configtxgen command does not exist in '${FABRIC_BIN_DIR}'"
+	[ -x "${FABRIC_UTIL_BIN_DIR}/peer-cli-assist" ] || die "peer-cli-assist command does not exist in '${FABRIC_UTIL_BIN_DIR}'"
 	[ ! -z "${FABRIC_STATE_DIR}" ] || die "Undefined fabric ledger state directory '${FABRIC_STATE_DIR}'"
 }
 
@@ -38,6 +40,7 @@ define_common_vars() {
     # use our wrapper for commands, so provide convience functions ..
     # note: as we might have defined FABRIC_CFG_PATH in this script, we have the pass it along!
     PEER_CMD="env FABRIC_CFG_PATH=${FABRIC_CFG_PATH} ${FABRIC_SCRIPTDIR}/peer.sh"
+    PEER_ASSIST_CMD="${FABRIC_UTIL_BIN_DIR}/peer-cli-assist"
     ORDERER_CMD="env FABRIC_CFG_PATH=${FABRIC_CFG_PATH} ${FABRIC_SCRIPTDIR}/orderer.sh"
     CONFIGTXGEN_CMD="env FABRIC_CFG_PATH=${FABRIC_CFG_PATH} ${FABRIC_SCRIPTDIR}/configtxgen.sh"
 

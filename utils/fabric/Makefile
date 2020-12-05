@@ -6,14 +6,14 @@
 TOP = ../..
 include $(TOP)/build.mk
 
-GO_CMDS= get-fabric-container-name
+GO_CMDS= get-fabric-container-name peer-cli-assist
 
-build: ${GO_CMDS}
+build: $(GO_CMDS)
 
-${GO_CMDS}: ${GO_CMDS:=.go}
-	$(GO) build $(GOTAGS) $@.go
+$(GO_CMDS): 
+	$(GO) build $(GOTAGS) ./$@.src/$@.go 
 
 test: build
 
 clean: 
-	$(GO) clean
+	$(RM) $(GO_CMDS)
