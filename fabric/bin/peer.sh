@@ -442,8 +442,6 @@ handle_lifecycle_chaincode_initEnclave() {
         # set the default attestation params
         ATTESTATION_PARAMS=$(jq -c -n --arg atype "simulated" '{attestation_type: $atype}' | base64 --wrap=0)
     else
-        die "initEnclave unavailable in HW mode -- need format fix in attestation conversion"
-
         SPID_FILE_PATH="${SGX_CREDENTIALS_PATH}/spid.txt"
         SPID_TYPE_FILE_PATH="${SGX_CREDENTIALS_PATH}/spid_type.txt"
         [ -f "${SPID_FILE_PATH}" ] || die "no spid file ${SPID_FILE_PATH}"
@@ -483,25 +481,11 @@ handle_lifecycle_chaincode_initEnclave() {
     say "initEnclave response (decoded): $(echo "${B64CREDS}" | base64 -d)"
 
     say "Convert credentials"
-    TMPCREDSFILE=$(mktemp)
-    say "temp file: ${TMPCREDSFILE}"
-    echo ${B64CREDS} | base64 -d | protoc --decode fpc.Credentials --proto_path=${FPC_TOP_DIR}/protos/fpc --proto_path=${FPC_TOP_DIR}/protos/fabric ${FPC_TOP_DIR}/protos/fpc/fpc.proto > ${TMPCREDSFILE}
-    DECODED_CREDENTIALS=$(cat ${TMPCREDSFILE})
-    ATTESTATION=${DECODED_CREDENTIALS##*attestation: \"}
-    ATTESTATION=${ATTESTATION%%\"}
-    ATTESTATION=$(echo ${ATTESTATION} | sed 's/\\//g')
-    source ${FPC_TOP_DIR}/common/crypto/attestation-api/conversion/attestation_to_evidence.sh
-    attestation_to_evidence ${ATTESTATION}
-    # escape non-escaped quotes: (i) escape all quotes, replace double-escaped quotes with single-escaped quotes
-    EVIDENCE=$(echo ${EVIDENCE} | sed 's/\"/\\\"/g')
-    EVIDENCE=$(echo ${EVIDENCE} | sed 's/\\\\\"/\\\"/g')
-    echo "evidence: \"${EVIDENCE}\"" >> ${TMPCREDSFILE}
-    DECODED_CREDENTIALS=$(cat ${TMPCREDSFILE})
-    B64CREDS=$(echo ${DECODED_CREDENTIALS} | protoc --encode fpc.Credentials --proto_path=${FPC_TOP_DIR}/protos/fpc --proto_path=${FPC_TOP_DIR}/protos/fabric ${FPC_TOP_DIR}/protos/fpc/fpc.proto | base64 --wrap=0)
-    say "initEnclave converted response (b64): ${B64CREDS}"
+    B64CONVCREDS=$(echo "${B64CREDS}" | ${PEER_ASSIST_CMD} attestation2Evidence) || die "could not convert credentials"
+    say "initEnclave converted response (b64): ${B64CONVCREDS}"
 
     say "Registering with Enclave Registry"
-    try $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${ERCC_ID} -c '{"Args":["RegisterEnclave", "'${B64CREDS}'"]}' --waitForEvent
+    try $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${ERCC_ID} -c '{"Args":["RegisterEnclave", "'${B64CONVCREDS}'"]}' --waitForEvent
 
     # NOTE: the chaincode encryption key is retrieved here for testing purposes
     say "Querying Chaincode Encryption Key"
