@@ -8,9 +8,6 @@ include $(TOP)/build.mk
 FABRIC_VERSION ?= 2.2.0
 FABRIC_VERSION_TAG =v$(FABRIC_VERSION)
 FABRIC_PEER_BIN = $(FABRIC_PATH)/build/bin/peer
-TLCC_GO_SRC = ${TOP}/tlcc/*.go
-TLCC_ENCLAVE_DIR = ${TOP}/tlcc_enclave
-TLCC_ENCLAVE_LIB = ${TLCC_ENCLAVE_DIR}/_build/libtl.so
 
 FABRIC_PATCHED = $(FABRIC_PATH)/.fpc_patched
 FABRIC_CURRENT_DIFF_COMMITS_CMD = git log $(FABRIC_VERSION_TAG)..HEAD --oneline
@@ -37,7 +34,7 @@ $(FABRIC_PATCHED): patches/*.patch $(FABRIC_PATH)/.git
 	$(GO) mod vendor
 
 clean-patch:
-        # Note: for below to work with exit 0, this has to be a single shell command!
+	# Note: for below to work with exit 0, this has to be a single shell command!
 	@echo "Cleaning Fabric patches ..."; \
 	echo "(Warning: as go.{mod,sum} and  vendor/ are auto-updated, we also (blindly) auto-reset them to committed version!)"; \
         (cd $(FABRIC_PATH) && git checkout -- go.mod go.sum && git checkout HEAD -- vendor && git clean -fd vendor) || exit 1; \
@@ -74,25 +71,15 @@ clean-patch:
 	git reset --hard $(FABRIC_VERSION_TAG) && \
 	rm -f $(FABRIC_PATCHED) $(FABRIC_PATCHED).tmp
 
-$(TLCC_ENCLAVE_LIB):
-	${MAKE} -C ${TLCC_ENCLAVE_DIR} build
-
 peer: patch $(FABRIC_PEER_BIN)
 
-$(FABRIC_PEER_BIN): $(TLCC_GO_SRC) $(TLCC_ENCLAVE_LIB) $(FABRIC_PATCHED)
-        # Note: above does not have enough dependencies to trigger a rebuild if (recursively)
-        # any TLCC and dependent code changes. however, it should at least make sure it will
-        # build properly if tlcc enclave is not yet built ..
+$(FABRIC_PEER_BIN): $(FABRIC_PATCHED)
 	cd $(FABRIC_PATH) && \
-        env \
-            CGO_CFLAGS="-I${FPC_PATH}/common -I${FPC_PATH}/common/sgxcclib -I${FPC_PATH}/tlcc_enclave/trusted_ledger -I${FPC_PATH}/common/logging/untrusted"  \
-            CGO_LDFLAGS="-L${FPC_PATH}/tlcc_enclave/_build/lib" \
-	   GO_TAGS=FPC \
         $(MAKE) peer
 
 native: peer
 	cd $(FABRIC_PATH) && \
-	GOFLAGS="-mod=mod" $(MAKE) -j orderer cryptogen configtxgen
+	$(MAKE) -j orderer cryptogen configtxgen
 
 clean: clean-native clean-patch
 

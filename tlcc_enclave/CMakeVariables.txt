@@ -1,8 +1,0 @@
-# Copyright 2019 Intel Corporation
-#
-# SPDX-License-Identifier: Apache-2.0
-
-set(COMMON_SOURCE_DIR ${PROJECT_SOURCE_DIR}/../common)
-
-include(${COMMON_SOURCE_DIR}/crypto/CMakeVariables.txt)
-include(${COMMON_SOURCE_DIR}/logging/CMakeVariables.txt)
