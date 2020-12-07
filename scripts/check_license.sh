@@ -51,7 +51,6 @@ function filterExcludedAndGeneratedFiles {
         '(^|/)testdata\/'
         '\.tx$'
         '\.txt$'
-        'utils/docker-compose/bin'
         '(^|/)vendor\/'
         '\.ico$'
     )

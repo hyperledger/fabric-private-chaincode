@@ -1,5 +1,0 @@
-# SPDX-License-Identifier: Apache-2.0
-_build
-tags
-enclave/*_t.*
-trusted_ledger/*_u.*

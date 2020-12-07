@@ -13,7 +13,6 @@ FILES_TO_PARSE=`find $SCRIPTDIR/.. -iname *.cpp -o -iname *.h -o -iname *.c`
 RET=0
 
 EXCLUDED_PATTERNS="\
-    tlcc_enclave/nanopb \
     common/protobuf \
     common/base64 \
     common/json \

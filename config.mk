@@ -55,7 +55,7 @@ export SGX_ARCH ?= x64
 #--------------------------------------------------
 # Give the option to override by custom protoc
 # e.g. this is overloaded by travis and docker dev as we use protoc 3.11.4 to build
-# protos in tlcc_enclave but use protoc 3.0.x to build SGX SDK and SSL
+# protos in ecc_enclave but use protoc 3.0.x to build SGX SDK and SSL
 export PROTOC_CMD ?= protoc
 
 JAVA ?= java

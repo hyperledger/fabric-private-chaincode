@@ -95,7 +95,7 @@ ENV SGX_MODE=${SGX_MODE}
 ARG FPC_ATTESTATION_TYPE
 ENV FPC_ATTESTATION_TYPE=${FPC_ATTESTATION_TYPE}
 
-# Build FPC peer including plugins and tlcc support
+# Build FPC peer
 RUN cd ${FPC_PATH} \
  && make fpc-peer \
  && make fpc-peer-cli
@@ -141,9 +141,6 @@ COPY --from=peer-builder ${FPC_CMDS} ${FPC_CMDS}
 COPY --from=peer-builder ${FABRIC_BIN_DIR} ${FABRIC_BIN_DIR}
 # - (sgx) config
 COPY --from=peer-builder ${FPC_PATH}/config ${FPC_PATH}/config
-# - tlcc ( libtl.so & enclave.so)
-#   Note we need the (symlinked) path through tlcc rather than through tlcc_enclave
-COPY --from=peer-builder ${FPC_PATH}/tlcc/enclave/lib ${FPC_PATH}/tlcc/enclave/lib
 # - ercc binary
 COPY --from=peer-builder ${FPC_PATH}/ercc/ercc ${FPC_PATH}/ercc/ercc
 # - external builders itself ..

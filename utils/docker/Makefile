@@ -119,8 +119,6 @@ run: dev
 clobber:
 	# first clean-up dangling images as that might prevent some of the later cleans
 	docker system prune --force
-	# then clean-up docker-compose network and demo related artifacts
-	(cd ../docker-compose; ${MAKE} clobber)
 	# delete locally created docker images and left-over peer artifacts
 	for img in \
 		dev-* \
