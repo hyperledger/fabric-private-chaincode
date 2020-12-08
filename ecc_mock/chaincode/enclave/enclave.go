@@ -3,11 +3,9 @@ package enclave
 import "C"
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"unsafe"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
+	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"golang.org/x/sync/semaphore"
@@ -28,6 +26,7 @@ type EnclaveStub struct {
 	sem *semaphore.Weighted
 }
 
+// TODO enabled GOTAGS-based toggle to switch between this EnclaveStub and MockStub
 // NewEnclave starts a new enclave
 func NewEnclaveStub() StubInterface {
 	return &EnclaveStub{sem: semaphore.NewWeighted(8)}
@@ -90,58 +89,60 @@ func (e *EnclaveStub) GetEnclaveId() (string, error) {
 }
 
 func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte, error) {
-
-	index := registry.Register(&Stubs{stub})
-	defer registry.Release(index)
-	ctx := unsafe.Pointer(&index)
-
-	// get and json-encode parameters
-	// Note: client side call of '{ "Args": [ arg1, arg2, .. ] }' and '{ "Function": "arg1", "Args": [ arg2, .. ] }' are identical ...
-	jsonArgs, err := json.Marshal(stub.GetStringArgs())
+	proposal, err := stub.GetSignedProposal()
 	if err != nil {
 		return nil, err
 	}
 
-	// args
-	argsPtr := C.CString(string(jsonArgs))
-	defer C.free(unsafe.Pointer(argsPtr))
-
-	// client pk used for args encryption
-	pkPtr := C.CString(string(pk))
-	defer C.free(unsafe.Pointer(pkPtr))
-
-	// response
-	responseLenOut := C.uint32_t(0) // We pass maximal length separatedly; set to zero so we can detect valid responses
-	responsePtr := C.malloc(MAX_RESPONSE_SIZE)
-	defer C.free(responsePtr)
-
-	// signature
-	signaturePtr := C.malloc(SIGNATURE_SIZE)
-	defer C.free(signaturePtr)
-
-	e.sem.Acquire(context.Background(), 1)
-	// invoke enclave
-	invoke_ret := C.sgxcc_invoke(e.eid,
-		argsPtr,
-		pkPtr,
-		(*C.uint8_t)(responsePtr), C.uint32_t(MAX_RESPONSE_SIZE), &responseLenOut,
-		(*C.ec256_signature_t)(signaturePtr),
-		ctx)
-	e.sem.Release(1)
-	// Note: we do try to return the response in all cases, even then there is an error ...
-	var sig []byte = nil
-	if invoke_ret == 0 {
-		sig, err = crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
-		if err != nil {
-			sig = nil
-		}
-	} else {
-		err = fmt.Errorf("Invoke failed. Reason: %d", int(invoke_ret))
-		// TODO: ideally we would also sign error messages but would
-		// require including the error into the signature itself
-		// which has involves a rathole of changes, so defer to the
-		// time which design & refactor everything to be end-to-end
-		// secure ...
+	serializedProposal, err := proto.Marshal(proposal)
+	if err != nil {
+		return nil, err
 	}
-	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, err
+
+	// TODO
+	// - call enclave with serialzed proposal as argument
+	// - get response back
+
+	//e.sem.Acquire(context.Background(), 1)
+	//// invoke enclave
+	_ = serializedProposal
+	//invoke_ret := C.sgxcc_invoke(e.eid,
+	//	argsPtr,
+	//	pkPtr,
+	//	(*C.uint8_t)(responsePtr), C.uint32_t(MAX_RESPONSE_SIZE), &responseLenOut,
+	//	(*C.ec256_signature_t)(signaturePtr),
+	//	ctx)
+	//e.sem.Release(1)
+	//// Note: we do try to return the response in all cases, even then there is an error ...
+	//var sig []byte = nil
+	//var err error
+	//if invoke_ret == 0 {
+	//	sig, err = crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
+	//	if err != nil {
+	//		sig = nil
+	//	}
+	//} else {
+	//	err = fmt.Errorf("Invoke failed. Reason: %d", int(invoke_ret))
+	//	// TODO: ideally we would also sign error messages but would
+	//	// require including the error into the signature itself
+	//	// which has involves a rathole of changes, so defer to the
+	//	// time which design & refactor everything to be end-to-end
+	//	// secure ...
+	//}
+	//
+	enclaveResponseBytes := []byte("data")
+
+	response := &protos.ChaincodeResponseMessage{}
+	err = proto.Unmarshal(enclaveResponseBytes, response)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO set rw set to response
+	// response.RwSet = ...
+
+	response.Proposal = proposal
+
+	// serialized and return updated response
+	return proto.Marshal(response)
 }

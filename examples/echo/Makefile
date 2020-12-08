@@ -22,6 +22,4 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 docker:
-	$(DOCKER) build --no-cache \
-		-f ../Dockerfile \
-		-t fpc/fpc-echo .
+	$(DOCKER) build -f ../Dockerfile -t fpc/fpc-echo .
