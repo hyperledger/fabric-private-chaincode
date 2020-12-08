@@ -229,9 +229,9 @@ func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface,
 		return err
 	}
 
-	// TODO check if this enclave is already registered
+	// TODO check if this enclave is already registered (MVP)
 
-	// TODO perform the (enclave) endorsement policy specific tests:
+	// TODO perform the (enclave) endorsement policy specific tests (MVP/Post-MVP)
 	// - MVP (designated chaincode): verify no other enclave (of other peers) is registered or fail
 	// - Post-MVP: check consistency with potentially existing enclaves
 
@@ -288,10 +288,10 @@ func checkAttestedData(ctx contractapi.TransactionContextInterface, v attestatio
 		return fmt.Errorf("creator identity evaluation failed: %s", err)
 	}
 
-	// TODO add more checks
-	// channel_hash should correspond to peers view of channel id (POST-MVP)
-	// TLCC_MRENCLAVE matches the version baked into ERCC (POST-MVP)
-	// validate FPC deployment (restriction) policy (POST-MVP)
+	// TODO add more checks (POST-MVP)
+	// - channel_hash should correspond to peers view of channel id
+	// - TLCC_MRENCLAVE matches the version baked into ERCC
+	// - validate FPC deployment (restriction) policy
 
 	return nil
 }
@@ -300,11 +300,9 @@ func checkAttestedData(ctx contractapi.TransactionContextInterface, v attestatio
 // This method is used during the key generation and key distribution protocol. In particular, during key generation,
 // this call sets the chaincode_ek for a chaincode if no chaincode_ek is set yet.
 func (rs *Contract) RegisterCCKeys(ctx contractapi.TransactionContextInterface, ccKeyRegistrationMessageBase64 string) error {
-	// TODO: Implement me for MVP
+	// TODO: Implement me once we remove spec-short-cut,see QueryChaincodeEncryptionKey (Post-MVP)
 
 	//input msg CCKeyRegistrationMessage
-
-	// TODO needs to be implemented for tx args/response encryption
 
 	return fmt.Errorf("not implemented yet")
 }
@@ -312,13 +310,13 @@ func (rs *Contract) RegisterCCKeys(ctx contractapi.TransactionContextInterface, 
 // key distribution (Post-MVP features)
 func (rs *Contract) PutKeyExport(ctx contractapi.TransactionContextInterface, exportMessageBase64 string) error {
 	// input msg ExportMessage
-	// TODO implement me
+	// TODO implement me (Post-MVP)
 	return fmt.Errorf("not implemented yet")
 }
 
 func (rs *Contract) GetKeyExport(ctx contractapi.TransactionContextInterface, chaincodeId, enclaveId string) (string, error) {
 	//input chaincodeId string, enclaveId string
 	//return *ExportMessage or  error
-	// TODO implement me
+	// TODO implement me (Post-MVP)
 	return "", fmt.Errorf("not implemented yet")
 }

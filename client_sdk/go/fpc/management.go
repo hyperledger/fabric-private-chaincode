@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc/attestation"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	pbatt "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos/attestation"
@@ -76,28 +75,39 @@ func (c *managementState) InitEnclave(peerEndpoint string, attestationParams ...
 	}
 
 	log.Printf("calling __initEnclave\n")
-	credentialsBytes, err := txn.Evaluate(utils.ProtoAsBase64(initMsg))
+	credentialsBytes, err := txn.Evaluate(utils.MarshallProto(initMsg))
 	if err != nil {
 		return fmt.Errorf("evaluation error: %s", err)
 	}
 
-	credentials := &protos.Credentials{}
-	err = proto.Unmarshal(credentialsBytes, credentials)
+	var convertedCredentials string
+	convertedCredentials, err = ConvertCredentials(string(credentialsBytes))
 	if err != nil {
-		return fmt.Errorf("cannot unmarshal credentials: %s", err)
-	}
-
-	// perform attestation evidence transformation
-	credentials, err = attestation.ToEvidence(credentials)
-	if err != nil {
-		return err
+		return fmt.Errorf("evaluation error: %s", err)
 	}
 
 	log.Printf("calling registerEnclave\n")
-	_, err = c.ercc.SubmitTransaction("registerEnclave", utils.ProtoAsBase64(credentials))
+	_, err = c.ercc.SubmitTransaction("registerEnclave", convertedCredentials)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+// perform attestation evidence transformation
+func ConvertCredentials(credentialsOnlyAttestation string) (credentialsWithEvidence string, err error) {
+	log.Printf("Received Credential: '%s'", credentialsOnlyAttestation)
+	credentials, err := utils.UnmarshalCredentials(credentialsOnlyAttestation)
+	if err != nil {
+		return "", fmt.Errorf("cannot decode credentials: %s", err)
+	}
+
+	credentials, err = attestation.ToEvidence(credentials)
+	if err != nil {
+		return "", err
+	}
+	credentialsOnlyAttestation = utils.MarshallProto(credentials)
+	log.Printf("Converted to Credential: '%s'", credentialsOnlyAttestation)
+	return credentialsOnlyAttestation, nil
 }
