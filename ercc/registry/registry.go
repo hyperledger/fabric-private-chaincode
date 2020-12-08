@@ -53,6 +53,10 @@ func (rs *Contract) QueryListEnclaveCredentials(ctx contractapi.TransactionConte
 	if err != nil {
 		return nil, err
 	}
+	if iter == nil {
+		// return empty list, no error
+		return nil, nil
+	}
 
 	// note that we store serialized credential objects in the chaincode state.
 	// since the returns value(s) of this message is sent to the caller (client), it has to serialized anyway.
@@ -70,7 +74,7 @@ func (rs *Contract) QueryListEnclaveCredentials(ctx contractapi.TransactionConte
 	return allCredentials, nil
 }
 
-func (rs *Contract) QueryEnclaveCredentials(ctx contractapi.TransactionContextInterface, chaincodeId, enclaveId string) (string, error) {
+func (rs *Contract) QueryEnclaveCredentials(ctx contractapi.TransactionContextInterface, chaincodeId string, enclaveId string) (string, error) {
 	key, err := ctx.GetStub().CreateCompositeKey("namespaces/credentials", []string{chaincodeId, enclaveId})
 	if err != nil {
 		return "", err
@@ -224,16 +228,23 @@ func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface,
 	chaincodeId := attestedData.CcParams.ChaincodeId
 	enclaveId := utils.GetEnclaveId(&attestedData)
 
+	// try create the needed composite key
 	key, err := ctx.GetStub().CreateCompositeKey("namespaces/credentials", []string{chaincodeId, enclaveId})
 	if err != nil {
 		return err
 	}
 
-	// TODO check if this enclave is already registered (MVP)
+	// check if one enclave is already registered
+	registeredCredentialsList, _ := rs.QueryListEnclaveCredentials(ctx, chaincodeId)
+	if registeredCredentialsList != nil {
+		return fmt.Errorf("An enclave is already registered for chaincode %s", chaincodeId)
+	}
 
 	// TODO perform the (enclave) endorsement policy specific tests (MVP/Post-MVP)
 	// - MVP (designated chaincode): verify no other enclave (of other peers) is registered or fail
 	// - Post-MVP: check consistency with potentially existing enclaves
+
+	// All check passed, now register enclave
 
 	if err := ctx.GetStub().PutState(key, credentialBytes); err != nil {
 		return fmt.Errorf("cannot store credentials: %s", err)
