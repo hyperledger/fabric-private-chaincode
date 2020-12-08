@@ -21,18 +21,28 @@ import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
-	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/protoutil"
 )
-
-var logger = flogging.MustGetLogger("enclave")
 
 type MockEnclave struct {
 	privateKey *ecdsa.PrivateKey
 	enclaveId  string
 }
 
-func (m *MockEnclave) Init(chaincodeParams *protos.CCParameters, hostParams *protos.HostParameters, attestationParams []byte) ([]byte, error) {
+func (m *MockEnclave) Init(serializedChaincodeParams, serializedHostParamsBytes, serializedAttestationParams []byte) ([]byte, error) {
+
+	hostParams := &protos.HostParameters{}
+	err := proto.Unmarshal(serializedHostParamsBytes, hostParams)
+	if err != nil {
+		return nil, err
+	}
+
+	chaincodeParams := &protos.CCParameters{}
+	err = proto.Unmarshal(serializedChaincodeParams, chaincodeParams)
+	if err != nil {
+		return nil, err
+	}
+
 	// create some dummy keys for our mock enclave
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {

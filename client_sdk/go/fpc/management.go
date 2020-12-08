@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package fpc
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 
@@ -62,15 +63,24 @@ func (c *managementState) InitEnclave(peerEndpoint string, attestationParams ...
 		return err
 	}
 
-	// TODO revisit this once it becomes clear what attestationParams ...string is here
-	serializedJSONParams, err := json.Marshal(&utils.AttestationParams{Params: attestationParams})
+	// TODO get real attestation params from somewhere
+	type Params struct {
+		AttestationType string `json:"attestation_type"`
+	}
+
+	serializedJSONParams, err := json.Marshal(Params{
+		AttestationType: "simulated",
+	})
 	if err != nil {
 		shim.Error(err.Error())
 	}
 
 	initMsg := &protos.InitEnclaveMessage{
-		PeerEndpoint:      peerEndpoint,
-		AttestationParams: protoutil.MarshalOrPanic(&pbatt.AttestationParameters{Parameters: serializedJSONParams}),
+		PeerEndpoint: peerEndpoint,
+		AttestationParams: protoutil.MarshalOrPanic(&pbatt.AttestationParameters{
+			// TODO this base64 encoding is nasty but needed because in `cc_data.cpp` we do `attestation_parameters_s = base64_decode(b64_ap_s);`
+			Parameters: []byte(base64.StdEncoding.EncodeToString(serializedJSONParams)),
+		}),
 	}
 
 	logger.Debugf("calling __initEnclave")

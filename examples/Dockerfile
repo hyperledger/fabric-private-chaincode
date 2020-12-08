@@ -3,9 +3,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FROM fpc/ecc_enclave
+FROM fpc/ecc
 
-COPY ecc .
-
-EXPOSE 9999
-CMD ["ecc"]
+COPY _build/lib/enclave.signed.so enclave/lib

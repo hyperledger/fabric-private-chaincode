@@ -35,7 +35,7 @@ func main() {
 	}
 
 	// create enclave chaincode
-	ecc := &chaincode.EnclaveChaincode{}
+	ecc := chaincode.NewChaincodeEnclave()
 
 	server := &shim.ChaincodeServer{
 		CCID:    config.CCID,

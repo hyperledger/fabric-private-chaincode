@@ -10,6 +10,8 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	"github.com/hyperledger/fabric/protoutil"
+
 	"github.com/golang/protobuf/ptypes"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc_mock/chaincode/enclave"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc_mock/chaincode/ercc"
@@ -24,7 +26,13 @@ var logger = flogging.MustGetLogger("ecc")
 
 // EnclaveChaincode struct
 type EnclaveChaincode struct {
-	enclave enclave.MockEnclave
+	enclave enclave.StubInterface
+}
+
+func NewChaincodeEnclave() shim.Chaincode {
+	return &EnclaveChaincode{
+		enclave: enclave.NewEnclaveStub(),
+	}
 }
 
 // Init sets the chaincode state to "init"
@@ -52,7 +60,11 @@ func (t *EnclaveChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response 
 func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Response {
 
 	// fetch cc params and host params
-	chaincodeParams, err := ExtractChaincodeParams(stub)
+	chaincodeParams, err := extractChaincodeParams(stub)
+	if err != nil {
+		shim.Error(err.Error())
+	}
+	serializedChaincodeParams, err := protoutil.Marshal(chaincodeParams)
 	if err != nil {
 		shim.Error(err.Error())
 	}
@@ -61,13 +73,21 @@ func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Resp
 	if err != nil {
 		shim.Error(err.Error())
 	}
+	serializedHostParams, err := protoutil.Marshal(hostParams)
+	if err != nil {
+		shim.Error(err.Error())
+	}
 
 	attestationParams, err := extractAttestationParams(stub)
 	if err != nil {
 		shim.Error(err.Error())
 	}
+	serializedAttestationParams, err := protoutil.Marshal(attestationParams)
+	if err != nil {
+		shim.Error(err.Error())
+	}
 
-	credentialsBytes, err := t.enclave.Init(chaincodeParams, hostParams, attestationParams)
+	credentialsBytes, err := t.enclave.Init(serializedChaincodeParams, serializedHostParams, serializedAttestationParams)
 	if err != nil {
 		shim.Error(err.Error())
 	}
@@ -77,6 +97,10 @@ func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Resp
 }
 
 func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response {
+	// check if we have an enclave already
+	if t.enclave == nil {
+		return shim.Error("ecc: Enclave not initialized! Run setup first!")
+	}
 
 	// call enclave
 	responseBytes, errInvoke := t.enclave.ChaincodeInvoke(stub)
@@ -96,7 +120,7 @@ func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response 
 
 func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) pb.Response {
 
-	chaincodeParams, err := ExtractChaincodeParams(stub)
+	chaincodeParams, err := extractChaincodeParams(stub)
 	if err != nil {
 		shim.Error(err.Error())
 	}

@@ -10,12 +10,15 @@ package enclave
 import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric/common/flogging"
 )
+
+var logger = flogging.MustGetLogger("enclave")
 
 type StubInterface interface {
 
 	// triggered by an admin
-	Init(chaincodeParams *protos.CCParameters, hostParams *protos.HostParameters, attestationParams []byte) ([]byte, error)
+	Init(chaincodeParams, hostParams, attestationParams []byte) ([]byte, error)
 
 	// key generation
 	GenerateCCKeys() (*protos.SignedCCKeyRegistrationMessage, error)
