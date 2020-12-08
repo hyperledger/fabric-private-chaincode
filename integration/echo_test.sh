@@ -47,6 +47,9 @@ echo_test() {
     try_fail ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name wrong-cc-id
     try ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name ${CC_ID}
 
+    # negated test: double registration must fail -- more precisely, inner init succeeds, but ercc registration fails
+    try_fail ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name ${CC_ID}
+
     try ${PEER_CMD} lifecycle chaincode querycommitted -C ${CHAN_ID}
 
     say "do echos"
