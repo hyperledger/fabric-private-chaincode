@@ -8,17 +8,19 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc_mock/chaincode"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric/common/flogging"
 )
 
 type serverConfig struct {
 	CCID    string
 	Address string
 }
+
+var logger = flogging.MustGetLogger("ecc")
 
 func main() {
 
@@ -44,9 +46,9 @@ func main() {
 		},
 	}
 
-	log.Printf("starting fpc chaincode (%s)\n", config.CCID)
+	logger.Infof("starting fpc chaincode (%s)", config.CCID)
 
 	if err := server.Start(); err != nil {
-		log.Panicf("error starting fpc chaincode: %s", err)
+		logger.Panicf("error starting fpc chaincode: %s", err)
 	}
 }

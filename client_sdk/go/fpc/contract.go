@@ -10,7 +10,6 @@ package fpc
 import (
 	"encoding/base64"
 	"encoding/json"
-	"log"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc/crypto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
@@ -160,7 +159,7 @@ func (c *contractState) evaluateTransaction(args ...string) ([]byte, error) {
 		return nil, err
 	}
 
-	log.Printf("calling __invoke!\n")
+	logger.Debugf("calling __invoke!")
 	return txn.Evaluate(args...)
 }
 
@@ -178,7 +177,7 @@ func (c *contractState) SubmitTransaction(name string, args ...string) ([]byte, 
 	// call __invoke
 	encryptedResponse, err := c.evaluateTransaction(encryptedRequest)
 
-	log.Printf("calling __endorse!\n")
+	logger.Debugf("calling __endorse!")
 	_, err = c.contract.SubmitTransaction("__endorse", base64.StdEncoding.EncodeToString(encryptedResponse))
 	if err != nil {
 		return nil, err

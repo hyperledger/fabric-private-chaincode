@@ -9,12 +9,14 @@ package crypto
 
 import (
 	"encoding/base64"
-	"log"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric/common/flogging"
 	"google.golang.org/protobuf/proto"
 )
+
+var logger = flogging.MustGetLogger("fpc-client-crypto")
 
 func encrypt(input []byte, encryptionKey []byte) ([]byte, error) {
 	return input, nil
@@ -89,7 +91,7 @@ func (e *EncryptionContextImpl) Conceal(function string, args []string) (string,
 		Input:               &peer.ChaincodeInput{Args: bytes},
 		ReturnEncryptionKey: e.resultEncryptionKey,
 	}
-	log.Printf("prepping chaincode params: %s\n", ccRequest)
+	logger.Debugf("prepping chaincode params: %s", ccRequest)
 
 	serializedCcRequest, err := proto.Marshal(ccRequest)
 	if err != nil {

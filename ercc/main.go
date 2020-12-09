@@ -7,7 +7,6 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
@@ -15,6 +14,7 @@ import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	"github.com/hyperledger/fabric/common/flogging"
 )
 
 type serverConfig struct {
@@ -22,7 +22,13 @@ type serverConfig struct {
 	Address string
 }
 
+var logger = flogging.MustGetLogger("ercc")
+
 func main() {
+
+	// we can control logging via FABRIC_LOGGING_SPEC, the default is FABRIC_LOGGING_SPEC=INFO
+	// For more fine grained logging we could also use different log level for loggers.
+	// For example: FABRIC_LOGGING_SPEC=ecc=DEBUG:ecc_enclave=ERROR
 
 	c := &registry.Contract{}
 	c.Verifier = attestation.NewVerifier()
@@ -31,7 +37,7 @@ func main() {
 
 	ercc, err := contractapi.NewChaincode(c)
 	if err != nil {
-		log.Panicf("error create enclave registry chaincode: %s", err)
+		logger.Panicf("error create enclave registry chaincode: %s", err)
 	}
 
 	ccid := os.Getenv("CHAINCODE_PKG_ID")
@@ -53,20 +59,20 @@ func main() {
 			},
 		}
 
-		log.Printf("starting enclave registry (%s)\n", config.CCID)
+		logger.Infof("starting enclave registry (%s)", config.CCID)
 
 		if err := server.Start(); err != nil {
-			log.Panicf("error starting enclave registry chaincode: %s", err)
+			logger.Panicf("error starting enclave registry chaincode: %s", err)
 		}
 	} else if len(ccid) == 0 && len(addr) == 0 {
 		// start the chaincode in the traditional way
 
-		log.Printf("starting enclave registry\n")
+		logger.Info("starting enclave registry")
 		if err := ercc.Start(); err != nil {
-			log.Panicf("Error starting registry chaincode: %v", err)
+			logger.Panicf("Error starting registry chaincode: %v", err)
 		}
 	} else {
-		log.Panicf("invalid input parameters")
+		logger.Panicf("invalid input parameters")
 	}
 
 }
