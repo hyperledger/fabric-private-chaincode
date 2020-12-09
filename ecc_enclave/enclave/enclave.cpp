@@ -13,8 +13,13 @@
 #include "utils.h"
 
 #include "base64.h"
+#include "error.h"
 
+#include <mbusafecrt.h> /* for memcpy_s etc */
 #include "sgx_utils.h"
+
+#include "fpc/fpc.pb.h"
+#include "pb_decode.h"
 
 extern sgx_ec256_private_t enclave_sk;
 extern sgx_ec256_public_t enclave_pk;
@@ -59,11 +64,10 @@ int ecall_bind_tlcc(const sgx_report_t* report, const uint8_t* pubkey)
     LOG_DEBUG("Binding successfull");
     return SGX_SUCCESS;
 }
-
+/*
 int gen_response(const char* txType,
     uint8_t* response,
     uint32_t* response_len_out,
-    sgx_ec256_signature_t* signature,
     shim_ctx_ptr_t ctx)
 {
     int ret;
@@ -122,7 +126,7 @@ int gen_response(const char* txType,
     // convert signature to big endian and copy out
     bytes_swap(sig, 32);
     bytes_swap(sig + 32, 32);
-    memcpy(signature, sig, sizeof(sgx_ec256_signature_t));
+    //memcpy(signature, sig, sizeof(sgx_ec256_signature_t));
 
     std::string base64_hash = base64_encode((const unsigned char*)hash, 32);
     LOG_DEBUG("ecc sig hash (base64): %s", base64_hash.c_str());
@@ -137,7 +141,8 @@ int gen_response(const char* txType,
 
     return ret;
 }
-
+*/
+/*
 // chaincode call processing when we have secure channel ..
 int invoke_enc(const char* pk,
     uint8_t* response,
@@ -186,11 +191,11 @@ int invoke_enc(const char* pk,
 
     // decrypt
     sgx_ret = sgx_rijndael128GCM_decrypt(&key,
-        cipher + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE,         /* cipher */
-        needed_size, (uint8_t*)plain,                              /* plain out */
-        cipher, SGX_AESGCM_IV_SIZE,                                /* nonce */
-        NULL, 0,                                                   /* aad */
-        (sgx_aes_gcm_128bit_tag_t*)(cipher + SGX_AESGCM_IV_SIZE)); /* tag */
+        cipher + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE,         // cipher
+        needed_size, (uint8_t*)plain,                              // plain out
+        cipher, SGX_AESGCM_IV_SIZE,                                // nonce
+        NULL, 0,                                                   // aad
+        (sgx_aes_gcm_128bit_tag_t*)(cipher + SGX_AESGCM_IV_SIZE)); // tag
     if (sgx_ret != SGX_SUCCESS)
     {
         LOG_ERROR("Decrypt error: %x", sgx_ret);
@@ -201,6 +206,7 @@ int invoke_enc(const char* pk,
 
     return invoke(response, max_response_len, actual_response_len, ctx);
 }
+*/
 
 #include "pdo/common/crypto/crypto.h"
 bool crypto_created = false;
@@ -208,16 +214,19 @@ bool crypto_created = false;
 // chaincode call
 // output, response <- F(args, input)
 // signature <- sign (hash,sk)
-int ecall_cc_invoke(const char* encoded_args,
-    const char* pk,
-    uint8_t* response,
-    uint32_t response_len_in,
-    uint32_t* response_len_out,
-    sgx_ec256_signature_t* signature,
+int ecall_cc_invoke(uint8_t* signed_proposal_proto_bytes,
+    uint32_t signed_proposal_proto_bytes_len,
+    const char* b64_chaincode_request_message,
+    uint8_t* b64_chaincode_response_message,
+    uint32_t b64_chaincode_response_message_len_in,
+    uint32_t* b64_chaincode_response_message_len_out,
     void* u_shim_ctx)
 {
-    LOG_DEBUG("ecall_cc_invoke: \tArgs: %s", encoded_args);
+    LOG_DEBUG("ecall_cc_invoke: \tArgs: %s", b64_chaincode_request_message);
 
+    LOG_DEBUG("signed proposal length %u", signed_proposal_proto_bytes_len);
+
+    /*
     // NOTE/TODO: this crypto part will be removed
     if (!crypto_created)
     {
@@ -234,32 +243,76 @@ int ecall_cc_invoke(const char* encoded_args,
     {
         LOG_DEBUG("enclave crypto material created");
     }
+    */
 
+    fpc_ChaincodeRequestMessage cc_request_message = {};
     t_shim_ctx_t ctx;
-    ctx.u_shim_ctx = u_shim_ctx;
-    ctx.encoded_args = encoded_args;
-
-    // call chaincode invoke logic: creates output and response
-    // output, response <- F(args, input)
     int ret;
-    if (strlen(pk) == 0)
+    // estimate max response len (take into account other fields and b64 encoding)
+    uint32_t response_len = b64_chaincode_response_message_len_in / 4 * 3 - 1024;
+    uint8_t response[b64_chaincode_response_message_len_in / 4 * 3];
+    uint32_t response_len_out = 0;
+
+    ctx.u_shim_ctx = u_shim_ctx;
+    ctx.encoded_args = b64_chaincode_request_message;
+
     {
-        // clear input
-        ctx.json_args = ctx.encoded_args;
-        ret = invoke(response, response_len_in, response_len_out, &ctx);
+        // TODO decode b64_chaincode_request_message as necessary, and marshal parameters
+        // This block assumes b64_chaincode_request_message is literally what it is
+        pb_istream_t istream;
+        bool b;
+
+        // base64 decode message
+        LOG_DEBUG("decoding message");
+        std::string decoded_crm;
+        decoded_crm = base64_decode(b64_chaincode_request_message);
+
+        // set stream
+        istream =
+            pb_istream_from_buffer((const unsigned char*)decoded_crm.c_str(), decoded_crm.length());
+
+        b = pb_decode(&istream, fpc_ChaincodeRequestMessage_fields, &cc_request_message);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        LOG_DEBUG("struct decoded, inner bytes field length %d",
+            cc_request_message.encrypted_request->size);
+        ctx.encoded_args = (const char*)cc_request_message.encrypted_request->bytes;
     }
-    else
-    {
-        // encrypted input
-        ret = invoke_enc(pk, response, response_len_in, response_len_out, &ctx);
-    }
+
+    //// call chaincode invoke logic: creates output and response
+    //// output, response <- F(args, input)
+
+    // if (strlen(pk) == 0)
+    //{
+    // clear input
+    ctx.json_args = ctx.encoded_args;
+    ret = invoke(response, response_len, &response_len_out, &ctx);
+    //}
+    // else
+    //{
+    //    // encrypted input
+    //    ret = invoke_enc(pk, response, response_len_in, response_len_out, &ctx);
+    //}
 
     if (ret != 0)
     {
         return SGX_ERROR_UNEXPECTED;
     }
 
-    ret = gen_response("invoke", response, response_len_out, signature, &ctx);
+    {
+        // TODO put response in protobuf and encode it
+        std::string b64_response = base64_encode((const unsigned char*)response, response_len_out);
+
+        ret = memcpy_s(b64_chaincode_response_message, b64_chaincode_response_message_len_in,
+            b64_response.c_str(), b64_response.length());
+        COND2LOGERR(ret != 0, "cannot copy to response");
+        *b64_chaincode_response_message_len_out = b64_response.length();
+    }
+
+    // ret = gen_response("invoke", response, response_len_out, &ctx);
 
     return ret;
+
+err:
+    return SGX_ERROR_UNEXPECTED;
 }

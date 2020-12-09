@@ -362,17 +362,21 @@ func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response 
 	// get and json-encode parameters
 	// Note: client side call of '{ "Args": [ arg1, arg2, .. ] }' and '{ "Function": "arg1", "Args": [ arg2, .. ] }' are identical ...
 	argss := stub.GetStringArgs()
+	logger.Debugf("string args: %s", argss)
 	jsonArgs, err := json.Marshal(argss)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
+
+	logger.Debugf("json args: %s", jsonArgs)
 
 	pk := []byte(nil) // we don't really support a secure channel to the client yet ..
 	// TODO: one of the place to fix when integrating end-to-end secure channel to client
 
 	// call enclave
 	var errMsg string
-	responseData, signature, errInvoke := t.enclave.Invoke(jsonArgs, pk, stub, t.tlccStub)
+	b64ChaincodeResponseMessage, signature, errInvoke := t.enclave.Invoke(jsonArgs, pk, stub, t.tlccStub)
+	_ = signature
 	if errInvoke != nil {
 		errMsg = fmt.Sprintf("t.enclave.Invoke failed: %s", errInvoke)
 		logger.Errorf(errMsg)
@@ -386,25 +390,26 @@ func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response 
 		// return (and ignore any potential response) as this is a more systematic error
 		return shim.Error(errMsg)
 	}
+	_ = enclavePk
 
-	fpcResponse := &utils.Response{
-		ResponseData: responseData,
-		Signature:    signature,
-		PublicKey:    enclavePk,
-	}
-	responseBytes, _ := json.Marshal(fpcResponse)
+	//fpcResponse := &utils.Response{
+	//	ResponseData: responseData,
+	//	Signature:    signature,
+	//	PublicKey:    enclavePk,
+	//}
+	//responseBytes, _ := json.Marshal(fpcResponse)
 
 	var response pb.Response
 	if errInvoke == nil {
 		response = pb.Response{
 			Status:  shim.OK,
-			Payload: responseBytes,
+			Payload: b64ChaincodeResponseMessage,
 			Message: errMsg,
 		}
 	} else {
 		response = pb.Response{
 			Status:  shim.ERROR,
-			Payload: responseBytes,
+			Payload: b64ChaincodeResponseMessage,
 			Message: errMsg,
 		}
 	}

@@ -187,11 +187,11 @@ ledger_shutdown() {
 check_result() {
     # Parse out the Response Data from the payload
     CI_RESPONSE=${RESPONSE}
-    CI_RESPONSE=${CI_RESPONSE##*ResponseData\\\":\\\"}
-    CI_RESPONSE=${CI_RESPONSE%%\\*}
+    CI_RESPONSE=${CI_RESPONSE##*payload:\"}
+    CI_RESPONSE=${CI_RESPONSE%%\"*}
     # Convert and de-encrypt it
     CI_RESPONSE=$(echo ${CI_RESPONSE} | base64 -d)
-    say ${CI_RESPONSE}
+    say "b64 Decoded response: ${CI_RESPONSE}"
     # Test response to expected result
     if [[ ${CI_RESPONSE} == "$1" ]]; then
 	gecho "PASSED"

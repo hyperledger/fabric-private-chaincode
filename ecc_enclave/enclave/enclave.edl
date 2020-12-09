@@ -15,11 +15,10 @@ enclave {
                 [in, size=64] const uint8_t *pubkey);
 
         public int ecall_cc_invoke(
+                [in, size=signed_proposal_proto_bytes_len] uint8_t *signed_proposal_proto_bytes, uint32_t signed_proposal_proto_bytes_len,
                 [in, string] const char *encoded_args,
-                [in, string] const char *pk,
                 [out, size=response_len_in] uint8_t *response, uint32_t response_len_in,
                 [out] uint32_t *response_len_out,
-                [out] sgx_ec256_signature_t *signature,
                 [user_check] void *u_shim_ctx);
 
     };
