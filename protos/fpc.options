@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: Apache-2.0
+
+fpc.CleartextChaincodeRequest.return_encryption_key type:FT_POINTER
+
+fpc.ChaincodeRequestMessage.encrypted_request type:FT_POINTER
+
+fpc.ChaincodeResponseMessage.encrypted_response type:FT_POINTER
+
+fpc.ChaincodeResponseMessage.signature type:FT_POINTER
+
