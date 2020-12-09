@@ -9,18 +9,20 @@ package attestation
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger/fabric/common/flogging"
 )
+
+var logger = flogging.MustGetLogger("fpc-client-attest")
 
 func ToEvidence(credentials *protos.Credentials) (*protos.Credentials, error) {
 
-	log.Printf("Perform attestation to evidence transformation\n")
+	logger.Debugf("Perform attestation to evidence transformation")
 
 	fpcPath := os.Getenv("FPC_PATH")
 	if fpcPath == "" {

@@ -11,7 +11,6 @@ package registry
 import (
 	"encoding/base64"
 	"fmt"
-	"log"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
@@ -19,8 +18,11 @@ import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/pkg/errors"
 )
+
+var logger = flogging.MustGetLogger("ercc")
 
 type Contract struct {
 	contractapi.Contract
@@ -31,7 +33,7 @@ type Contract struct {
 
 func MyBeforeTransaction(ctx contractapi.TransactionContextInterface) error {
 	function, _ := ctx.GetStub().GetFunctionAndParameters()
-	log.Printf("Invoke [%s]", function)
+	logger.Debugf("Invoke [%s]", function)
 	return nil
 }
 
@@ -153,7 +155,7 @@ func (rs *Contract) QueryChaincodeEncryptionKey(ctx contractapi.TransactionConte
 	}
 	_, res, err := ctx.GetStub().SplitCompositeKey(q.Key)
 	if err != nil {
-		log.Printf("no split")
+		logger.Debugf("no split")
 		return "", err
 	}
 	enclaveId := res[1]
@@ -185,14 +187,14 @@ func (rs *Contract) QueryChaincodeEncryptionKey(ctx contractapi.TransactionConte
 
 	// b64 encoded chaincode key
 	b64ChaincodeEK := base64.StdEncoding.EncodeToString(chaincodeEKBytes)
-	log.Printf("QueryChaincodeEncryptionKey:\nEK: %s\nEK b64: %s", string(chaincodeEKBytes), b64ChaincodeEK)
+	logger.Debugf("QueryChaincodeEncryptionKey: EK: '%s' / EK b64: '%s'", string(chaincodeEKBytes), b64ChaincodeEK)
 
 	return b64ChaincodeEK, nil
 }
 
 // register a new FPC chaincode enclave instance
 func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface, credentialsBase64 string) error {
-	log.Printf("RegisterEnclave")
+	logger.Debugf("RegisterEnclave")
 
 	credentialBytes, _ := base64.StdEncoding.DecodeString(credentialsBase64)
 
@@ -220,7 +222,7 @@ func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface,
 		return errors.Wrap(err, "invalid attested data message")
 	}
 
-	log.Printf("- verifying attested data (%s) against evidence (%s)", attestedData.String(), string(credentials.Evidence))
+	logger.Debugf("- verifying attested data (%s) against evidence (%s)", attestedData.String(), string(credentials.Evidence))
 	if err := checkAttestedData(ctx, rs.Verifier, rs.IEvaluator, &attestedData, &credentials); err != nil {
 		return err
 	}
@@ -250,7 +252,7 @@ func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface,
 		return fmt.Errorf("cannot store credentials: %s", err)
 	}
 
-	log.Printf("RegisterEnclave successful")
+	logger.Debugf("RegisterEnclave successful")
 
 	return nil
 }

@@ -10,19 +10,21 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
+	"github.com/hyperledger/fabric/common/flogging"
 )
+
+var logger = flogging.MustGetLogger("sdk-test")
 
 var testNetworkPath string
 
 func populateWallet(wallet *gateway.Wallet) error {
-	log.Println("============ Populating wallet ============")
+	logger.Debugf("============ Populating wallet ============")
 	credPath := filepath.Join(
 		testNetworkPath,
 		"organizations",
@@ -74,18 +76,18 @@ func main() {
 
 	err := os.Setenv("DISCOVERY_AS_LOCALHOST", "true")
 	if err != nil {
-		log.Fatalf("Error setting DISCOVERY_AS_LOCALHOST environemnt variable: %v", err)
+		logger.Fatalf("Error setting DISCOVERY_AS_LOCALHOST environemnt variable: %v", err)
 	}
 
 	wallet, err := gateway.NewFileSystemWallet("wallet")
 	if err != nil {
-		log.Fatalf("Failed to create wallet: %v", err)
+		logger.Fatalf("Failed to create wallet: %v", err)
 	}
 
 	if !wallet.Exists("appUser") {
 		err = populateWallet(wallet)
 		if err != nil {
-			log.Fatalf("Failed to populate wallet contents: %v", err)
+			logger.Fatalf("Failed to populate wallet contents: %v", err)
 		}
 	}
 
@@ -102,13 +104,13 @@ func main() {
 		gateway.WithIdentity(wallet, "appUser"),
 	)
 	if err != nil {
-		log.Fatalf("Failed to connect to gateway: %v", err)
+		logger.Fatalf("Failed to connect to gateway: %v", err)
 	}
 	defer gw.Close()
 
 	network, err := gw.GetNetwork("mychannel")
 	if err != nil {
-		log.Fatalf("Failed to get network: %v", err)
+		logger.Fatalf("Failed to get network: %v", err)
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,21 +121,21 @@ func main() {
 	admin := fpc.GetManagementAPI(network, "ecc")
 
 	// Setup Chaincode Enclave
-	log.Println("--> Create FPC chaincode enclave: ")
+	logger.Debugf("--> Create FPC chaincode enclave: ")
 	attestationParams := []string{"some params"}
 	err = admin.InitEnclave("peer0.peer1.example.com:7051", attestationParams...)
 	if err != nil {
-		log.Fatalf("Failed to create enclave: %v", err)
+		logger.Fatalf("Failed to create enclave: %v", err)
 	}
 
 	// Get FPC Contract
 	contract := fpc.GetContract(network, "ecc")
 
 	// Invoke FPC Chaincode
-	log.Println("--> Invoke FPC chaincode: ")
+	logger.Debugf("--> Invoke FPC chaincode: ")
 	result, err := contract.SubmitTransaction("myFunction", "arg1", "arg2", "arg3")
 	if err != nil {
-		log.Fatalf("Failed to Submit transaction: %v", err)
+		logger.Fatalf("Failed to Submit transaction: %v", err)
 	}
-	log.Printf("--> Result: %s\n", string(result))
+	logger.Debugf("--> Result: %s", string(result))
 }

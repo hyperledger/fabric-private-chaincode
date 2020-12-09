@@ -10,7 +10,6 @@ package fpc
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc/attestation"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
@@ -74,7 +73,7 @@ func (c *managementState) InitEnclave(peerEndpoint string, attestationParams ...
 		AttestationParams: protoutil.MarshalOrPanic(&pbatt.AttestationParameters{Parameters: serializedJSONParams}),
 	}
 
-	log.Printf("calling __initEnclave\n")
+	logger.Debugf("calling __initEnclave")
 	credentialsBytes, err := txn.Evaluate(utils.MarshallProto(initMsg))
 	if err != nil {
 		return fmt.Errorf("evaluation error: %s", err)
@@ -86,7 +85,7 @@ func (c *managementState) InitEnclave(peerEndpoint string, attestationParams ...
 		return fmt.Errorf("evaluation error: %s", err)
 	}
 
-	log.Printf("calling registerEnclave\n")
+	logger.Debugf("calling registerEnclave")
 	_, err = c.ercc.SubmitTransaction("registerEnclave", convertedCredentials)
 	if err != nil {
 		return err
@@ -97,7 +96,7 @@ func (c *managementState) InitEnclave(peerEndpoint string, attestationParams ...
 
 // perform attestation evidence transformation
 func ConvertCredentials(credentialsOnlyAttestation string) (credentialsWithEvidence string, err error) {
-	log.Printf("Received Credential: '%s'", credentialsOnlyAttestation)
+	logger.Debugf("Received Credential: '%s'", credentialsOnlyAttestation)
 	credentials, err := utils.UnmarshalCredentials(credentialsOnlyAttestation)
 	if err != nil {
 		return "", fmt.Errorf("cannot decode credentials: %s", err)
@@ -108,6 +107,6 @@ func ConvertCredentials(credentialsOnlyAttestation string) (credentialsWithEvide
 		return "", err
 	}
 	credentialsOnlyAttestation = utils.MarshallProto(credentials)
-	log.Printf("Converted to Credential: '%s'", credentialsOnlyAttestation)
+	logger.Debugf("Converted to Credential: '%s'", credentialsOnlyAttestation)
 	return credentialsOnlyAttestation, nil
 }
