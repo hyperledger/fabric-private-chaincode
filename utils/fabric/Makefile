@@ -10,8 +10,10 @@ GO_CMDS= get-fabric-container-name peer-cli-assist
 
 build: $(GO_CMDS)
 
-$(GO_CMDS): 
+$(GO_CMDS): FORCE
 	$(GO) build $(GOTAGS) ./$@.src/$@.go 
+
+FORCE:
 
 test: build
 
