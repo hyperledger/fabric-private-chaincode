@@ -20,6 +20,7 @@
 
 #include "fpc/fpc.pb.h"
 #include "pb_decode.h"
+#include "pb_encode.h"
 
 extern sgx_ec256_private_t enclave_sk;
 extern sgx_ec256_public_t enclave_pk;
@@ -245,6 +246,7 @@ int ecall_cc_invoke(uint8_t* signed_proposal_proto_bytes,
     }
     */
 
+    bool b;
     fpc_ChaincodeRequestMessage cc_request_message = {};
     t_shim_ctx_t ctx;
     int ret;
@@ -252,6 +254,7 @@ int ecall_cc_invoke(uint8_t* signed_proposal_proto_bytes,
     uint32_t response_len = b64_chaincode_response_message_len_in / 4 * 3 - 1024;
     uint8_t response[b64_chaincode_response_message_len_in / 4 * 3];
     uint32_t response_len_out = 0;
+    std::string b64_response;
 
     ctx.u_shim_ctx = u_shim_ctx;
     ctx.encoded_args = b64_chaincode_request_message;
@@ -260,7 +263,6 @@ int ecall_cc_invoke(uint8_t* signed_proposal_proto_bytes,
         // TODO decode b64_chaincode_request_message as necessary, and marshal parameters
         // This block assumes b64_chaincode_request_message is literally what it is
         pb_istream_t istream;
-        bool b;
 
         // base64 decode message
         LOG_DEBUG("decoding message");
@@ -277,39 +279,65 @@ int ecall_cc_invoke(uint8_t* signed_proposal_proto_bytes,
         LOG_DEBUG("struct decoded, inner bytes field length %d",
             cc_request_message.encrypted_request->size);
         ctx.encoded_args = (const char*)cc_request_message.encrypted_request->bytes;
+
+        // the dynamic memory in the message is release at the end
     }
 
-    //// call chaincode invoke logic: creates output and response
-    //// output, response <- F(args, input)
-
-    // if (strlen(pk) == 0)
-    //{
-    // clear input
     ctx.json_args = ctx.encoded_args;
     ret = invoke(response, response_len, &response_len_out, &ctx);
-    //}
-    // else
-    //{
-    //    // encrypted input
-    //    ret = invoke_enc(pk, response, response_len_in, response_len_out, &ctx);
-    //}
 
     if (ret != 0)
     {
         return SGX_ERROR_UNEXPECTED;
     }
 
+    b64_response = base64_encode((const unsigned char*)response, response_len_out);
+
     {
         // TODO put response in protobuf and encode it
-        std::string b64_response = base64_encode((const unsigned char*)response, response_len_out);
+
+        fpc_ChaincodeResponseMessage crm;
+        uint32_t stream_buffer_size = b64_chaincode_response_message_len_in / 4 * 3;
+        uint8_t stream_buffer[stream_buffer_size];
+        pb_ostream_t ostream;
+        std::string b64_crm_proto;
+
+        // create proto struct to encode
+        crm = {};
+        crm.encrypted_response = (pb_bytes_array_t*)pb_realloc(
+            crm.encrypted_response, PB_BYTES_ARRAY_T_ALLOCSIZE(b64_response.length()));
+        COND2LOGERR(crm.encrypted_response == NULL, "cannot allocate encrypted message");
+        crm.encrypted_response->size = b64_response.length();
+        ret = memcpy_s(crm.encrypted_response->bytes, crm.encrypted_response->size,
+            b64_response.c_str(), b64_response.length());
+        COND2LOGERR(ret != 0, "cannot encode field");
+
+        // encode proto
+        ostream = pb_ostream_from_buffer(stream_buffer, stream_buffer_size);
+        b = pb_encode(&ostream, fpc_ChaincodeResponseMessage_fields, &crm);
+        COND2LOGERR(!b, "error encoding proto");
+
+        pb_release(fpc_ChaincodeResponseMessage_fields, &crm);
+
+        // b64 encode
+        b64_crm_proto = base64_encode((const unsigned char*)stream_buffer, ostream.bytes_written);
+
+        // b64_response = base64_encode((const unsigned char*)response, response_len_out);
+
+        // ret = memcpy_s(b64_chaincode_response_message, b64_chaincode_response_message_len_in,
+        //    b64_response.c_str(), b64_response.length());
 
         ret = memcpy_s(b64_chaincode_response_message, b64_chaincode_response_message_len_in,
-            b64_response.c_str(), b64_response.length());
+            b64_crm_proto.c_str(), b64_crm_proto.length());
+
         COND2LOGERR(ret != 0, "cannot copy to response");
-        *b64_chaincode_response_message_len_out = b64_response.length();
+        //*b64_chaincode_response_message_len_out = b64_response.length();
+        *b64_chaincode_response_message_len_out = b64_crm_proto.length();
     }
 
     // ret = gen_response("invoke", response, response_len_out, &ctx);
+
+    pb_release(fpc_ChaincodeRequestMessage_fields, &cc_request_message);
 
     return ret;
 

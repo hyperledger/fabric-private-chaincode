@@ -343,6 +343,7 @@ func (e *StubImpl) GetLocalAttestationReport(spid []byte) ([]byte, []byte, error
 // and the current chaincode state as input and returns a new chaincode state
 func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error) {
 	var err error
+	var responseBytes []byte
 
 	if shimStub == nil {
 		return nil, nil, errors.New("Need shim")
@@ -414,14 +415,24 @@ func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInt
 		//	sig = nil
 		//}
 	} else {
-		err = fmt.Errorf("Invoke failed. Reason: %d", int(invoke_ret))
-		// TODO: ideally we would also sign error messages but would
-		// require including the error into the signature itself
-		// which has involves a rathole of changes, so defer to the
-		// time which design & refactor everything to be end-to-end
-		// secure ...
+		return nil, nil, fmt.Errorf("Invoke failed. Reason: %d", int(invoke_ret))
 	}
-	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, err
+	responseBytes = C.GoBytes(responsePtr, C.int(responseLenOut))
+	//return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, err
+
+	//ASSUME HERE we get the b64 encoded response protobuf, pull encrypted response out and return it
+	chaincodeResponseMessageProtoBytes, err := base64.StdEncoding.DecodeString(C.GoStringN((*C.char)(responsePtr), C.int(responseLenOut)))
+	if err != nil {
+		return nil, nil, fmt.Errorf("cannot decode b64 respose")
+	}
+	chaincodeResponseMessageProto := &fpcpb.ChaincodeResponseMessage{}
+	err = proto.Unmarshal(chaincodeResponseMessageProtoBytes, chaincodeResponseMessageProto)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unmarshal error")
+	}
+	responseBytes = chaincodeResponseMessageProto.EncryptedResponse
+
+	return responseBytes, sig, nil
 }
 
 // GetPublicKey returns the enclave ec public key
