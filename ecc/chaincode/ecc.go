@@ -180,7 +180,7 @@ func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) pb.Response
 		return shim.Error(err.Error())
 	}
 
-	return shim.Success(nil)
+	return shim.Success([]byte("OK")) // make sure we have a non-empty return on success so we can distinguish success from failure in cli ...
 }
 
 func ccParamsMatch(expected, actual *protos.CCParameters) bool {

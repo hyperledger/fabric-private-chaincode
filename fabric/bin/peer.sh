@@ -108,7 +108,7 @@ handle_lifecycle_chaincode_package() {
 		echo ""
 		echo "Flags for fpc-c chaincode:"
 		echo "  -s, --sgx-mode string                SGX-mode to run with"
-		exit 0 
+		exit 0
 		;;
 
 	    --clientauth)
@@ -211,7 +211,7 @@ handle_lifecycle_chaincode_install() {
 	    -h|--help)
 		# with help, no point to continue but run it right here ..
 		try $RUN ${FABRIC_BIN_DIR}/peer "${ARGS_EXEC[@]}"
-		exit 0 
+		exit 0
 		;;
 
 	    --clientauth)
@@ -248,7 +248,7 @@ handle_lifecycle_chaincode_install() {
 	#   - extract package id PKG_ID via queryinstalled
 	PKG_ID=$(${FABRIC_BIN_DIR}/peer lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_LABEL}:/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 	[ ! -z "${PKG_ID}" ] || die "Could not extract package id"
-	#   - remember this 
+	#   - remember this
 	try touch "${FABRIC_STATE_DIR}/is-fpc-c-package.${PKG_ID}"
     fi
 
@@ -268,7 +268,7 @@ handle_lifecycle_chaincode_approveformyorg() {
 		shift; shift
 		;;
 	    -n|--name)
-		CC_NAME=$2;
+		CC_ID=$2;
 		shift; shift
 		;;
 	    -v|--version)
@@ -309,7 +309,7 @@ handle_lifecycle_chaincode_approveformyorg() {
     # - iff it is fpc pkg
     if [ -f "${FABRIC_STATE_DIR}/is-fpc-c-package.${PKG_ID}" ]; then
 	    #  remember mapping
-	    try touch "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.${CC_VERSION}"
+	    try touch "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_ID}.${CC_VERSION}"
     fi
     # - exit (instead of below return, which would re-execute install)
     exit 0
@@ -322,7 +322,7 @@ handle_lifecycle_chaincode_checkcommitreadiness() {
     while [[ $# > 0 ]]; do
     case "$1" in
         -n|--name)
-        CC_NAME=$2;
+        CC_ID=$2;
         shift; shift
         ;;
         -v|--version)
@@ -348,7 +348,7 @@ handle_lifecycle_chaincode_checkcommitreadiness() {
     done
 
     # - iff it is fpc pkg
-    if [ -f "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.${CC_VERSION}" ]; then
+    if [ -f "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_ID}.${CC_VERSION}" ]; then
         # no endorsement plugin can be specified in FPC
         [ -z "${ENDORSEMENT_PLUGIN_NAME}" ] || die "Endorsement plugins are disabled for FPC chaincodes"
         # no validation plugin can be specified in FPC
@@ -368,7 +368,7 @@ handle_lifecycle_chaincode_commit() {
     while [[ $# > 0 ]]; do
 	case "$1" in
 	    -n|--name)
-		CC_NAME=$2;
+		CC_ID=$2;
 		shift; shift
 		;;
 	    -v|--version)
@@ -394,7 +394,7 @@ handle_lifecycle_chaincode_commit() {
     done
 
     # - iff it is fpc pkg
-    if [ -f "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.${CC_VERSION}" ]; then
+    if [ -f "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_ID}.${CC_VERSION}" ]; then
         # no endorsement plugin can be specified in FPC
         [ -z "${ENDORSEMENT_PLUGIN_NAME}" ] || die "Endorsement plugins are disabled for FPC chaincodes"
         # no validation plugin can be specified in FPC
@@ -413,36 +413,61 @@ handle_lifecycle_chaincode_initEnclave() {
     # - remember variables we might need later
     while [[ $# > 0 ]]; do
     case "$1" in
+	-h|--help)
+	    cat <<EOF
+Initialize enclave for fpc chaincode.
+
+Usage:
+	peer chaincode initEnclave [flags]
+
+Flags:
+  -n, --name string                    Name of the chaincode
+      --peerAddresses stringArray      The addresses of the peers to host to-be-initialized enclave
+  -s|--sgx-mode string                 SGX mode (HW or SIM).
+                                       (Can also be defined by 'SGX_MODE' environment variable)
+  -S|--sgx-credentials-path string     Path for sgx credentials.
+                                       (Can also be defined by 'SGX_CREDENTIALS_PATH' environment variable)
+  -C, --channelID string               The channel on which this command should be executed
+  -o|--orderer string 		       Ordering service endpoint
+  -h, --help                           help for invoke
+
+EOF
+	    exit 0
+	    ;;
         -n|--name)
-        CC_NAME=$2;
-        shift; shift
-        ;;
+            CC_ID=$2;
+            shift; shift
+            ;;
         -C|--channelID)
-        CHAN_ID=$2;
-        shift; shift
-        ;;
+            CHAN_ID=$2;
+            shift; shift
+            ;;
         -o|--orderer)
-        ORDERER_ADDR=$2;
-        shift; shift
-        ;;
-        -s|--sgx-credentials-path)
-        SGX_CREDENTIALS_PATH=$2
-        shift; shift
-        ;;
+            ORDERER_ADDR=$2;
+            shift; shift
+            ;;
+        -s|--sgx-mode)
+            SGX_MODE=$2
+            shift; shift
+            ;;
+        -S|--sgx-credentials-path)
+            SGX_CREDENTIALS_PATH=$2
+            shift; shift
+            ;;
         --peerAddresses)
-        PEER_ADDRESS=$2
-        shift; shift
-        ;;
+            PEER_ADDRESS=$2
+            shift; shift
+            ;;
         *)
-        die "initEnclave: invalid option"
-        ;;
+            die "initEnclave: invalid option"
+            ;;
         esac
     done
 
     if [ "${SGX_MODE}" = "SIM" ] ; then
         # set the default attestation params
         ATTESTATION_PARAMS=$(jq -c -n --arg atype "simulated" '{attestation_type: $atype}' | base64 --wrap=0)
-    else
+    elif [ "${SGX_MODE}" = "HW" ] ; then
         SPID_FILE_PATH="${SGX_CREDENTIALS_PATH}/spid.txt"
         SPID_TYPE_FILE_PATH="${SGX_CREDENTIALS_PATH}/spid_type.txt"
         [ -f "${SPID_FILE_PATH}" ] || die "no spid file ${SPID_FILE_PATH}"
@@ -450,6 +475,8 @@ handle_lifecycle_chaincode_initEnclave() {
         # set hw-mode attestation params
         # it is assumed that sig_rl is empty
         ATTESTATION_PARAMS=$(jq -c -n --arg atype "$(cat ${SPID_TYPE_FILE_PATH})" --arg spid "$(cat ${SPID_FILE_PATH})" --arg sig_rl "" '{attestation_type: $atype, hex_spid: $spid, sig_rl: $sig_rl}' | base64 --wrap=0)
+    else
+	die "illegal sgx mode '${SGX_MODE}', should be either 'SIM' or 'HW'"
     fi
 
     # peer address must be specified in initEnclave
@@ -459,39 +486,39 @@ handle_lifecycle_chaincode_initEnclave() {
     [ $(echo "${PEER_ADDRESS}" | awk -F":" '{print NF-1}') == 1 ] || die "one and only one port allowed"
 
     # - initEnclave can only be run on FPC chaincodes
-    FILES_NUM=$(ls -1 ${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_NAME}.* 2> /dev/null | wc -l) 
+    FILES_NUM=$(ls -1 ${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_ID}.* 2> /dev/null | wc -l)
     if [ ${FILES_NUM} -eq 0 ]; then
-        die "initEnclave: $CC_NAME is not written in language 'fpc-c'"
+        die "initEnclave: $CC_ID is not written in language 'fpc-c'"
     fi
 
     # create host params
-    HOST_PARAMS="${PEER_ADDRESS}"
+    PEER_ENDPOINT="${PEER_ADDRESS}"
 
     # create init enclave message
-    INIT_ENCLAVE_PROTO=$( (echo "peer_endpoint: \"${HOST_PARAMS}\""; echo "attestation_params: \"${ATTESTATION_PARAMS}\"") | protoc --encode fpc.InitEnclaveMessage --proto_path=${FPC_PATH}/protos/fpc --proto_path=${FPC_PATH}/protos/fabric ${FPC_PATH}/protos/fpc/fpc.proto | base64 --wrap=0)
+    INIT_ENCLAVE_PROTO=$( (echo "peer_endpoint: \"${PEER_ENDPOINT}\""; echo "attestation_params: \"${ATTESTATION_PARAMS}\"") | protoc --encode fpc.InitEnclaveMessage --proto_path=${FPC_PATH}/protos/fpc --proto_path=${FPC_PATH}/protos/fabric ${FPC_PATH}/protos/fpc/fpc.proto | base64 --wrap=0)
     [ -z ${INIT_ENCLAVE_PROTO} ] && die "init enclave proto is empty"
 
     # trigger initEnclave
-    try_out_r $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} --peerAddresses "${PEER_ADDRESS}" -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__initEnclave", "'${INIT_ENCLAVE_PROTO}'"]}'
-    B64CREDS=${RESPONSE}
-    [ -z ${B64CREDS} ] && die "initEnclave failed"
-    [ -z ${DEBUG+x} ] || say "initEnclave response (b64): ${B64CREDS}"
-    [ -z ${DEBUG+x} ] || say "initEnclave response (decoded): $(echo "${B64CREDS}" | base64 -d)"
+    try_out_r $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} --peerAddresses "${PEER_ADDRESS}" -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["__initEnclave", "'${INIT_ENCLAVE_PROTO}'"]}'
+    CC_CREDS_B64=${RESPONSE}
+    [ -z ${CC_CREDS_B64} ] && die "initEnclave failed"
+    [ -z ${DEBUG+x} ] || say "initEnclave response (b64): ${CC_CREDS_B64}"
+    [ -z ${DEBUG+x} ] || say "initEnclave response (decoded): $(echo "${CC_CREDS_B64}" | base64 -d)"
 
-    say "Convert credentials"
-    B64CONVCREDS=$(echo "${B64CREDS}" | ${PEER_ASSIST_CMD} attestation2Evidence) || die "could not convert credentials"
-    [ -z ${DEBUG+x} ] && say "initEnclave converted response (b64): ${B64CONVCREDS}"
+    echo "Convert credentials"
+    CC_CREDS_CONV_B64=$(echo "${CC_CREDS_B64}" | ${PEER_ASSIST_CMD} attestation2Evidence) || die "could not convert credentials"
+    [ -z ${DEBUG+x} ] && say "initEnclave converted response (b64): ${CC_CREDS_CONV_B64}"
 
-    say "Registering with Enclave Registry"
-    try $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${ERCC_ID} -c '{"Args":["RegisterEnclave", "'${B64CONVCREDS}'"]}' --waitForEvent
+    echo "Registering with Enclave Registry"
+    try $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${ERCC_ID} -c '{"Args":["RegisterEnclave", "'${CC_CREDS_CONV_B64}'"]}' --waitForEvent
 
     # NOTE: the chaincode encryption key is retrieved here for testing purposes
-    say "Querying Chaincode Encryption Key"
-    try_out_r $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${ERCC_ID} -c '{"Args":["QueryChaincodeEncryptionKey", "'${CC_NAME}'"]}'
-    B64CCEK="${RESPONSE}"
-    CCEK=$(echo ${B64CCEK} | base64 -d)
-    say "Chaincode EK (b64): ${B64CCEK}"
-    [ -z ${DEBUG+x} ] || say "Chaincode EK: ${CCEK}"
+    echo "Querying Chaincode Encryption Key"
+    try_out_r $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${ERCC_ID} -c '{"Args":["QueryChaincodeEncryptionKey", "'${CC_ID}'"]}'
+    CC_EK_B64="${RESPONSE}"
+    CC_EK=$(echo ${CC_EK_B64} | base64 -d)
+    echo "Chaincode EK (b64): ${CC_EK_B64}"
+    [ -z ${DEBUG+x} ] || say "Chaincode EK: ${CC_EK}"
 
     # - exit (otherwise main function will invoke operation again!)
     exit 0
@@ -500,13 +527,166 @@ handle_lifecycle_chaincode_initEnclave() {
 # Chaincode command wrappers
 #--------------------------------------------
 
+handle_chaincode_call() {
+    CMD=$1; shift
+
+    OTHER_ARGS=()
+    DO_HEX=0
+    DO_RAW=0
+    DO_WAIT=0
+    while [[ $# > 0 ]]; do
+        case "$1" in
+	    -h|--help)
+		return
+		;;
+	    -C|--channelID)
+		CHAN_ID=$2;
+		shift; shift
+		;;
+            --peerAddresses)
+		PEER_ADDRESS=$2
+		EXPLICIT_PEER=1
+		shift; shift
+		;;
+            -n|--name)
+                CC_ID=$2;
+                shift; shift
+                ;;
+            -c|--ctor)
+                CC_MSG=$2;
+                shift; shift
+                ;;
+	    -I|--isInit)
+                IS_INIT=$2;
+                shift; shift
+                ;;
+	    --transient)
+                TRANSIENT=$2;
+                shift; shift
+                ;;
+	    -x|--hex)
+                DO_HEX=1
+                shift
+                ;;
+	    -r|--raw)
+                DO_RAW=1
+                shift
+                ;;
+	    --waitForEvent)
+                DO_WAIT=1
+                shift
+		;;
+	    --waitForEventTimeout)
+                DO_WAIT_TIMEOUT=$1
+                shift
+		;;
+            *)
+		# these args we pass to both enclave query and validation invoke
+		# e.g., --clientauth, --(tls|ca|cert|key)*, --(conn*)*, --order*
+                OTHER_ARGS+=( "$1" )
+                shift
+                ;;
+            esac
+    done
+
+    # - iff it is not a fpc pkg
+    if [ ! -f "${FABRIC_STATE_DIR}/is-fpc-c-chaincode.${CC_ID}"* ]; then
+	[ -z ${DEBUG+x} ] || say "non-FPC chaincode"
+	return
+    else
+	[ -z ${DEBUG+x} ] || say "FPC chaincode"
+    fi
+
+    # - check for unsupported options $IS_INIT, $TRANSIENT
+    [ ${DO_HEX} ] || die "--hex/-x is not supported for for FPC chaincodes"
+    [ ${DO_RAW} ] || die "--raw/-r is not supported for for FPC chaincodes"
+    [ -z "${IS_INIT}" ] || die "--isInit/-I is not supported for for FPC chaincodes"
+    [ -z "${TRANSIENT}" ] || die "--transient is not supported for for FPC chaincodes"
+
+    # - query ercc.queryChaincodeEncryptionKey for chaincode encryption key
+    try_out_r $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${ERCC_ID} -c '{"Args":["QueryChaincodeEncryptionKey", "'${CC_ID}'"]}'
+    CC_EK_B64="${RESPONSE}"
+    [ -z ${CC_EK_B64} ] && die "looking up chaincode encryption key failed"
+    [ -z ${DEBUG+x} ] || say "Chaincode EK (b64): ${CC_EK_B64}"
+
+    # - if no endpoint specified, query ercc.queryChaincodeEndPoints for endpoint
+    if [ !${EXPLICIT_PEER} ]; then
+	try_out_r $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${ERCC_ID} -c '{"Args":["QueryChaincodeEndPoints", "'${CC_ID}'"]}'
+	PEER_ADDRESS="${RESPONSE}"
+	[ -z ${PEER_ADDRESS} ] && die "looking up peer endpoint failed"
+	[ -z ${DEBUG+x} ] || say "peer endpoint: ${PEER_ADDRESS}"
+    fi
+
+    # - start cli assist with input to fd 3 and output from fd 4, a fifo
+    [ -z ${DEBUG+x} ] || say "starting peer assist .."
+    result_pipe=$(mktemp -u -t peer_cli_assistXXXX)
+    mkfifo $result_pipe || die "can't create fifo '${result_pipe}'"
+    exec 3> >(${PEER_ASSIST_CMD} handleRequestAndResponse "${CC_EK_B64}" "${result_pipe}")
+    assist_pid=$!
+    exec 4<${result_pipe}
+
+    # - send clear-text request to assist
+    [ -z ${DEBUG+x} ] || say "sending cleartext request '${CC_MSG}' to peer assist .."
+    echo >&3 "${CC_MSG}"
+
+    # - receive encrypted request from assist
+    read <&4 encrypted_request
+    [ -z ${encrypted_request} ] && die "peer assist failed to produce encrypted request"
+    [ -z ${DEBUG+x} ] || say "received encrypted request '${encrypted_request}' from peer assist"
+
+    # - invoke function in enclave (as fabric query)
+    try_out_r $RUN ${FABRIC_BIN_DIR}/peer chaincode query --peerAddresses ${PEER_ADDRESS} "${OTHER_ARGS[@]}" -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["__invoke", "'${encrypted_request}'"]}'
+    encrypted_response="${RESPONSE}"
+    [ -z ${encrypted_response} ] && die "calling enclave failed"
+
+    # - send encrypted response to assist
+    [ -z ${DEBUG+x} ] || say "sending encrypted response '${encrypted_response}' to peer assist .."
+    echo >&3 "${encrypted_response}"
+
+    # - receive decrypted response from assist
+    read <&4 decrypted_response
+    [ -z ${decrypted_response} ] && die "peer assist failed to produce decrypted response"
+    [ -z ${DEBUG+x} ] || say "received decrypted response '${decrypted_response}' from peer assist"
+
+    # - get assist return code
+    wait ${assist_pid}
+    rc=$?
+    [ ${rc} == 0 ] || die "assist could not properly transform requests/responses (rc=${rc})"
+
+    # iff invoke (rather than query), cause endorsement flows
+    if [ ${CMD} == "invoke" ]; then
+	# - invoke validation of enclave endorsement
+	opt_arg=""
+	if [ ${EXPLICIT_PEER} ]; then
+	    opt_arg="--peerAddresses ${PEER_ADDRESS} ${opt_arg}"
+	fi
+	if [ ${DO_WAIT} == 1 ]; then
+	    opt_arg="--waitForEvent ${opt_arg}"
+	fi
+	if [ ! -z ${DO_WAIT_TIMEOUT+x} ]; then
+	    opt_arg="--waitForEvent ${opt_arg}"
+	fi
+	try_out_r $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke "${OTHER_ARGS[@]}" ${opt_arg} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["__endorse", "'${encrypted_response}'"]}'
+	endorse_response="${RESPONSE}"
+        [ ${endorse_response} == "OK" ] || die "endorsement failed: '${endorse_response}'"
+        [ -z ${DEBUG+x} ] || say "endorsement returned '${endorse_response}'"
+    fi
+    # - return decrypted response
+    #   TODO: post-processing once we return proper fabric response objects
+    #      As part of this, might also consider supporting -r/--raw and/or -x/--hex
+    #      (Note that strangely these options exist only for query, not invoke?!)
+    echo ${decrypted_response}
+
+    exit 0
+}
+
 handle_chaincode_invoke() {
-    # TODO: eventually add client-side encryption/decryption
+    handle_chaincode_call "invoke" "$@"
     return
 }
 
 handle_chaincode_query() {
-    # TODO: eventually add client-side encryption/decryption
+    handle_chaincode_call "query" "$@"
     return
 }
 
@@ -541,34 +721,34 @@ handle_channel_join() {
     ERCC_QUERY_INSTALL_LOG=${FABRIC_STATE_DIR}/ercc-query-install.$$.log
     ERCC_PATH="${FPC_PATH}/ercc"
     ERCC_TYPE="ercc-type"
-    say "Installing ercc on channel '${CHAN_ID}' ..."
-    say "Packaging ${ERCC_ID} ..."
+    echo "Installing ercc on channel '${CHAN_ID}' ..."
+    echo "Packaging ${ERCC_ID} ..."
     handle_lifecycle_ercc_package
     para
     sleep 3
-    say "Installing ${ERCC_ID} ..."
+    echo "Installing ${ERCC_ID} ..."
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode install ${ERCC_PACKAGE}
     para
     sleep 3
-    say "Querying installed chaincodes to find package id.."
+    echo "Querying installed chaincodes to find package id.."
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode queryinstalled >& ${ERCC_QUERY_INSTALL_LOG}
     para
     ERCC_PACKAGE_ID=$(awk "/Package ID: ${ERCC_LABEL}/{print}" ${ERCC_QUERY_INSTALL_LOG} | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
     [ ! -z "${ERCC_PACKAGE_ID}" ] || die "Could not extract package id"
-    say "Approve for my org"
+    echo "Approve for my org"
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --package-id ${ERCC_PACKAGE_ID} --sequence ${ERCC_SEQUENCE}
     para
     sleep 3
-    say "Checking for commit readiness"
+    echo "Checking for commit readiness"
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode checkcommitreadiness --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --sequence ${ERCC_SEQUENCE} --output json
     para
     sleep 3
-    say "Committing chaincode definition...."
+    echo "Committing chaincode definition...."
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode commit -o ${ORDERER_ADDR} --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --sequence ${ERCC_SEQUENCE}
     para
     sleep 3
     # Note: Below is not crucial but they do display potentially useful info and the second also is liveness-test for ercc
-    say "Query commited chaincodes on the channel"
+    echo "Query commited chaincodes on the channel"
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode querycommitted --channelID ${CHAN_ID}
     para
     sleep 3
