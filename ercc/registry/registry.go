@@ -37,7 +37,7 @@ func MyBeforeTransaction(ctx contractapi.TransactionContextInterface) error {
 	return nil
 }
 
-// returns a set of credentials registered for a given chaincode id
+// QueryListEnclaveCredentials returns a set of credentials registered for a given chaincode id
 // Note: to get the endpoints of FPC endorsing peers do the following:
 // - discover all endorsing peers (and their endpoints) for the FPC chaincode using "normal" lifecycle
 // - query `getEnclaveId` at all the peers discovered
@@ -70,29 +70,31 @@ func (rs *Contract) QueryListEnclaveCredentials(ctx contractapi.TransactionConte
 			return nil, err
 		}
 
-		allCredentials = append(allCredentials, base64.StdEncoding.EncodeToString(q.Value))
+		credentialsBase64 := string(q.Value)
+		allCredentials = append(allCredentials, credentialsBase64)
 	}
 
 	return allCredentials, nil
 }
 
+// QueryEnclaveCredentials returns credentials for a provided chaincode and enclave id
 func (rs *Contract) QueryEnclaveCredentials(ctx contractapi.TransactionContextInterface, chaincodeId string, enclaveId string) (string, error) {
 	key, err := ctx.GetStub().CreateCompositeKey("namespaces/credentials", []string{chaincodeId, enclaveId})
 	if err != nil {
 		return "", err
 	}
 
-	credentials, err := ctx.GetStub().GetState(key)
+	credentialsBase64, err := ctx.GetStub().GetState(key)
 	if err != nil {
 		return "", err
 	}
 
-	return base64.StdEncoding.EncodeToString(credentials), nil
+	return string(credentialsBase64), nil
 }
 
-// Optional Post-MVP;
-// returns a list of enclave ids of all provisioned enclaves for a given chaincode id. A provisioned enclave is a registered enclave
+// QueryListProvisionedEnclaves returns a list of enclave ids of all provisioned enclaves for a given chaincode id. A provisioned enclave is a registered enclave
 // that has also the chaincode decryption key.
+// Optional Post-MVP;
 func (rs *Contract) QueryListProvisionedEnclaves(ctx contractapi.TransactionContextInterface, chaincodeId string) ([]string, error) {
 
 	iter, err := ctx.GetStub().GetStateByPartialCompositeKey("namespaces/credentials", []string{chaincodeId})
@@ -135,9 +137,51 @@ func (rs *Contract) QueryListProvisionedEnclaves(ctx contractapi.TransactionCont
 	return enclaveIds, nil
 }
 
-// returns the chaincode encryption key for a given chaincode id
+// QueryChaincodeEndPoints returns the chaincode endpoints for given chaincode id
+// (if more than one, they are concatenated with a ",")
+func (rs *Contract) QueryChaincodeEndPoints(ctx contractapi.TransactionContextInterface, chaincodeId string) (string, error) {
+	iter, err := ctx.GetStub().GetStateByPartialCompositeKey("namespaces/credentials", []string{chaincodeId})
+	if iter != nil {
+		defer iter.Close()
+	}
+	if err != nil {
+		return "", err
+	}
+	if iter == nil {
+		// return empty list, no error
+		return "", nil
+	}
+
+	peerEndpoints := ""
+	for iter.HasNext() {
+		q, err := iter.Next()
+		if err != nil {
+			return "", err
+		}
+		credentialsBase64 := string(q.Value)
+		credentials, err := utils.UnmarshalCredentials(credentialsBase64)
+		if err != nil {
+			return "", err
+		}
+
+		endpoint, err := utils.ExtractEndpoint(credentials)
+		if err != nil {
+			return "", err
+		}
+
+		if peerEndpoints != "" {
+			peerEndpoints = peerEndpoints + "," + endpoint
+		} else {
+			peerEndpoints = endpoint
+		}
+	}
+	return peerEndpoints, nil
+}
+
+// QueryChaincodeEncryptionKey returns the chaincode encryption key for a given chaincode id
 func (rs *Contract) QueryChaincodeEncryptionKey(ctx contractapi.TransactionContextInterface, chaincodeId string) (string, error) {
-	//  NOTE: This is a (momentary) short-cut over the FPC and FPC Lite specification in `docs/design/fabric-v2+/fpc-registration.puml` and `docs/design/fabric-v2+/fpc-key-dist.puml`.  See also `common/enclave/cc_data.cpp` and `protos/fpc/fpc.proto`
+	// NOTE: This is a (momentary) short-cut over the FPC and FPC Lite specification in `docs/design/fabric-v2+/fpc-registration.puml` and `docs/design/fabric-v2+/fpc-key-dist.puml`.  See also `common/enclave/cc_data.cpp` and `protos/fpc/fpc.proto`
+	// TODO: remove short cut (see also RegisterEnclave and RegisterCCKeys (Post-MVP)
 
 	// retrieve the enclave id
 	iter, err := ctx.GetStub().GetStateByPartialCompositeKey("namespaces/credentials", []string{chaincodeId})
@@ -167,14 +211,14 @@ func (rs *Contract) QueryChaincodeEncryptionKey(ctx contractapi.TransactionConte
 	}
 
 	// get credentials from state
-	credentialBytes, err := ctx.GetStub().GetState(k)
+	credentialsBase64, err := ctx.GetStub().GetState(k)
 	if err != nil {
 		return "", err
 	}
 
 	// retrieve chaincode ek from credentials
-	var credentials protos.Credentials
-	if err := proto.Unmarshal(credentialBytes, &credentials); err != nil {
+	credentials, err := utils.UnmarshalCredentials(string(credentialsBase64))
+	if err != nil {
 		return "", err
 	}
 
@@ -192,7 +236,7 @@ func (rs *Contract) QueryChaincodeEncryptionKey(ctx contractapi.TransactionConte
 	return b64ChaincodeEK, nil
 }
 
-// register a new FPC chaincode enclave instance
+// RegisterEnclave register a new FPC chaincode enclave instance
 func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface, credentialsBase64 string) error {
 	logger.Debugf("RegisterEnclave")
 
@@ -249,8 +293,18 @@ func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface,
 	// All check passed, now register enclave
 	logger.Debugf("Registering credentials at key %s", key)
 
-	if err := ctx.GetStub().PutState(key, credentialBytes); err != nil {
+	if err := ctx.GetStub().PutState(key, []byte(credentialsBase64)); err != nil {
 		return fmt.Errorf("cannot store credentials: %s", err)
+	}
+
+	// Due to MVP short-cut (see QueryChaincodeEncryptionKey) we already declare chaincode/enclave as provisioned
+	// TODO: this has to go to RegisterCCKeys and ImportCCKeys (Post-MVP)
+	provisionedKey, err := ctx.GetStub().CreateCompositeKey("namespaces/provisioned", []string{chaincodeId, enclaveId})
+	if err != nil {
+		return fmt.Errorf("cannot create provisionedKey: %s", err)
+	}
+	if err := ctx.GetStub().PutState(provisionedKey, []byte("a SignedCCKeyRegistrationMessage")); err != nil {
+		return fmt.Errorf("cannot store provisionedKey: %s", err)
 	}
 
 	logger.Debugf("RegisterEnclave successful")
@@ -310,24 +364,25 @@ func checkAttestedData(ctx contractapi.TransactionContextInterface, v attestatio
 	return nil
 }
 
-// registers a CCKeyRegistration message that confirms that an enclave is provisioned with the chaincode encryption key.
+// RegisterCCKeys  registers a CCKeyRegistration message that confirms that an enclave is provisioned with the chaincode encryption key.
 // This method is used during the key generation and key distribution protocol. In particular, during key generation,
 // this call sets the chaincode_ek for a chaincode if no chaincode_ek is set yet.
 func (rs *Contract) RegisterCCKeys(ctx contractapi.TransactionContextInterface, ccKeyRegistrationMessageBase64 string) error {
-	// TODO: Implement me once we remove spec-short-cut,see QueryChaincodeEncryptionKey (Post-MVP)
+	// TODO: Implement me once we remove spec-short-cut,see QueryChaincodeEncryptionKey & RegisterEnclave (Post-MVP)
 
 	//input msg CCKeyRegistrationMessage
 
 	return fmt.Errorf("not implemented yet")
 }
 
-// key distribution (Post-MVP features)
+// PutKeyExport register key export (Post-MVP feature)
 func (rs *Contract) PutKeyExport(ctx contractapi.TransactionContextInterface, exportMessageBase64 string) error {
 	// input msg ExportMessage
 	// TODO implement me (Post-MVP)
 	return fmt.Errorf("not implemented yet")
 }
 
+// GetKeyExport retrieve key export (Post-MVP feature)
 func (rs *Contract) GetKeyExport(ctx contractapi.TransactionContextInterface, chaincodeId, enclaveId string) (string, error) {
 	//input chaincodeId string, enclaveId string
 	//return *ExportMessage or  error

@@ -9,10 +9,9 @@ package fpc
 
 import (
 	"encoding/base64"
-	"encoding/json"
+	"strings"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc/crypto"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )
@@ -97,31 +96,11 @@ func (c *contractState) Name() string {
 // An endpoint is a simple string with the format `host:port`
 func (c *contractState) getPeerEndpoints() ([]string, error) {
 	if len(c.peerEndpoints) == 0 {
-		resp, err := c.ercc.EvaluateTransaction("queryListEnclaveCredentials", c.Name())
+		resp, err := c.ercc.EvaluateTransaction("queryChaincodeEndPoints", c.Name())
 		if err != nil {
 			return nil, err
 		}
-
-		var credentialsList []string
-		err = json.Unmarshal(resp, &credentialsList)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, credentialsBase64 := range credentialsList {
-			credentials, err := utils.UnmarshalCredentials(credentialsBase64)
-			if err != nil {
-				return nil, err
-			}
-
-			endpoint, err := utils.ExtractEndpoint(credentials)
-			if err != nil {
-				return nil, err
-			}
-
-			c.peerEndpoints = append(c.peerEndpoints, endpoint)
-		}
-
+		c.peerEndpoints = strings.Split(string(resp), ",")
 	}
 	return c.peerEndpoints, nil
 }
@@ -179,6 +158,9 @@ func (c *contractState) SubmitTransaction(name string, args ...string) ([]byte, 
 
 	// call __invoke
 	encryptedResponse, err := c.evaluateTransaction(encryptedRequest)
+	if err != nil {
+		return nil, err
+	}
 
 	logger.Debugf("calling __endorse!")
 	_, err = c.contract.SubmitTransaction("__endorse", base64.StdEncoding.EncodeToString(encryptedResponse))
