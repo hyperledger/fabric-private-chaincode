@@ -92,7 +92,7 @@ func TestEnclaveStub_Invoke(t *testing.T) {
 	// start without binding
 	stub.Bind(nil, nil)
 
-	_, _, err = stub.Invoke(nil, nil, nil, nil)
+	_, err = stub.Invoke(nil, nil)
 	if err == nil {
 		t.Fatalf("error expected")
 	}

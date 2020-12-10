@@ -29,7 +29,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
-	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/tlcc"
+	//"github.com/hyperledger-labs/fabric-private-chaincode/ecc/tlcc"
 	fpcpb "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	utils "github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
@@ -85,7 +85,7 @@ const ENCLAVE_TCS_NUM = 8
 // just a container struct used for the callbacks
 type Stubs struct {
 	shimStub shim.ChaincodeStubInterface
-	tlccStub tlcc.TLCCStub
+	//tlccStub tlcc.TLCCStub
 }
 
 // have a global registry
@@ -257,7 +257,7 @@ type Stub interface {
 	// Return report and enclave PK in DER-encoded PKIX format
 	GetLocalAttestationReport(targetInfo []byte) ([]byte, []byte, error)
 	// Invoke chaincode
-	Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error)
+	Invoke(args []byte, shimStub shim.ChaincodeStubInterface) ([]byte, error)
 	// Returns enclave PK in DER-encoded PKIX formatk
 	GetPublicKey() ([]byte, error)
 	// Creates an enclave from a given enclave lib file
@@ -341,16 +341,16 @@ func (e *StubImpl) GetLocalAttestationReport(spid []byte) ([]byte, []byte, error
 
 // invoke calls the enclave for transaction processing, takes arguments
 // and the current chaincode state as input and returns a new chaincode state
-func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error) {
+func (e *StubImpl) Invoke(args []byte, shimStub shim.ChaincodeStubInterface) ([]byte, error) {
 	var err error
 	var responseBytes []byte
 
 	if shimStub == nil {
-		return nil, nil, errors.New("Need shim")
+		return nil, errors.New("Need shim")
 	}
 
 	// index := Register(Stubs{shimStub, tlccStub})
-	index := registry.Register(&Stubs{shimStub, tlccStub})
+	index := registry.Register(&Stubs{shimStub})
 	defer registry.Release(index)
 	// defer Release(index)
 	ctx := unsafe.Pointer(&index)
@@ -358,10 +358,6 @@ func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInt
 	// args
 	b64ChaincodeRequestMessagePtr := C.CString(string(args))
 	defer C.free(unsafe.Pointer(b64ChaincodeRequestMessagePtr))
-
-	// client pk used for args encryption
-	pkPtr := C.CString(string(pk))
-	defer C.free(unsafe.Pointer(pkPtr))
 
 	// response
 	responseLenOut := C.uint32_t(0) // We pass maximal length separatedly; set to zero so we can detect valid responses
@@ -375,11 +371,11 @@ func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInt
 	// get signed proposal
 	signedProposal, err := shimStub.GetSignedProposal()
 	if err != nil {
-		return nil, nil, fmt.Errorf("cannot get signed proposal")
+		return nil, fmt.Errorf("cannot get signed proposal")
 	}
 	signedProposalBytes, err := proto.Marshal(signedProposal)
 	if err != nil {
-		return nil, nil, fmt.Errorf("cannot get signed proposal bytes")
+		return nil, fmt.Errorf("cannot get signed proposal bytes")
 	}
 	signedProposalPtr := C.CBytes(signedProposalBytes)
 	defer C.free(unsafe.Pointer(signedProposalPtr))
@@ -390,11 +386,10 @@ func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInt
 	}
 	crmProtoBytes, err := proto.Marshal(crmProto)
 	if err != nil {
-		return nil, nil, fmt.Errorf("marshal error")
+		return nil, fmt.Errorf("marshal error")
 	}
-	logger.Debugf("crmProtoBytes: %s", string(crmProtoBytes))
 	b64crm := base64.StdEncoding.EncodeToString(crmProtoBytes)
-	C.free(unsafe.Pointer(b64ChaincodeRequestMessagePtr))
+	//C.free(unsafe.Pointer(b64ChaincodeRequestMessagePtr))
 	b64ChaincodeRequestMessagePtr = C.CString(b64crm)
 	//REMOVE BLOCK ABOVE ONCE ARGS is the protobuf
 
@@ -404,18 +399,12 @@ func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInt
 		(*C.uint8_t)(signedProposalPtr),
 		C.uint32_t(len(signedProposalBytes)),
 		b64ChaincodeRequestMessagePtr,
+		C.uint32_t(len(b64crm)),
 		(*C.uint8_t)(responsePtr), C.uint32_t(MAX_RESPONSE_SIZE), &responseLenOut,
 		ctx)
 	e.sem.Release(1)
-	// Note: we do try to return the response in all cases, even then there is an error ...
-	var sig []byte = nil
-	if invoke_ret == 0 {
-		//sig, err = crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
-		//if err != nil {
-		//	sig = nil
-		//}
-	} else {
-		return nil, nil, fmt.Errorf("Invoke failed. Reason: %d", int(invoke_ret))
+	if invoke_ret != 0 {
+		return nil, fmt.Errorf("Invoke failed. Reason: %d", int(invoke_ret))
 	}
 	responseBytes = C.GoBytes(responsePtr, C.int(responseLenOut))
 	//return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, err
@@ -423,34 +412,21 @@ func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInt
 	//ASSUME HERE we get the b64 encoded response protobuf, pull encrypted response out and return it
 	chaincodeResponseMessageProtoBytes, err := base64.StdEncoding.DecodeString(C.GoStringN((*C.char)(responsePtr), C.int(responseLenOut)))
 	if err != nil {
-		return nil, nil, fmt.Errorf("cannot decode b64 respose")
+		return nil, fmt.Errorf("cannot decode b64 respose")
 	}
 	chaincodeResponseMessageProto := &fpcpb.ChaincodeResponseMessage{}
 	err = proto.Unmarshal(chaincodeResponseMessageProtoBytes, chaincodeResponseMessageProto)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unmarshal error")
+		return nil, fmt.Errorf("unmarshal error")
 	}
 	responseBytes = chaincodeResponseMessageProto.EncryptedResponse
 
-	return responseBytes, sig, nil
+	return responseBytes, nil
 }
 
 // GetPublicKey returns the enclave ec public key
 func (e *StubImpl) GetPublicKey() ([]byte, error) {
-	// pubkey
-	pubkeyPtr := C.malloc(PUB_KEY_SIZE)
-	defer C.free(pubkeyPtr)
-
-	e.sem.Acquire(context.Background(), 1)
-	// call enclave
-	ret := C.sgxcc_get_pk(e.eid, (*C.ec256_public_t)(pubkeyPtr))
-	e.sem.Release(1)
-	if ret != 0 {
-		return nil, fmt.Errorf("C.sgxcc_get_pk failed. Reason: %d", int(ret))
-	}
-
-	// convert sgx format to DER-encoded PKIX format
-	return crypto.MarshalEnclavePk(C.GoBytes(pubkeyPtr, C.int(PUB_KEY_SIZE)))
+	return nil, fmt.Errorf("GetPublicKey disabled")
 }
 
 // Create starts a new enclave instance

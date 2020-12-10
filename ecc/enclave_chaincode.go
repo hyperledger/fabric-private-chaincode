@@ -370,27 +370,26 @@ func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response 
 
 	logger.Debugf("json args: %s", jsonArgs)
 
-	pk := []byte(nil) // we don't really support a secure channel to the client yet ..
-	// TODO: one of the place to fix when integrating end-to-end secure channel to client
+	//pk := []byte(nil) // we don't really support a secure channel to the client yet ..
+	//// TODO: one of the place to fix when integrating end-to-end secure channel to client
 
 	// call enclave
 	var errMsg string
-	b64ChaincodeResponseMessage, signature, errInvoke := t.enclave.Invoke(jsonArgs, pk, stub, t.tlccStub)
-	_ = signature
+	b64ChaincodeResponseMessage, errInvoke := t.enclave.Invoke(jsonArgs, stub)
 	if errInvoke != nil {
 		errMsg = fmt.Sprintf("t.enclave.Invoke failed: %s", errInvoke)
 		logger.Errorf(errMsg)
 		// likely a chaincode error, so we stil want response go back ...
 	}
 
-	enclavePk, errPk := t.enclave.GetPublicKey()
-	if errPk != nil {
-		errMsg = fmt.Sprintf("invoke t.enclave.GetPublicKey failed. Reason: %s", err)
-		logger.Errorf(errMsg)
-		// return (and ignore any potential response) as this is a more systematic error
-		return shim.Error(errMsg)
-	}
-	_ = enclavePk
+	//enclavePk, errPk := t.enclave.GetPublicKey()
+	//if errPk != nil {
+	//	errMsg = fmt.Sprintf("invoke t.enclave.GetPublicKey failed. Reason: %s", err)
+	//	logger.Errorf(errMsg)
+	//	// return (and ignore any potential response) as this is a more systematic error
+	//	return shim.Error(errMsg)
+	//}
+	//_ = enclavePk
 
 	//fpcResponse := &utils.Response{
 	//	ResponseData: responseData,
@@ -421,22 +420,7 @@ func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response 
 // getEnclavePk -
 // ============================================================
 func (t *EnclaveChaincode) getEnclavePk(stub shim.ChaincodeStubInterface) pb.Response {
-	// check if we have an enclave already
-	if t.enclave == nil {
-		return shim.Error("ecc: Enclave not initialized! Run setup first!")
-	}
-
-	// get enclaves public key
-	enclavePk, err := t.enclave.GetPublicKey()
-	if err != nil {
-		errMsg := fmt.Sprintf("getEnclavePk t.enclave.GetPublicKey failed. Reason: %s", err)
-		logger.Errorf(errMsg)
-		return shim.Error(errMsg)
-	}
-
-	// marshal response
-	responseBytes, _ := json.Marshal(&utils.Response{PublicKey: enclavePk})
-	return shim.Success(responseBytes)
+	return shim.Error("ecc:  getEnclavePk disabled")
 }
 
 // TODO: check if Destroy is called

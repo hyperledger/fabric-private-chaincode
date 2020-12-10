@@ -36,6 +36,7 @@ int sgxcc_invoke(enclave_id_t eid,
     uint8_t* signed_proposal_proto_bytes,
     uint32_t signed_proposal_proto_bytes_len,
     const char* b64_chaincode_request_message,
+    uint32_t b64_chaincode_request_message_len,
     uint8_t* b64_chaincode_response_message,
     uint32_t b64_chaincode_response_message_len_in,
     uint32_t* b64_chaincode_response_message_len_out,
@@ -44,8 +45,8 @@ int sgxcc_invoke(enclave_id_t eid,
     int enclave_ret = SGX_ERROR_UNEXPECTED;
     int ret = ecall_cc_invoke(eid, &enclave_ret, signed_proposal_proto_bytes,
         signed_proposal_proto_bytes_len, b64_chaincode_request_message,
-        b64_chaincode_response_message, b64_chaincode_response_message_len_in,
-        b64_chaincode_response_message_len_out,
+        b64_chaincode_request_message_len, b64_chaincode_response_message,
+        b64_chaincode_response_message_len_in, b64_chaincode_response_message_len_out,
         ctx);  // context for callback
     CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(ret)
     CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(enclave_ret)

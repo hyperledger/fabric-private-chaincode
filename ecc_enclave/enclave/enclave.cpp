@@ -218,12 +218,14 @@ bool crypto_created = false;
 int ecall_cc_invoke(uint8_t* signed_proposal_proto_bytes,
     uint32_t signed_proposal_proto_bytes_len,
     const char* b64_chaincode_request_message,
+    uint32_t b64_chaincode_request_message_len,
     uint8_t* b64_chaincode_response_message,
     uint32_t b64_chaincode_response_message_len_in,
     uint32_t* b64_chaincode_response_message_len_out,
     void* u_shim_ctx)
 {
-    LOG_DEBUG("ecall_cc_invoke: \tArgs: %s", b64_chaincode_request_message);
+    LOG_DEBUG("ecall_cc_invoke");
+    LOG_DEBUG("b64_chaincode_request_message: %s", b64_chaincode_request_message);
 
     LOG_DEBUG("signed proposal length %u", signed_proposal_proto_bytes_len);
 
@@ -265,9 +267,10 @@ int ecall_cc_invoke(uint8_t* signed_proposal_proto_bytes,
         pb_istream_t istream;
 
         // base64 decode message
-        LOG_DEBUG("decoding message");
         std::string decoded_crm;
-        decoded_crm = base64_decode(b64_chaincode_request_message);
+        std::string b64_chaincode_request_message_str(
+            b64_chaincode_request_message, b64_chaincode_request_message_len);
+        decoded_crm = base64_decode(b64_chaincode_request_message_str);
 
         // set stream
         istream =
@@ -275,9 +278,9 @@ int ecall_cc_invoke(uint8_t* signed_proposal_proto_bytes,
 
         b = pb_decode(&istream, fpc_ChaincodeRequestMessage_fields, &cc_request_message);
         COND2LOGERR(!b, PB_GET_ERROR(&istream));
+        COND2LOGERR(cc_request_message.encrypted_request->size == 0, "zero size request");
 
-        LOG_DEBUG("struct decoded, inner bytes field length %d",
-            cc_request_message.encrypted_request->size);
+        // cc_request_message.encrypted_request->size);
         ctx.encoded_args = (const char*)cc_request_message.encrypted_request->bytes;
 
         // the dynamic memory in the message is release at the end
@@ -285,11 +288,7 @@ int ecall_cc_invoke(uint8_t* signed_proposal_proto_bytes,
 
     ctx.json_args = ctx.encoded_args;
     ret = invoke(response, response_len, &response_len_out, &ctx);
-
-    if (ret != 0)
-    {
-        return SGX_ERROR_UNEXPECTED;
-    }
+    COND2ERR(ret != 0);
 
     b64_response = base64_encode((const unsigned char*)response, response_len_out);
 
@@ -329,8 +328,8 @@ int ecall_cc_invoke(uint8_t* signed_proposal_proto_bytes,
 
         ret = memcpy_s(b64_chaincode_response_message, b64_chaincode_response_message_len_in,
             b64_crm_proto.c_str(), b64_crm_proto.length());
-
         COND2LOGERR(ret != 0, "cannot copy to response");
+
         //*b64_chaincode_response_message_len_out = b64_response.length();
         *b64_chaincode_response_message_len_out = b64_crm_proto.length();
     }
@@ -339,8 +338,9 @@ int ecall_cc_invoke(uint8_t* signed_proposal_proto_bytes,
 
     pb_release(fpc_ChaincodeRequestMessage_fields, &cc_request_message);
 
-    return ret;
+    return 0;
 
 err:
+    *b64_chaincode_response_message_len_out = 0;
     return SGX_ERROR_UNEXPECTED;
 }
