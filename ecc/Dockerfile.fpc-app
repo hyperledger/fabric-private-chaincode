@@ -7,14 +7,13 @@
 #   Docker image for a particular fpc chaincode
 #
 #  Configuration (build) paramaters (for defaults, see below section with ARGs)
-#  - extension identifying sgx mode and attestation type:       BOILERPLATE_EXTENSION
 #  - fpc image version:                                         FPC_VERSION
 #  - path to directory containing chaincode's enclave.so:       enclave_so_path
 
 ARG BOILERPLATE_EXTENSION
 ARG FPC_VERSION=latest
 
-FROM hyperledger/fabric-private-chaincode-boilerplate-ecc${BOILERPLATE_EXTENSION}:${FPC_VERSION}
+FROM hyperledger/fabric-private-chaincode-boilerplate-ecc:${FPC_VERSION}
 
 ARG enclave_so_path
 
@@ -22,7 +21,7 @@ ARG enclave_so_path
 ARG CC_PATH="/usr/local/bin"
 ARG CC_LIB_PATH=${CC_PATH}"/enclave/lib"
 
-RUN test -n "$enclave_so_path" 
+RUN test -n "$enclave_so_path"
 
 copy ${enclave_so_path}/enclave.signed.so ${CC_LIB_PATH}/
 

@@ -6,13 +6,15 @@ We provide fabric-samples as a submodule in `$FPC_PATH/integration/test-network/
 
 Make sure you have installed [yq](https://github.com/mikefarah/yq).
 
-Before you start the network make sure you build ercc and ecc_mock. In
+Before you start the network make sure you build ercc and ecc. In
 
 ```bash
 cd $FPC_PATH/ercc
 make && make docker
 
-cd $FPC_PATH/ecc_mock
+cd $FPC_PATH/ecc
+export DOCKER_IMAGE=fpc/fpc-echo
+export DOCKER_ENCLAVE_SO_PATH=examples/echo/_build/lib
 make && make docker
 ```
 

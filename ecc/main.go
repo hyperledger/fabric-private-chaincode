@@ -10,7 +10,7 @@ package main
 import (
 	"os"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/ecc_mock/chaincode"
+	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/chaincode"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric/common/flogging"
 )

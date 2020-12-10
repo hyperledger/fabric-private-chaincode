@@ -24,12 +24,12 @@ import (
 	"github.com/hyperledger/fabric/protoutil"
 )
 
-type MockEnclave struct {
+type MockEnclaveStub struct {
 	privateKey *ecdsa.PrivateKey
 	enclaveId  string
 }
 
-func (m *MockEnclave) Init(serializedChaincodeParams, serializedHostParamsBytes, serializedAttestationParams []byte) ([]byte, error) {
+func (m *MockEnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBytes, serializedAttestationParams []byte) ([]byte, error) {
 
 	hostParams := &protos.HostParameters{}
 	err := proto.Unmarshal(serializedHostParamsBytes, hostParams)
@@ -75,19 +75,19 @@ func (m *MockEnclave) Init(serializedChaincodeParams, serializedHostParamsBytes,
 	return proto.Marshal(credentials)
 }
 
-func (m MockEnclave) GenerateCCKeys() (*protos.SignedCCKeyRegistrationMessage, error) {
+func (m MockEnclaveStub) GenerateCCKeys() (*protos.SignedCCKeyRegistrationMessage, error) {
 	panic("implement me")
 }
 
-func (m MockEnclave) ExportCCKeys(credentials *protos.Credentials) (*protos.SignedExportMessage, error) {
+func (m MockEnclaveStub) ExportCCKeys(credentials *protos.Credentials) (*protos.SignedExportMessage, error) {
 	panic("implement me")
 }
 
-func (m MockEnclave) ImportCCKeys() (*protos.SignedCCKeyRegistrationMessage, error) {
+func (m MockEnclaveStub) ImportCCKeys() (*protos.SignedCCKeyRegistrationMessage, error) {
 	panic("implement me")
 }
 
-func (m *MockEnclave) GetEnclaveId() (string, error) {
+func (m *MockEnclaveStub) GetEnclaveId() (string, error) {
 	pubBytes, err := x509.MarshalPKIXPublicKey(m.privateKey.Public())
 	if err != nil {
 		return "", err
@@ -96,7 +96,7 @@ func (m *MockEnclave) GetEnclaveId() (string, error) {
 	return hex.EncodeToString(hash[:]), nil
 }
 
-func (m *MockEnclave) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte, error) {
+func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte, error) {
 	logger.Debug("ChaincodeInvoke")
 
 	signedProposal, err := stub.GetSignedProposal()

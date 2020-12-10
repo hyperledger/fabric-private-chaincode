@@ -21,6 +21,3 @@ clean:
 	rm -rf $(BUILD_DIR)
 	rm -f enclave/*_t.*
 	rm -f sgxcclib/*_u.*
-
-docker:
-	$(DOCKER) build -t fpc/ecc_enclave .
