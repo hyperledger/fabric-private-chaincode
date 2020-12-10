@@ -290,7 +290,8 @@ func TestQueryListEnclaveCredentials(t *testing.T) {
 	stateQueryIterator = &fakes.StateQueryIterator{}
 	stateQueryIterator.HasNextReturnsOnCall(0, true)
 	stateQueryIterator.HasNextReturnsOnCall(1, false)
-	stateQueryIterator.NextReturns(&queryresult.KV{Value: []byte("some item")}, nil)
+	value := []byte(base64.StdEncoding.EncodeToString([]byte("some item")))
+	stateQueryIterator.NextReturns(&queryresult.KV{Value: value}, nil)
 	chaincodeStub.GetStateByPartialCompositeKeyReturns(stateQueryIterator, nil)
 	resp, err = ercc.QueryListEnclaveCredentials(transactionContext, chaincodeId)
 	require.Contains(t, resp, base64.StdEncoding.EncodeToString([]byte("some item")))
@@ -300,12 +301,14 @@ func TestQueryListEnclaveCredentials(t *testing.T) {
 	stateQueryIterator.HasNextReturnsOnCall(0, true)
 	stateQueryIterator.HasNextReturnsOnCall(1, true)
 	stateQueryIterator.HasNextReturnsOnCall(2, false)
-	stateQueryIterator.NextReturnsOnCall(0, &queryresult.KV{Value: []byte("some item-1")}, nil)
-	stateQueryIterator.NextReturnsOnCall(1, &queryresult.KV{Value: []byte("some item-2")}, nil)
+	value1 := []byte(base64.StdEncoding.EncodeToString([]byte("some item-1")))
+	value2 := []byte(base64.StdEncoding.EncodeToString([]byte("some item-2")))
+	stateQueryIterator.NextReturnsOnCall(0, &queryresult.KV{Value: value1}, nil)
+	stateQueryIterator.NextReturnsOnCall(1, &queryresult.KV{Value: value2}, nil)
 	chaincodeStub.GetStateByPartialCompositeKeyReturns(stateQueryIterator, nil)
 	resp, err = ercc.QueryListEnclaveCredentials(transactionContext, chaincodeId)
 	require.Contains(t, resp, base64.StdEncoding.EncodeToString([]byte("some item-1")))
-	require.Contains(t, resp, base64.StdEncoding.EncodeToString([]byte("some item-1")))
+	require.Contains(t, resp, base64.StdEncoding.EncodeToString([]byte("some item-2")))
 	require.Equal(t, len(resp), 2)
 	require.NoError(t, err)
 }
@@ -336,7 +339,7 @@ func TestQueryEnclaveCredentials(t *testing.T) {
 
 	chaincodeStub.GetStateReturns([]byte("credentialBytes"), nil)
 	resp, err = ercc.QueryEnclaveCredentials(transactionContext, chaincodeId, enclaveId)
-	require.Equal(t, resp, base64.StdEncoding.EncodeToString([]byte("credentialBytes")))
+	require.Equal(t, resp, "credentialBytes")
 	require.NoError(t, err)
 
 	chaincodeStub.GetStateReturns(nil, nil)
