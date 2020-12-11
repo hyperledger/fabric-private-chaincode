@@ -15,11 +15,6 @@ import (
 	"github.com/hyperledger/fabric/common/flogging"
 )
 
-type serverConfig struct {
-	CCID    string
-	Address string
-}
-
 var logger = flogging.MustGetLogger("ecc")
 
 func main() {
@@ -28,27 +23,36 @@ func main() {
 	// For more fine grained logging we could also use different log level for loggers.
 	// For example: FABRIC_LOGGING_SPEC=ecc=DEBUG:ecc_enclave=ERROR
 
-	// See chaincode.env.example
-	config := serverConfig{
-		CCID:    os.Getenv("CHAINCODE_PKG_ID"),
-		Address: os.Getenv("CHAINCODE_SERVER_ADDRESS"),
-	}
-
 	// create enclave chaincode
 	ecc := chaincode.NewChaincodeEnclave()
 
-	server := &shim.ChaincodeServer{
-		CCID:    config.CCID,
-		Address: config.Address,
-		CC:      ecc,
-		TLSProps: shim.TLSProperties{
-			Disabled: true,
-		},
-	}
+	ccid := os.Getenv("CHAINCODE_PKG_ID")
+	addr := os.Getenv("CHAINCODE_SERVER_ADDRESS")
 
-	logger.Infof("starting fpc chaincode (%s)", config.CCID)
+	if len(ccid) > 0 && len(addr) > 0 {
+		// start chaincode as a service
+		server := &shim.ChaincodeServer{
+			CCID:    ccid,
+			Address: addr,
+			CC:      ecc,
+			TLSProps: shim.TLSProperties{
+				Disabled: true,
+			},
+		}
 
-	if err := server.Start(); err != nil {
-		logger.Panicf("error starting fpc chaincode: %s", err)
+		logger.Infof("starting fpc chaincode (%s)", ccid)
+
+		if err := server.Start(); err != nil {
+			logger.Panicf("error starting fpc chaincode: %s", err)
+		}
+	} else if len(ccid) == 0 && len(addr) == 0 {
+		// start the chaincode in the traditional way
+
+		logger.Info("starting enclave registry")
+		if err := shim.Start(ecc); err != nil {
+			logger.Panicf("Error starting fpc chaincode: %v", err)
+		}
+	} else {
+		logger.Panicf("invalid input parameters")
 	}
 }

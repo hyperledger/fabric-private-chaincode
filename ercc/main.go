@@ -17,11 +17,6 @@ import (
 	"github.com/hyperledger/fabric/common/flogging"
 )
 
-type serverConfig struct {
-	CCID    string
-	Address string
-}
-
 var logger = flogging.MustGetLogger("ercc")
 
 func main() {
@@ -45,21 +40,16 @@ func main() {
 
 	if len(ccid) > 0 && len(addr) > 0 {
 		// start chaincode as a service
-		config := serverConfig{
+		server := &shim.ChaincodeServer{
 			CCID:    ccid,
 			Address: addr,
-		}
-
-		server := &shim.ChaincodeServer{
-			CCID:    config.CCID,
-			Address: config.Address,
 			CC:      ercc,
 			TLSProps: shim.TLSProperties{
 				Disabled: true,
 			},
 		}
 
-		logger.Infof("starting enclave registry (%s)", config.CCID)
+		logger.Infof("starting enclave registry (%s)", ccid)
 
 		if err := server.Start(); err != nil {
 			logger.Panicf("error starting enclave registry chaincode: %s", err)
