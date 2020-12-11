@@ -61,22 +61,22 @@ type Stubs struct {
 }
 
 // have a global registry
-var registry = NewRegistry()
+var registry = newRegistry()
 
 // used to store shims for callbacks
-type Registry struct {
+type stubRegistry struct {
 	sync.RWMutex
 	index    int
 	internal map[int]*Stubs
 }
 
-func NewRegistry() *Registry {
-	return &Registry{
+func newRegistry() *stubRegistry {
+	return &stubRegistry{
 		internal: make(map[int]*Stubs),
 	}
 }
 
-func (r *Registry) Register(stubs *Stubs) int {
+func (r *stubRegistry) register(stubs *Stubs) int {
 	r.Lock()
 	defer r.Unlock()
 	r.index++
@@ -84,13 +84,13 @@ func (r *Registry) Register(stubs *Stubs) int {
 	return r.index
 }
 
-func (r *Registry) Release(i int) {
+func (r *stubRegistry) release(i int) {
 	r.Lock()
 	delete(r.internal, i)
 	r.Unlock()
 }
 
-func (r *Registry) Get(i int) *Stubs {
+func (r *stubRegistry) get(i int) *Stubs {
 	r.RLock()
 	stubs, ok := r.internal[i]
 	r.RUnlock()
@@ -102,7 +102,7 @@ func (r *Registry) Get(i int) *Stubs {
 
 //export get_creator_name
 func get_creator_name(msp_id *C.char, max_msp_id_len C.uint32_t, dn *C.char, max_dn_len C.uint32_t, ctx unsafe.Pointer) {
-	stubs := registry.Get(*(*int)(ctx))
+	stubs := registry.get(*(*int)(ctx))
 
 	// TODO (eventually): replace/simplify below via ext.ClientIdentity,
 	// should also make it easier to eventually return more than only
@@ -137,7 +137,7 @@ func get_creator_name(msp_id *C.char, max_msp_id_len C.uint32_t, dn *C.char, max
 
 //export get_state
 func get_state(key *C.char, val *C.uint8_t, max_val_len C.uint32_t, val_len *C.uint32_t, ctx unsafe.Pointer) {
-	stubs := registry.Get(*(*int)(ctx))
+	stubs := registry.get(*(*int)(ctx))
 
 	// check if composite key
 	key_str := C.GoString(key)
@@ -164,7 +164,7 @@ func get_state(key *C.char, val *C.uint8_t, max_val_len C.uint32_t, val_len *C.u
 
 //export put_state
 func put_state(key *C.char, val unsafe.Pointer, val_len C.int, ctx unsafe.Pointer) {
-	stubs := registry.Get(*(*int)(ctx))
+	stubs := registry.get(*(*int)(ctx))
 
 	// check if composite key
 	key_str := C.GoString(key)
@@ -180,7 +180,7 @@ func put_state(key *C.char, val unsafe.Pointer, val_len C.int, ctx unsafe.Pointe
 
 //export get_state_by_partial_composite_key
 func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max_values_len C.uint32_t, values_len *C.uint32_t, ctx unsafe.Pointer) {
-	stubs := registry.Get(*(*int)(ctx))
+	stubs := registry.get(*(*int)(ctx))
 
 	// split and get a proper composite key
 	comp := utils.SplitFPCCompositeKey(C.GoString(comp_key))

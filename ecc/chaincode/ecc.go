@@ -97,11 +97,6 @@ func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Resp
 }
 
 func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	// check if we have an enclave already
-	if t.enclave == nil {
-		return shim.Error("ecc: Enclave not initialized! Run setup first!")
-	}
-
 	// call enclave
 	var errMsg string
 	b64ChaincodeResponseMessage, errInvoke := t.enclave.ChaincodeInvoke(stub)

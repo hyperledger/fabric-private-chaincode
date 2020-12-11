@@ -36,8 +36,9 @@ const enclaveLibFile = "enclave/lib/enclave.signed.so"
 const maxResponseSize = 1024 * 100 // Let's be really conservative ...
 
 type EnclaveStub struct {
-	eid C.enclave_id_t
-	sem *semaphore.Weighted
+	eid           C.enclave_id_t
+	sem           *semaphore.Weighted
+	isInitialized bool
 }
 
 // NewEnclave starts a new enclave
@@ -46,6 +47,10 @@ func NewEnclaveStub() StubInterface {
 }
 
 func (e *EnclaveStub) Init(chaincodeParams, hostParams, attestationParams []byte) ([]byte, error) {
+	if e.isInitialized {
+		return nil, fmt.Errorf("enclave already initialized")
+	}
+
 	var eid C.enclave_id_t
 
 	// prepare output buffer for credentials
@@ -80,6 +85,8 @@ func (e *EnclaveStub) Init(chaincodeParams, hostParams, attestationParams []byte
 	e.eid = eid
 	e.sem.Release(1)
 	logger.Infof("Enclave created with eid=%d", e.eid)
+
+	e.isInitialized = true
 
 	// return credential bytes from sgx call
 	return C.GoBytes(credentialsBuffer, C.int(credentialsSize)), nil
@@ -184,10 +191,13 @@ func (e *EnclaveStub) GetEnclaveId() (string, error) {
 //}
 
 func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte, error) {
+	if !e.isInitialized {
+		return nil, fmt.Errorf("enclave not yet initialized")
+	}
 
 	// register our stub for callbacks
-	index := registry.Register(&Stubs{stub})
-	defer registry.Release(index)
+	index := registry.register(&Stubs{stub})
+	defer registry.release(index)
 	ctx := unsafe.Pointer(&index)
 
 	proposal, err := stub.GetSignedProposal()
