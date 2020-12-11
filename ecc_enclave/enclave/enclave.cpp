@@ -307,6 +307,9 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
     // release dynamic allocations (TODO:release in case of error)
     pb_release(fpc_ChaincodeRequestMessage_fields, &cc_request_message);
 
+    // TODO: generate signature (as short-cut for now over proposal _and_ args with consistency of
+    // proposal and args verified in "__endorse" rather than enclave)
+
     return 0;
 
 err:
