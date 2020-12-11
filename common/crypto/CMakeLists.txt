@@ -37,12 +37,16 @@ FILE(GLOB PROJECT_TRUSTED_HEADERS
     "attestation-api/attestation/*.h"
     )
 
+# pdo expects lists for flags whereas FPC has strings, so convert ..
+set(SGX_COMMON_CFLAGS_LIST ${SGX_COMMON_CFLAGS})
+separate_arguments(SGX_COMMON_CFLAGS_LIST)
+
 #set debug flags for PDO based on FPC flags
 #(COMMON_CXX_FLAGS is inherited, and used, by the pdo crypto tests)
 if("$ENV{PDO_DEBUG_BUILD}" STREQUAL "1")
-    SET(COMMON_CXX_FLAGS "-Og" "-g" "-DPDO_DEBUG_BUILD=1")
+    SET(COMMON_CXX_FLAGS ${SGX_COMMON_CFLAGS_LIST} "-DPDO_DEBUG_BUILD=1")
 else()
-    SET(COMMON_CXX_FLAGS "-O2" "-DPDO_DEBUG_BUILD=0")
+    SET(COMMON_CXX_FLAGS ${SGX_COMMON_CFLAGS_LIST} "-DPDO_DEBUG_BUILD=0")
 endif()
 
 

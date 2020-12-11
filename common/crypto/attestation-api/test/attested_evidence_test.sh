@@ -44,26 +44,29 @@ function orchestrate()
 #######################################
 # sim mode test
 #######################################
+if [[ ${SGX_MODE} == "SIM" ]]; then
+    say "Testing simulated attestation"
 
-say "Testing simulated attestation"
+    #prepare input
+    remove_artifacts
+    define_to_variable "${DEFINES_FILEPATH}" "CODE_ID_FILE"
+    define_to_variable "${DEFINES_FILEPATH}" "STATEMENT_FILE"
+    define_to_variable "${DEFINES_FILEPATH}" "STATEMENT"
+    define_to_variable "${DEFINES_FILEPATH}" "INIT_DATA_INPUT"
 
-#prepare input
-remove_artifacts
-define_to_variable "${DEFINES_FILEPATH}" "CODE_ID_FILE"
-define_to_variable "${DEFINES_FILEPATH}" "STATEMENT_FILE"
-define_to_variable "${DEFINES_FILEPATH}" "STATEMENT"
-define_to_variable "${DEFINES_FILEPATH}" "INIT_DATA_INPUT"
+    define_to_variable "${TAGS_FILEPATH}" "ATTESTATION_TYPE_TAG"
+    define_to_variable "${TAGS_FILEPATH}" "SIMULATED_TYPE_TAG"
 
-define_to_variable "${TAGS_FILEPATH}" "ATTESTATION_TYPE_TAG"
-define_to_variable "${TAGS_FILEPATH}" "SIMULATED_TYPE_TAG"
+    echo -n "this is ignored" > ${CODE_ID_FILE}
+    echo -n "also ignored" > ${STATEMENT_FILE}
+    echo -n "{\"${ATTESTATION_TYPE_TAG}\": \"${SIMULATED_TYPE_TAG}\"}" > ${INIT_DATA_INPUT}
 
-echo -n "this is ignored" > ${CODE_ID_FILE}
-echo -n "also ignored" > ${STATEMENT_FILE}
-echo -n "{\"${ATTESTATION_TYPE_TAG}\": \"${SIMULATED_TYPE_TAG}\"}" > ${INIT_DATA_INPUT}
+    orchestrate
 
-orchestrate
-
-say "Test simulated attestation success"
+    say "Test simulated attestation success"
+else
+    say "Skipping actual attestation test"
+fi
 
 #######################################
 # hw mode test
@@ -73,6 +76,11 @@ if [[ ${SGX_MODE} == "HW" ]]; then
 
     #prepare input
     remove_artifacts
+    define_to_variable "${DEFINES_FILEPATH}" "CODE_ID_FILE"
+    define_to_variable "${DEFINES_FILEPATH}" "STATEMENT_FILE"
+    define_to_variable "${DEFINES_FILEPATH}" "STATEMENT"
+    define_to_variable "${DEFINES_FILEPATH}" "INIT_DATA_INPUT"
+
     define_to_variable "${DEFINES_FILEPATH}" "UNSIGNED_ENCLAVE_FILENAME"
     enclave_to_mrenclave ${UNSIGNED_ENCLAVE_FILENAME} test_enclave.config.xml
     echo -n "$MRENCLAVE" > ${CODE_ID_FILE}
