@@ -20,7 +20,3 @@ build: $(BUILD_DIR)
 
 clean:
 	rm -rf $(BUILD_DIR)
-
-docker:
-	$(DOCKER) build -f ../Dockerfile -t fpc/fpc-auction .
-
