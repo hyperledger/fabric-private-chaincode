@@ -11,6 +11,7 @@ services:
     container_name: ecc.peer0.org1.example.com
     hostname: ecc.peer0.org1.example.com
     image: fpc/fpc-echo
+    entrypoint: /usr/local/bin/chaincode
     environment:
       - CHAINCODE_SERVER_ADDRESS=ecc.peer0.org1.example.com:9999
       - CHAINCODE_PKG_ID=${ORG1_ECC_PKG_ID}
@@ -34,6 +35,7 @@ services:
     container_name: ecc.peer0.org2.example.com
     hostname: ecc.peer0.org2.example.com
     image: fpc/fpc-echo
+    entrypoint: /usr/local/bin/chaincode
     environment:
       - CHAINCODE_SERVER_ADDRESS=ecc.peer0.org2.example.com:9999
       - CHAINCODE_PKG_ID=${ORG2_ECC_PKG_ID}
