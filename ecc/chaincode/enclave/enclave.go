@@ -12,13 +12,13 @@ package enclave
 import "C"
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"unsafe"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
-	"github.com/hyperledger/fabric-protos-go/peer"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -121,7 +121,6 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte,
 	if err != nil {
 		return nil, fmt.Errorf("cannot get signed proposal: %s", err.Error())
 	}
-
 	signedProposalBytes, err := proto.Marshal(proposal)
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal signed proposal: %s", err.Error())
@@ -134,31 +133,17 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte,
 	cresmProtoBytesPtr := C.malloc(maxResponseSize)
 	defer C.free(cresmProtoBytesPtr)
 
-	//ASSUME HERE input is not the protobuf, so let's build it (remove block later)
-	argss := stub.GetStringArgs()
-	argsByteArray := make([][]byte, len(argss))
-	for i, v := range argss {
-		argsByteArray[i] = []byte(v)
-		logger.Debugf("arg %d: %s", i, argsByteArray[i])
+	// prep chaincode request message as input
+	_, args := stub.GetFunctionAndParameters()
+	if len(args) != 1 {
+		return nil, fmt.Errorf("no chaincodeRequestMessage as argument found")
 	}
-	cleartextChaincodeRequestMessageProto := &protos.CleartextChaincodeRequest{
-		Input: &peer.ChaincodeInput{Args: argsByteArray},
-	}
-	cleartextChaincodeRequestMessageProtoBytes, err := proto.Marshal(cleartextChaincodeRequestMessageProto)
+	crmProtoBytes, err := base64.StdEncoding.DecodeString(args[0])
 	if err != nil {
-		return nil, fmt.Errorf("cannot marshal CleartextChaincodeRequest: %s", err.Error())
-	}
-	crmProto := &protos.ChaincodeRequestMessage{
-		// TODO: eventually this should be an encrypted CleartextRequestMessage
-		EncryptedRequest: cleartextChaincodeRequestMessageProtoBytes,
-	}
-	crmProtoBytes, err := proto.Marshal(crmProto)
-	if err != nil {
-		return nil, fmt.Errorf("cannot marshal ChaincodeRequestMessage: %s", err.Error())
+		return nil, fmt.Errorf("cannot decode ChaincodeRequestMessage: %s", err.Error())
 	}
 	crmProtoBytesPtr := C.CBytes(crmProtoBytes)
 	defer C.free(unsafe.Pointer(crmProtoBytesPtr))
-	//REMOVE BLOCK ABOVE once protobuf supported e2e
 
 	err = e.sem.Acquire(context.Background(), 1)
 	if err != nil {
