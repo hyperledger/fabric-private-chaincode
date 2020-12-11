@@ -103,7 +103,7 @@ func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response 
 	if errInvoke != nil {
 		errMsg = fmt.Sprintf("t.enclave.Invoke failed: %s", errInvoke)
 		logger.Errorf(errMsg)
-		// likely a chaincode error, so we stil want response go back ...
+		// likely a chaincode error, so we still want response go back ...
 	}
 
 	var response pb.Response
@@ -128,12 +128,16 @@ func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) pb.Response
 
 	chaincodeParams, err := extractChaincodeParams(stub)
 	if err != nil {
-		return shim.Error(err.Error())
+		errMsg := fmt.Sprintf("cannot extract chaincode params: %s", err.Error())
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
 	}
 
 	responseMsg, err := extractChaincodeResponseMessage(stub)
 	if err != nil {
-		return shim.Error(err.Error())
+		errMsg := fmt.Sprintf("cannot extract chaincode response message: %s", err.Error())
+		logger.Errorf(errMsg)
+		return shim.Error(errMsg)
 	}
 
 	logger.Infof("try to get credentials from ERCC for channel: %s ccId: %s EnclaveId: %s ", chaincodeParams.ChannelId, chaincodeParams.ChaincodeId, responseMsg.EnclaveId)

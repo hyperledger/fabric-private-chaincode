@@ -162,15 +162,6 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte,
 	if invokeRet != 0 {
 		return nil, fmt.Errorf("invoke failed. Reason: %d", int(invokeRet))
 	}
-	cresmProtoBytes := C.GoBytes(cresmProtoBytesPtr, C.int(cresmProtoBytesLenOut))
 
-	//ASSUME HERE we get the b64 encoded response protobuf, pull encrypted response out and return it
-	cresmProto := &protos.ChaincodeResponseMessage{}
-	err = proto.Unmarshal(cresmProtoBytes, cresmProto)
-	if err != nil {
-		return nil, fmt.Errorf("cannot unmarshal ChaincodeResponseMessage: %s", err.Error())
-	}
-
-	// TODO: this should be eventually be an (encrypted) fabric Response object rather than the response string ...
-	return cresmProto.EncryptedResponse, nil
+	return C.GoBytes(cresmProtoBytesPtr, C.int(cresmProtoBytesLenOut)), nil
 }
