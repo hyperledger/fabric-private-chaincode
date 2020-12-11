@@ -413,6 +413,7 @@ func (e *StubImpl) Invoke(shimStub shim.ChaincodeStubInterface) ([]byte, error) 
 		return nil, fmt.Errorf("unmarshal error")
 	}
 
+	// TODO: this should be eventually be an (encrypted) fabric Response object rather than the response string ...
 	return cresmProto.EncryptedResponse, nil
 }
 
