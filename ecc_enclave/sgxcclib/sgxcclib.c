@@ -33,21 +33,21 @@ int sgxcc_bind(enclave_id_t eid, report_t* report, ec256_public_t* pubkey)
 }
 
 int sgxcc_invoke(enclave_id_t eid,
-    const char* encoded_args,
-    const char* pk,
-    uint8_t* response,
-    uint32_t response_len_in,
-    uint32_t* response_len_out,
-    ec256_signature_t* signature,
+    const uint8_t* signed_proposal_proto_bytes,
+    uint32_t signed_proposal_proto_bytes_len,
+    const uint8_t* b64_chaincode_request_message,
+    uint32_t b64_chaincode_request_message_len,
+    uint8_t* b64_chaincode_response_message,
+    uint32_t b64_chaincode_response_message_len_in,
+    uint32_t* b64_chaincode_response_message_len_out,
     void* ctx)
 {
     int enclave_ret = SGX_ERROR_UNEXPECTED;
-    int ret = ecall_cc_invoke(eid, &enclave_ret,
-        encoded_args,  // args  (encoded and potentially encrypted)
-        pk,            // client pk used for args encryption, if null no encryption used
-        response, response_len_in, response_len_out,  // response
-        (sgx_ec256_signature_t*)signature,            // signature
-        ctx);                                         // context for callback
+    int ret = ecall_cc_invoke(eid, &enclave_ret, signed_proposal_proto_bytes,
+        signed_proposal_proto_bytes_len, b64_chaincode_request_message,
+        b64_chaincode_request_message_len, b64_chaincode_response_message,
+        b64_chaincode_response_message_len_in, b64_chaincode_response_message_len_out,
+        ctx);  // context for callback
     CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(ret)
     CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(enclave_ret)
     return SGX_SUCCESS;

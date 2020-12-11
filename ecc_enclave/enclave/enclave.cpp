@@ -13,8 +13,14 @@
 #include "utils.h"
 
 #include "base64.h"
+#include "error.h"
 
+#include <mbusafecrt.h> /* for memcpy_s etc */
 #include "sgx_utils.h"
+
+#include "fpc/fpc.pb.h"
+#include "pb_decode.h"
+#include "pb_encode.h"
 
 extern sgx_ec256_private_t enclave_sk;
 extern sgx_ec256_public_t enclave_pk;
@@ -59,11 +65,10 @@ int ecall_bind_tlcc(const sgx_report_t* report, const uint8_t* pubkey)
     LOG_DEBUG("Binding successfull");
     return SGX_SUCCESS;
 }
-
+/*
 int gen_response(const char* txType,
     uint8_t* response,
     uint32_t* response_len_out,
-    sgx_ec256_signature_t* signature,
     shim_ctx_ptr_t ctx)
 {
     int ret;
@@ -122,7 +127,7 @@ int gen_response(const char* txType,
     // convert signature to big endian and copy out
     bytes_swap(sig, 32);
     bytes_swap(sig + 32, 32);
-    memcpy(signature, sig, sizeof(sgx_ec256_signature_t));
+    //memcpy(signature, sig, sizeof(sgx_ec256_signature_t));
 
     std::string base64_hash = base64_encode((const unsigned char*)hash, 32);
     LOG_DEBUG("ecc sig hash (base64): %s", base64_hash.c_str());
@@ -137,7 +142,8 @@ int gen_response(const char* txType,
 
     return ret;
 }
-
+*/
+/*
 // chaincode call processing when we have secure channel ..
 int invoke_enc(const char* pk,
     uint8_t* response,
@@ -186,11 +192,11 @@ int invoke_enc(const char* pk,
 
     // decrypt
     sgx_ret = sgx_rijndael128GCM_decrypt(&key,
-        cipher + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE,         /* cipher */
-        needed_size, (uint8_t*)plain,                              /* plain out */
-        cipher, SGX_AESGCM_IV_SIZE,                                /* nonce */
-        NULL, 0,                                                   /* aad */
-        (sgx_aes_gcm_128bit_tag_t*)(cipher + SGX_AESGCM_IV_SIZE)); /* tag */
+        cipher + SGX_AESGCM_IV_SIZE + SGX_AESGCM_MAC_SIZE,         // cipher
+        needed_size, (uint8_t*)plain,                              // plain out
+        cipher, SGX_AESGCM_IV_SIZE,                                // nonce
+        NULL, 0,                                                   // aad
+        (sgx_aes_gcm_128bit_tag_t*)(cipher + SGX_AESGCM_IV_SIZE)); // tag
     if (sgx_ret != SGX_SUCCESS)
     {
         LOG_ERROR("Decrypt error: %x", sgx_ret);
@@ -201,6 +207,7 @@ int invoke_enc(const char* pk,
 
     return invoke(response, max_response_len, actual_response_len, ctx);
 }
+*/
 
 #include "pdo/common/crypto/crypto.h"
 bool crypto_created = false;
@@ -208,58 +215,106 @@ bool crypto_created = false;
 // chaincode call
 // output, response <- F(args, input)
 // signature <- sign (hash,sk)
-int ecall_cc_invoke(const char* encoded_args,
-    const char* pk,
-    uint8_t* response,
-    uint32_t response_len_in,
-    uint32_t* response_len_out,
-    sgx_ec256_signature_t* signature,
+int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
+    uint32_t signed_proposal_proto_bytes_len,
+    const uint8_t* cc_request_message_proto,
+    uint32_t cc_request_message_proto_len,
+    uint8_t* cc_response_message_proto,
+    uint32_t cc_response_message_proto_len_in,
+    uint32_t* cc_response_message_proto_len_out,
     void* u_shim_ctx)
 {
-    LOG_DEBUG("ecall_cc_invoke: \tArgs: %s", encoded_args);
+    LOG_DEBUG("ecall_cc_invoke");
+    LOG_DEBUG("signed proposal length %u", signed_proposal_proto_bytes_len);
 
-    // NOTE/TODO: this crypto part will be removed
-    if (!crypto_created)
-    {
-        pdo::crypto::sig::PublicKey verification_key_;
-        pdo::crypto::sig::PrivateKey signature_key_;
-        signature_key_.Generate();  // private key
-        verification_key_ = signature_key_.GetPublicKey();
-        // debug
-        std::string s = verification_key_.Serialize();
-        LOG_DEBUG("enclave verification key: %s", s.c_str());
-        crypto_created = true;
-    }
-    else
-    {
-        LOG_DEBUG("enclave crypto material created");
-    }
-
+    bool b;
+    fpc_ChaincodeRequestMessage cc_request_message = {};
+    fpc_CleartextChaincodeRequest cleartext_cc_request = {};
     t_shim_ctx_t ctx;
-    ctx.u_shim_ctx = u_shim_ctx;
-    ctx.encoded_args = encoded_args;
-
-    // call chaincode invoke logic: creates output and response
-    // output, response <- F(args, input)
     int ret;
-    if (strlen(pk) == 0)
+    // estimate max response len (take into account other fields and b64 encoding)
+    uint32_t response_len = cc_response_message_proto_len_in / 4 * 3 - 1024;
+    uint8_t response[cc_response_message_proto_len_in / 4 * 3];
+    uint32_t response_len_out = 0;
+    std::string b64_response;
+
+    ctx.u_shim_ctx = u_shim_ctx;
+
     {
-        // clear input
-        ctx.json_args = ctx.encoded_args;
-        ret = invoke(response, response_len_in, response_len_out, &ctx);
-    }
-    else
-    {
-        // encrypted input
-        ret = invoke_enc(pk, response, response_len_in, response_len_out, &ctx);
+        pb_istream_t istream;
+
+        // set stream for ChaincodeRequestMessage
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)cc_request_message_proto, cc_request_message_proto_len);
+
+        b = pb_decode(&istream, fpc_ChaincodeRequestMessage_fields, &cc_request_message);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+        COND2LOGERR(cc_request_message.encrypted_request->size == 0, "zero size request");
+
+        // TODO: decrypt request
+
+        // set stream for CleartextChaincodeRequestMessage
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)cc_request_message.encrypted_request->bytes,
+            cc_request_message.encrypted_request->size);
+        b = pb_decode(&istream, fpc_CleartextChaincodeRequest_fields, &cleartext_cc_request);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+        COND2LOGERR(!cleartext_cc_request.has_input, "no input in cleartext request");
+
+        for (int i = 0; i < cleartext_cc_request.input.args_count; i++)
+        {
+            ctx.string_args.push_back(
+                std::string((const char*)cleartext_cc_request.input.args[i]->bytes,
+                    cleartext_cc_request.input.args[i]->size));
+        }
+
+        // the dynamic memory in the message is release at the end
     }
 
-    if (ret != 0)
+    ret = invoke(response, response_len, &response_len_out, &ctx);
+    COND2ERR(ret != 0);
+
+    b64_response = base64_encode((const unsigned char*)response, response_len_out);
+
     {
-        return SGX_ERROR_UNEXPECTED;
+        // TODO put response in protobuf and encode it
+
+        fpc_ChaincodeResponseMessage crm;
+        pb_ostream_t ostream;
+        std::string b64_crm_proto;
+
+        // create proto struct to encode
+        // TODO: create fabric Response object
+        // TODO: encrypt fabric Response object
+        crm = {};
+        crm.encrypted_response = (pb_bytes_array_t*)pb_realloc(
+            crm.encrypted_response, PB_BYTES_ARRAY_T_ALLOCSIZE(b64_response.length()));
+        COND2LOGERR(crm.encrypted_response == NULL, "cannot allocate encrypted message");
+        crm.encrypted_response->size = b64_response.length();
+        ret = memcpy_s(crm.encrypted_response->bytes, crm.encrypted_response->size,
+            b64_response.c_str(), b64_response.length());
+        COND2LOGERR(ret != 0, "cannot encode field");
+
+        // encode proto
+        ostream =
+            pb_ostream_from_buffer(cc_response_message_proto, cc_response_message_proto_len_in);
+        b = pb_encode(&ostream, fpc_ChaincodeResponseMessage_fields, &crm);
+        COND2LOGERR(!b, "error encoding proto");
+
+        pb_release(fpc_ChaincodeResponseMessage_fields, &crm);
+
+        *cc_response_message_proto_len_out = ostream.bytes_written;
     }
 
-    ret = gen_response("invoke", response, response_len_out, signature, &ctx);
+    // release dynamic allocations (TODO:release in case of error)
+    pb_release(fpc_ChaincodeRequestMessage_fields, &cc_request_message);
 
-    return ret;
+    // TODO: generate signature (as short-cut for now over proposal _and_ args with consistency of
+    // proposal and args verified in "__endorse" rather than enclave)
+
+    return 0;
+
+err:
+    *cc_response_message_proto_len_out = 0;
+    return SGX_ERROR_UNEXPECTED;
 }

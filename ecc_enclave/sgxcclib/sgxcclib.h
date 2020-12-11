@@ -17,13 +17,13 @@ extern "C" {
 int sgxcc_bind(enclave_id_t eid, report_t* report, ec256_public_t* pubkey);
 
 int sgxcc_invoke(enclave_id_t eid,
-    const char* args,
-    const char* pk,  // client pk used for args encryption, if null
-                     // no encryption used
-    uint8_t* response,
-    uint32_t response_len_in,
-    uint32_t* response_len_out,
-    ec256_signature_t* signature,
+    const uint8_t* signed_proposal_proto_bytes,
+    uint32_t signed_proposal_proto_bytes_len,
+    const uint8_t* b64_chaincode_request_message,
+    uint32_t b64_chaincode_request_message_len,
+    uint8_t* b64_chaincode_response_message,
+    uint32_t b64_chaincode_response_message_len_in,
+    uint32_t* b64_chaincode_response_message_len_out,
     void* ctx);
 
 #ifdef __cplusplus

@@ -28,10 +28,11 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
-	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/tlcc"
+	fpcpb "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	utils "github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-protos-go/msp"
+	"github.com/hyperledger/fabric-protos-go/peer"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -83,7 +84,6 @@ const ENCLAVE_TCS_NUM = 8
 // just a container struct used for the callbacks
 type Stubs struct {
 	shimStub shim.ChaincodeStubInterface
-	tlccStub tlcc.TLCCStub
 }
 
 // have a global registry
@@ -255,9 +255,7 @@ type Stub interface {
 	// Return report and enclave PK in DER-encoded PKIX format
 	GetLocalAttestationReport(targetInfo []byte) ([]byte, []byte, error)
 	// Invoke chaincode
-	Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error)
-	// Returns enclave PK in DER-encoded PKIX formatk
-	GetPublicKey() ([]byte, error)
+	Invoke(shimStub shim.ChaincodeStubInterface) ([]byte, error)
 	// Creates an enclave from a given enclave lib file
 	Create(enclaveLibFile string, ccParametersBytes []byte, attestationParametersBytes []byte, hostParametersBytes []byte) ([]byte, error)
 	// Gets Enclave Target Information
@@ -339,78 +337,84 @@ func (e *StubImpl) GetLocalAttestationReport(spid []byte) ([]byte, []byte, error
 
 // invoke calls the enclave for transaction processing, takes arguments
 // and the current chaincode state as input and returns a new chaincode state
-func (e *StubImpl) Invoke(args []byte, pk []byte, shimStub shim.ChaincodeStubInterface, tlccStub tlcc.TLCCStub) ([]byte, []byte, error) {
+func (e *StubImpl) Invoke(shimStub shim.ChaincodeStubInterface) ([]byte, error) {
+	var err error
+
 	if shimStub == nil {
-		return nil, nil, errors.New("Need shim")
+		return nil, errors.New("Need shim")
 	}
 
-	// index := Register(Stubs{shimStub, tlccStub})
-	index := registry.Register(&Stubs{shimStub, tlccStub})
+	index := registry.Register(&Stubs{shimStub})
 	defer registry.Release(index)
-	// defer Release(index)
 	ctx := unsafe.Pointer(&index)
 
-	// args
-	argsPtr := C.CString(string(args))
-	defer C.free(unsafe.Pointer(argsPtr))
-
-	// client pk used for args encryption
-	pkPtr := C.CString(string(pk))
-	defer C.free(unsafe.Pointer(pkPtr))
-
 	// response
-	responseLenOut := C.uint32_t(0) // We pass maximal length separatedly; set to zero so we can detect valid responses
-	responsePtr := C.malloc(MAX_RESPONSE_SIZE)
-	defer C.free(responsePtr)
+	cresmProtoBytesLenOut := C.uint32_t(0) // We pass maximal length separatedly; set to zero so we can detect valid responses
+	cresmProtoBytesPtr := C.malloc(MAX_RESPONSE_SIZE)
+	defer C.free(cresmProtoBytesPtr)
 
-	// signature
-	signaturePtr := C.malloc(SIGNATURE_SIZE)
-	defer C.free(signaturePtr)
+	// get signed proposal
+	signedProposal, err := shimStub.GetSignedProposal()
+	if err != nil {
+		return nil, fmt.Errorf("cannot get signed proposal")
+	}
+	signedProposalBytes, err := proto.Marshal(signedProposal)
+	if err != nil {
+		return nil, fmt.Errorf("cannot get signed proposal bytes")
+	}
+	signedProposalPtr := C.CBytes(signedProposalBytes)
+	defer C.free(unsafe.Pointer(signedProposalPtr))
+
+	//ASSUME HERE input is not the protobuf, so let's buildit (rmeove block later)
+	argss := shimStub.GetStringArgs()
+	argsByteArray := make([][]byte, len(argss))
+	for i, v := range argss {
+		argsByteArray[i] = []byte(v)
+		logger.Debugf("arg %d: %s", i, argsByteArray[i])
+	}
+	cleartextChaincodeRequestMessageProto := &fpcpb.CleartextChaincodeRequest{
+		Input: &peer.ChaincodeInput{Args: argsByteArray},
+	}
+	cleartextChaincodeRequestMessageProtoBytes, err := proto.Marshal(cleartextChaincodeRequestMessageProto)
+	if err != nil {
+		return nil, fmt.Errorf("marshal error")
+	}
+	crmProto := &fpcpb.ChaincodeRequestMessage{
+		// TODO: eventually this should be an encrypted CleartextRequestMessage
+		EncryptedRequest: cleartextChaincodeRequestMessageProtoBytes,
+	}
+	crmProtoBytes, err := proto.Marshal(crmProto)
+	if err != nil {
+		return nil, fmt.Errorf("marshal error")
+	}
+	crmProtoBytesPtr := C.CBytes(crmProtoBytes)
+	defer C.free(unsafe.Pointer(crmProtoBytesPtr))
+	//REMOVE BLOCK ABOVE once protobuf supported e2e
 
 	e.sem.Acquire(context.Background(), 1)
 	// invoke enclave
 	invoke_ret := C.sgxcc_invoke(e.eid,
-		argsPtr,
-		pkPtr,
-		(*C.uint8_t)(responsePtr), C.uint32_t(MAX_RESPONSE_SIZE), &responseLenOut,
-		(*C.ec256_signature_t)(signaturePtr),
+		(*C.uint8_t)(signedProposalPtr),
+		(C.uint32_t)(len(signedProposalBytes)),
+		(*C.uint8_t)(crmProtoBytesPtr),
+		(C.uint32_t)(len(crmProtoBytes)),
+		(*C.uint8_t)(cresmProtoBytesPtr), (C.uint32_t)(MAX_RESPONSE_SIZE), &cresmProtoBytesLenOut,
 		ctx)
 	e.sem.Release(1)
-	// Note: we do try to return the response in all cases, even then there is an error ...
-	var sig []byte = nil
-	var err error
-	if invoke_ret == 0 {
-		sig, err = crypto.MarshalEnclaveSignature(C.GoBytes(signaturePtr, C.int(SIGNATURE_SIZE)))
-		if err != nil {
-			sig = nil
-		}
-	} else {
-		err = fmt.Errorf("Invoke failed. Reason: %d", int(invoke_ret))
-		// TODO: ideally we would also sign error messages but would
-		// require including the error into the signature itself
-		// which has involves a rathole of changes, so defer to the
-		// time which design & refactor everything to be end-to-end
-		// secure ...
+	if invoke_ret != 0 {
+		return nil, fmt.Errorf("Invoke failed. Reason: %d", int(invoke_ret))
 	}
-	return C.GoBytes(responsePtr, C.int(responseLenOut)), sig, err
-}
+	cresmProtoBytes := C.GoBytes(cresmProtoBytesPtr, C.int(cresmProtoBytesLenOut))
 
-// GetPublicKey returns the enclave ec public key
-func (e *StubImpl) GetPublicKey() ([]byte, error) {
-	// pubkey
-	pubkeyPtr := C.malloc(PUB_KEY_SIZE)
-	defer C.free(pubkeyPtr)
-
-	e.sem.Acquire(context.Background(), 1)
-	// call enclave
-	ret := C.sgxcc_get_pk(e.eid, (*C.ec256_public_t)(pubkeyPtr))
-	e.sem.Release(1)
-	if ret != 0 {
-		return nil, fmt.Errorf("C.sgxcc_get_pk failed. Reason: %d", int(ret))
+	//ASSUME HERE we get the b64 encoded response protobuf, pull encrypted response out and return it
+	cresmProto := &fpcpb.ChaincodeResponseMessage{}
+	err = proto.Unmarshal(cresmProtoBytes, cresmProto)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal error")
 	}
 
-	// convert sgx format to DER-encoded PKIX format
-	return crypto.MarshalEnclavePk(C.GoBytes(pubkeyPtr, C.int(PUB_KEY_SIZE)))
+	// TODO: this should be eventually be an (encrypted) fabric Response object rather than the response string ...
+	return cresmProto.EncryptedResponse, nil
 }
 
 // Create starts a new enclave instance

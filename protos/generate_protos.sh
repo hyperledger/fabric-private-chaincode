@@ -68,5 +68,6 @@ sed  -i 's/namespace/ns/g' ${FABRIC_BUILD_DIR}/ledger/rwset/rwset.pb.h
 sed  -i 's/namespace/ns/g' ${FABRIC_BUILD_DIR}/ledger/rwset/rwset.pb.c
 
 # compile fpc protos
-$PROTOC_CMD "$PROTOC_OPTS" --proto_path=${PROTOS_DIR} --proto_path=${FABRIC_PROTOS_DIR} --nanopb_out=$BUILD_DIR ${PROTOS_DIR}/fpc/*.proto
+$PROTOC_CMD "$PROTOC_OPTS" --proto_path=${PROTOS_DIR} --proto_path=${FABRIC_PROTOS_DIR} "--nanopb_out=-f ${PROTOS_DIR}/fpc.options:${BUILD_DIR}" ${PROTOS_DIR}/fpc/fpc.proto 
+$PROTOC_CMD "$PROTOC_OPTS" --proto_path=${PROTOS_DIR} --proto_path=${FABRIC_PROTOS_DIR} --nanopb_out=${BUILD_DIR} ${PROTOS_DIR}/fpc/attestation.proto 
 $PROTOC_CMD "$PROTOC_OPTS" --proto_path=${PROTOS_DIR} --proto_path=${FABRIC_PROTOS_DIR} --go_out=${GOPATH}/src ${PROTOS_DIR}/fpc/*.proto

@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 // read/writeset
 typedef std::map<std::string, std::string> write_set_t;
@@ -21,6 +22,5 @@ typedef struct t_shim_ctx
     void* u_shim_ctx;
     read_set_t read_set;
     write_set_t write_set;
-    const char* encoded_args;  // args as passed from client-side shim, potentially encrypted
-    const char* json_args;     // clear-text args from client-side shim
+    std::vector<std::string> string_args;
 } t_shim_ctx_t;
