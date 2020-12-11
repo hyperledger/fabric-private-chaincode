@@ -163,5 +163,24 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte,
 		return nil, fmt.Errorf("invoke failed. Reason: %d", int(invokeRet))
 	}
 
-	return C.GoBytes(cresmProtoBytesPtr, C.int(cresmProtoBytesLenOut)), nil
+	cresmProtoBytes := C.GoBytes(cresmProtoBytesPtr, C.int(cresmProtoBytesLenOut))
+
+	responseMsg := &protos.ChaincodeResponseMessage{}
+	err = proto.Unmarshal(cresmProtoBytes, responseMsg)
+	if err != nil {
+		return nil, fmt.Errorf("cannot unmarshal ChaincodeResponseMessage: %s", err.Error())
+	}
+
+	// include proposal here
+	responseMsg.Proposal = proposal
+
+	// TODO set RW set
+	//responseMsg.RwSet = ...
+
+	cresmProtoBytes, err = proto.Marshal(responseMsg)
+	if err != nil {
+		return nil, fmt.Errorf("cannot marshal ChaincodeResponseMessage: %s", err.Error())
+	}
+
+	return cresmProtoBytes, nil
 }
