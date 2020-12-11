@@ -13,7 +13,8 @@ PEER_ID ?=jdoe
 DOCKER_CONTAINER_ID?=$$(docker ps | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
 # the following are the required docker build parameters
 DOCKER_IMAGE ?= $$(docker images | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
-DOCKER_BOILERPLATE_ECC_IMAGE ?= hyperledger/$(PROJECT_NAME)-boilerplate-ecc
+HW_ATTEST_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
+DOCKER_BOILERPLATE_ECC_IMAGE ?= hyperledger/$(PROJECT_NAME)-boilerplate-ecc${HW_ATTEST_EXTENSION}
 ECC_ENCLAVE_BUILD = ../ecc_enclave/_build
 ERR_MSG = "ecc_enclave build does not exist!"
 DOCKER_ENCLAVE_SO_PATH ?= $(ENCLAVE_SO_PATH)
@@ -69,7 +70,7 @@ docker-fpc-app: docker-boilerplate-ecc
 	fi
 	echo "\033[1;33mWARNING: overriding $(DOCKER_IMAGE) docker image\033[0m"
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_IMAGE) -f Dockerfile.fpc-app \
-		$(DOCKER_ENCLAVE_SO_PATH) 
+		$(DOCKER_ENCLAVE_SO_PATH)
 
 docker-run:
 	if [ "$(SGX_MODE)" = "HW" ]; then \
