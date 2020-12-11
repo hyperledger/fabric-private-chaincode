@@ -28,7 +28,6 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/ecc/crypto"
-	//"github.com/hyperledger-labs/fabric-private-chaincode/ecc/tlcc"
 	fpcpb "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	utils "github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
