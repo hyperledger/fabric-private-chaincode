@@ -1,3 +1,5 @@
+// +build mock_ecc
+
 /*
 Copyright IBM Corp. All Rights Reserved.
 Copyright 2020 Intel Corporation
@@ -27,6 +29,11 @@ import (
 type MockEnclaveStub struct {
 	privateKey *ecdsa.PrivateKey
 	enclaveId  string
+}
+
+// NewEnclave starts a new enclave
+func NewEnclaveStub() StubInterface {
+	return &MockEnclaveStub{}
 }
 
 func (m *MockEnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBytes, serializedAttestationParams []byte) ([]byte, error) {

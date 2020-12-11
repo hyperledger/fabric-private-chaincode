@@ -8,21 +8,18 @@
 #
 #  Configuration (build) paramaters (for defaults, see below section with ARGs)
 #  - fpc image version:                                         FPC_VERSION
-#  - path to directory containing chaincode's enclave.so:       enclave_so_path
+#
+# expects to be run with the docker context pointed o directory containing chaincode's enclave.so
 
 ARG BOILERPLATE_EXTENSION
 ARG FPC_VERSION=latest
 
 FROM hyperledger/fabric-private-chaincode-boilerplate-ecc:${FPC_VERSION}
 
-ARG enclave_so_path
-
 
 ARG CC_PATH="/usr/local/bin"
 ARG CC_LIB_PATH=${CC_PATH}"/enclave/lib"
 
-RUN test -n "$enclave_so_path"
+COPY /enclave.signed.so ${CC_LIB_PATH}/
 
-copy ${enclave_so_path}/enclave.signed.so ${CC_LIB_PATH}/
-
-copy ${enclave_so_path}/mrenclave ${CC_PATH}/
+COPY /mrenclave ${CC_PATH}/

@@ -1,3 +1,5 @@
+// +build !mock_ecc
+
 /*
    Copyright 2019 Intel Corporation
    Copyright IBM Corp. All Rights Reserved.

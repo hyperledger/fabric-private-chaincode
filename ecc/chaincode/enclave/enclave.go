@@ -1,3 +1,12 @@
+// +build !mock_ecc
+
+/*
+Copyright IBM Corp. All Rights Reserved.
+Copyright 2020 Intel Corporation
+
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package enclave
 
 import "C"
@@ -31,7 +40,6 @@ type EnclaveStub struct {
 	sem *semaphore.Weighted
 }
 
-// TODO enabled GOTAGS-based toggle to switch between this EnclaveStub and MockStub
 // NewEnclave starts a new enclave
 func NewEnclaveStub() StubInterface {
 	return &EnclaveStub{sem: semaphore.NewWeighted(8)}

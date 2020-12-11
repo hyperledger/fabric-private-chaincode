@@ -63,14 +63,13 @@ docker-boilerplate-ecc: ecc
 	$(DOCKER) tag $(DOCKER_BOILERPLATE_ECC_IMAGE) $(DOCKER_BOILERPLATE_ECC_IMAGE):${FPC_VERSION}
 
 docker-fpc-app: docker-boilerplate-ecc
-#	if [ -z "$(DOCKER_IMAGE)" ]; then\
-#		echo "\033[0;31mERROR: cannot override $(CC_NAME) docker image - not found\033[0m";\
-#		exit 1;\
-#	fi
+	if [ -z "$(DOCKER_IMAGE)" ]; then\
+		echo "\033[0;31mERROR: cannot override $(CC_NAME) docker image - not found\033[0m";\
+		exit 1;\
+	fi
 	echo "\033[1;33mWARNING: overriding $(DOCKER_IMAGE) docker image\033[0m"
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_IMAGE) -f Dockerfile.fpc-app \
-		--build-arg enclave_so_path=$(DOCKER_ENCLAVE_SO_PATH) \
-		..
+		$(DOCKER_ENCLAVE_SO_PATH) 
 
 docker-run:
 	if [ "$(SGX_MODE)" = "HW" ]; then \
