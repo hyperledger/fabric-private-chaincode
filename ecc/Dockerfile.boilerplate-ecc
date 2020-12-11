@@ -9,7 +9,6 @@
 #  Configuration (build) paramaters (for defaults, see below section with ARGs)
 #  - fpc image version:         FPC_VERSION
 #  - sgxmode:                   SGX_MODE
-#  - sgx attestation mode:      FPC_ATTESTATION_TYPE
 #  - additional dev apt pkgs:   APT_ADD_DEV_PKGS
 
 ARG FPC_VERSION=latest
@@ -22,9 +21,6 @@ ENV SGX_MODE=${SGX_MODE}
 # define here a env which makes it easy recognizable which mode
 # the container is. No default, though, as we do not control
 # the build and rely on a proper value provided from outside.
-ARG FPC_ATTESTATION_TYPE
-ENV FPC_ATTESTATION_TYPE=${FPC_ATTESTATION_TYPE}
-
 
 ARG CC_NAME="ecc"
 ARG CC_PATH="/usr/local/bin"

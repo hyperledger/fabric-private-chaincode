@@ -13,45 +13,31 @@ PEER_ID ?=jdoe
 DOCKER_CONTAINER_ID?=$$(docker ps | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
 # the following are the required docker build parameters
 DOCKER_IMAGE ?= $$(docker images | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
-HW_ATTEST_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then if [ "${FPC_ATTESTATION_TYPE}" = "epid_linkable" ]; then echo "-hw-lnk"; elif [ "${FPC_ATTESTATION_TYPE}" = "epid_unlinkable" ]; then echo "-hw-ulnk"; else echo "incorrect FPC_ATTESTATION_TYPE"; exit 1; fi; fi)
+HW_ATTEST_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
 DOCKER_BOILERPLATE_ECC_IMAGE ?= hyperledger/$(PROJECT_NAME)-boilerplate-ecc${HW_ATTEST_EXTENSION}
-DOCKER_ENCLAVE_SO_PATH ?= $(ENCLAVE_SO_PATH)
-
-all: build
-# TODO test target disable because it requires revision
-#all: build test
-
-build: ecc sym-links
-
 ECC_ENCLAVE_BUILD = ../ecc_enclave/_build
 ERR_MSG = "ecc_enclave build does not exist!"
+DOCKER_ENCLAVE_SO_PATH ?= $(ENCLAVE_SO_PATH)
+
+build: ecc sym-links
 
 ecc_enclave: sym-links
 	@if [ ! -d $(ECC_ENCLAVE_BUILD)/lib ]; then echo $(ERR_MSG); exit 1; fi
 	@if [ ! -d $(ECC_ENCLAVE_BUILD)/include ]; then echo $(ERR_MSG); exit 1; fi
 
 sym-links:
-	ln -sfn ../../ecc_enclave/_build/lib enclave/ecc-enclave-lib
-	ln -sfn ../../ecc_enclave/_build/include enclave/ecc-enclave-include
+	ln -sfn ../../../ecc_enclave/_build/lib chaincode/enclave/ecc-enclave-lib
+	ln -sfn ../../../ecc_enclave/_build/include chaincode/enclave/ecc-enclave-include
 
-ecc: ecc_enclave
-	$(GO) build $(GOTAGS) -o ecc cmd/main.go
+ecc: ecc_dependencies
+	$(GO) build $(GOTAGS) -o ecc main.go
 
-#test:
-#	$(LD_LIBRARY_PATH) $(GO) test $(GOTAGS) -test.v ./...
+ecc_dependencies:
+	# hard to list explicitly, so just leave empty target,
+	# which forces ecc to always be built
 
-#.PHONY: stress
-#stress:
-#	$(LD_LIBRARY_PATH) $(GO) test $(GOTAGS) -v -run TestEnclaveChaincode_Invoke_Auction
-
-#.PHONY: debug
-#debug:
-#	$(LD_LIBRARY_PATH) $(GO) test $(GOTAGS) -c
-#	$(LD_LIBRARY_PATH) sgx-gdb ecc.test -d $(GOROOT)
-
-clean: docker-clean
-	$(GO) clean
-	rm -rf ecc enclave/ecc-enclave-lib enclave/ecc-enclave-include
+test: build
+	$(GO) test $(GOTAGS) -v ./...
 
 # Note:
 # - docker images are not necessarily rebuild if they exist but are outdated.
@@ -69,10 +55,11 @@ ifdef DOCKER_FORCE_REBUILD
 endif
 DOCKER_BUILD_OPTS += --build-arg FPC_VERSION=$(FPC_VERSION)
 
+docker: docker-fpc-app
+
 docker-boilerplate-ecc: ecc
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_BOILERPLATE_ECC_IMAGE) -f Dockerfile.boilerplate-ecc\
 		--build-arg SGX_MODE=$(SGX_MODE)\
-                --build-arg FPC_ATTESTATION_TYPE=${FPC_ATTESTATION_TYPE}\
 		..
 	$(DOCKER) tag $(DOCKER_BOILERPLATE_ECC_IMAGE) $(DOCKER_BOILERPLATE_ECC_IMAGE):${FPC_VERSION}
 
@@ -83,9 +70,7 @@ docker-fpc-app: docker-boilerplate-ecc
 	fi
 	echo "\033[1;33mWARNING: overriding $(DOCKER_IMAGE) docker image\033[0m"
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_IMAGE) -f Dockerfile.fpc-app \
-		--build-arg BOILERPLATE_EXTENSION=$(BOILERPLATE_EXTENSION)\
-		--build-arg enclave_so_path=$(DOCKER_ENCLAVE_SO_PATH)\
-		..
+		$(DOCKER_ENCLAVE_SO_PATH)
 
 docker-run:
 	if [ "$(SGX_MODE)" = "HW" ]; then \
@@ -119,3 +104,6 @@ docker-clean: docker-stop
 	done
 
 clobber: docker-clean
+clean: docker-clean
+	$(GO) clean
+	$(RM) ecc enclave/ecc-enclave-lib enclave/ecc-enclave-include

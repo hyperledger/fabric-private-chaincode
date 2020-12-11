@@ -1,3 +1,5 @@
+// +build mock_ecc
+
 /*
 Copyright IBM Corp. All Rights Reserved.
 Copyright 2020 Intel Corporation
@@ -21,18 +23,33 @@ import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
-	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/protoutil"
 )
 
-var logger = flogging.MustGetLogger("enclave")
-
-type MockEnclave struct {
+type MockEnclaveStub struct {
 	privateKey *ecdsa.PrivateKey
 	enclaveId  string
 }
 
-func (m *MockEnclave) Init(chaincodeParams *protos.CCParameters, hostParams *protos.HostParameters, attestationParams []byte) ([]byte, error) {
+// NewEnclave starts a new enclave
+func NewEnclaveStub() StubInterface {
+	return &MockEnclaveStub{}
+}
+
+func (m *MockEnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBytes, serializedAttestationParams []byte) ([]byte, error) {
+
+	hostParams := &protos.HostParameters{}
+	err := proto.Unmarshal(serializedHostParamsBytes, hostParams)
+	if err != nil {
+		return nil, err
+	}
+
+	chaincodeParams := &protos.CCParameters{}
+	err = proto.Unmarshal(serializedChaincodeParams, chaincodeParams)
+	if err != nil {
+		return nil, err
+	}
+
 	// create some dummy keys for our mock enclave
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
@@ -65,19 +82,19 @@ func (m *MockEnclave) Init(chaincodeParams *protos.CCParameters, hostParams *pro
 	return proto.Marshal(credentials)
 }
 
-func (m MockEnclave) GenerateCCKeys() (*protos.SignedCCKeyRegistrationMessage, error) {
+func (m MockEnclaveStub) GenerateCCKeys() (*protos.SignedCCKeyRegistrationMessage, error) {
 	panic("implement me")
 }
 
-func (m MockEnclave) ExportCCKeys(credentials *protos.Credentials) (*protos.SignedExportMessage, error) {
+func (m MockEnclaveStub) ExportCCKeys(credentials *protos.Credentials) (*protos.SignedExportMessage, error) {
 	panic("implement me")
 }
 
-func (m MockEnclave) ImportCCKeys() (*protos.SignedCCKeyRegistrationMessage, error) {
+func (m MockEnclaveStub) ImportCCKeys() (*protos.SignedCCKeyRegistrationMessage, error) {
 	panic("implement me")
 }
 
-func (m *MockEnclave) GetEnclaveId() (string, error) {
+func (m *MockEnclaveStub) GetEnclaveId() (string, error) {
 	pubBytes, err := x509.MarshalPKIXPublicKey(m.privateKey.Public())
 	if err != nil {
 		return "", err
@@ -86,7 +103,7 @@ func (m *MockEnclave) GetEnclaveId() (string, error) {
 	return hex.EncodeToString(hash[:]), nil
 }
 
-func (m *MockEnclave) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte, error) {
+func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte, error) {
 	logger.Debug("ChaincodeInvoke")
 
 	signedProposal, err := stub.GetSignedProposal()

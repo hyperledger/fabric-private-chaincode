@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package fpc
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 
@@ -62,15 +63,25 @@ func (c *managementState) InitEnclave(peerEndpoint string, attestationParams ...
 		return err
 	}
 
-	// TODO revisit this once it becomes clear what attestationParams ...string is here
-	serializedJSONParams, err := json.Marshal(&utils.AttestationParams{Params: attestationParams})
+	// TODO get real attestation params from somewhere (initially probably best via `SGX_CREDENTIALS_PATH` env variable like `fabric/bin/peer.sh` ...)
+	type Params struct {
+		AttestationType string `json:"attestation_type"`
+	}
+
+	serializedJSONParams, err := json.Marshal(Params{
+		AttestationType: "simulated",
+	})
 	if err != nil {
 		shim.Error(err.Error())
 	}
 
 	initMsg := &protos.InitEnclaveMessage{
-		PeerEndpoint:      peerEndpoint,
-		AttestationParams: protoutil.MarshalOrPanic(&pbatt.AttestationParameters{Parameters: serializedJSONParams}),
+		PeerEndpoint: peerEndpoint,
+		AttestationParams: protoutil.MarshalOrPanic(&pbatt.AttestationParameters{
+			// TODO this base64 encoding is nasty but needed because in `cc_data.cpp` we do `attestation_parameters_s = base64_decode(b64_ap_s);`
+			// this is probably because in peer cli a json string would have caused trouble.  That part could be addressed by adding another command to `utils/fabric/peer-cli-assist`.
+			Parameters: []byte(base64.StdEncoding.EncodeToString(serializedJSONParams)),
+		}),
 	}
 
 	logger.Debugf("calling __initEnclave")

@@ -139,6 +139,9 @@ func (c *contractState) EvaluateTransaction(name string, args ...string) ([]byte
 
 	// call __invoke
 	encryptedResponse, err := c.evaluateTransaction(encryptedRequest)
+	if err != nil {
+		return nil, err
+	}
 
 	return ctx.Reveal(encryptedResponse)
 }

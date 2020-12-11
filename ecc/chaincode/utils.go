@@ -12,6 +12,7 @@ import (
 	"fmt"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos/attestation"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/pkg/cid"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
@@ -19,7 +20,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func ExtractChaincodeParams(stub shim.ChaincodeStubInterface) (*protos.CCParameters, error) {
+func extractChaincodeParams(stub shim.ChaincodeStubInterface) (*protos.CCParameters, error) {
 	signedProposal, err := stub.GetSignedProposal()
 	if err != nil {
 		return nil, err
@@ -69,13 +70,19 @@ func extractHostParams(stub shim.ChaincodeStubInterface) (*protos.HostParameters
 	}, nil
 }
 
-func extractAttestationParams(stub shim.ChaincodeStubInterface) ([]byte, error) {
+func extractAttestationParams(stub shim.ChaincodeStubInterface) (*attestation.AttestationParameters, error) {
 	initMsg, err := extractInitEnclaveMessage(stub)
 	if err != nil {
 		shim.Error(err.Error())
 	}
 
-	return initMsg.AttestationParams, nil
+	attestationParams := &attestation.AttestationParameters{}
+	err = proto.Unmarshal(initMsg.AttestationParams, attestationParams)
+	if err != nil {
+		return nil, err
+	}
+
+	return attestationParams, nil
 }
 
 func extractInitEnclaveMessage(stub shim.ChaincodeStubInterface) (*protos.InitEnclaveMessage, error) {
