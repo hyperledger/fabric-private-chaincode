@@ -282,6 +282,8 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         std::string b64_crm_proto;
 
         // create proto struct to encode
+        // TODO: create fabric Response object
+        // TODO: encrypt fabric Response object
         crm = {};
         crm.encrypted_response = (pb_bytes_array_t*)pb_realloc(
             crm.encrypted_response, PB_BYTES_ARRAY_T_ALLOCSIZE(b64_response.length()));
