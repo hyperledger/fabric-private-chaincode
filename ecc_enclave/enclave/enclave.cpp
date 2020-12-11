@@ -251,7 +251,7 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         COND2LOGERR(!b, PB_GET_ERROR(&istream));
         COND2LOGERR(cc_request_message.encrypted_request->size == 0, "zero size request");
 
-         // TODO: decrypt request
+        // TODO: decrypt request
 
         // set stream for CleartextChaincodeRequestMessage
         istream = pb_istream_from_buffer(
