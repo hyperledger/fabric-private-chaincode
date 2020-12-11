@@ -237,11 +237,13 @@ bool verify_evidence(uint8_t* evidence,
     COND2LOGERR(s == NULL, "no attestation type");
     COND2LOGERR(evidence_field == NULL, "no evidence field");
 
+#ifdef SGX_SIM_MODE
     if (0 == attestation_type.compare(SIMULATED_TYPE_TAG))
     {
         // nothing to check
         ret = true;
     }
+#endif
 
     if (0 == attestation_type.compare(EPID_LINKABLE_TYPE_TAG) ||
         0 == attestation_type.compare(EPID_UNLINKABLE_TYPE_TAG))
