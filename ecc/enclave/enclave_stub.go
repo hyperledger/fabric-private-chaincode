@@ -84,7 +84,6 @@ const ENCLAVE_TCS_NUM = 8
 // just a container struct used for the callbacks
 type Stubs struct {
 	shimStub shim.ChaincodeStubInterface
-	//tlccStub tlcc.TLCCStub
 }
 
 // have a global registry
