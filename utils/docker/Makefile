@@ -7,7 +7,6 @@ TOP = ../..
 include $(TOP)/build.mk
 
 HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
-HW_ATTEST_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then if [ "${FPC_ATTESTATION_TYPE}" = "epid_linkable" ]; then echo "-hw-lnk"; elif [ "${FPC_ATTESTATION_TYPE}" = "epid_unlinkable" ]; then echo "-hw-ulnk"; else echo "incorrect FPC_ATTESTATION_TYPE"; exit 1; fi; fi)
 
 
 # Names and namespaces
@@ -20,7 +19,7 @@ FPC_DOCKER_BASE_RT_NAME = $(FPC_DOCKER_NAMESPACE)-base-rt
 FPC_DOCKER_BASE_DEV_NAME = $(FPC_DOCKER_NAMESPACE)-base-dev
 
 FPC_DOCKER_PEER_NAMESPACE := hyperledger/fabric-peer-fpc
-FPC_DOCKER_PEER_NAME = $(FPC_DOCKER_PEER_NAMESPACE)$(HW_ATTEST_EXTENSION)
+FPC_DOCKER_PEER_NAME = $(FPC_DOCKER_PEER_NAMESPACE)$(HW_EXTENSION)
 
 DOCKER_DEV_CONTAINER_NAME = fpc-development-${FPC_VERSION}
 

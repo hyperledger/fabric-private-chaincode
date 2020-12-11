@@ -5,13 +5,13 @@ The FPC test network builds on the test-network provided by [fabric-samples](htt
 We provide fabric-samples as a submodule in `$FPC_PATH/integration/test-network/fabric-samples`.
 
 Make sure you have installed [yq](https://github.com/mikefarah/yq).
+Note that you will version v3.4.1 or larger. 
+For Ubuntu, `sudo snap install yq` is the easiest way to get a good version.
 
 Before you start the network make sure you build ercc and ecc. In
 
 ```bash
-make -C $FPC_PATH/ercc all docker
-
-make -C $FPC_PATH/ecc DOCKER_IMAGE=fpc/fpc-echo DOCKER_ENCLAVE_SO_PATH=$FPC_PATH/examples/echo/_build/lib all docker
+make build
 ```
 
 ## Prepare network
@@ -28,6 +28,7 @@ cd $FPC_PATH/integration/test-network
 ./setup.sh
 ```
 
+## Do a test run
 Start network:
 ```bash
 cd $FPC_PATH/integration/test-network/fabric-samples/test-network
@@ -38,27 +39,29 @@ Install FPC components:
 ```bash
 cd $FPC_PATH/integration/test-network
 ./installFPC.sh
-# copy/past the export statement a successfully install will echo
+# IMPORTANT: a successfully install will show you an `export ...`
+# statement as stdout on the command-line.  Copy/Paste this statement
+# into your shell or below starting of FPC containers will not work properly
+# (but also would not give you clear errors that it doesn't!!)
 ```
 
 Start FPC container
 ```bash
-cd $FPC_PATH/integration/test-network
-docker-compose up -d
+make ercc-ecc-run
 ```
 
 Run test program
 ```bash
 cd ${FPC_PATH}/client_sdk/go/test
 make
-./test
+make run
 ```
 
 Shutdown network
 ```bash
 cd $FPC_PATH/integration/test-network
 docker-compose down
-cd $FPC_PATH/integration/test-network/fabric-samples
+cd $FPC_PATH/integration/test-network/fabric-samples/test-network
 ./network.sh down
 rm -f ${FPC_PATH}/client_sdk/go/test/wallet/appUser.id
 ```
