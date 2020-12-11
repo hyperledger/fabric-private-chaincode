@@ -68,6 +68,11 @@ func main() {
 	os.Setenv("GRPC_VERBOSITY", "DEBUG")
 	os.Setenv("GRPC_GO_LOG_SEVERITY_LEVEL", "INFO")
 
+	ccID := os.Getenv("CC_ID")
+	if ccID == "" {
+		panic("CC_ID not set")
+	}
+
 	fpcPath := os.Getenv("FPC_PATH")
 	if fpcPath == "" {
 		panic("FPC_PATH not set")
@@ -118,7 +123,7 @@ func main() {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	//ercc := network.GetContract("ercc")
-	admin := fpc.GetManagementAPI(network, "ecc")
+	admin := fpc.GetManagementAPI(network, ccID)
 
 	// Setup Chaincode Enclave
 	logger.Debugf("--> Create FPC chaincode enclave: ")
@@ -129,7 +134,7 @@ func main() {
 	}
 
 	// Get FPC Contract
-	contract := fpc.GetContract(network, "ecc")
+	contract := fpc.GetContract(network, ccID)
 
 	// Invoke FPC Chaincode
 	logger.Debugf("--> Invoke FPC chaincode: ")

@@ -12,13 +12,21 @@ if [[ -z "${FPC_PATH}" ]]; then
   exit 1
 fi
 
-DEPLOYMENT_PATH=$1
+if [ "$#" -ne 5 ]; then
+  echo "ERROR: incorrect number of parameters"
+  echo "Use: ./package.sh <_deployment> <ercc-id> <ercc-version> <cc-id> <cc-version>"
 
-if [[ -z "${DEPLOYMENT_PATH}" ]]; then
-  echo "ERROR: No outpath defined"
-  echo "Use: ./package.sh _deployment"
   exit 1
 fi
+
+
+DEPLOYMENT_PATH="$1"
+ERCC_ID="$2"
+ERCC_VER="$3"
+CC_ID="$4"
+CC_VER="$5"
+
+
 
 packageChaincode() {
   output_dir=$1
@@ -83,5 +91,5 @@ EOF
 
 PEERS=("peer0.org1.example.com" "peer0.org2.example.com")
 
-packageChaincode "${DEPLOYMENT_PATH}" "ercc" "1.0" "external" 9999
-packageChaincode "${DEPLOYMENT_PATH}" "ecc" "1.0" "external" 9999
+packageChaincode "${DEPLOYMENT_PATH}" "${ERCC_ID}" "${ERCC_VER}" "external" 9999
+packageChaincode "${DEPLOYMENT_PATH}" "${CC_ID}" "${CC_VER}" "external" 9999

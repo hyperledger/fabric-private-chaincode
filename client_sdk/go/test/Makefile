@@ -6,6 +6,8 @@
 TOP = ../../..
 include $(TOP)/build.mk
 
+CC_ID ?= echo
+
 build:
 	$(GO) build
 
@@ -17,4 +19,4 @@ clean:
 	rm -rf keystore wallet
 
 run:
-	$(GO) run .
+	env CC_ID=${CC_ID} $(GO) run .
