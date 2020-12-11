@@ -380,6 +380,7 @@ func (e *StubImpl) Invoke(shimStub shim.ChaincodeStubInterface) ([]byte, error) 
 		return nil, fmt.Errorf("marshal error")
 	}
 	crmProto := &fpcpb.ChaincodeRequestMessage{
+		// TODO: eventually this should be an encrypted CleartextRequestMessage
 		EncryptedRequest: cleartextChaincodeRequestMessageProtoBytes,
 	}
 	crmProtoBytes, err := proto.Marshal(crmProto)
