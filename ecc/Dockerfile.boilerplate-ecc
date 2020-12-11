@@ -9,7 +9,6 @@
 #  Configuration (build) paramaters (for defaults, see below section with ARGs)
 #  - fpc image version:         FPC_VERSION
 #  - sgxmode:                   SGX_MODE
-#  - sgx attestation mode:      FPC_ATTESTATION_TYPE
 #  - additional dev apt pkgs:   APT_ADD_DEV_PKGS
 
 ARG FPC_VERSION=latest
