@@ -1,5 +1,6 @@
 /*
  * Copyright IBM Corp. All Rights Reserved.
+ * Copyright 2020 Intel Corporation
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -15,10 +16,10 @@ enclave {
                 [in, size=64] const uint8_t *pubkey);
 
         public int ecall_cc_invoke(
-                [in, size=signed_proposal_proto_bytes_len] uint8_t *signed_proposal_proto_bytes, uint32_t signed_proposal_proto_bytes_len,
-                [in, size=encoded_args_len] const char *encoded_args, uint32_t encoded_args_len,
-                [out, size=response_len_in] uint8_t *response, uint32_t response_len_in,
-                [out] uint32_t *response_len_out,
+                [in, size=signed_proposal_proto_bytes_len] const uint8_t *signed_proposal_proto_bytes, uint32_t signed_proposal_proto_bytes_len,
+                [in, size=cc_request_message_proto_len] const uint8_t *cc_request_message_proto, uint32_t cc_request_message_proto_len,
+                [out, size=cc_response_message_proto_len_in] uint8_t *cc_response_message_proto, uint32_t cc_response_message_proto_len_in,
+                [out] uint32_t *cc_response_message_proto_len_out,
                 [user_check] void *u_shim_ctx);
 
     };

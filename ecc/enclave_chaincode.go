@@ -9,7 +9,6 @@ package ecc
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 
 	"github.com/golang/protobuf/proto"
@@ -359,44 +358,14 @@ func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response 
 		return shim.Error("ecc: Enclave not initialized! Run setup first!")
 	}
 
-	// get and json-encode parameters
-	// Note: client side call of '{ "Args": [ arg1, arg2, .. ] }' and '{ "Function": "arg1", "Args": [ arg2, .. ] }' are identical ...
-	argss := stub.GetStringArgs()
-	logger.Debugf("string args: %s", argss)
-	jsonArgs, err := json.Marshal(argss)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	logger.Debugf("json args: %s", jsonArgs)
-
-	//pk := []byte(nil) // we don't really support a secure channel to the client yet ..
-	//// TODO: one of the place to fix when integrating end-to-end secure channel to client
-
 	// call enclave
 	var errMsg string
-	b64ChaincodeResponseMessage, errInvoke := t.enclave.Invoke(jsonArgs, stub)
+	b64ChaincodeResponseMessage, errInvoke := t.enclave.Invoke(stub)
 	if errInvoke != nil {
 		errMsg = fmt.Sprintf("t.enclave.Invoke failed: %s", errInvoke)
 		logger.Errorf(errMsg)
 		// likely a chaincode error, so we stil want response go back ...
 	}
-
-	//enclavePk, errPk := t.enclave.GetPublicKey()
-	//if errPk != nil {
-	//	errMsg = fmt.Sprintf("invoke t.enclave.GetPublicKey failed. Reason: %s", err)
-	//	logger.Errorf(errMsg)
-	//	// return (and ignore any potential response) as this is a more systematic error
-	//	return shim.Error(errMsg)
-	//}
-	//_ = enclavePk
-
-	//fpcResponse := &utils.Response{
-	//	ResponseData: responseData,
-	//	Signature:    signature,
-	//	PublicKey:    enclavePk,
-	//}
-	//responseBytes, _ := json.Marshal(fpcResponse)
 
 	var response pb.Response
 	if errInvoke == nil {

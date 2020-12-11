@@ -92,7 +92,7 @@ func TestEnclaveStub_Invoke(t *testing.T) {
 	// start without binding
 	stub.Bind(nil, nil)
 
-	_, err = stub.Invoke(nil, nil)
+	_, err = stub.Invoke(nil)
 	if err == nil {
 		t.Fatalf("error expected")
 	}
@@ -108,14 +108,6 @@ func TestEnclaveStub_GetPublicKey(t *testing.T) {
 
 	// start without binding
 	stub.Bind(nil, nil)
-
-	pk, err := stub.GetPublicKey()
-	if err != nil {
-		t.Fatalf("GetPubKey returned error %s", err)
-	}
-	if pk == nil {
-		t.Fatalf("pk is nil")
-	}
 }
 
 func TestEnclaveStub_Create(t *testing.T) {

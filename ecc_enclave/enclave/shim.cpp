@@ -209,47 +209,20 @@ void get_public_state_by_partial_composite_key(
 
 int get_string_args(std::vector<std::string>& argss, shim_ctx_ptr_t ctx)
 {
-    JSON_Value* root = json_parse_string(ctx->json_args);
-    if (json_value_get_type(root) != JSONArray)
-    {
-        LOG_ERROR("Shim: Cannot parse args '%s'", ctx->json_args);
-        return -1;
-    }
-
-    JSON_Array* args = json_value_get_array(root);
-    for (int i = 0; i < json_array_get_count(args); i++)
-    {
-        argss.push_back(json_array_get_string(args, i));
-    }
-    json_value_free(root);
+    argss = ctx->string_args;
     return 1;
 }
 
 int get_func_and_params(
     std::string& func_name, std::vector<std::string>& params, shim_ctx_ptr_t ctx)
 {
-    JSON_Value* root = json_parse_string(ctx->json_args);
-    if (json_value_get_type(root) != JSONArray)
-    {
-        LOG_ERROR("Shim: Cannot parse args '%s'", ctx->json_args);
-        return -1;
-    }
+    COND2LOGERR(ctx->string_args.size() == 0, "no function name");
+    func_name = ctx->string_args[0];
+    params = ctx->string_args;
+    params.erase(params.begin());
 
-    JSON_Array* args = json_value_get_array(root);
-    if (0 < json_array_get_count(args))
-    {
-        func_name = json_array_get_string(args, 0);
-    }
-    else
-    {
-        LOG_ERROR("Shim: args '%s' do not contain a function name", ctx->json_args);
-        return -1;
-    }
-
-    for (int i = 1; i < json_array_get_count(args); i++)
-    {
-        params.push_back(json_array_get_string(args, i));
-    }
-    json_value_free(root);
     return 1;
+
+err:
+    return -1;
 }

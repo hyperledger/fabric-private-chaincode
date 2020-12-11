@@ -33,9 +33,9 @@ int sgxcc_bind(enclave_id_t eid, report_t* report, ec256_public_t* pubkey)
 }
 
 int sgxcc_invoke(enclave_id_t eid,
-    uint8_t* signed_proposal_proto_bytes,
+    const uint8_t* signed_proposal_proto_bytes,
     uint32_t signed_proposal_proto_bytes_len,
-    const char* b64_chaincode_request_message,
+    const uint8_t* b64_chaincode_request_message,
     uint32_t b64_chaincode_request_message_len,
     uint8_t* b64_chaincode_response_message,
     uint32_t b64_chaincode_response_message_len_in,

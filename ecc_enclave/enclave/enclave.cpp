@@ -215,78 +215,60 @@ bool crypto_created = false;
 // chaincode call
 // output, response <- F(args, input)
 // signature <- sign (hash,sk)
-int ecall_cc_invoke(uint8_t* signed_proposal_proto_bytes,
+int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
     uint32_t signed_proposal_proto_bytes_len,
-    const char* b64_chaincode_request_message,
-    uint32_t b64_chaincode_request_message_len,
-    uint8_t* b64_chaincode_response_message,
-    uint32_t b64_chaincode_response_message_len_in,
-    uint32_t* b64_chaincode_response_message_len_out,
+    const uint8_t* cc_request_message_proto,
+    uint32_t cc_request_message_proto_len,
+    uint8_t* cc_response_message_proto,
+    uint32_t cc_response_message_proto_len_in,
+    uint32_t* cc_response_message_proto_len_out,
     void* u_shim_ctx)
 {
     LOG_DEBUG("ecall_cc_invoke");
-    LOG_DEBUG("b64_chaincode_request_message: %s", b64_chaincode_request_message);
-
     LOG_DEBUG("signed proposal length %u", signed_proposal_proto_bytes_len);
-
-    /*
-    // NOTE/TODO: this crypto part will be removed
-    if (!crypto_created)
-    {
-        pdo::crypto::sig::PublicKey verification_key_;
-        pdo::crypto::sig::PrivateKey signature_key_;
-        signature_key_.Generate();  // private key
-        verification_key_ = signature_key_.GetPublicKey();
-        // debug
-        std::string s = verification_key_.Serialize();
-        LOG_DEBUG("enclave verification key: %s", s.c_str());
-        crypto_created = true;
-    }
-    else
-    {
-        LOG_DEBUG("enclave crypto material created");
-    }
-    */
 
     bool b;
     fpc_ChaincodeRequestMessage cc_request_message = {};
+    fpc_CleartextChaincodeRequest cleartext_cc_request = {};
     t_shim_ctx_t ctx;
     int ret;
     // estimate max response len (take into account other fields and b64 encoding)
-    uint32_t response_len = b64_chaincode_response_message_len_in / 4 * 3 - 1024;
-    uint8_t response[b64_chaincode_response_message_len_in / 4 * 3];
+    uint32_t response_len = cc_response_message_proto_len_in / 4 * 3 - 1024;
+    uint8_t response[cc_response_message_proto_len_in / 4 * 3];
     uint32_t response_len_out = 0;
     std::string b64_response;
 
     ctx.u_shim_ctx = u_shim_ctx;
-    ctx.encoded_args = b64_chaincode_request_message;
 
     {
-        // TODO decode b64_chaincode_request_message as necessary, and marshal parameters
-        // This block assumes b64_chaincode_request_message is literally what it is
         pb_istream_t istream;
 
-        // base64 decode message
-        std::string decoded_crm;
-        std::string b64_chaincode_request_message_str(
-            b64_chaincode_request_message, b64_chaincode_request_message_len);
-        decoded_crm = base64_decode(b64_chaincode_request_message_str);
-
-        // set stream
-        istream =
-            pb_istream_from_buffer((const unsigned char*)decoded_crm.c_str(), decoded_crm.length());
+        // set stream for ChaincodeRequestMessage
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)cc_request_message_proto, cc_request_message_proto_len);
 
         b = pb_decode(&istream, fpc_ChaincodeRequestMessage_fields, &cc_request_message);
         COND2LOGERR(!b, PB_GET_ERROR(&istream));
         COND2LOGERR(cc_request_message.encrypted_request->size == 0, "zero size request");
 
-        // cc_request_message.encrypted_request->size);
-        ctx.encoded_args = (const char*)cc_request_message.encrypted_request->bytes;
+        // set stream for CleartextChaincodeRequestMessage
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)cc_request_message.encrypted_request->bytes,
+            cc_request_message.encrypted_request->size);
+        b = pb_decode(&istream, fpc_CleartextChaincodeRequest_fields, &cleartext_cc_request);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+        COND2LOGERR(!cleartext_cc_request.has_input, "no input in cleartext request");
+
+        for (int i = 0; i < cleartext_cc_request.input.args_count; i++)
+        {
+            ctx.string_args.push_back(
+                std::string((const char*)cleartext_cc_request.input.args[i]->bytes,
+                    cleartext_cc_request.input.args[i]->size));
+        }
 
         // the dynamic memory in the message is release at the end
     }
 
-    ctx.json_args = ctx.encoded_args;
     ret = invoke(response, response_len, &response_len_out, &ctx);
     COND2ERR(ret != 0);
 
@@ -296,8 +278,6 @@ int ecall_cc_invoke(uint8_t* signed_proposal_proto_bytes,
         // TODO put response in protobuf and encode it
 
         fpc_ChaincodeResponseMessage crm;
-        uint32_t stream_buffer_size = b64_chaincode_response_message_len_in / 4 * 3;
-        uint8_t stream_buffer[stream_buffer_size];
         pb_ostream_t ostream;
         std::string b64_crm_proto;
 
@@ -312,35 +292,22 @@ int ecall_cc_invoke(uint8_t* signed_proposal_proto_bytes,
         COND2LOGERR(ret != 0, "cannot encode field");
 
         // encode proto
-        ostream = pb_ostream_from_buffer(stream_buffer, stream_buffer_size);
+        ostream =
+            pb_ostream_from_buffer(cc_response_message_proto, cc_response_message_proto_len_in);
         b = pb_encode(&ostream, fpc_ChaincodeResponseMessage_fields, &crm);
         COND2LOGERR(!b, "error encoding proto");
 
         pb_release(fpc_ChaincodeResponseMessage_fields, &crm);
 
-        // b64 encode
-        b64_crm_proto = base64_encode((const unsigned char*)stream_buffer, ostream.bytes_written);
-
-        // b64_response = base64_encode((const unsigned char*)response, response_len_out);
-
-        // ret = memcpy_s(b64_chaincode_response_message, b64_chaincode_response_message_len_in,
-        //    b64_response.c_str(), b64_response.length());
-
-        ret = memcpy_s(b64_chaincode_response_message, b64_chaincode_response_message_len_in,
-            b64_crm_proto.c_str(), b64_crm_proto.length());
-        COND2LOGERR(ret != 0, "cannot copy to response");
-
-        //*b64_chaincode_response_message_len_out = b64_response.length();
-        *b64_chaincode_response_message_len_out = b64_crm_proto.length();
+        *cc_response_message_proto_len_out = ostream.bytes_written;
     }
 
-    // ret = gen_response("invoke", response, response_len_out, &ctx);
-
+    // release dynamic allocations (TODO:release in case of error)
     pb_release(fpc_ChaincodeRequestMessage_fields, &cc_request_message);
 
     return 0;
 
 err:
-    *b64_chaincode_response_message_len_out = 0;
+    *cc_response_message_proto_len_out = 0;
     return SGX_ERROR_UNEXPECTED;
 }
