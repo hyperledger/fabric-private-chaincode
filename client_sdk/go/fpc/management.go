@@ -11,12 +11,15 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc/attestation"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	pbatt "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos/attestation"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
-	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	"github.com/hyperledger/fabric/protoutil"
 )
@@ -29,6 +32,11 @@ type ManagementAPI interface {
 	//  Parameters:
 	//  peerEndpoint is the endpoint on which the enclave should be instantiated.
 	//  attestationParams are parameters used during attestation of the instantiated enclave.
+	// For SGX, it expects that the `SGX_MODE` environment variable is properly defined.
+	// Additionally, if `SGX_MODE` is `HW`, then also the `SGX_CREDENTIALS_PATH` environment
+	// variable must be defined and point to a directory containing the Intel IAS credential
+	// files `api_key.txt`, `spid.txt` and `spid_type.txt`. (See `${FPC_PATH}/README.md` for
+	// more information on these files)
 	InitEnclave(peerEndpoint string, attestationParams ...string) error
 }
 
@@ -63,17 +71,42 @@ func (c *managementState) InitEnclave(peerEndpoint string, attestationParams ...
 		return err
 	}
 
-	// TODO get real attestation params from somewhere (initially probably best via `SGX_CREDENTIALS_PATH` env variable like `fabric/bin/peer.sh` ...)
+	// Set attestation paramaters
 	type Params struct {
 		AttestationType string `json:"attestation_type"`
+		HexSpid         string `json:"hex_spid"`
+		SigRL           string `json:"sig_rl"`
 	}
+	var params Params
 
-	serializedJSONParams, err := json.Marshal(Params{
-		AttestationType: "simulated",
-	})
-	if err != nil {
-		shim.Error(err.Error())
+	switch sgxMode := os.Getenv("SGX_MODE"); sgxMode {
+	case "HW":
+		sgxCredentialsPath := os.Getenv("SGX_CREDENTIALS_PATH")
+		if sgxCredentialsPath == "" {
+			return fmt.Errorf("SGX_CREDENTIALS_PATH environment variable undefined")
+		}
+		hexSpidPath := filepath.Join(sgxCredentialsPath, "spid.txt")
+		hexSpid, err := ioutil.ReadFile(hexSpidPath)
+		if err != nil {
+			return fmt.Errorf("Could not read properly (hex) spid file %s: %v", hexSpidPath, err)
+		}
+		spidTypePath := filepath.Join(sgxCredentialsPath, "spid_type.txt")
+		spidType, err := ioutil.ReadFile(spidTypePath)
+		if err != nil {
+			return fmt.Errorf("Could not read properly (hex) spid file %s: %v", spidTypePath, err)
+		}
+
+		params = Params{AttestationType: strings.TrimSuffix(string(spidType), "\n"), HexSpid: strings.TrimSuffix(string(hexSpid), "\n"), SigRL: ""}
+	case "SIM":
+		params = Params{AttestationType: "simulated"}
+	default:
+		return fmt.Errorf("SGX_MODE environment variable ill-defined: '%s'", sgxMode)
 	}
+	serializedJSONParams, err := json.Marshal(params)
+	if err != nil {
+		return fmt.Errorf("Cannot marshall (json) attestation params '%v': %v", params, err)
+	}
+	logger.Debugf("found attestation params: '%v' (json='%s')", params, serializedJSONParams)
 
 	initMsg := &protos.InitEnclaveMessage{
 		PeerEndpoint: peerEndpoint,
