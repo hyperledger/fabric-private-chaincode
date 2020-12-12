@@ -14,8 +14,6 @@
 extern "C" {
 #endif
 
-int sgxcc_bind(enclave_id_t eid, report_t* report, ec256_public_t* pubkey);
-
 int sgxcc_invoke(enclave_id_t eid,
     const uint8_t* signed_proposal_proto_bytes,
     uint32_t signed_proposal_proto_bytes_len,

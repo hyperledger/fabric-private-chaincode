@@ -25,46 +25,6 @@
 extern sgx_ec256_private_t enclave_sk;
 extern sgx_ec256_public_t enclave_pk;
 
-// this is tlcc binding
-sgx_ec256_public_t tlcc_pk = {0};
-
-int ecall_bind_tlcc(const sgx_report_t* report, const uint8_t* pubkey)
-{
-    LOG_DEBUG("ecall_bind_tlcc: \tArgs: &report=%p, &pk=%p", report, pubkey);
-
-    // IMPORTANT!!!
-    // here is our testing backdoor for starting ecc without a tlcc instance
-    if (report == NULL && pubkey == NULL)
-    {
-        LOG_WARNING("Start without TLCC!!!!");
-        return SGX_SUCCESS;
-    }
-
-    sgx_sha256_hash_t pk_hash;
-    sgx_sha256_msg(pubkey, 64, &pk_hash);
-    std::string base64_hash = base64_encode((const unsigned char*)pk_hash, SGX_SHA256_HASH_SIZE);
-    LOG_DEBUG("Received pk hash: %s", base64_hash.c_str());
-
-    if (memcmp(&pk_hash, &(report->body.report_data), SGX_HASH_SIZE) != 0)
-    {
-        LOG_ERROR("PK does not match the one in report !");
-        return SGX_ERROR_INVALID_PARAMETER;
-    }
-
-    int ver_ret = sgx_verify_report(report);
-    if (ver_ret != SGX_SUCCESS)
-    {
-        LOG_ERROR("Attestation report verification failed!");
-        return ver_ret;
-    }
-
-    memcpy(&tlcc_pk, pubkey, 64);
-
-    // TODO negociate session key with tlcc
-    // for prototyping this is hardcoded right now
-    LOG_DEBUG("Binding successfull");
-    return SGX_SUCCESS;
-}
 /*
 int gen_response(const char* txType,
     uint8_t* response,
@@ -75,7 +35,6 @@ int gen_response(const char* txType,
 
     // Note: below signature is verified in
     // - ecc/crypto/ecdsa.go::Verify (for VSCC)
-    // - tlcc_enclave/enclave/ledger.cpp::int parse_endorser_transaction (for TLCC)
 
     // create Hash <- H(txType in {"invoke"} || encoded_args || result || read set || write
     // set)
