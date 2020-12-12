@@ -43,8 +43,6 @@ DOCKER_CMD := docker
 # (Note: vars are exported as env variables as we also need them in various scripts)
 # alternatives for SGX_MODE: SIM or HW
 export SGX_MODE ?= SIM
-# alternatives for FPC_ATTESTATION_TYPE: epid_linkable or epid_unlinkable
-export FPC_ATTESTATION_TYPE ?= epid_unlinkable
 export SGX_BUILD ?= PRERELEASE
 export SGX_SSL ?= /opt/intel/sgxssl
 export SGX_SDK ?= /opt/intel/sgxsdk

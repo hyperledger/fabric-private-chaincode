@@ -23,15 +23,6 @@ extern void get_state_by_partial_composite_key(
     const char* comp_key, uint8_t* values, uint32_t max_len, uint32_t* values_len, void* ctx);
 extern void put_state(const char* key, uint8_t* val, uint32_t val_len, void* ctx);
 
-int sgxcc_bind(enclave_id_t eid, report_t* report, ec256_public_t* pubkey)
-{
-    int enclave_ret = SGX_ERROR_UNEXPECTED;
-    int ret = ecall_bind_tlcc(eid, &enclave_ret, (sgx_report_t*)report, (uint8_t*)pubkey);
-    CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(ret)
-    CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(enclave_ret)
-    return SGX_SUCCESS;
-}
-
 int sgxcc_invoke(enclave_id_t eid,
     const uint8_t* signed_proposal_proto_bytes,
     uint32_t signed_proposal_proto_bytes_len,

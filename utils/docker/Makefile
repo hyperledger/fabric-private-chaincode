@@ -188,7 +188,6 @@ peer: base-dev
          --build-arg FPC_REPO_URL=file:///tmp/cloned-local-fpc-git-repo\
          --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
-         --build-arg FPC_ATTESTATION_TYPE=${FPC_ATTESTATION_TYPE}\
          . )
 	$(DOCKER) tag $(FPC_DOCKER_PEER_NAME) $(FPC_DOCKER_PEER_NAME):${FPC_VERSION}
 
@@ -201,7 +200,6 @@ dev: base-dev
          --build-arg FPC_REPO_URL=file:///tmp/cloned-local-fpc-git-repo\
          --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
-         --build-arg FPC_ATTESTATION_TYPE=${FPC_ATTESTATION_TYPE}\
          . )
 	$(DOCKER) tag $(FPC_DOCKER_DEV_NAME) $(FPC_DOCKER_DEV_NAME):${FPC_VERSION}
 
@@ -214,7 +212,6 @@ cc-builder: base-dev
          --build-arg FPC_REPO_URL=file:///tmp/cloned-local-fpc-git-repo\
          --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
-         --build-arg FPC_ATTESTATION_TYPE=${FPC_ATTESTATION_TYPE}\
          . )
 	$(DOCKER) tag $(FPC_DOCKER_CC_BUILDER_NAME) $(FPC_DOCKER_CC_BUILDER_NAME):${FPC_VERSION}
 

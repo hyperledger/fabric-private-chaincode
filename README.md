@@ -181,16 +181,7 @@ What you need:
 In order to use Intel's Attestation Service (IAS), you need to register
 with Intel. On the [IAS EPID registration page](https://api.portal.trustedservices.intel.com/EPID-attestation)
 you can find more details on how to register and obtain your SPID plus corresponding api-key.
-
 We currently support both `linkable` and `unlinkable` signatures for the attestation.
-The type of attestation used is selected based on the `FPC_ATTESTATION_TYPE` environment variable:
-`epid_unlinkable` for unlinkable or `epid_linkable` for linkable signatures. If you
-do not define that environment variable, the chosen attestation method is `epid_unlinkable`.
-If you are changing the type, please perform a rebuild with `make clean all`.
-Note that a mismatch between your IAS credentials and the linkable setting
-will result in an (HTTP) error '400' visible in the log-files when the
-code tries to verify the attestation. (Another cause for such error '400'
-could a mismatch between provided SPID and api key as specified below).
 
 Place your ias api key and your SPID in the ``ias`` folder as follows:
 
@@ -461,9 +452,6 @@ export SGX_MODE=SIM
 # SGX simulation mode
 export SGX_MODE=HW
 
-# IAS attestation (epid_linkable or epid_unlinkable)
-# Note: The attestation type is ignored when SGX_MODE=SIM is set.
-export FPC_ATTESTATION_TYPE=epid_linkable
 ```
 ##### Clang-format
 

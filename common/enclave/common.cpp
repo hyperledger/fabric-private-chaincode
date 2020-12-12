@@ -127,18 +127,3 @@ int ecall_create_report(
     LOG_DEBUG("Enc: Report generated!");
     return SGX_SUCCESS;
 }
-
-// returns enclave pk in Big Endian format
-int ecall_get_pk(uint8_t* pubkey)
-{
-    // transform enclave_pk to Big Endian before hashing
-    uint8_t enclave_pk_be[sizeof(sgx_ec256_public_t)];
-    memcpy(enclave_pk_be, &enclave_pk, sizeof(sgx_ec256_public_t));
-    bytes_swap(enclave_pk_be, 32);
-    bytes_swap(enclave_pk_be + 32, 32);
-
-    memcpy(pubkey, &enclave_pk_be, sizeof(sgx_ec256_public_t));
-
-    LOG_DEBUG("Enc: Return enclave pk as Big Endian");
-    return SGX_SUCCESS;
-}

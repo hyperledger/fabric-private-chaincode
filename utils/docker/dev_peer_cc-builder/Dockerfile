@@ -19,7 +19,6 @@
 #  - git user:                  GIT_USER_NAME
 #  - git user's email:          GIT_USER_EMAIL
 #  - sgxmode:                   SGX_MODE
-#  - sgx attestation mode:      FPC_ATTESTATION_TYPE
 #  - additional dev apt pkgs:   APT_DEV_ADD_PKGS
 
 # Note on SGX_MODE:
@@ -32,7 +31,6 @@
 # global config params
 ARG FPC_VERSION=latest
 ARG SGX_MODE=SIM
-ARG FPC_ATTESTATION_TYPE
 ARG APT_DEV_ADD_PKGS=
 
 # global constants
@@ -92,8 +90,6 @@ FROM common as peer-builder
 # import global vars
 ARG SGX_MODE
 ENV SGX_MODE=${SGX_MODE}
-ARG FPC_ATTESTATION_TYPE
-ENV FPC_ATTESTATION_TYPE=${FPC_ATTESTATION_TYPE}
 
 # Build FPC peer
 RUN cd ${FPC_PATH} \
@@ -111,7 +107,6 @@ FROM hyperledger/fabric-private-chaincode-base-rt:${FPC_VERSION} as peer
 ARG FABRIC_REL_PATH
 ARG FPC_REL_PATH
 ARG SGX_MODE
-ARG FPC_ATTESTATION_TYPE
 
 # local vars
 # note these envs are _not_ inhereted from above as we start from base-rt !
@@ -125,7 +120,6 @@ ENV FABRIC_BIN_DIR=${FABRIC_BIN_DIR}
 ENV FPC_PATH=${FPC_PATH}
 ENV FPC_CMDS=${FPC_CMDS}
 ENV SGX_MODE=${SGX_MODE}
-ENV FPC_ATTESTATION_TYPE=${FPC_ATTESTATION_TYPE}
 
 RUN apt-get update \
   && apt-get install -y -q \
@@ -159,11 +153,6 @@ FROM common as cc-builder
 # import global vars
 ARG SGX_MODE
 ENV SGX_MODE=${SGX_MODE}
-# Note: Only the untrusted part of the SDK depends on FPC_ATTESTATION_TYPE; the trusted parts
-#  compiled into `enclave.so`, the output of a running cc-builder, do not. So it does not
-#  matter which way the SDK is built regarding attestation and we do not have to "specialize"
-#  for FPC_ATTESTATION_TYPE as we do for `peer`.  But as properties of `enclave.so` depend
-#  on SGX_MODE, we do have to specialize for that ...
 
 WORKDIR ${FPC_PATH}
 

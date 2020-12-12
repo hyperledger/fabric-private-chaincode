@@ -11,10 +11,6 @@ enclave {
     from "attestation-api/ocalls/attestation-ocalls.edl" import *;
 
     trusted {
-        public int ecall_bind_tlcc(
-                [in] const sgx_report_t *report,
-                [in, size=64] const uint8_t *pubkey);
-
         public int ecall_cc_invoke(
                 [in, size=signed_proposal_proto_bytes_len] const uint8_t *signed_proposal_proto_bytes, uint32_t signed_proposal_proto_bytes_len,
                 [in, size=cc_request_message_proto_len] const uint8_t *cc_request_message_proto, uint32_t cc_request_message_proto_len,
