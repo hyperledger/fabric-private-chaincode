@@ -32,10 +32,6 @@ fi
 
 # patch fabric-sample
 
-# - network script (for more meaningful debugging options)
-(cd ${FABRIC_SAMPLES} && git am --3way ../*.patch)
-
-
 # - config and docker-compose files (for fpc lite enablement)
 
 CORE_PATH=${FABRIC_SAMPLES}/config/core.yaml
