@@ -19,6 +19,13 @@ import (
 )
 
 func ReplayReadWrites(stub shim.ChaincodeStubInterface, rwset *kvrwset.KVRWSet) (readset [][]byte, writeset [][]byte, err error) {
+	//TODO error checking
+
+	// nil rwset => nothing to do
+	if rwset == nil {
+		return nil, nil, nil
+	}
+
 	// normal reads
 	var readKeys []string
 	readsetMap := make(map[string][]byte)
@@ -73,6 +80,10 @@ func ReplayReadWrites(stub shim.ChaincodeStubInterface, rwset *kvrwset.KVRWSet) 
 }
 
 func Validate(responseMsg *protos.ChaincodeResponseMessage, readset, writeset [][]byte, attestedData *protos.AttestedData) error {
+	if responseMsg.Signature == nil {
+		return fmt.Errorf("absent enclave signature")
+	}
+
 	// Note: below signature was created in ecc_enclave/enclave/enclave.cpp::gen_response
 	hash := ComputedHash(responseMsg, readset, writeset)
 
@@ -84,7 +95,6 @@ func Validate(responseMsg *protos.ChaincodeResponseMessage, readset, writeset []
 	}
 
 	valid := ecdsa.VerifyASN1(pub.(*ecdsa.PublicKey), hash[:], responseMsg.Signature)
-	fmt.Println("signature verified:", valid)
 	if !valid {
 		return fmt.Errorf("signature invalid")
 	}

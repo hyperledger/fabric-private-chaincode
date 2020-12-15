@@ -5,6 +5,6 @@ fpc.CleartextChaincodeRequest.return_encryption_key type:FT_POINTER
 fpc.ChaincodeRequestMessage.encrypted_request type:FT_POINTER
 
 fpc.ChaincodeResponseMessage.encrypted_response type:FT_POINTER
-
 fpc.ChaincodeResponseMessage.signature type:FT_POINTER
+fpc.ChaincodeResponseMessage.enclave_id type:FT_POINTER
 

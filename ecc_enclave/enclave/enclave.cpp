@@ -22,6 +22,8 @@
 #include "pb_decode.h"
 #include "pb_encode.h"
 
+#include "cc_data.h"
+
 extern sgx_ec256_private_t enclave_sk;
 extern sgx_ec256_public_t enclave_pk;
 
@@ -240,7 +242,7 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
 
         fpc_ChaincodeResponseMessage crm;
         pb_ostream_t ostream;
-        std::string b64_crm_proto;
+        std::string enclave_id;
 
         // create proto struct to encode
         // TODO: create fabric Response object
@@ -253,6 +255,14 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         ret = memcpy_s(crm.encrypted_response->bytes, crm.encrypted_response->size,
             b64_response.c_str(), b64_response.length());
         COND2LOGERR(ret != 0, "cannot encode field");
+
+        // serialize enclave id
+        enclave_id = g_cc_data->get_enclave_id();
+        crm.enclave_id = (char*)pb_realloc(crm.enclave_id, enclave_id.length() + 1);
+        ret =
+            memcpy_s(crm.enclave_id, enclave_id.length(), enclave_id.c_str(), enclave_id.length());
+        crm.enclave_id[enclave_id.length()] = '\0';
+        COND2LOGERR(ret != 0, "cannot encode enclave id");
 
         // encode proto
         ostream =
