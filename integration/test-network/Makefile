@@ -30,3 +30,6 @@ ercc-ecc-run:
 		[ "$${SGX_DEVICE_PATH}" != "none" ] || ( echo "ERROR: SGX_MODE is HW but no sgx device found"; exit 1; ) \
 	fi && \
 	env CC_ID=${TEST_EXAMPLE} docker-compose up
+
+ercc-ecc-stop:
+	env CC_ID=${TEST_EXAMPLE} docker-compose down

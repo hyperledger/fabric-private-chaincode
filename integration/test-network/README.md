@@ -8,7 +8,7 @@ Make sure you have installed [yq](https://github.com/mikefarah/yq).
 Note that you will version v3.4.1 or larger. 
 For Ubuntu, `sudo snap install yq` is the easiest way to get a good version.
 
-Before you start the network make sure you build ercc and ecc. In
+Before you start the network make sure you build ercc and ecc containers:
 
 ```bash
 make build
@@ -59,9 +59,35 @@ make run
 
 Shutdown network
 ```bash
-cd $FPC_PATH/integration/test-network
-docker-compose down
+make -C $FPC_PATH/integration/test-network ercc-ecc-stop
 cd $FPC_PATH/integration/test-network/fabric-samples/test-network
 ./network.sh down
 rm -f ${FPC_PATH}/client_sdk/go/test/wallet/appUser.id
+```
+
+For diagnostics, you can run the following to see peer logs
+```bash
+docker logs -f peer0.org1.example.com
+```
+
+To interact interactively with the peer, run the following
+```bash
+cd $FPC_PATH/integration/test-network/fabric-samples/test-network;
+export FABRIC_CFG_PATH=$FPC_PATH/integration/test-network/fabric-samples/config
+export PATH=$(readlink -f ../bin):$PATH
+source ./scripts/envVar.sh; \
+setGlobals 1;
+```
+and you will be able to run the usual peer cli commands, e.g.,
+```bash
+peer lifecycle chaincode queryinstalled
+```
+and, in particular, also access ercc to see the registry state, e.g.,
+```bash
+peer chaincode query -C mychannel -n ercc -c '{"Function": "queryChaincodeEndPoints", "Args" : ["echo"]}'
+peer chaincode query -C mychannel -n ercc -c '{"Function": "queryListProvisionedEnclaves", "Args" : ["echo"]}'
+peer chaincode query -C mychannel -n ercc -c '{"Function": "queryChaincodeEncryptionKey", "Args" : ["echo"]}'
+peer chaincode query -C mychannel -n ercc -c '{"Function": "queryListEnclaveCredentials", "Args" : ["echo"]}'
+E_ID=$(peer chaincode query -C mychannel -n ercc -c '{"Function": "queryListProvisionedEnclaves", "Args" : ["echo"]}' 2> /dev/null  | jq -r '.[0]')
+peer chaincode query -C mychannel -n ercc -c '{"Function": "queryEnclaveCredentials", "Args" : ["echo", "'${E_ID}'"]}'
 ```
