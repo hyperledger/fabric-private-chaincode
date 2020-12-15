@@ -59,37 +59,40 @@ func (t *EnclaveChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response 
 
 func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Response {
 
+	initMsg, err := extractInitEnclaveMessage(stub)
+	if err != nil {
+		errMsg := fmt.Sprintf("InitEnclave msg extraction failed: %s", err.Error())
+		return shim.Error(errMsg)
+	}
+
 	// fetch cc params and host params
 	chaincodeParams, err := extractChaincodeParams(stub)
 	if err != nil {
-		return shim.Error(err.Error())
+		errMsg := fmt.Sprintf("chaincode params extraction failed: %s", err.Error())
+		return shim.Error(errMsg)
 	}
 	serializedChaincodeParams, err := protoutil.Marshal(chaincodeParams)
 	if err != nil {
-		return shim.Error(err.Error())
+		errMsg := fmt.Sprintf("chaincode params marshalling failed: %s", err.Error())
+		return shim.Error(errMsg)
 	}
 
-	hostParams, err := extractHostParams(stub)
+	hostParams, err := extractHostParams(stub, initMsg)
 	if err != nil {
-		return shim.Error(err.Error())
+		errMsg := fmt.Sprintf("host params extraction failed: %s", err.Error())
+		return shim.Error(errMsg)
 	}
 	serializedHostParams, err := protoutil.Marshal(hostParams)
 	if err != nil {
-		return shim.Error(err.Error())
+		errMsg := fmt.Sprintf("host params marshalling failed: %s", err.Error())
+		return shim.Error(errMsg)
 	}
 
-	attestationParams, err := extractAttestationParams(stub)
+	// main enclave initialization function
+	credentialsBytes, err := t.enclave.Init(serializedChaincodeParams, serializedHostParams, initMsg.AttestationParams)
 	if err != nil {
-		return shim.Error(err.Error())
-	}
-	serializedAttestationParams, err := protoutil.Marshal(attestationParams)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	credentialsBytes, err := t.enclave.Init(serializedChaincodeParams, serializedHostParams, serializedAttestationParams)
-	if err != nil {
-		return shim.Error(err.Error())
+		errMsg := fmt.Sprintf("Enclave Init function failed: %s", err.Error())
+		return shim.Error(errMsg)
 	}
 
 	// return credentials

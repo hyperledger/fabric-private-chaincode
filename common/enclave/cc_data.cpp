@@ -13,7 +13,6 @@
 
 #include <pb_decode.h>
 #include <pb_encode.h>
-#include "protos/fpc/attestation.pb.h"
 #include "protos/fpc/fpc.pb.h"
 
 #include "attestation-api/attestation/attestation.h"
@@ -132,7 +131,8 @@ bool cc_data::get_credentials(const uint8_t* attestation_parameters,
     const uint32_t attestation_max_length = 1 << 12;
     uint32_t attestation_length;
     bool b;
-    std::string attestation_parameters_s;
+    std::string attestation_parameters_b64;
+    std::string attestation_parameters_json;
 
     // init parameters
     CATCH(b,
@@ -149,38 +149,11 @@ bool cc_data::get_credentials(const uint8_t* attestation_parameters,
     b = build_attested_data(attested_data);
     COND2ERR(!b);
 
-    {
-        // get attestation parameters in proto
-        pb_istream_t is, sis;
-        pb_wire_type_t wt;
-        uint32_t tag;
-        bool eof;
-
-        is = pb_istream_from_buffer(attestation_parameters, ap_size);
-        COND2LOGERR(!pb_decode_tag(&is, &wt, &tag, &eof), "cannot decode tag");
-        COND2LOGERR(wt != PB_WT_STRING, "unexpected type");
-        COND2LOGERR(tag != attestation_AttestationParameters_parameters_tag, "unexpected tag");
-
-        COND2LOGERR(!pb_make_string_substream(&is, &sis), "substream error");
-
-        {
-            // retrieve parameters in substream
-            std::string b64_ap_s;
-            CATCH(b, b64_ap_s.assign(sis.bytes_left, '0'));
-            COND2ERR(!b);
-
-            b = pb_read(&sis, (pb_byte_t*)b64_ap_s.c_str(), b64_ap_s.length());
-            COND2LOGERR(!b, "cannot read field");
-
-            attestation_parameters_s = base64_decode(b64_ap_s);
-        }
-
-        pb_close_string_substream(&is, &sis);
-    }
-
     // init attestation
+    attestation_parameters_b64 = std::string((const char*)attestation_parameters, ap_size);
+    attestation_parameters_json = base64_decode(attestation_parameters_b64);
     b = init_attestation(
-        (uint8_t*)attestation_parameters_s.c_str(), attestation_parameters_s.length());
+        (uint8_t*)attestation_parameters_json.c_str(), attestation_parameters_json.length());
     COND2LOGERR(!b, "cannot init attestation");
 
     // get attestation

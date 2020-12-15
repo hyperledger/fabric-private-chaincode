@@ -19,7 +19,6 @@
 #include "error.h"
 
 #include <pb_decode.h>
-#include "protos/fpc/attestation.pb.h"
 #include "protos/fpc/fpc.pb.h"
 
 #include "cc_data.h"
