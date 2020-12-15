@@ -5,8 +5,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
-FPC_TOP_DIR="${SCRIPTDIR}/.."
-FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
+FPC_PATH="${SCRIPTDIR}/.."
+FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 
 : ${FABRIC_CFG_PATH:="${SCRIPTDIR}/config"}
 
@@ -14,7 +14,7 @@ FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 CC_ID=echo_test
-CC_PATH=${FPC_TOP_DIR}/examples/echo/_build/lib/
+CC_PATH=${FPC_PATH}/examples/echo/_build/lib/
 CC_LANG=fpc-c
 CC_VER="$(cat ${CC_PATH}/mrenclave)"
 CC_SEQ="1"

@@ -4,9 +4,9 @@
 
 # assumes SCRIPTDIR is defined ...
 
-FPC_TOP_DIR=$(readlink -f "${SCRIPTDIR}/../../../../")
-FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
-say "FPC_TOP_DIR ${FPC_TOP_DIR} , FABRIC_SCRIPTDIR ${FABRIC_SCRIPTDIR}"
+FPC_PATH=$(readlink -f "${SCRIPTDIR}/../../../../")
+FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
+say "FPC_PATH ${FPC_PATH} , FABRIC_SCRIPTDIR ${FABRIC_SCRIPTDIR}"
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 
 FPC_CC_TYPE="fpc-c"
@@ -54,8 +54,8 @@ cc_build_for_host() {
     mkdir -p ${CC_LIB_PATH}
 
     # - ecc shims
-    try cp "${FPC_TOP_DIR}/ecc/ecc" "${CC_PATH}/chaincode"
-    try cp "${FPC_TOP_DIR}/ecc_enclave/_build/lib/libsgxcc.so" "${CC_LIB_PATH}/"
+    try cp "${FPC_PATH}/ecc/ecc" "${CC_PATH}/chaincode"
+    try cp "${FPC_PATH}/ecc_enclave/_build/lib/libsgxcc.so" "${CC_LIB_PATH}/"
 
     # - chaincode specific stuff
     try cp "${CC_SOURCE_DIR}/${MRENCLAVE_FILE}" "${CC_PATH}"
@@ -71,7 +71,7 @@ cc_build_for_docker() {
 
     # Adapt old container switcheroo ...
     # - DOCKER_IMAGE_NAME="some string" & remember it in CC_BUILD_DIR
-    # - try make SGX_MODE=${SGX_MODE} ENCLAVE_SO_PATH=${CC_ENCLAVESOPATH} DOCKER_IMAGE=${DOCKER_IMAGE_NAME} -C ${FPC_TOP_DIR}/ecc docker-fpc-app
+    # - try make SGX_MODE=${SGX_MODE} ENCLAVE_SO_PATH=${CC_ENCLAVESOPATH} DOCKER_IMAGE=${DOCKER_IMAGE_NAME} -C ${FPC_PATH}/ecc docker-fpc-app
 }
 
 # assumes CC_BUILD_DIR & CC_RT_METADATA_DIR

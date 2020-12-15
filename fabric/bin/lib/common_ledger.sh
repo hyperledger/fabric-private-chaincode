@@ -3,19 +3,19 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # assume
-# - FPC_TOP_DIR is defined
+# - FPC_PATH is defined
 # - FABRIC_CFG_PATH is defined
 # optional config overrides
 # - FABRIC_PATH
 # - FABRIC_BIN_DIR
 
-[ -d "${FPC_TOP_DIR}" ] || (echo "FPC_TOP_DIR not properly defined in '${FPC_TOP_DIR}'"; exit 1; )
+[ -d "${FPC_PATH}" ] || (echo "FPC_PATH not properly defined in '${FPC_PATH}'"; exit 1; )
 
-: ${FABRIC_PATH:="${FPC_TOP_DIR}/../../hyperledger/fabric/"}
+: ${FABRIC_PATH:="${FPC_PATH}/../../hyperledger/fabric/"}
 : ${FABRIC_BIN_DIR:="${FABRIC_PATH}/build/bin"}
-: ${FABRIC_UTIL_BIN_DIR:="${FPC_TOP_DIR}/utils/fabric"}
+: ${FABRIC_UTIL_BIN_DIR:="${FPC_PATH}/utils/fabric"}
 
-FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
+FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 
@@ -135,7 +135,7 @@ ledger_init() {
     kill -0 ${ORDERER_PID} || die "Orderer quit too quickly: (for log see ${ORDERER_LOG_OUT} & ${ORDERER_LOG_ERR})"
 
     # 3. start peer
-    LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"$LD_LIBRARY_PATH:"}${FPC_TOP_DIR}/tlcc/enclave/lib \
+    LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"$LD_LIBRARY_PATH:"}${FPC_PATH}/tlcc/enclave/lib \
 		   ${PEER_CMD} node start 1>${PEER_LOG_OUT} 2>${PEER_LOG_ERR} &
     export PEER_PID=$!
     echo "${PEER_PID}" > ${PEER_PID_FILE}
@@ -163,7 +163,7 @@ ledger_shutdown() {
     fi
     if [ ! -z "${PEER_PID}" ]; then
 	kill  ${PEER_PID}
-	wait  ${PEER_PID}
+	wait  ${PEER_PID} 2> /dev/null
 	unset PEER_PID
 	rm ${PEER_PID_FILE}
     fi
@@ -174,7 +174,7 @@ ledger_shutdown() {
     fi
     if [ ! -z "${ORDERER_PID}" ]; then
 	kill ${ORDERER_PID}
-	wait ${ORDERER_PID}
+	wait ${ORDERER_PID} 2> /dev/null
 	unset ORDERER_PID
 	rm ${ORDERER_PID_FILE}
     fi
