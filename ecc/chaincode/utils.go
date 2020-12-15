@@ -12,7 +12,6 @@ import (
 	"fmt"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos/attestation"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/pkg/cid"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
@@ -52,12 +51,7 @@ func extractChaincodeParams(stub shim.ChaincodeStubInterface) (*protos.CCParamet
 	}, nil
 }
 
-func extractHostParams(stub shim.ChaincodeStubInterface) (*protos.HostParameters, error) {
-	initMsg, err := extractInitEnclaveMessage(stub)
-	if err != nil {
-		shim.Error(err.Error())
-	}
-
+func extractHostParams(stub shim.ChaincodeStubInterface, initMsg *protos.InitEnclaveMessage) (*protos.HostParameters, error) {
 	mspid, err := cid.GetMSPID(stub)
 	if err != nil {
 		return nil, err
@@ -68,21 +62,6 @@ func extractHostParams(stub shim.ChaincodeStubInterface) (*protos.HostParameters
 		PeerEndpoint: initMsg.PeerEndpoint,
 		Certificate:  nil, // todo
 	}, nil
-}
-
-func extractAttestationParams(stub shim.ChaincodeStubInterface) (*attestation.AttestationParameters, error) {
-	initMsg, err := extractInitEnclaveMessage(stub)
-	if err != nil {
-		shim.Error(err.Error())
-	}
-
-	attestationParams := &attestation.AttestationParameters{}
-	err = proto.Unmarshal(initMsg.AttestationParams, attestationParams)
-	if err != nil {
-		return nil, err
-	}
-
-	return attestationParams, nil
 }
 
 func extractInitEnclaveMessage(stub shim.ChaincodeStubInterface) (*protos.InitEnclaveMessage, error) {

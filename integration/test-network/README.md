@@ -13,6 +13,8 @@ Before you start the network make sure you build ercc and ecc containers:
 ```bash
 make build
 ```
+If you want to build with mock-ecc rather than the real enclave-based one, build with
+`make build GOTAGS="-tags mock_ecc"` instead.
 
 ## Prepare network
 

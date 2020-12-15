@@ -85,8 +85,8 @@ message InitEnclaveMessage {
     // the (externally accessible) address of the peer endpoint in format <ip-addr|hostname>:<port-number>
     string peer_endpoint = 1;
 
-    // opaque parameters passed for initialization of the attestation API
-    // (see more in 'attestation.proto', 'interfaces.attestation.md' and 'common/crypto/attestation-api')
+    // parameters passed for initialization of the attestation API as required by that API
+    // (i.e., a base64-encoded json string, see 'interfaces.attestation.md' and 'common/crypto/attestation-api')
     bytes attestation_params = 2;
 }
 

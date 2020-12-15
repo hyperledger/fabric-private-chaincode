@@ -15,7 +15,8 @@
 #   script doesn't prevent you, though, configuring ercc on multiple-channels,
 #   so make sure externally than 'channel join' is called only for a single channel.
 
-#RUN=echo # uncomment to dry-run peer call
+#RUN=echo   # uncomment (or define when calling script) to dry-run peer call
+#DEBUG=true # uncomment (or define when calling script) to show debug output
 
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
 FPC_PATH="${SCRIPTDIR}/../../"
@@ -463,26 +464,23 @@ handle_lifecycle_chaincode_initEnclave() {
         die "initEnclave: $CC_NAME is not written in language 'fpc-c'"
     fi
 
-    # embed json in protobuf message and b64 encode it
-    ATTESTATION_PARAMS_PROTO=$(echo "parameters: \"${ATTESTATION_PARAMS}\"" | protoc --encode attestation.AttestationParameters --proto_path=${FPC_PATH}/protos/fpc --proto_path=${FPC_PATH}/protos/fabric ${FPC_PATH}/protos/fpc/attestation.proto | base64 --wrap=0)
-    [ -z ${ATTESTATION_PARAMS_PROTO} ] && die "attestation params proto is empty"
-
     # create host params
     HOST_PARAMS="${PEER_ADDRESS}"
 
     # create init enclave message
-    INIT_ENCLAVE_PROTO=$( (echo "peer_endpoint: \"${HOST_PARAMS}\""; echo "attestation_params: \"${ATTESTATION_PARAMS_PROTO}\"") | protoc --encode fpc.InitEnclaveMessage --proto_path=${FPC_PATH}/protos/fpc --proto_path=${FPC_PATH}/protos/fabric ${FPC_PATH}/protos/fpc/fpc.proto | base64 --wrap=0)
+    INIT_ENCLAVE_PROTO=$( (echo "peer_endpoint: \"${HOST_PARAMS}\""; echo "attestation_params: \"${ATTESTATION_PARAMS}\"") | protoc --encode fpc.InitEnclaveMessage --proto_path=${FPC_PATH}/protos/fpc --proto_path=${FPC_PATH}/protos/fabric ${FPC_PATH}/protos/fpc/fpc.proto | base64 --wrap=0)
     [ -z ${INIT_ENCLAVE_PROTO} ] && die "init enclave proto is empty"
 
     # trigger initEnclave
-    try_out_r $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} --peerAddresses "${PEER_ADDRESS}" -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["initEnclave", "'${INIT_ENCLAVE_PROTO}'"]}'
+    try_out_r $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} --peerAddresses "${PEER_ADDRESS}" -C ${CHAN_ID} -n ${CC_NAME} -c '{"Args":["__initEnclave", "'${INIT_ENCLAVE_PROTO}'"]}'
     B64CREDS=${RESPONSE}
-    say "initEnclave response (b64): ${B64CREDS}"
-    say "initEnclave response (decoded): $(echo "${B64CREDS}" | base64 -d)"
+    [ -z ${B64CREDS} ] && die "initEnclave failed"
+    [ -z ${DEBUG+x} ] || say "initEnclave response (b64): ${B64CREDS}"
+    [ -z ${DEBUG+x} ] || say "initEnclave response (decoded): $(echo "${B64CREDS}" | base64 -d)"
 
     say "Convert credentials"
     B64CONVCREDS=$(echo "${B64CREDS}" | ${PEER_ASSIST_CMD} attestation2Evidence) || die "could not convert credentials"
-    say "initEnclave converted response (b64): ${B64CONVCREDS}"
+    [ -z ${DEBUG+x} ] && say "initEnclave converted response (b64): ${B64CONVCREDS}"
 
     say "Registering with Enclave Registry"
     try $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${ERCC_ID} -c '{"Args":["RegisterEnclave", "'${B64CONVCREDS}'"]}' --waitForEvent
@@ -490,10 +488,10 @@ handle_lifecycle_chaincode_initEnclave() {
     # NOTE: the chaincode encryption key is retrieved here for testing purposes
     say "Querying Chaincode Encryption Key"
     try_out_r $RUN ${FABRIC_BIN_DIR}/peer chaincode query -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${ERCC_ID} -c '{"Args":["QueryChaincodeEncryptionKey", "'${CC_NAME}'"]}'
-    B64CCEK=${RESPONSE}
+    B64CCEK="${RESPONSE}"
     CCEK=$(echo ${B64CCEK} | base64 -d)
     say "Chaincode EK (b64): ${B64CCEK}"
-    say "Chaincode EK: ${CCEK}"
+    [ -z ${DEBUG+x} ] || say "Chaincode EK: ${CCEK}"
 
     # - exit (otherwise main function will invoke operation again!)
     exit 0

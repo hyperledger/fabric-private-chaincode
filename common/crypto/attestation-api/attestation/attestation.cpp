@@ -64,6 +64,7 @@ bool init_attestation(uint8_t* params, uint32_t params_length)
     // open json
     std::string params_string((char*)params, params_length);
     JsonValue root(json_parse_string(params_string.c_str()));
+    LOG_DEBUG("attestation params: %s", params_string.c_str());
     COND2LOGERR(root == NULL, "cannot parse attestation params");
 
     {  // set attestation type

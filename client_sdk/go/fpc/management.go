@@ -18,10 +18,8 @@ import (
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc/attestation"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
-	pbatt "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos/attestation"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
-	"github.com/hyperledger/fabric/protoutil"
 )
 
 // ManagementAPI provides FPC specific chaincode management functionality.
@@ -109,15 +107,11 @@ func (c *managementState) InitEnclave(peerEndpoint string, attestationParams ...
 	logger.Debugf("found attestation params: '%v' (json='%s')", params, serializedJSONParams)
 
 	initMsg := &protos.InitEnclaveMessage{
-		PeerEndpoint: peerEndpoint,
-		AttestationParams: protoutil.MarshalOrPanic(&pbatt.AttestationParameters{
-			// TODO this base64 encoding is nasty but needed because in `cc_data.cpp` we do `attestation_parameters_s = base64_decode(b64_ap_s);`
-			// this is probably because in peer cli a json string would have caused trouble.  That part could be addressed by adding another command to `utils/fabric/peer-cli-assist`.
-			Parameters: []byte(base64.StdEncoding.EncodeToString(serializedJSONParams)),
-		}),
+		PeerEndpoint:      peerEndpoint,
+		AttestationParams: []byte(base64.StdEncoding.EncodeToString(serializedJSONParams)),
 	}
 
-	logger.Debugf("calling __initEnclave")
+	logger.Debugf("calling __initEnclave (%v)", initMsg)
 	credentialsBytes, err := txn.Evaluate(utils.MarshallProto(initMsg))
 	if err != nil {
 		return fmt.Errorf("evaluation error: %s", err)
