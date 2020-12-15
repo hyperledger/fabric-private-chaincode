@@ -306,22 +306,22 @@ make[1]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger-labs/fa
 Next step is to test the chaincode by invoking the transactions, for which you need a basic Fabric network with a channel. You will use the FPC test framework to bring up a Fabric network in which the helloworld code can be executed as a chaincode _in an SGX enclave_.  The Fabric network used in this tutorial is defined and configured using `integration/config/core.yaml`.  Specifically, please note the additions to the standard Fabric configurations.  These are marked as `FPC Addition`;  these enable the integration points with Fabric and have to be replicated if you want to use your own Fabric configuration.
 
 Create a file `test.sh` in `examples/helloworld` folder as follows.  Note that the initial lines in the script points to files and folders in FPC framework.
--`FPC_TOP_DIR` points to FPC-INSTALL-DIR
+-`FPC_PATH` points to FPC-INSTALL-DIR
 -`FABRIC_CFG_PATH` points to the FPC-INSTALL-DIR/integration/config, which contains yaml files that define the Fabric network
 -`FABRIC_SCRIPTDIR` points to scripts with custom FPC wrappers and utility scripts.
 
 File:  test.sh
 ```
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
-FPC_TOP_DIR="${SCRIPTDIR}/../.."
+FPC_PATH="${SCRIPTDIR}/../.."
 FABRIC_CFG_PATH="${SCRIPTDIR}/../../integration/config"
-FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
+FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 #this is the path that will be used for the docker build of the chaincode enclave
-CC_PATH=${FPC_TOP_DIR}/examples/helloworld/_build/lib/
+CC_PATH=${FPC_PATH}/examples/helloworld/_build/lib/
 
 CC_ID=helloworld_test
 CC_VER="$(cat ${CC_PATH}/mrenclave)"
@@ -413,15 +413,15 @@ Putting all these code snippets together, here is the complete `test.sh` file.
 #!/bin/bash
 
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
-FPC_TOP_DIR="${SCRIPTDIR}/../.."
+FPC_PATH="${SCRIPTDIR}/../.."
 FABRIC_CFG_PATH="${SCRIPTDIR}/../../integration/config"
-FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
+FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 #this is the path that will be used for the docker build of the chaincode enclave
-CC_PATH=${FPC_TOP_DIR}/examples/helloworld/_build/lib/
+CC_PATH=${FPC_PATH}/examples/helloworld/_build/lib/
 
 CC_ID=helloworld_test
 CC_VER="$(cat ${CC_PATH}/mrenclave)"

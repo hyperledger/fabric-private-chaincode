@@ -6,8 +6,8 @@
 #RUN=echo # uncomment to dry-run peer call
 
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
-FPC_TOP_DIR="${SCRIPTDIR}/../../"
-FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
+FPC_PATH="${SCRIPTDIR}/../../"
+FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 
 : ${FABRIC_CFG_PATH:=$(pwd)}
 

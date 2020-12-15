@@ -18,8 +18,8 @@
 #RUN=echo # uncomment to dry-run peer call
 
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
-FPC_TOP_DIR="${SCRIPTDIR}/../../"
-FABRIC_SCRIPTDIR="${FPC_TOP_DIR}/fabric/bin/"
+FPC_PATH="${SCRIPTDIR}/../../"
+FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 
 METADATA_FILE="metadata.json"
 
@@ -29,7 +29,7 @@ METADATA_FILE="metadata.json"
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${FPC_TOP_DIR}/tlcc/enclave/lib
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:+"${LD_LIBRARY_PATH}:"}${FPC_PATH}/tlcc/enclave/lib
 
 
 # Lifecycle Chaincode command wrappers
@@ -464,14 +464,14 @@ handle_lifecycle_chaincode_initEnclave() {
     fi
 
     # embed json in protobuf message and b64 encode it
-    ATTESTATION_PARAMS_PROTO=$(echo "parameters: \"${ATTESTATION_PARAMS}\"" | protoc --encode attestation.AttestationParameters --proto_path=${FPC_TOP_DIR}/protos/fpc --proto_path=${FPC_TOP_DIR}/protos/fabric ${FPC_TOP_DIR}/protos/fpc/attestation.proto | base64 --wrap=0)
+    ATTESTATION_PARAMS_PROTO=$(echo "parameters: \"${ATTESTATION_PARAMS}\"" | protoc --encode attestation.AttestationParameters --proto_path=${FPC_PATH}/protos/fpc --proto_path=${FPC_PATH}/protos/fabric ${FPC_PATH}/protos/fpc/attestation.proto | base64 --wrap=0)
     [ -z ${ATTESTATION_PARAMS_PROTO} ] && die "attestation params proto is empty"
 
     # create host params
     HOST_PARAMS="${PEER_ADDRESS}"
 
     # create init enclave message
-    INIT_ENCLAVE_PROTO=$( (echo "peer_endpoint: \"${HOST_PARAMS}\""; echo "attestation_params: \"${ATTESTATION_PARAMS_PROTO}\"") | protoc --encode fpc.InitEnclaveMessage --proto_path=${FPC_TOP_DIR}/protos/fpc --proto_path=${FPC_TOP_DIR}/protos/fabric ${FPC_TOP_DIR}/protos/fpc/fpc.proto | base64 --wrap=0)
+    INIT_ENCLAVE_PROTO=$( (echo "peer_endpoint: \"${HOST_PARAMS}\""; echo "attestation_params: \"${ATTESTATION_PARAMS_PROTO}\"") | protoc --encode fpc.InitEnclaveMessage --proto_path=${FPC_PATH}/protos/fpc --proto_path=${FPC_PATH}/protos/fabric ${FPC_PATH}/protos/fpc/fpc.proto | base64 --wrap=0)
     [ -z ${INIT_ENCLAVE_PROTO} ] && die "init enclave proto is empty"
 
     # trigger initEnclave
@@ -541,7 +541,7 @@ handle_channel_join() {
     ERCC_LABEL="${ERCC_ID}_${ERCC_VERSION}"
     ERCC_PACKAGE=${FABRIC_STATE_DIR}/ercc.tar.gz
     ERCC_QUERY_INSTALL_LOG=${FABRIC_STATE_DIR}/ercc-query-install.$$.log
-    ERCC_PATH="${FPC_TOP_DIR}/ercc"
+    ERCC_PATH="${FPC_PATH}/ercc"
     ERCC_TYPE="ercc-type"
     say "Installing ercc on channel '${CHAN_ID}' ..."
     say "Packaging ${ERCC_ID} ..."
