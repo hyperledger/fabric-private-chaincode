@@ -82,6 +82,10 @@ RUN git \
 # Notes:
 # - the -c submodule's are to prevent dragging in large but unneeded sub-sub-modules of pdo ...
 
+# Make sure we download common godeps once instead if separate times below
+RUN cd ${FPC_PATH} \
+ && make godeps
+
 
 # peer builder container (Ephemeral)
 #------------------------------------

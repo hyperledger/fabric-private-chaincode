@@ -35,10 +35,12 @@ linter: gotools build
 	@echo "LINT completed."
 
 gotools:
-	# install goimports if not present
+	# install go tools if not present
+	# (for faster docker-build, also replicte these commands
+	#  in 'utils/docker/base-dev/Dockerfile')
 	$(GO) install golang.org/x/tools/cmd/goimports
 	$(GO) install google.golang.org/protobuf/cmd/protoc-gen-go
-	GO111MODULE=off $(GO) get -u github.com/maxbrunsfeld/counterfeiter
+	GO111MODULE=off $(GO) get github.com/maxbrunsfeld/counterfeiter
 
 godeps: gotools
 	$(GO) mod download
