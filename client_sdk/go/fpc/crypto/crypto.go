@@ -70,14 +70,31 @@ type EncryptionContextImpl struct {
 	chaincodeEncryptionKey []byte
 }
 
-func (e *EncryptionContextImpl) Reveal(responseBytes []byte) ([]byte, error) {
-	response := &protos.ChaincodeResponseMessage{}
-	err := proto.Unmarshal(responseBytes, response)
+func (e *EncryptionContextImpl) Reveal(responseBytesB64 []byte) ([]byte, error) {
+	responseBytes, err := base64.StdEncoding.DecodeString(string(responseBytesB64))
 	if err != nil {
 		return nil, err
 	}
 
-	return decrypt(response.EncryptedResponse, e.resultEncryptionKey)
+	response := &protos.ChaincodeResponseMessage{}
+	err = proto.Unmarshal(responseBytes, response)
+	if err != nil {
+		return nil, err
+	}
+
+	clearResponseB64, err := decrypt(response.EncryptedResponse, e.resultEncryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: above should eventually be a (protobuf but not base64 serialized) fabric response object,
+	//   rather than just the (base64-serialized) response string.
+	//   so we also get fpc chaincode return-code/error-message as in for normal fabric
+	clearResponse, err := base64.StdEncoding.DecodeString(string(clearResponseB64))
+	if err != nil {
+		return nil, err
+	}
+
+	return clearResponse, nil
 }
 
 func (e *EncryptionContextImpl) Conceal(function string, args []string) (string, error) {

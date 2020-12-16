@@ -12,7 +12,6 @@ package enclave
 import "C"
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"unsafe"
 
@@ -89,15 +88,15 @@ func (e *EnclaveStub) Init(chaincodeParams, hostParams, attestationParams []byte
 	return C.GoBytes(credentialsBuffer, C.int(credentialsSize)), nil
 }
 
-func (e *EnclaveStub) GenerateCCKeys() (*protos.SignedCCKeyRegistrationMessage, error) {
+func (e *EnclaveStub) GenerateCCKeys() ([]byte, error) {
 	panic("implement me")
 }
 
-func (e *EnclaveStub) ExportCCKeys(credentials *protos.Credentials) (*protos.SignedExportMessage, error) {
+func (e *EnclaveStub) ExportCCKeys(credentials []byte) ([]byte, error) {
 	panic("implement me")
 }
 
-func (e *EnclaveStub) ImportCCKeys() (*protos.SignedCCKeyRegistrationMessage, error) {
+func (e *EnclaveStub) ImportCCKeys() ([]byte, error) {
 	panic("implement me")
 }
 
@@ -106,7 +105,7 @@ func (e *EnclaveStub) GetEnclaveId() (string, error) {
 }
 
 // ChaincodeInvoke calls the enclave for transaction processing
-func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte, error) {
+func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, crmProtoBytes []byte) ([]byte, error) {
 	if !e.isInitialized {
 		return nil, fmt.Errorf("enclave not yet initialized")
 	}
@@ -133,15 +132,6 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte,
 	cresmProtoBytesPtr := C.malloc(maxResponseSize)
 	defer C.free(cresmProtoBytesPtr)
 
-	// prep chaincode request message as input
-	_, args := stub.GetFunctionAndParameters()
-	if len(args) != 1 {
-		return nil, fmt.Errorf("no chaincodeRequestMessage as argument found")
-	}
-	crmProtoBytes, err := base64.StdEncoding.DecodeString(args[0])
-	if err != nil {
-		return nil, fmt.Errorf("cannot decode ChaincodeRequestMessage: %s", err.Error())
-	}
 	crmProtoBytesPtr := C.CBytes(crmProtoBytes)
 	defer C.free(unsafe.Pointer(crmProtoBytesPtr))
 

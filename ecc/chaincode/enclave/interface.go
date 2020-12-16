@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0
 package enclave
 
 import (
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric/common/flogging"
 )
@@ -17,19 +16,29 @@ var logger = flogging.MustGetLogger("enclave")
 
 type StubInterface interface {
 
+	// Init initializes the chaincode enclave.
+	// The input and output parameters are serialized protobufs
 	// triggered by an admin
-	Init(chaincodeParams, hostParams, attestationParams []byte) ([]byte, error)
+	Init(chaincodeParams, hostParams, attestationParams []byte) (credentials []byte, err error)
 
-	// key generation
-	GenerateCCKeys() (*protos.SignedCCKeyRegistrationMessage, error)
-
-	// key distribution (Post-MVP Feature)
-	ExportCCKeys(credentials *protos.Credentials) (*protos.SignedExportMessage, error)
-	ImportCCKeys() (*protos.SignedCCKeyRegistrationMessage, error)
-
-	// returns the EnclaveId hosted by the peer
+	// GetEnclaveId returns the EnclaveId hosted by the peer
 	GetEnclaveId() (string, error)
 
-	// chaincode invoke
-	ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte, error)
+	// key distribution (Post-MVP Feature)
+
+	// GenerateCCKeys, key generation
+	// The output parameters is a serialized protobuf
+	GenerateCCKeys() (signedCCKeyRegistrationMessage []byte, err error)
+
+	// ExportCCKeys exports chaincode secrets to enclave with provided credentials
+	// The input and output parameters are serialized protobufs
+	ExportCCKeys(credentials []byte) (signedExportMessage []byte, err error)
+
+	// ImportCCKeys imports chaincode secrets
+	// The output parameters is a serialized protobuf
+	ImportCCKeys() (signedCCKeyRegistrationMessage []byte, err error)
+
+	// ChaincodeInvoke invokes fpc chaincode inside enclave
+	// chaincodeRequestMessage and chaincodeResponseMessage are serialized protobuf
+	ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincodeRequestMessage []byte) (chaincodeResponseMessage []byte, err error)
 }

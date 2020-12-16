@@ -102,24 +102,40 @@ func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Resp
 func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	// call enclave
 	var errMsg string
-	b64ChaincodeResponseMessage, errInvoke := t.enclave.ChaincodeInvoke(stub)
+
+	// prep chaincode request message as input
+	_, args := stub.GetFunctionAndParameters()
+	if len(args) != 1 {
+		return shim.Error("no chaincodeRequestMessage as argument found")
+	}
+	chaincodeRequestMessageB64 := args[0]
+	chaincodeRequestMessage, err := base64.StdEncoding.DecodeString(chaincodeRequestMessageB64)
+	if err != nil {
+		errMsg := fmt.Sprintf("cannot base64 decode ChaincodeRequestMessage ('%s'): %s", chaincodeRequestMessageB64, err.Error())
+		return shim.Error(errMsg)
+	}
+
+	chaincodeResponseMessage, errInvoke := t.enclave.ChaincodeInvoke(stub, chaincodeRequestMessage)
 	if errInvoke != nil {
 		errMsg = fmt.Sprintf("t.enclave.Invoke failed: %s", errInvoke)
 		logger.Errorf(errMsg)
 		// likely a chaincode error, so we still want response go back ...
 	}
 
+	chaincodeResponseMessageB64 := []byte(base64.StdEncoding.EncodeToString(chaincodeResponseMessage))
+	logger.Debugf("base64-encoded response message: '%s'", chaincodeResponseMessageB64)
+
 	var response pb.Response
 	if errInvoke == nil {
 		response = pb.Response{
 			Status:  shim.OK,
-			Payload: b64ChaincodeResponseMessage,
+			Payload: chaincodeResponseMessageB64,
 			Message: errMsg,
 		}
 	} else {
 		response = pb.Response{
 			Status:  shim.ERROR,
-			Payload: b64ChaincodeResponseMessage,
+			Payload: chaincodeResponseMessageB64,
 			Message: errMsg,
 		}
 	}
