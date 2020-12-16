@@ -247,6 +247,7 @@ func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface,
 	// - Post-MVP: check consistency with potentially existing enclaves
 
 	// All check passed, now register enclave
+	logger.Debugf("Registering credentials at key %s", key)
 
 	if err := ctx.GetStub().PutState(key, credentialBytes); err != nil {
 		return fmt.Errorf("cannot store credentials: %s", err)

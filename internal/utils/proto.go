@@ -12,6 +12,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"strings"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
@@ -43,8 +44,10 @@ func UnmarshalCredentials(credentialsBase64 string) (*protos.Credentials, error)
 
 // returns enclave_id as hex-encoded string of SHA256 hash over enclave_vk.
 func GetEnclaveId(attestedData *protos.AttestedData) string {
+	// hash enclave vk
 	h := sha256.Sum256(attestedData.EnclaveVk)
-	return hex.EncodeToString(h[:])
+	// encode and normalize
+	return strings.ToUpper(hex.EncodeToString(h[:]))
 }
 
 func ExtractEndpoint(credentials *protos.Credentials) (string, error) {

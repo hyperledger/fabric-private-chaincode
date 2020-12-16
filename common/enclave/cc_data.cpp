@@ -41,9 +41,11 @@ bool cc_data::generate_keys()
         // generate state encryption key
         state_encryption_key_ = pdo::crypto::skenc::GenerateKey();
 
-        // debug
-        std::string s = verification_key_.Serialize();
+        std::string s;
+        s = verification_key_.Serialize();
         LOG_DEBUG("enclave verification key: %s", s.c_str());
+        s = get_enclave_id();
+        LOG_DEBUG("enclave id: %s", s.c_str());
     }
     catch (...)
     {
@@ -244,4 +246,19 @@ err:
 ByteArray cc_data::get_state_encryption_key()
 {
     return state_encryption_key_;
+}
+
+std::string cc_data::get_enclave_id()
+{
+    // get enclave vk
+    std::string s = verification_key_.Serialize();
+    // hash
+    ByteArray h = pdo::crypto::ComputeMessageHash(ByteArray(s.c_str(), s.c_str() + s.length()));
+    // hex encode
+    std::string hex = ByteArrayToHexEncodedString(h);
+    // normalize
+    std::transform(
+        hex.begin(), hex.end(), hex.begin(), [](unsigned char c) { return std::toupper(c); });
+
+    return hex;
 }

@@ -43,6 +43,7 @@ public:
         uint32_t* credentials_size);
 
     ByteArray get_state_encryption_key();
+    std::string get_enclave_id();
 };
 
 extern cc_data* g_cc_data;
