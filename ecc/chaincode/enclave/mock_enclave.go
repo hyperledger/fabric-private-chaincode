@@ -16,6 +16,7 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/hex"
+	"strings"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/any"
@@ -63,7 +64,7 @@ func (m *MockEnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBy
 	}
 
 	hash := sha256.Sum256(pubBytes)
-	m.enclaveId = hex.EncodeToString(hash[:])
+	m.enclaveId = strings.ToUpper(hex.EncodeToString(hash[:]))
 
 	logger.Debug("Init")
 	credentials := &protos.Credentials{
@@ -100,7 +101,7 @@ func (m *MockEnclaveStub) GetEnclaveId() (string, error) {
 		return "", err
 	}
 	hash := sha256.Sum256(pubBytes)
-	return hex.EncodeToString(hash[:]), nil
+	return strings.ToUpper(hex.EncodeToString(hash[:])), nil
 }
 
 func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte, error) {

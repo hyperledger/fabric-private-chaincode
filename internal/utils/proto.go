@@ -47,7 +47,7 @@ func GetEnclaveId(attestedData *protos.AttestedData) string {
 	// hash enclave vk
 	h := sha256.Sum256(attestedData.EnclaveVk)
 	// encode and normalize
-	return strings.ToLower(hex.EncodeToString(h[:]))
+	return strings.ToUpper(hex.EncodeToString(h[:]))
 }
 
 func ExtractEndpoint(credentials *protos.Credentials) (string, error) {
