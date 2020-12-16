@@ -83,16 +83,19 @@ func (m *MockEnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBy
 	return proto.Marshal(credentials)
 }
 
-func (m MockEnclaveStub) GenerateCCKeys() (*protos.SignedCCKeyRegistrationMessage, error) {
+func (m MockEnclaveStub) GenerateCCKeys() ([]byte, error) {
 	panic("implement me")
+	// -> *protos.SignedCCKeyRegistrationMessage
 }
 
-func (m MockEnclaveStub) ExportCCKeys(credentials *protos.Credentials) (*protos.SignedExportMessage, error) {
+func (m MockEnclaveStub) ExportCCKeys(credentials []byte) ([]byte, error) {
 	panic("implement me")
+	// credentials *protos.Credentials -> *protos.SignedExportMessage,
 }
 
-func (m MockEnclaveStub) ImportCCKeys() (*protos.SignedCCKeyRegistrationMessage, error) {
+func (m MockEnclaveStub) ImportCCKeys() ([]byte, error) {
 	panic("implement me")
+	// -> *protos.SignedCCKeyRegistrationMessage
 }
 
 func (m *MockEnclaveStub) GetEnclaveId() (string, error) {
@@ -104,7 +107,7 @@ func (m *MockEnclaveStub) GetEnclaveId() (string, error) {
 	return strings.ToUpper(hex.EncodeToString(hash[:])), nil
 }
 
-func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface) ([]byte, error) {
+func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincodeRequestMessage []byte) ([]byte, error) {
 	logger.Debug("ChaincodeInvoke")
 
 	signedProposal, err := stub.GetSignedProposal()
