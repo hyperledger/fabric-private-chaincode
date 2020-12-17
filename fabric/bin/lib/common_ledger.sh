@@ -182,28 +182,31 @@ ledger_shutdown() {
 
 # Check the chaincode's response (ResponseData) of
 #   peer chaincode invoke/query
-# (executed via 'try_r' macro) against expected result.
-# In case of failures, tries to increment integer variable FAILURES
+# (executed via 'try_r/try_out_r' macro) against expected result.
+# In case of failures, tries to increment integer variable NUM_FAILURES. Increment in all cases NUM_TESTS
 check_result() {
-    # Parse out the Response Data from the payload
-    CI_RESPONSE=${RESPONSE}
-    CI_RESPONSE=${CI_RESPONSE##*payload:\"}
-    CI_RESPONSE=${CI_RESPONSE%%\"*}
-    # Convert and de-encrypt it
-    CI_RESPONSE=$(echo ${CI_RESPONSE} | base64 -d)
-    say "b64 Decoded response: ${CI_RESPONSE}"
-    # Test response to expected result
+    if [ "${RESPONSE_TYPE}" == "out+err" ]; then
+	CI_RESPONSE=$(parse_invoke_result_from_log "${RESPONSE}")
+	CONTEXT=" context: '${RESPONSE}'"
+    else
+	CI_RESPONSE="${RESPONSE}"
+	CONTEXT=""
+    fi
+
     if [[ ${CI_RESPONSE} == "$1" ]]; then
 	gecho "PASSED"
     else
-	if [[ ${CI_RESPONSE} == $RESPONSE ]]; then
-	    CONTEXT=""
-	else
-	    CONTEXT=" context: '${RESPONSE}'"
-	fi
-	recho "FAILED (expected '${1}', got '${CI_RESPONSE}' ${CONTEXT})"
-        export FAILURES=$(($FAILURES+1))
+	recho "FAILED (expected '${1}', got '${CI_RESPONSE}'${CONTEXT})"
+        export NUM_FAILURES=$(($NUM_FAILURES+1))
     fi
+    export NUM_TESTS=$(($NUM_TESTS+1))
+}
+
+parse_invoke_result_from_log() {
+    RESPONSE="$1"
+    RESPONSE=${RESPONSE##*payload:\"}
+    RESPONSE=${RESPONSE%%\"*}
+    echo "${RESPONSE}"
 }
 
 
