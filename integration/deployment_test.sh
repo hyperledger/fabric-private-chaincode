@@ -17,7 +17,8 @@ FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 CC_EP="OR('SampleOrg.member')" # note that we use .member as NodeOUs is disabled with the crypto material used in the integration tests.
-FAILURES=0
+NUM_FAILURES=0
+NUM_TESTS=0
 
 run_test() {
 
@@ -51,13 +52,13 @@ run_test() {
     try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name marbles02 --version ${CC_VER} --sequence ${CC_SEQ}
     try ${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name marbles02 --version ${CC_VER} --sequence ${CC_SEQ}
 
-    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["init", "MyAuctionHouse"]}' --waitForEvent
+    try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["init", "MyAuctionHouse"]}' --waitForEvent
     check_result "OK"
 
-    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["create", "MyAuction"]}' --waitForEvent
+    try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["create", "MyAuction"]}' --waitForEvent
     check_result "OK"
 
-    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n marbles02 -c '{"Args":["initMarble","marble1","blue","35","tom"]}' --waitForEvent
+    try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n marbles02 -c '{"Args":["initMarble","marble1","blue","35","tom"]}' --waitForEvent
 
     # install examples/echo
     CC_PATH=${FPC_PATH}/examples/echo/_build/lib/
@@ -85,15 +86,15 @@ run_test() {
     try_fail ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name wrong-cc-id
     try ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name echo_test
 
-    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -c '{"Args": ["moin"]}' --waitForEvent
+    try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -c '{"Args": ["moin"]}' --waitForEvent
     check_result "moin"
 
-    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["submit", "MyAuction", "JohnnyCash0", "0"]}' --waitForEvent
+    try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["submit", "MyAuction", "JohnnyCash0", "0"]}' --waitForEvent
     check_result "OK"
 
     try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n marbles02 -c '{"Args":["readMarble","marble1"]}' --waitForEvent
 
-    try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -c '{"Args": ["bonjour"]}' --waitForEvent
+    try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -c '{"Args": ["bonjour"]}' --waitForEvent
     check_result "bonjour"
 }
 
@@ -127,11 +128,12 @@ say "- shutdown ledger"
 ledger_shutdown
 
 para
-if [[ "$FAILURES" == 0 ]]; then
+if [[ "$NUM_FAILURES" == 0 ]]; then
     yell "Deployement test PASSED"
 else
-    yell "Deployement test had ${FAILURES} failures"
+    yell "Deployement test had ${NUM_FAILURES} failures out of ${NUM_TESTS} tests"
     exit 1
 fi
 exit 0
+
 

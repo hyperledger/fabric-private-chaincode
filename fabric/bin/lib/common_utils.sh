@@ -43,9 +43,9 @@ function gecho () {
 
 # Common reporting functions: say, yell & die
 #-----------------------------------------
-# say is stdout, yell is stderr
+# they all write to stderr. if you want normal progres for stdout, just use echo
 function say () {
-    echo "$(basename $0): $*"
+    echo "$(basename $0): $*" >&2;
 }
 
 function yell () {
@@ -72,16 +72,14 @@ try_fail() {
     (! "$@") || die "rev-test failed: $*"
 }
 
-# Variant of try which stores commands stdout and stderr in variable RESPONSE
+# Variant of try which stores commands stdout and stderr (or only stdout) in variable RESPONSE
 try_r() {
-    echo "$@"
-    export RESPONSE=$("$@" 2>&1) || die "test failed: $*"
-    echo $RESPONSE
+    say "$@"
+    export RESPONSE=$("$@" 2>&1) RESPONSE_TYPE="out+err" || die "test failed: $*"
 }
 
 try_out_r() {
-    echo "$@"
-    export RESPONSE=$("$@") || die "test failed: $*"
-    echo $RESPONSE
+    say "$@"
+    export RESPONSE=$("$@") RESPONSE_TYPE="out" || die "test failed: $*"
 }
 

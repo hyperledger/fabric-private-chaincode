@@ -21,7 +21,8 @@ CC_SEQ="1"
 CC_EP="OR('SampleOrg.member')" # note that we use .member as NodeOUs is disabled with the crypto material used in the integration tests.
 
 num_rounds=10
-FAILURES=0
+NUM_FAILURES=0
+NUM_TESTS=0
 
 echo_test() {
     PKG=/tmp/${CC_ID}.tar.gz
@@ -56,7 +57,7 @@ echo_test() {
     for (( i=1; i<=$num_rounds; i++ ))
     do
         # echos
-        try_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["echo-'$i'"]}' --waitForEvent
+        try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args": ["echo-'$i'"]}' --waitForEvent
         check_result "echo-$i"
      done
 }
@@ -83,10 +84,10 @@ say "- shutdown ledger"
 ledger_shutdown
 
 para
-if [[ "$FAILURES" == 0 ]]; then
+if [[ "$NUM_FAILURES" == 0 ]]; then
     yell "Echo test PASSED"
 else
-    yell "Echo test had ${FAILURES} failures"
+    yell "Echo test had ${NUM_FAILURES} failures out of ${NUM_TESTS} tests"
     exit 1
 fi
 exit 0
