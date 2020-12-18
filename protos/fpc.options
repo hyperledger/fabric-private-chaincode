@@ -7,7 +7,6 @@ fpc.ChaincodeRequestMessage.encrypted_request type:FT_POINTER
 fpc.FPCKVSet.read_value_hashes type:FT_POINTER
 
 fpc.ChaincodeResponseMessage.encrypted_response type:FT_POINTER
-fpc.ChaincodeResponseMessage.signature type:FT_POINTER
 fpc.ChaincodeResponseMessage.enclave_id type:FT_POINTER
 
 fpc.SignedChaincodeResponseMessage.chaincode_response_message type:FT_POINTER

@@ -101,6 +101,13 @@ func ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSe
 		logger.Debugf("Replaying writes")
 		for _, w := range rwset.Writes {
 			k := TransformToFPCKey(w.Key)
+
+			// check if composite key, if so, derive Fabric key
+			if IsFPCCompositeKey(k) {
+				comp := SplitFPCCompositeKey(k)
+				k, _ = stub.CreateCompositeKey(comp[0], comp[1:])
+			}
+
 			err := stub.PutState(k, w.Value)
 			if err != nil {
 				return fmt.Errorf("error (%s) writing key %s value(hex) %s", err, k, hex.EncodeToString(w.Value))
