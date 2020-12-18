@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include "crypto.h"
+#include "logging.h"
 #include "error.h"
 #include "types.h"
 
