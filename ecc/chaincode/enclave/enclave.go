@@ -41,6 +41,7 @@ func NewEnclaveStub() StubInterface {
 }
 
 func (e *EnclaveStub) Init(chaincodeParams, hostParams, attestationParams []byte) ([]byte, error) {
+	// Estimate of the buffer length that is necessary for the credentials. It should be conservative.
 	const credentialsBufferMaxLen = 16 * 1024
 
 	if e.isInitialized {
@@ -106,6 +107,7 @@ func (e *EnclaveStub) GetEnclaveId() (string, error) {
 
 // ChaincodeInvoke calls the enclave for transaction processing
 func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, crmProtoBytes []byte) ([]byte, error) {
+	// Estimate of the buffer length where the enclave will write the response.
 	const scresmProtoBytesMaxLen = 1024 * 100 // Let's be really conservative ...
 
 	if !e.isInitialized {

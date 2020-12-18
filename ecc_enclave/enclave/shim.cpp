@@ -128,6 +128,14 @@ void get_public_state(
             LOG_ERROR("%s", s);
             throw std::runtime_error(s);
         }
+
+        // IMPORTANT:
+        // * the read set stores the first key that is read;
+        // * subsequent reads of this key must return the same value, **no matter any local
+        // update/write**
+        // * hence, if a read key is updated later, the get_state must return the original
+        // (presumably committed) value
+        // TODO: double check consistency levels with fabric maintainers
     }
 }
 

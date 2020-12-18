@@ -99,7 +99,7 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         // TODO: encrypt fabric Response object
         crm = {};
 
-        {  // serialize encrypted response
+        {  // fill encrypted response
             crm.encrypted_response = (pb_bytes_array_t*)pb_realloc(
                 crm.encrypted_response, PB_BYTES_ARRAY_T_ALLOCSIZE(b64_response.length()));
             COND2LOGERR(crm.encrypted_response == NULL, "cannot allocate encrypted message");
@@ -109,7 +109,7 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
             COND2LOGERR(ret != 0, "cannot encode field");
         }
 
-        {  // serialize enclave id
+        {  // fill enclave id
             enclave_id = g_cc_data->get_enclave_id();
             crm.enclave_id = (char*)pb_realloc(crm.enclave_id, enclave_id.length() + 1);
             ret = memcpy_s(
@@ -118,7 +118,7 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
             COND2LOGERR(ret != 0, "cannot encode enclave id");
         }
 
-        {  // serialize proposal
+        {  // fill proposal
             pb_istream_t istream;
 
             // set stream for ChaincodeRequestMessage
@@ -134,7 +134,7 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
             crm.has_proposal = true;
         }
 
-        {  // serialize rwset
+        {  // fill rwset
             crm.has_fpc_rw_set = true;
             rwset_to_proto(&ctx, &crm.fpc_rw_set);
         }

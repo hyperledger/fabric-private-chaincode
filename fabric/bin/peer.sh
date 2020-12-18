@@ -666,7 +666,7 @@ handle_chaincode_call() {
 	if [ ! -z ${DO_WAIT_TIMEOUT+x} ]; then
 	    opt_arg="--waitForEvent ${opt_arg}"
 	fi
-	try_r $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke "${OTHER_ARGS[@]}" ${opt_arg} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["__endorse", "'${encrypted_response}'"]}' --waitForEvent
+	try_r $RUN ${FABRIC_BIN_DIR}/peer chaincode invoke "${OTHER_ARGS[@]}" ${opt_arg} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["__endorse", "'${encrypted_response}'"]}'
 	endorse_response=$(parse_invoke_result_from_log "${RESPONSE}")
         [ "${endorse_response}" == "OK" ] || die "endorsement failed: '${endorse_response}'"
         [ -z ${DEBUG+x} ] || say "endorsement returned '${endorse_response}'"

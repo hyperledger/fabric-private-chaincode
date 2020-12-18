@@ -61,6 +61,7 @@ func ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSe
 			logger.Debugf("read key %s value(hex) %s", k, hex.EncodeToString(v))
 
 			// compute value hash
+			// TODO: use pdo hash for consistency
 			h := sha256.New()
 			h.Write(v)
 			valueHash := h.Sum(nil)
