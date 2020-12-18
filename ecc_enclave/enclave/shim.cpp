@@ -53,7 +53,7 @@ void get_state(
     get_public_state(key, encoded_cipher, sizeof(encoded_cipher), &encoded_cipher_len, ctx);
 
     // if nothing read, no need for decryption
-    if(encoded_cipher_len == 0)
+    if (encoded_cipher_len == 0)
     {
         *val_len = 0;
         return;
@@ -188,6 +188,8 @@ int unmarshal_values(
     }
 
     JSON_Array* pairs = json_value_get_array(root);
+    COND2ERR(pairs == NULL);
+
     for (int i = 0; i < json_array_get_count(pairs); i++)
     {
         JSON_Object* pair = json_array_get_object(pairs, i);
@@ -197,13 +199,15 @@ int unmarshal_values(
     }
     json_value_free(root);
     return 1;
+
+err:
+    return -1;
 }
 
 void get_state_by_partial_composite_key(
     const char* comp_key, std::map<std::string, std::string>& values, shim_ctx_ptr_t ctx)
 {
     get_public_state_by_partial_composite_key(comp_key, values, ctx);
-
     for (auto& u : values)
     {
         // base64 decode
