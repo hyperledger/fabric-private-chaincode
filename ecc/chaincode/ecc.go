@@ -152,7 +152,7 @@ func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) pb.Response
 		return shim.Error(errMsg)
 	}
 
-	responseMsg, err := extractChaincodeResponseMessage(stub)
+	signedResponseMsg, responseMsg, err := extractChaincodeResponseMessages(stub)
 	if err != nil {
 		errMsg := fmt.Sprintf("cannot extract chaincode response message: %s", err.Error())
 		logger.Errorf(errMsg)
@@ -184,18 +184,21 @@ func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) pb.Response
 
 	// check cc param.MSPID matches MSPID of endorser (Post-MVP)
 
-	// replay read/writes from kvrwset from enclave (to prepare commitment to ledger) and extract kvrwset for subsequent validation
-	readset, writeset, err := utils.ReplayReadWrites(stub, responseMsg.RwSet)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
 	// validate enclave endorsement signature
-	err = utils.Validate(responseMsg, readset, writeset, &attestedData)
+	logger.Debugf("Validating endorsement")
+	err = utils.Validate(signedResponseMsg, &attestedData)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
+	// replay read/writes from kvrwset from enclave (to prepare commitment to ledger) and extract kvrwset for subsequent validation
+	logger.Debugf("Replaying rwset")
+	err = utils.ReplayReadWrites(stub, responseMsg.FpcRwSet)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	logger.Debugf("Endorsement successful")
 	return shim.Success([]byte("OK")) // make sure we have a non-empty return on success so we can distinguish success from failure in cli ...
 }
 

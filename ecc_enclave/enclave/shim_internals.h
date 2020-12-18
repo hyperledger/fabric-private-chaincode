@@ -11,10 +11,11 @@
 #include <set>
 #include <string>
 #include <vector>
+#include "types.h"
 
 // read/writeset
-typedef std::map<std::string, std::string> write_set_t;
-typedef std::set<std::string> read_set_t;
+typedef std::map<std::string, ByteArray> write_set_t;
+typedef std::map<std::string, ByteArray> read_set_t;
 
 // shim context
 typedef struct t_shim_ctx
@@ -24,3 +25,7 @@ typedef struct t_shim_ctx
     write_set_t write_set;
     std::vector<std::string> string_args;
 } t_shim_ctx_t;
+
+#include "fpc.pb.h"
+
+bool rwset_to_proto(t_shim_ctx_t* ctx, fpc_FPCKVSet* fpc_rwset_proto);

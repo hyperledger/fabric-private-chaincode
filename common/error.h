@@ -6,6 +6,10 @@
 
 #pragma once
 
+#ifndef LOG_DEBUG
+#define LOG_DEBUG
+#endif
+
 #define COND2ERR(b)                                            \
     do                                                         \
     {                                                          \

@@ -8,95 +8,119 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
-	"crypto/ecdsa"
-	"crypto/x509"
+	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
-	"sort"
-
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
-	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
+	"github.com/hyperledger/fabric/common/flogging"
 )
 
-func ReplayReadWrites(stub shim.ChaincodeStubInterface, rwset *kvrwset.KVRWSet) (readset [][]byte, writeset [][]byte, err error) {
+// #cgo CFLAGS: -I${SRCDIR}/../../common/crypto
+// #cgo LDFLAGS: -L${SRCDIR}/../../common/crypto/_build -L${SRCDIR}/../../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <stdbool.h>
+// #include <stdint.h>
+// #include "pdo-crypto-c-wrapper.h"
+import "C"
+
+var logger = flogging.MustGetLogger("validate")
+
+func ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSet) (err error) {
 	//TODO error checking
 
 	// nil rwset => nothing to do
+	if fpcrwset == nil {
+		return nil
+	}
+
+	rwset := fpcrwset.GetRwSet()
 	if rwset == nil {
-		return nil, nil, nil
+		return fmt.Errorf("no rwset found")
 	}
 
 	// normal reads
-	var readKeys []string
-	readsetMap := make(map[string][]byte)
-	for _, r := range rwset.Reads {
-		k := TransformToFPCKey(r.Key)
-		readKeys = append(readKeys, k)
-		v, _ := stub.GetState(k)
-		readsetMap[k] = v
+	if rwset.GetReads() != nil {
+		if fpcrwset.GetReadValueHashes() == nil {
+			return fmt.Errorf("no read value hash associated to reads")
+		}
+		if len(fpcrwset.ReadValueHashes) != len(rwset.Reads) {
+			return fmt.Errorf("%d read value hashes but %d reads", len(fpcrwset.ReadValueHashes), len(rwset.Reads))
+		}
 
+		for i := 0; i < len(rwset.Reads); i++ {
+			k := TransformToFPCKey(rwset.Reads[i].Key)
+			v, err := stub.GetState(k)
+			if err != nil {
+				return fmt.Errorf("value not found reading key %s", k)
+			}
+
+			// compute value hash
+			h := sha256.New()
+			h.Write(v)
+			valueHash := h.Sum(nil)
+
+			// check hashes
+			if !bytes.Equal(valueHash, fpcrwset.ReadValueHashes[i]) {
+				logger.Debugf("value(hex): %s", hex.EncodeToString(v))
+				logger.Debugf("computed hash(hex): %s", hex.EncodeToString(valueHash))
+				logger.Debugf("received hash(hex): %s", hex.EncodeToString(fpcrwset.ReadValueHashes[i]))
+				return fmt.Errorf("value hash mismatch for key %s", k)
+			}
+		}
 	}
 
 	// range query reads
-	for _, rqi := range rwset.RangeQueriesInfo {
-		if rqi.GetRawReads() == nil {
-			// no raw reads available in this range query
-			continue
-		}
-		for _, qr := range rqi.GetRawReads().KvReads {
-			k := TransformToFPCKey(qr.Key)
-			readKeys = append(readKeys, k)
-			v, _ := stub.GetState(k)
-			readsetMap[k] = v
+	if rwset.GetRangeQueriesInfo() != nil {
+		for _, rqi := range rwset.RangeQueriesInfo {
+			if rqi.GetRawReads() == nil {
+				// no raw reads available in this range query
+				continue
+			}
+			for _, qr := range rqi.GetRawReads().KvReads {
+				k := TransformToFPCKey(qr.Key)
+				v, err := stub.GetState(k)
+				if err != nil {
+					return fmt.Errorf("value not found reading key %s", k)
+				}
+
+				_ = v
+				return fmt.Errorf("TODO: not implemented, missing hash check")
+			}
 		}
 	}
 
 	// writes
-	var writeKeys []string
-	writesetMap := make(map[string][]byte)
-	for _, w := range rwset.Writes {
-		k := TransformToFPCKey(w.Key)
-		writeKeys = append(writeKeys, k)
-		writesetMap[k] = w.Value
-		_ = stub.PutState(k, w.Value)
+	if rwset.GetWrites() != nil {
+		for _, w := range rwset.Writes {
+			k := TransformToFPCKey(w.Key)
+			_ = stub.PutState(k, w.Value)
+		}
 	}
 
-	// sort readset and writeset as enclave uses a sorted map
-	sort.Strings(readKeys)
-	sort.Strings(writeKeys)
-
-	// prepare sorted read/write set as output
-	for _, k := range readKeys {
-		readset = append(readset, []byte(k))
-		readset = append(readset, readsetMap[k])
-	}
-
-	for _, k := range writeKeys {
-		writeset = append(writeset, []byte(k))
-		writeset = append(writeset, writesetMap[k])
-	}
-
-	return readset, writeset, nil
+	return nil
 }
 
-func Validate(responseMsg *protos.ChaincodeResponseMessage, readset, writeset [][]byte, attestedData *protos.AttestedData) error {
-	if responseMsg.Signature == nil {
+func Validate(signedResponseMessage *protos.SignedChaincodeResponseMessage, attestedData *protos.AttestedData) error {
+	if signedResponseMessage.Signature == nil {
 		return fmt.Errorf("absent enclave signature")
 	}
 
-	// Note: below signature was created in ecc_enclave/enclave/enclave.cpp::gen_response
-	hash := ComputedHash(responseMsg, readset, writeset)
+	// prepare and do signature verification
+	enclaveVkPtr := C.CBytes(attestedData.EnclaveVk)
+	defer C.free(enclaveVkPtr)
 
-	// perform enclave signature validation
-	// TODO refactor this to function
-	pub, err := x509.ParsePKIXPublicKey(attestedData.EnclaveVk)
-	if err != nil {
-		return err
-	}
+	responseMessagePtr := C.CBytes(signedResponseMessage.ChaincodeResponseMessage)
+	defer C.free(responseMessagePtr)
 
-	valid := ecdsa.VerifyASN1(pub.(*ecdsa.PublicKey), hash[:], responseMsg.Signature)
-	if !valid {
-		return fmt.Errorf("signature invalid")
+	signaturePtr := C.CBytes(signedResponseMessage.Signature)
+	defer C.free(signaturePtr)
+
+	ret := C.verify_signature((*C.uint8_t)(enclaveVkPtr), C.uint32_t(len(attestedData.EnclaveVk)), (*C.uint8_t)(responseMessagePtr), C.uint32_t(len(signedResponseMessage.ChaincodeResponseMessage)), (*C.uint8_t)(signaturePtr), C.uint32_t(len(signedResponseMessage.Signature)))
+	if ret == false {
+		return fmt.Errorf("enclave signature verification failed")
 	}
 
 	return nil

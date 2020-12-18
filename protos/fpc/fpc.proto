@@ -108,20 +108,32 @@ message CleartextChaincodeResponse {
     protos.Response response = 1;
 }
 
+// FPCKVSet augments the Fabric kvrwset.KVRWSet protobuf to include the hash of the value of each read.
+// Specifically, read_value_hashes[i] is the hash of the value associated to rw_set.reads[i].key
+message FPCKVSet {  
+    kvrwset.KVRWSet rw_set = 1;
+    repeated bytes read_value_hashes = 2;
+}
+
 message ChaincodeResponseMessage {
     // an aes128-gcm encryption of the serialization of CleartextChaincodeResponse
     bytes encrypted_response = 1;
 
     // R/W set (of cleartext keys but encrypted values)
     // This field is only valid for the FPC Lite variant but absent from the full version with in-peer FPC validation
-    kvrwset.KVRWSet rw_set = 2;
+    FPCKVSet fpc_rw_set = 2;
 
     // signed proposal for this request
     protos.SignedProposal proposal = 3;
 
-    // signature over proposal, cleartext response, (hash of) R/W set
-    bytes signature = 4;
-
     // identity for public key used to sign
-    string enclave_id = 5;
+    string enclave_id = 4;
+}
+
+message SignedChaincodeResponseMessage {
+    // binary encoding of a ChaincodeResponseMessage protobuf
+    bytes chaincode_response_message = 1;
+
+    // signature over the chaincode response message
+    bytes signature = 2;
 }

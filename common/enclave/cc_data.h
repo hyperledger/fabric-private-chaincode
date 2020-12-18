@@ -44,6 +44,7 @@ public:
 
     ByteArray get_state_encryption_key();
     std::string get_enclave_id();
+    bool sign_message(const ByteArray& message, ByteArray& signature) const;
 };
 
 extern cc_data* g_cc_data;

@@ -14,7 +14,18 @@ import (
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/common/flogging"
 	"google.golang.org/protobuf/proto"
+
+	"fmt"
 )
+
+// #cgo CFLAGS: -I${SRCDIR}/../../../../common/crypto
+// #cgo LDFLAGS: -L${SRCDIR}/../../../../common/crypto/_build -L${SRCDIR}/../../../../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <stdbool.h>
+// #include <stdint.h>
+// #include "pdo-crypto-c-wrapper.h"
+import "C"
 
 var logger = flogging.MustGetLogger("fpc-client-crypto")
 
@@ -70,10 +81,21 @@ type EncryptionContextImpl struct {
 	chaincodeEncryptionKey []byte
 }
 
-func (e *EncryptionContextImpl) Reveal(responseBytesB64 []byte) ([]byte, error) {
-	responseBytes, err := base64.StdEncoding.DecodeString(string(responseBytesB64))
+func (e *EncryptionContextImpl) Reveal(signedResponseBytesB64 []byte) ([]byte, error) {
+	signedResponseBytes, err := base64.StdEncoding.DecodeString(string(signedResponseBytesB64))
 	if err != nil {
 		return nil, err
+	}
+
+	signedResponse := &protos.SignedChaincodeResponseMessage{}
+	err = proto.Unmarshal(signedResponseBytes, signedResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	responseBytes := signedResponse.GetChaincodeResponseMessage()
+	if responseBytes == nil {
+		return nil, fmt.Errorf("no chaincode response message")
 	}
 
 	response := &protos.ChaincodeResponseMessage{}

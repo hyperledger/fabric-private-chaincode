@@ -86,6 +86,9 @@ protos.ProposalResponsePayload.extension type:FT_POINTER
 protos.Response.message type:FT_POINTER
 protos.Response.payload type:FT_POINTER
 
+protos.SignedProposal.proposal_bytes type:FT_POINTER
+protos.SignedProposal.signature type:FT_POINTER
+
 protos.ApplicationPolicy.channel_config_policy_reference type:FT_POINTER
 
 rwset.TxReadWriteSet.ns_rwset type:FT_POINTER
