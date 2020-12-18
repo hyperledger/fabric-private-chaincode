@@ -54,27 +54,19 @@ bool rwset_to_proto(t_shim_ctx_t* ctx, fpc_FPCKVSet* fpc_rwset_proto)
         // serialize hash
         fpc_rwset_proto->read_value_hashes[i] =
             (pb_bytes_array_t*)pb_realloc(NULL, PB_BYTES_ARRAY_T_ALLOCSIZE(it->second.size()));
-        LOG_DEBUG("checkcond");
         COND2ERR(fpc_rwset_proto->read_value_hashes[i] == NULL);
-        LOG_DEBUG("size");
         fpc_rwset_proto->read_value_hashes[i]->size = it->second.size();
-        LOG_DEBUG("mem");
         ret = memcpy_s(fpc_rwset_proto->read_value_hashes[i]->bytes,
             fpc_rwset_proto->read_value_hashes[i]->size, it->second.data(), it->second.size());
-        LOG_DEBUG("checkcond");
         COND2ERR(ret != 0);
 
         // serialize read
         fpc_rwset_proto->rw_set.reads[i].has_version = false;
         fpc_rwset_proto->rw_set.reads[i].key = (char*)pb_realloc(NULL, it->first.length() + 1);
-        LOG_DEBUG("checkcond");
         COND2ERR(fpc_rwset_proto->rw_set.reads[i].key == NULL);
-        LOG_DEBUG("mem");
         ret = memcpy_s(fpc_rwset_proto->rw_set.reads[i].key, it->first.length(), it->first.c_str(),
             it->first.length());
-        LOG_DEBUG("zero");
         fpc_rwset_proto->rw_set.reads[i].key[it->first.length()] = '\0';
-        LOG_DEBUG("checkcond");
         COND2ERR(ret != 0);
     }
 

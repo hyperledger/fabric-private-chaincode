@@ -35,6 +35,7 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
     fpc_CleartextChaincodeRequest cleartext_cc_request = {};
     t_shim_ctx_t ctx;
     int ret;
+    int invoke_ret;
     // estimate max response len (take into account other fields and b64 encoding)
     uint32_t response_len = signed_cc_response_message_bytes_len_in / 4 * 3 - 1024;
     uint8_t response[signed_cc_response_message_bytes_len_in / 4 * 3];
@@ -76,8 +77,12 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         // the dynamic memory in the message is released at the end
     }
 
-    ret = invoke(response, response_len, &response_len_out, &ctx);
-    COND2ERR(ret != 0);
+    invoke_ret = invoke(response, response_len, &response_len_out, &ctx);
+    //invoke_ret is not checked
+
+    // TODO double check or rethink if it is appropriate for a chaincode
+    // to return an error and still forward the response
+    // in particular: should the enclave sign a response? and the rwset? could the tx be committed though it failed?
 
     b64_response = base64_encode((const unsigned char*)response, response_len_out);
 
@@ -129,6 +134,7 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         }
 
         {  // serialize rwset
+            crm.has_fpc_rw_set = true;
             rwset_to_proto(&ctx, &crm.fpc_rw_set);
         }
 

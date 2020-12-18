@@ -6,7 +6,7 @@
 TOP = .
 include $(TOP)/build.mk
 
-SUB_DIRS = protos common internal ercc ecc_enclave ecc fabric client_sdk examples integration # docs
+SUB_DIRS = protos common internal ercc ecc_enclave ecc fabric client_sdk examples utils integration # docs
 
 FPC_SDK_DEP_DIRS = protos utils/fabric common ecc_enclave ecc
 FPC_PEER_DEP_DIRS = protos common ercc fabric ecc_enclave ecc

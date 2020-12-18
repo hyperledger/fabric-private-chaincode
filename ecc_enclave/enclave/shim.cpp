@@ -53,8 +53,11 @@ void get_state(
     get_public_state(key, encoded_cipher, sizeof(encoded_cipher), &encoded_cipher_len, ctx);
 
     // if nothing read, no need for decryption
-    // TODO: double check if this is an error in Fabric
-    COND2LOGERR(encoded_cipher_len == 0, "no value read");
+    if(encoded_cipher_len == 0)
+    {
+        *val_len = 0;
+        return;
+    }
 
     // if got value size larger than input array, report error
     COND2LOGERR(encoded_cipher_len > sizeof(encoded_cipher),

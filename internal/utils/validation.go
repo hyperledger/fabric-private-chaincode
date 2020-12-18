@@ -43,6 +43,7 @@ func ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSe
 
 	// normal reads
 	if rwset.GetReads() != nil {
+		logger.Debugf("Replaying reads")
 		if fpcrwset.GetReadValueHashes() == nil {
 			return fmt.Errorf("no read value hash associated to reads")
 		}
@@ -54,8 +55,10 @@ func ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSe
 			k := TransformToFPCKey(rwset.Reads[i].Key)
 			v, err := stub.GetState(k)
 			if err != nil {
-				return fmt.Errorf("value not found reading key %s", k)
+				return fmt.Errorf("error (%s) reading key %s", err, k)
 			}
+
+			logger.Debugf("read key %s value(hex) %s", k, hex.EncodeToString(v))
 
 			// compute value hash
 			h := sha256.New()
@@ -74,6 +77,7 @@ func ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSe
 
 	// range query reads
 	if rwset.GetRangeQueriesInfo() != nil {
+		logger.Debugf("Replaying range queries")
 		for _, rqi := range rwset.RangeQueriesInfo {
 			if rqi.GetRawReads() == nil {
 				// no raw reads available in this range query
@@ -83,7 +87,7 @@ func ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSe
 				k := TransformToFPCKey(qr.Key)
 				v, err := stub.GetState(k)
 				if err != nil {
-					return fmt.Errorf("value not found reading key %s", k)
+					return fmt.Errorf("error (%s) reading key %s", err, k)
 				}
 
 				_ = v
@@ -94,9 +98,15 @@ func ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSe
 
 	// writes
 	if rwset.GetWrites() != nil {
+		logger.Debugf("Replaying writes")
 		for _, w := range rwset.Writes {
 			k := TransformToFPCKey(w.Key)
-			_ = stub.PutState(k, w.Value)
+			err := stub.PutState(k, w.Value)
+			if err != nil {
+				return fmt.Errorf("error (%s) writing key %s value(hex) %s", err, k, hex.EncodeToString(w.Value))
+			}
+
+			logger.Debugf("written key %s value(hex) %s", k, hex.EncodeToString(w.Value))
 		}
 	}
 
