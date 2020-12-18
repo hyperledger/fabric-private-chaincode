@@ -10,6 +10,7 @@ set(SOURCE_FILES
     enclave.cpp
     enclave_t.c
     shim.cpp
+    shim_internals.cpp
     ${COMMON_SOURCE_DIR}/enclave/common.cpp
     ${COMMON_SOURCE_DIR}/enclave/cc_data.cpp
     ${COMMON_SOURCE_DIR}/base64/base64.cpp
@@ -65,6 +66,7 @@ include_directories(
     ${SGX_SSL}/include
     ${FPC_PATH}/common/crypto
     ${FPC_PATH}/common/protos
+    ${FPC_PATH}/common/protos/fpc
     ${FPC_PATH}/common/protos/fabric
     ${FPC_PATH}/common/logging/trusted
     ${FPC_PATH}/common/crypto/pdo/common

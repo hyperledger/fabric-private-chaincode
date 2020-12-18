@@ -53,7 +53,11 @@ void get_state(
     get_public_state(key, encoded_cipher, sizeof(encoded_cipher), &encoded_cipher_len, ctx);
 
     // if nothing read, no need for decryption
-    COND2LOGERR(encoded_cipher_len == 0, "no value read");
+    if (encoded_cipher_len == 0)
+    {
+        *val_len = 0;
+        return;
+    }
 
     // if got value size larger than input array, report error
     COND2LOGERR(encoded_cipher_len > sizeof(encoded_cipher),
@@ -64,6 +68,8 @@ void get_state(
     COND2LOGERR(encoded_cipher_len != encoded_cipher_s.size(), "Unexpected string length");
 
     // base64 decode
+    // TODO: double check if Fabric handles values as strings; if it handles binary values, remove
+    // encoding
     cipher = base64_decode(encoded_cipher_s);
     COND2LOGERR(cipher.size() <= pdo::crypto::constants::IV_LEN + pdo::crypto::constants::TAG_LEN,
         "base64 decoding failed/produced too short a value");
@@ -90,9 +96,9 @@ err:
 void get_public_state(
     const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* val_len, shim_ctx_ptr_t ctx)
 {
-    // read state
-    ctx->read_set.insert(std::string(key));
+    // TODO error checking and remove exceptions
 
+    // read state
     ocall_get_state(key, val, max_val_len, val_len, ctx->u_shim_ctx);
     if (*val_len > max_val_len)
     {
@@ -103,17 +109,57 @@ void get_public_state(
 
     LOG_DEBUG("Enclave: got state for key=%s len=%d val='%s'", key, *val_len,
         (*val_len > 0 ? (std::string((const char*)val, *val_len)).c_str() : ""));
+
+    // save in rw set: only save the first key/value-hash pair
+    std::string key_s(key);
+    ByteArray value_hash = pdo::crypto::ComputeMessageHash(ByteArray(val, val + *val_len));
+    auto it = ctx->read_set.find(key_s);
+    if (it == ctx->read_set.end())
+    {
+        // key not found, insert it
+        ctx->read_set.insert({std::string(key), value_hash});
+    }
+    else
+    {
+        // key found, ensure value is the same, or fail
+        if (it->second != value_hash)
+        {
+            char s[] = "value read inconsistency";
+            LOG_ERROR("%s", s);
+            throw std::runtime_error(s);
+        }
+
+        // IMPORTANT:
+        // * the read set stores the first key that is read;
+        // * subsequent reads of this key must return the same value, **no matter any local
+        // update/write**
+        // * hence, if a read key is updated later, the get_state must return the original
+        // (presumably committed) value
+        // TODO: double check consistency levels with fabric maintainers
+    }
 }
 
 void put_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t ctx)
 {
+    // TODO error checking and remove exceptions
+    if (val_len == 0)
+    {
+        char s[] = "put state cannot accept zero length values";
+        LOG_ERROR("%s", s);
+        throw std::runtime_error(s);
+    }
+
+    ByteArray b = ByteArray(val, val + val_len);
+    ByteArray sek = g_cc_data->get_state_encryption_key();
+
     ByteArray encrypted_val;
 
     // encrypt
     try
     {
-        encrypted_val = pdo::crypto::skenc::EncryptMessage(
-            g_cc_data->get_state_encryption_key(), ByteArray(val, val + val_len));
+        ByteArray value(val, val + val_len);
+        encrypted_val =
+            pdo::crypto::skenc::EncryptMessage(g_cc_data->get_state_encryption_key(), value);
     }
     catch (...)
     {
@@ -130,8 +176,12 @@ void put_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t c
 
 void put_public_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t ctx)
 {
-    std::string s((const char*)val, val_len);
-    ctx->write_set.insert({key, s});
+    // TODO error checking, ensure write gets to fabric
+
+    // save write -- only the last one for the same key
+    ctx->write_set.erase(key);
+    ctx->write_set.insert({key, ByteArray(val, val + val_len)});
+
     ocall_put_state(key, val, val_len, ctx->u_shim_ctx);
 }
 
@@ -146,6 +196,8 @@ int unmarshal_values(
     }
 
     JSON_Array* pairs = json_value_get_array(root);
+    COND2ERR(pairs == NULL);
+
     for (int i = 0; i < json_array_get_count(pairs); i++)
     {
         JSON_Object* pair = json_array_get_object(pairs, i);
@@ -155,13 +207,15 @@ int unmarshal_values(
     }
     json_value_free(root);
     return 1;
+
+err:
+    return -1;
 }
 
 void get_state_by_partial_composite_key(
     const char* comp_key, std::map<std::string, std::string>& values, shim_ctx_ptr_t ctx)
 {
     get_public_state_by_partial_composite_key(comp_key, values, ctx);
-
     for (auto& u : values)
     {
         // base64 decode

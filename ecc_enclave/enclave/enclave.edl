@@ -13,9 +13,9 @@ enclave {
     trusted {
         public int ecall_cc_invoke(
                 [in, size=signed_proposal_proto_bytes_len] const uint8_t *signed_proposal_proto_bytes, uint32_t signed_proposal_proto_bytes_len,
-                [in, size=cc_request_message_proto_len] const uint8_t *cc_request_message_proto, uint32_t cc_request_message_proto_len,
-                [out, size=cc_response_message_proto_len_in] uint8_t *cc_response_message_proto, uint32_t cc_response_message_proto_len_in,
-                [out] uint32_t *cc_response_message_proto_len_out,
+                [in, size=cc_request_message_bytes_len] const uint8_t *cc_request_message_bytes, uint32_t cc_request_message_bytes_len,
+                [out, size=signed_cc_response_message_bytes_len_in] uint8_t *signed_cc_response_message_bytes, uint32_t signed_cc_response_message_bytes_len_in,
+                [out] uint32_t *signed_cc_response_message_bytes_len_out,
                 [user_check] void *u_shim_ctx);
 
     };

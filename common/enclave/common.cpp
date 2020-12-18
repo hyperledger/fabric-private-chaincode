@@ -86,6 +86,7 @@ int ecall_init(const uint8_t* attestation_parameters,
         COND2LOGERR(!b, "error getting credentials");
     }
 
+    LOG_DEBUG("init enclave successful");
     return SGX_SUCCESS;
 
 err:

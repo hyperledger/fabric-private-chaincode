@@ -16,7 +16,6 @@ import (
 	"unsafe"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"golang.org/x/sync/semaphore"
 )
@@ -29,7 +28,6 @@ import (
 import "C"
 
 const enclaveLibFile = "enclave/lib/enclave.signed.so"
-const maxResponseSize = 1024 * 100 // Let's be really conservative ...
 
 type EnclaveStub struct {
 	eid           C.enclave_id_t
@@ -43,6 +41,9 @@ func NewEnclaveStub() StubInterface {
 }
 
 func (e *EnclaveStub) Init(chaincodeParams, hostParams, attestationParams []byte) ([]byte, error) {
+	// Estimate of the buffer length that is necessary for the credentials. It should be conservative.
+	const credentialsBufferMaxLen = 16 * 1024
+
 	if e.isInitialized {
 		return nil, fmt.Errorf("enclave already initialized")
 	}
@@ -50,7 +51,7 @@ func (e *EnclaveStub) Init(chaincodeParams, hostParams, attestationParams []byte
 	var eid C.enclave_id_t
 
 	// prepare output buffer for credentials
-	credentialsBuffer := C.malloc(maxResponseSize)
+	credentialsBuffer := C.malloc(credentialsBufferMaxLen)
 	defer C.free(credentialsBuffer)
 	credentialsSize := C.uint32_t(0)
 
@@ -70,7 +71,7 @@ func (e *EnclaveStub) Init(chaincodeParams, hostParams, attestationParams []byte
 		(*C.uint8_t)(C.CBytes(hostParams)),
 		C.uint32_t(len(hostParams)),
 		(*C.uint8_t)(credentialsBuffer),
-		C.uint32_t(maxResponseSize),
+		C.uint32_t(credentialsBufferMaxLen),
 		&credentialsSize)
 
 	if ret != 0 {
@@ -106,6 +107,9 @@ func (e *EnclaveStub) GetEnclaveId() (string, error) {
 
 // ChaincodeInvoke calls the enclave for transaction processing
 func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, crmProtoBytes []byte) ([]byte, error) {
+	// Estimate of the buffer length where the enclave will write the response.
+	const scresmProtoBytesMaxLen = 1024 * 100 // Let's be really conservative ...
+
 	if !e.isInitialized {
 		return nil, fmt.Errorf("enclave not yet initialized")
 	}
@@ -128,9 +132,9 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, crmProto
 	defer C.free(unsafe.Pointer(signedProposalPtr))
 
 	// prep response
-	cresmProtoBytesLenOut := C.uint32_t(0) // We pass maximal length separately; set to zero so we can detect valid responses
-	cresmProtoBytesPtr := C.malloc(maxResponseSize)
-	defer C.free(cresmProtoBytesPtr)
+	scresmProtoBytesLenOut := C.uint32_t(0) // We pass maximal length separately; set to zero so we can detect valid responses
+	scresmProtoBytesPtr := C.malloc(scresmProtoBytesMaxLen)
+	defer C.free(scresmProtoBytesPtr)
 
 	crmProtoBytesPtr := C.CBytes(crmProtoBytes)
 	defer C.free(unsafe.Pointer(crmProtoBytesPtr))
@@ -146,31 +150,12 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, crmProto
 		(C.uint32_t)(len(signedProposalBytes)),
 		(*C.uint8_t)(crmProtoBytesPtr),
 		(C.uint32_t)(len(crmProtoBytes)),
-		(*C.uint8_t)(cresmProtoBytesPtr), (C.uint32_t)(maxResponseSize), &cresmProtoBytesLenOut,
+		(*C.uint8_t)(scresmProtoBytesPtr), (C.uint32_t)(scresmProtoBytesMaxLen), &scresmProtoBytesLenOut,
 		ctx)
 	e.sem.Release(1)
 	if invokeRet != 0 {
 		return nil, fmt.Errorf("invoke failed. Reason: %d", int(invokeRet))
 	}
 
-	cresmProtoBytes := C.GoBytes(cresmProtoBytesPtr, C.int(cresmProtoBytesLenOut))
-
-	responseMsg := &protos.ChaincodeResponseMessage{}
-	err = proto.Unmarshal(cresmProtoBytes, responseMsg)
-	if err != nil {
-		return nil, fmt.Errorf("cannot unmarshal ChaincodeResponseMessage: %s", err.Error())
-	}
-
-	// include proposal here
-	responseMsg.Proposal = proposal
-
-	// TODO set RW set
-	//responseMsg.RwSet = ...
-
-	cresmProtoBytes, err = proto.Marshal(responseMsg)
-	if err != nil {
-		return nil, fmt.Errorf("cannot marshal ChaincodeResponseMessage: %s", err.Error())
-	}
-
-	return cresmProtoBytes, nil
+	return C.GoBytes(scresmProtoBytesPtr, C.int(scresmProtoBytesLenOut)), nil
 }

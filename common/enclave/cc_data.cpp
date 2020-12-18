@@ -235,3 +235,15 @@ std::string cc_data::get_enclave_id()
 
     return hex;
 }
+
+bool cc_data::sign_message(const ByteArray& message, ByteArray& signature) const
+{
+    bool b;
+    CATCH(b, signature = signature_key_.SignMessage(message));
+    COND2LOGERR(!b, "message signing failed");
+
+    return true;
+
+err:
+    return false;
+}

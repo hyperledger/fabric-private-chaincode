@@ -83,21 +83,29 @@ func extractInitEnclaveMessage(stub shim.ChaincodeStubInterface) (*protos.InitEn
 	return initMsg, err
 }
 
-func extractChaincodeResponseMessage(stub shim.ChaincodeStubInterface) (*protos.ChaincodeResponseMessage, error) {
+func extractChaincodeResponseMessages(stub shim.ChaincodeStubInterface) (*protos.SignedChaincodeResponseMessage, *protos.ChaincodeResponseMessage, error) {
 	if len(stub.GetStringArgs()) < 2 {
-		return nil, fmt.Errorf("initEnclaveMessage missing")
+		return nil, nil, fmt.Errorf("initEnclaveMessage missing")
 	}
 
-	serializedChaincodeResponseMessage, err := base64.StdEncoding.DecodeString(stub.GetStringArgs()[1])
+	serializedSignedChaincodeResponseMessage, err := base64.StdEncoding.DecodeString(stub.GetStringArgs()[1])
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+
+	signedResponseMsg := &protos.SignedChaincodeResponseMessage{}
+	err = proto.Unmarshal(serializedSignedChaincodeResponseMessage, signedResponseMsg)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	serializedChaincodeResponseMessage := signedResponseMsg.ChaincodeResponseMessage
 
 	responseMsg := &protos.ChaincodeResponseMessage{}
 	err = proto.Unmarshal(serializedChaincodeResponseMessage, responseMsg)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return responseMsg, err
+	return signedResponseMsg, responseMsg, err
 }

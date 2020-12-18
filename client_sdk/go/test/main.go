@@ -63,7 +63,6 @@ func populateWallet(wallet *gateway.Wallet) error {
 }
 
 func main() {
-
 	os.Setenv("GRPC_TRACE", "all")
 	os.Setenv("GRPC_VERBOSITY", "DEBUG")
 	os.Setenv("GRPC_GO_LOG_SEVERITY_LEVEL", "INFO")

@@ -20,6 +20,7 @@ FILE(GLOB PROJECT_SOURCES
     "${PDO_CRYPTO_DIR}/../hex_string.cpp"
     "${PDO_CRYPTO_DIR}/../log.cpp"
     "pdo-types.cpp"
+    "pdo-crypto-c-wrapper.cpp"
     "$ENV{FPC_PATH}/common/base64/base64.cpp"
     "$ENV{FPC_PATH}/common/json/parson.c"
     "attestation-api/evidence/*.cpp"
