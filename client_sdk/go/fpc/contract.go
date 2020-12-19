@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0
 package fpc
 
 import (
-	"encoding/base64"
 	"strings"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc/crypto"
@@ -163,7 +162,7 @@ func (c *contractState) SubmitTransaction(name string, args ...string) ([]byte, 
 	}
 
 	logger.Debugf("calling __endorse!")
-	_, err = c.contract.SubmitTransaction("__endorse", base64.StdEncoding.EncodeToString(encryptedResponse))
+	_, err = c.contract.SubmitTransaction("__endorse", string(encryptedResponse))
 	if err != nil {
 		return nil, err
 	}
