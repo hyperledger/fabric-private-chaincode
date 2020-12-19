@@ -22,7 +22,7 @@ Setup fabric sample network, binaries and docker images (this follow the [instru
 
 ```bash
 cd $FPC_PATH/integration/test-network/fabric-samples
-curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.2.0 1.4.9 -s
+curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.3.0 1.4.9 -s
 ```
  
 ```bash
@@ -34,7 +34,7 @@ cd $FPC_PATH/integration/test-network
 Start network:
 ```bash
 cd $FPC_PATH/integration/test-network/fabric-samples/test-network
-./network.sh up createChannel -c mychannel -ca -cai 1.4.9 -i 2.2.0
+./network.sh up createChannel -c mychannel -ca -cai 1.4.9 -i 2.3.0
 ```
 
 Install FPC components:

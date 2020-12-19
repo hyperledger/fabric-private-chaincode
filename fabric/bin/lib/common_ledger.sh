@@ -128,7 +128,7 @@ ledger_init() {
     # - Creating a genesisblock for orderer-system-channel......."
     try ${CONFIGTXGEN_CMD} -outputBlock ${FABRIC_STATE_DIR}/genesisblock -profile SampleDevModeEtcdRaft -channelID orderer-system-channel
     sleep 1
-    ORDERER_GENERAL_GENESISPROFILE=SampleDevModeEtcdRaft ${ORDERER_CMD} 1>${ORDERER_LOG_OUT} 2>${ORDERER_LOG_ERR} &
+    ${ORDERER_CMD} 1>${ORDERER_LOG_OUT} 2>${ORDERER_LOG_ERR} &
     export ORDERER_PID=$!
     echo "${ORDERER_PID}" > ${ORDERER_PID_FILE}
     sleep 1
