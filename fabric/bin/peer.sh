@@ -99,7 +99,7 @@ handle_lifecycle_chaincode_package() {
 	    # Above is the flags we really care, but we need also the outputfile
 	    # which doesn't have a flag. So let's enumerate the known no-arg
 	    # flags (i.e., --tls -h/--help), assume all other flags have exactly
-	    # one arg (true as of v2.2.0) and then the remaining one is the
+	    # one arg (true as of v2.3.0) and then the remaining one is the
 	    # output file ...
 	    -h|--help)
 		# with help, no point to continue but run it right here ..
@@ -206,7 +206,7 @@ handle_lifecycle_chaincode_install() {
 	    # we care only about package file name but this is not prefixed
 	    # with a flag.  So let's enumerate the known no-arg flags (i.e.,
 	    # --tls -h/--help), assume all other flags have exactly
-	    # one arg (true as of v2.2.0) and then the remaining one is the
+	    # one arg (true as of v2.3.0) and then the remaining one is the
 	    # output file ...
 	    -h|--help)
 		# with help, no point to continue but run it right here ..

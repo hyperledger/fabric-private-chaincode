@@ -1,9 +1,9 @@
-# Copyright 2020 Intel Corporation
 # Copyright IBM Corp. All Rights Reserved.
+# Copyright 2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# Based on sampleconfig from github.com/hyperledger/fabric.git tagged with v2.2.0
+# Based on sampleconfig from github.com/hyperledger/fabric.git tagged with v2.3.0
 
 OrganizationalUnitIdentifiers:
   - Certificate: "cacerts/cacert.pem"

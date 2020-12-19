@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# Based on sampleconfig from github.com/hyperledger/fabric.git tagged with v2.2.0
+# Based on sampleconfig from github.com/hyperledger/fabric.git tagged with v2.3.0
 
 ###############################################################################
 #
@@ -14,10 +14,12 @@ peer:
 
     # The peer id provides a name for this peer instance and is used when
     # naming docker resources.
+    # FPC: change for our test env
     id: jdoe_test
 
     # The networkId allows for logical separation of networks and is used when
     # naming docker resources.
+    # FPC: change for our test env
     networkId: dev_test
 
     # The Address at local network interface this Peer will listen on.
@@ -257,26 +259,31 @@ peer:
     tls:
         # Require server-side TLS
         enabled:  false
-        # Require client certificates / mutual TLS.
+        # Require client certificates / mutual TLS for inbound connections.
         # Note that clients that are not configured to use a certificate will
         # fail to connect to the peer.
         clientAuthRequired: false
         # X.509 certificate used for TLS server
         cert:
             file: tls/server.crt
-        # Private key used for TLS server (and client if clientAuthEnabled
-        # is set to true
+        # Private key used for TLS server
         key:
             file: tls/server.key
-        # Trusted root certificate chain for tls.cert
+        # rootcert.file represents the trusted root certificate chain used for verifying certificates
+        # of other nodes during outbound connections.
+        # It is not required to be set, but can be used to augment the set of TLS CA certificates
+        # available from the MSPs of each channel’s configuration.
         rootcert:
             file: tls/ca.crt
-        # Set of root certificate authorities used to verify client certificates
+        # If mutual TLS is enabled, clientRootCAs.files contains a list of additional root certificates
+        # used for verifying certificates of client connections.
+        # It augments the set of TLS CA certificates available from the MSPs of each channel’s configuration.
+        # Minimally, set your organization's TLS CA root certificate so that the peer can receive join channel requests.
         clientRootCAs:
             files:
               - tls/ca.crt
-        # Private key used for TLS when making client connections.  If
-        # not set, peer.tls.key.file will be used instead
+        # Private key used for TLS when making client connections.
+        # If not set, peer.tls.key.file will be used instead
         clientKey:
             file:
         # X.509 certificate used for TLS when making client connections.
@@ -294,6 +301,7 @@ peer:
     # Path on the file system where peer will store data (eg ledger). This
     # location must be access control protected to prevent unintended
     # modification that might corrupt the peer operations.
+    # FPC: change for our test env
     fileSystemPath: /tmp/hyperledger/test
 
     # BCCSP (Blockchain crypto provider): Select which crypto implementation or
@@ -419,6 +427,8 @@ peer:
           vscc:
             name: DefaultValidation
             library:
+
+    #    library: /etc/hyperledger/fabric/plugin/escc.so
     # Number of goroutines that will execute transaction validation in parallel.
     # By default, the peer chooses the number of CPUs on the machine. Set this
     # variable to override that choice.
@@ -480,6 +490,7 @@ vm:
 
         # Enables/disables the standard out/err from chaincode containers for
         # debugging purposes
+        # FPC: change for our test env to get debug output
         attachStdout: true
 
         # Parameters on creating docker container.
@@ -548,6 +559,7 @@ chaincode:
     # List of directories to treat as external builders and launchers for
     # chaincode. The external builder detection processing will iterate over the
     # builders in the order specified below.
+    # FPC: change to enable our external builders
     # externalBuilders: []
         # - path: /path/to/directory
         #   name: descriptive-builder-name
@@ -606,15 +618,15 @@ chaincode:
         _lifecycle: enable
         cscc: enable
         lscc: enable
-        escc: enable
-        vscc: enable
         qscc: enable
 
     # Logging section for the chaincode container
     logging:
       # Default level for all loggers within the chaincode container
+      # FPC: change for our test env to get more log info
       level:  debug
       # Override default level for the 'shim' logger
+      # FPC: change for our test env to get more log info
       shim:   info
       # Format for the chaincode container logs
       format: '%{color}%{time:2006-01-02 15:04:05.000 MST} [%{module}] %{shortfunc} -> %{level:.4s} %{id:03x}%{color:reset} %{message}'
@@ -696,6 +708,21 @@ ledger:
     # the minimum duration (in milliseconds) between writing
     # two consecutive db batches for converting the ineligible missing data entries to eligible missing data entries
     collElgProcDbBatchesInterval: 1000
+    # The missing data entries are classified into two categories:
+    # (1) prioritized
+    # (2) deprioritized
+    # Initially, all missing data are in the prioritized list. When the
+    # reconciler is unable to fetch the missing data from other peers,
+    # the unreconciled missing data would be moved to the deprioritized list.
+    # The reconciler would retry deprioritized missing data after every
+    # deprioritizedDataReconcilerInterval (unit: minutes). Note that the
+    # interval needs to be greater than the reconcileSleepInterval
+    deprioritizedDataReconcilerInterval: 60m
+
+  snapshots:
+    # Path on the file system where peer will store ledger snapshots
+    # FPC: change for our test env
+    rootDir: /tmp/hyperledger/test/snapshots
 
 ###############################################################################
 #

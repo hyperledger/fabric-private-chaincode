@@ -15,9 +15,9 @@ Run the following command:
 ### Wrong Fabric version
 ```
 Patching Fabric ...
-Aborting! Tag on current HEAD () does not match expected tag/v2.2.0!
+Aborting! Tag on current HEAD () does not match expected tag/v2.3.0!
 ...
 ```
 
 Seems that your Fabric is on the wrong branch.
-Try to run `pushd $FABRIC_PATH; git checkout tags/v2.2.0; popd;` followed by `make` again.
+Try to run `pushd $FABRIC_PATH; git checkout tags/v2.3.0; popd;` followed by `make` again.

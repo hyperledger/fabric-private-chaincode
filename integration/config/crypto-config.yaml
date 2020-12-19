@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# Loosely Based on ./discovery/test/testdata/crypto-config.yaml from github.com/hyperledger/fabric.git tagged with v2.2.0
+# Loosely Based on ./discovery/test/testdata/crypto-config.yaml from github.com/hyperledger/fabric.git tagged with v2.3.0
 
 # ---------------------------------------------------------------------------
 # "OrdererOrgs" - Definition of organizations managing orderer nodes
