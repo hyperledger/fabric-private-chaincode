@@ -212,6 +212,16 @@ First make sure your host has
 * GNU make
 
 A few notes:
+* While we mostly test on 18.04, FPC should work also with Ubuntu 20.04.
+  (Note though that due to changes in clang-format (defaults), a the make
+  target `linter` (and hence also the (default) target `all`) will fail 
+  with `ERROR in format:` errors for various C/C++-files. As this target runs
+  last for the default target, if you see only these errors after running
+  `make`, the build should be good.)
+  To build also docker images based on Ubuntu 20.04, add the following to `${FPC_PATH}/config.override.mk`
+  ```bash
+  DOCKER_BUILD_OPTS=--build-arg UBUNTU_VERSION=20.04 --build-arg UBUNTU_NAME=focal
+  ```
 * if you run behind a proxy, you will have to configure the proxy,
   e.g., for docker (`~/.docker/config.json`). See
   [Working from behind a proxy](#working-from-behind-a-proxy) below for more information.
@@ -272,7 +282,7 @@ Make sure that you have the following required dependencies installed:
     - Protocol Buffers 3.0.x needed for the Intel SGX SDK
     - Protocol Buffers 3.11.x or higher and [Nanopb](http://github.com/nanopb/nanopb) 0.4.3
 
-* SGX PSW & SDK v2.10 for [Linux](https://01.org/intel-software-guard-extensions/downloads)
+* SGX PSW & SDK v2.12 for [Linux](https://01.org/intel-software-guard-extensions/downloads)
   (alternatively, you could also install it from the [source](https://github.com/intel/linux-sgx)
 
 * Credentials for Intel Attestation Service, read [here](#intel-attestation-service-ias) (for hardware-mode SGX)

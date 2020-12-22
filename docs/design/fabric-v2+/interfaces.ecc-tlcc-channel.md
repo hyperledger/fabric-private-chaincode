@@ -336,7 +336,7 @@ See message definition in `protos/fpc/tl_session.proto`
 
 The session setup is built around DH key-exchange provided by the SGX
 SDK.
-See [Developer Reference Guide v2.10](https://download.01.org/intel-sgx/latest/linux-latest/docs/Intel_SGX_Developer_Reference_Linux_2.10_Open_Source.pdf)
+See [Developer Reference Guide v2.12](https://download.01.org/intel-sgx/latest/linux-latest/docs/Intel_SGX_Developer_Reference_Linux_2.12_Open_Source.pdf)
 for more information; in particular, pages 97-102 for an overview and the
 corresponding message flows, and page 121 and 305ff for the function definitions.
 
