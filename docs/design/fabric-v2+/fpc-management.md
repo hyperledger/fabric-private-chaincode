@@ -13,11 +13,11 @@ For a description of the original Fabric v2 commands, check out the [Fabric v2 d
 In the following, this document describes additional flags and usages.
 Any other commands, which does not appear in this list, remains unchanged in FPC.
 
-#### Package
+#### `package`
 
 This commands has a new option `--lang fpc-c` to specify the FPC chaincode type.
 
-#### Approveformyorg
+#### `approveformyorg`
 
 This command has the following requirements *when it is used for FPC chaincodes*:
 * `--version <MRENCLAVE as (upper-case) hexadecimal string>`, the version of the FPC chaincode must contain a string that represent the identity of the enclave. This is the same identity which the trusted hardware computes and attests to. The string can be conveniently found in the `mrenclave` output file of the `generate_mrenclave.sh` script.
@@ -26,11 +26,11 @@ FPC currently supports only a single enclave as endorser, running at a designate
 * `--endorsement-plugin string`, this flag is not supported in FPC.
 * `--validation-plugin string`, this flag is not supported in FPC.
 
-#### Checkcommitreadiness
+#### `checkcommitreadiness`
 
 This command has the same requirements *when it is used for FPC chaincodes* as described above for `approveformyorg`.
 
-#### Commit
+#### `commit`
 
 This command has the same requirements *when it is used for FPC chaincodes* as described above for `approveformyorg`.
 
@@ -76,28 +76,36 @@ Users must aware that each FPC chaincode runs in a single enclave at a designate
 
 ## FPC Endorsement Policies
 
-The initial version of FPC restricts the set of allowed endorsement policies and currently
-supports a designated endorser policy only. That is, only a single endorsing peer is
-responsible to execute transactions of an FPC chaincode for the consortium.  As an FPC
-chaincode is protected by the use of Trusted Execution Technology, from a security
-perspective, the integrity guarantees gained from the endorsement model are similar to the guarantee provided in a typical Fabric system with multiple Peer endorsements.
-However, the designated endorser policy does not provide resilience in terms of availability and limits a particular chaincode's scalability.
-In future releases of FPC, we will address this limitation and relax this restriction by
-providing support for rich endorsement policies.
+In FPC, signatures by enclaves are the base of endorsements.
+For the initial version of FPC, FPC Lite, an endorsement of a single
+endorsing peer is sufficient.
+More specifically, the endorsement must stem from an enclave which is properly registered with the enclave registiry (ercc) as part of a successful `initEnclave` call (see [above](#create-chaincode-enclave).
+The corresponding *enclave endorsement policy* is called [`designated enclave`](https://docs.google.com/document/d/1RSrOfI9nh3d_DxT5CydvCg9lVNsZ9a30XcgC07in1BY/edit) and is *implicitly defined*.
+As an FPC chaincode is protected by the use of Trusted Execution Environments,
+from a security perspective,
+the integrity guarantees gained from a single enclave are similar to the guarantee provided in a typical Fabric system with multiple peer endorsements.
 
-To achieve the designated-peer endorsement policy, the consortium initially selects an organization (e.g., SampleOrg)
-that will host the designated endorsing peer.  The corresponding endorsement policy
-needs to be set to `OR('SampleOrg.peer')` and approved by the consortium using normal chaincode lifecycle agreement.
-Other expressions like `AND` or `OR` with multiple organizations are currently not allowed and
-may lead to unexpected behavior.
+With the [externalized enclave endorsement validation](https://docs.google.com/document/d/1RSrOfI9nh3d_DxT5CydvCg9lVNsZ9a30XcgC07in1BY/)
+of the initial version of FPC,
+there is though also separate endorsement required,
+namely an endorsement that the enclave endorsement was properly validated.
+The policy is called the *validation endorsement policy* and should match the standard organizational trust model in Fabric,
+e.g., a majority of involved organizations.
 
-Note that in order to use `SampleORG.peer`, `NodeOUs.Enable` must be set to `true`, otherwise
-`OR('SampleOrg.member')` must be used.
 
-For example:
+For FPC Lite, the validation endorsement policy is specified through the
+[`approveformyorg`](#approveformyorg) and [`commit`](#commit)
+commands, while the enclave endorsement policy is implicit,
+as mentioned above.
+For example, to define require any 2 organizations for a consortium of `Org1`, `Org2` and `Org3` are required for endorsement validation,
+you might install fpc chaincode as follows:
+```bash
+	..
+    peer lifecycle chaincode approveformyorg --channelID mychannel name myfpc --signature-policy "OutOf(2, 'Org1.peer', 'Org2.peer', Org3.peer')" ...
+	..
+    peer lifecycle chaincode commit --channelID mychannel --name myfpc --signature-policy "OutOf(2, 'Org1.peer', 'Org2.peer', Org3.peer')" ...
+	..
+```
+Future releases of FPC might provide support for richer enclave endorsement policies and/or enclave endorsement validation internalized.
+Correspondingly, specification of enclave endorsement policies and enclave validation endorsement policies will likely change in the future.
 
-    peer lifecycle chaincode approveformyorg --channelID mychannel --name myfpc --signature-policy "OR('SampleOrg.peer')" ...
-
-An admin of SampleOrg is then responsible to invoke `lifecycle chaincode initEnclave` at
-a single peer and thereby determine the designated endorser for the `myfpc` chaincode.  Clients
-of the consortium have to make sure that they invoke transactions only at the designed endorser.

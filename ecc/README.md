@@ -8,56 +8,55 @@ Before your continue here make sure you have build ``ecc_enclave`` before.
 We refer to [ecc_enclave/README.md](../ecc_enclave). Otherwise, the build
 might fail with the message `ecc_enclave build does not exist!`.
 
-This is a go chaincode that is used to invoke the enclave. The chaincode logic
-is implemented in C++ as enclave code and is loaded by by the go chaincode as
-C library (``ecc/enclave/lib/enclave.signed.so``).  For more details on the
+This is a go chaincode that is used to invoke the enclave (and hence
+FPC chaincode). The chaincode logic is implemented in C++ as enclave
+code and is loaded by by the go chaincode as C library
+(``ecc/enclave/lib/enclave.signed.so``).  For more details on the 
 chaincode implementation see [ecc_enclave](../ecc_enclave).
 
+The FPC chaincode can be run in two modes, as a normal chaincode
+(where the lifecycle of the chaincode is controlled by the peer) and
+as chaincode-as-a-service.
+See more details below.
 
-The following steps guide you through the build phase. Make sure this project is on your `$GOPATH`.
+## Normal mode
 
-First, build the chaincode and the validation plugin
+The chaincode will start in that mode if _neither_ of the environment
+variables `CHAINCODE_PKG_ID` and `CHAINCODE_SERVER_ADDRESS` are
+defined. 
 
-    $ make
+It also requires that the peer's `core.yaml` defines the FPC CaaS
+external builder scripts as follows:
+```
+    ...
+    externalBuilders:
+        - path: ${FPC_PATH}/fabric/externalBuilder/chaincode
+          name: fpc-c
+          propagateEnvironment:
+              - FPC_HOSTING_MODE
+              - FABRIC_LOGGING_SPEC
+              - ftp_proxy
+              - http_proxy
+              - https_proxy
+              - no_proxy
+   ...
+```
 
-## Chaincode docker image
+## Chaincode-as-a-Service mode
 
-Fabric uses docker to deploy and run chaincodes in isolated containers. Normally, the peer creates the docker image
-automatically when a chaincode is installed.  In particular, it fetches the source code, builds the chaincode
-executable, and copies them into a new docker images based on the Fabric chaincode environment (`fabric-ccenv`) base
-image.  Note that, since the peer is lazy, the docker image is not recreated if it already exists. The image name
-comprise of the peer name, the chaincode name, and a hash.
+The chaincode will start in CaaS mode if the environment variables
+`CHAINCODE_PKG_ID` and `CHAINCODE_SERVER_ADDRESS` are defined.
 
-However, we use a custom chaincode environment docker image that has SGX-support enabled.  As the default chaincode
-deployment process does not support embedded libraries, which we need for the enclave chaincode, we will shortcut the
-normal installation by overriding an existing chaincode image.
+It also requires that the peer's `core.yaml` defines the FPC CaaS
+external builder scripts as follows:
+```
+  ...
+  externalBuilders:
+    - path: ${FPC_PATH}/fabric/externalBuilder/chaincode_server
+      name: fpc-external-launcher
+      propagateEnvironment:
+        - CORE_PEER_ID
+        - FABRIC_LOGGING_SPEC
+  ...
+```
 
-In detail, first install some `dummy` chaincode, which we are going to override, and check if the corresponding docker
-image has been created successfully. For example:
-
-    $ peer chaincode install -n ecc -v 0 -p github.com/hyperledger/fabric/examples/chaincode/go/example02/cmd 
-    $ docker images
-    REPOSITORY
-    TAG                 IMAGE ID
-    dev-jdoe-ecc-0-8bdbb434df41902eb2d2b2e2f10f6b0504b63f56eb98582f307c11a15fc14eb7
-    latest              0c18434ae5e3
-
-You can see that the peer has successfully created the docker image comprising the `dummy` chaincode.
-
-Next, just run ``make docker`` to build and override the existing docker image with our private chaincode. To verify that
-the image contains our enclave code, let's have a look inside the image and see if we can see an enclave folder.
-
-    $ make docker
-    $ docker run -i -t --entrypoint ls dev-jdoe-ecc-0-8bdbb434df41902eb2d2b2e2f10f6b0504b63f56eb98582f307c11a15fc14eb7:latest
-
-You can also define the peer name and the chaincode name manually.
-
-    $ make docker DOCKER_IMAGE=my-peername-ecc-0
-
-For debugging you can also start the docker image.
-
-    $ make docker-run
-
-When developing a new chaincode it is useful to also wipe out the old docker image.
-
-    $ make docker-clean 
