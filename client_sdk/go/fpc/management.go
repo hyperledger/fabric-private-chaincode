@@ -25,6 +25,8 @@ import (
 // ManagementAPI provides FPC specific chaincode management functionality.
 // ManagementAPI objects should be created using the GetManagementAPI() factory method.
 // For an example of its use, see https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/client_sdk/go/test/main.go
+// For more information on the FPC management commands and related constraints on chaincode versions and endorsement policies,
+// see https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/client_sdk/docs/design/fabric-v2+/fpc-management.md
 type ManagementAPI interface {
 	// InitEnclave initializes and registers an enclave for a particular chaincode.
 	//  Parameters:
