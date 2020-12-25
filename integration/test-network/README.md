@@ -49,7 +49,7 @@ cd $FPC_PATH/integration/test-network
 
 Start FPC container
 ```bash
-make ercc-ecc-run
+make ercc-ecc-start
 ```
 
 Run test program

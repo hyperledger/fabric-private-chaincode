@@ -5,16 +5,22 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+# Package a fpc chaincode for CaaS mode
+# (for normal external-builder, use '$FPC_PATH/fabric/bin/peer.sh lifecycle chaincode package')
+
 set -euo pipefail
+
+#DEBUG=true # uncomment (or define when calling script) to show debug output
+
 
 if [[ -z "${FPC_PATH}" ]]; then
   echo "Error: FPC_PATH not set"
   exit 1
 fi
 
-if [ "$#" -ne 5 ]; then
-  echo "ERROR: incorrect number of parameters"
-  echo "Use: ./package.sh <_deployment> <ercc-id> <ercc-version> <cc-id> <cc-version>"
+if [ "$#" -ne 6 ]; then
+  echo "ERROR: incorrect number of parameters" >&2
+  echo "Use: ./package.sh <_deployment> <ercc-id> <ercc-version> <cc-id> <cc-version> <peer-id>" >&2
 
   exit 1
 fi
@@ -25,8 +31,9 @@ ERCC_ID="$2"
 ERCC_VER="$3"
 CC_ID="$4"
 CC_VER="$5"
+PEER="$6"
 
-
+CHAINCODE_SERVER_PORT=9999
 
 packageChaincode() {
   output_dir=$1
@@ -34,24 +41,25 @@ packageChaincode() {
   cc_version=$3
   cc_type=$4
   port=$5
+  peer=$6
 
-  tmp_dir=$(mktemp -d -t "${cc_name}-packageXXX")
+  local tmp_dir=$(mktemp -d -t "${cc_name}-packageXXX")
   mkdir -p "${output_dir}"
 
-  for p in "${PEERS[@]}"; do
-    local out_dir=${tmp_dir}/connections/${p}
+  local out_dir=${tmp_dir}/connections/${peer}
 
-    mkdir -p $out_dir
-    addr="${cc_name}.${p}:${port}"
-    createConnection ${out_dir} ${addr}
-    echo ${out_dir}
-    ls ${out_dir}
+  mkdir -p $out_dir
+  addr="${cc_name}.${peer}:${port}"
+  createConnection ${out_dir} ${addr}
+  [ -z ${DEBUG+x} ] || {
+    echo ${out_dir};
+    ls ${out_dir};
     cat ${out_dir}/connection.json
-  done
+  }
 
   tar -czf "${tmp_dir}/code.tar.gz" -C ${tmp_dir}/connections .
 
-  output="${output_dir}/${cc_name}.tgz"
+  output="${output_dir}/${cc_name}.${peer}.tgz"
 
   createMetafile ${tmp_dir} ${cc_name} ${cc_version} ${cc_type}
 
@@ -89,7 +97,5 @@ createConnection() {
 EOF
 }
 
-PEERS=("peer0.org1.example.com" "peer0.org2.example.com")
-
-packageChaincode "${DEPLOYMENT_PATH}" "${ERCC_ID}" "${ERCC_VER}" "external" 9999
-packageChaincode "${DEPLOYMENT_PATH}" "${CC_ID}" "${CC_VER}" "external" 9999
+packageChaincode "${DEPLOYMENT_PATH}" "${ERCC_ID}" "${ERCC_VER}" "external" ${CHAINCODE_SERVER_PORT} "${PEER}"
+packageChaincode "${DEPLOYMENT_PATH}" "${CC_ID}" "${CC_VER}" "external" ${CHAINCODE_SERVER_PORT} "${PEER}"
