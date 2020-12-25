@@ -213,11 +213,6 @@ First make sure your host has
 
 A few notes:
 * While we mostly test on 18.04, FPC should work also with Ubuntu 20.04.
-  (Note though that due to changes in clang-format (defaults), a the make
-  target `linter` (and hence also the (default) target `all`) will fail 
-  with `ERROR in format:` errors for various C/C++-files. As this target runs
-  last for the default target, if you see only these errors after running
-  `make`, the build should be good.)
   To build also docker images based on Ubuntu 20.04, add the following to `${FPC_PATH}/config.override.mk`
   ```bash
   DOCKER_BUILD_OPTS=--build-arg UBUNTU_VERSION=20.04 --build-arg UBUNTU_NAME=focal
