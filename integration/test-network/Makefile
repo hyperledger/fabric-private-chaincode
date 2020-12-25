@@ -22,7 +22,7 @@ ecc-container:
 	make -C ${FPC_PATH}/ecc DOCKER_IMAGE=fpc/fpc-${TEST_EXAMPLE}$${HW_EXTENSION} DOCKER_ENCLAVE_SO_PATH=${FPC_PATH}/examples/${TEST_EXAMPLE}/_build/lib all docker
 
 
-ercc-ecc-run:
+ercc-ecc-start:
 	if [ "${SGX_MODE}" = "HW" ]; then \
 		export HW_EXTENSION="-hw" \
 		    AESMD_PATH="/var/run/aesmd" \

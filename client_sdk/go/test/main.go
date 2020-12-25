@@ -127,7 +127,9 @@ func main() {
 	// Setup Chaincode Enclave
 	logger.Debugf("--> Create FPC chaincode enclave: ")
 	attestationParams := []string{"some params"}
-	err = admin.InitEnclave("peer0.peer1.example.com:7051", attestationParams...)
+	err = admin.InitEnclave("peer0.org1.example.com:7051", attestationParams...)
+	// Note: strangely the hostname above is completely irrelevant and can be
+	//       non-existing, seems always to map (or fallback?) to localhost?!
 	if err != nil {
 		logger.Fatalf("Failed to create enclave: %v", err)
 	}
