@@ -16,6 +16,7 @@
 #include "protos/fpc/fpc.pb.h"
 
 #include "attestation-api/attestation/attestation.h"
+#include "crypto.h"
 
 // ecc enclave global variable -- allocated dynamically
 cc_data* g_cc_data = NULL;
@@ -241,6 +242,31 @@ bool cc_data::sign_message(const ByteArray& message, ByteArray& signature) const
     bool b;
     CATCH(b, signature = signature_key_.SignMessage(message));
     COND2LOGERR(!b, "message signing failed");
+
+    return true;
+
+err:
+    return false;
+}
+
+bool cc_data::decrypt_cc_message(const ByteArray& encrypted_message, ByteArray& message) const
+{
+    bool b;
+    CATCH(b, message = cc_decryption_key_.DecryptMessage(encrypted_message));
+    COND2LOGERR(!b, "message decryption failed");
+
+    return true;
+
+err:
+    return false;
+}
+
+bool cc_data::encrypt_message(
+    const ByteArray key, const ByteArray& message, ByteArray& encrypted_message) const
+{
+    bool b;
+    CATCH(b, encrypted_message = pdo::crypto::skenc::EncryptMessage(key, message));
+    COND2LOGERR(!b, "message encryption failed");
 
     return true;
 
