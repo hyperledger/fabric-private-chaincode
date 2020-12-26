@@ -8,12 +8,12 @@ assignees: ''
 ---
 
 **Describe the bug**
-<--! 
+<!-- 
   Add a clear and concise description of what the bug is. 
 -->
 
 **To Reproduce**
-<--! 
+<!-- 
 Add steps to reproduce the behavior, e.g.
 1. Go to '...'
 2. Click on '....'
@@ -22,12 +22,12 @@ Add steps to reproduce the behavior, e.g.
 -->
 
 **Expected behavior**
-<--! 
+<!-- 
   Add a clear and concise description of what you expected to happen. 
 -->
 
 **Log-filesScreenshots**
-<--! 
+<!-- 
  If applicable, add screenshots to help explain your problem. 
 -->
 
@@ -38,6 +38,6 @@ Add steps to reproduce the behavior, e.g.
 -->
 
 **Additional context**
-<--!
+<!--
   Add any other context about the problem here.
 -->
