@@ -62,6 +62,75 @@ err:
     return false;
 }
 
+bool pk_encrypt_message(uint8_t* public_key,
+        uint32_t public_key_len,
+        uint8_t* message,
+        uint32_t message_len,
+        uint8_t* encrypted_message,
+        uint32_t encrypted_message_len,
+        uint32_t* encrypted_message_actual_len)
+{
+    try
+    {
+        std::string pk_string((const char*)public_key, public_key_len);
+        ByteArray msg(message, message + message_len);
+        ByteArray encr_msg;
+
+        //deserialize public key
+        pdo::crypto::pkenc::PublicKey pk(pk_string);
+
+        //encrypt message
+        encr_msg = pk.EncryptMessage(msg);
+
+        COND2ERR(encrypted_message_len < encr_msg.size());
+        memcpy(encrypted_message, encr_msg.data(), encr_msg.size());
+        *encrypted_message_actual_len = encr_msg.size();
+    }
+    catch(const std::exception& e)
+    {
+        COND2LOGERR(true, e.what());
+    }
+
+    // encryption successful
+    return true;
+
+err:
+    return false;
+}
+
+bool decrypt_message(uint8_t* key,
+        uint32_t key_len,
+        uint8_t* encrypted_message,
+        uint32_t encrypted_message_len,
+        uint8_t* message,
+        uint32_t message_len,
+        uint32_t* message_actual_len)
+{
+    try
+    {
+        ByteArray ba_key(key, key + key_len);
+        ByteArray encr_msg(encrypted_message, encrypted_message + encrypted_message_len);
+        ByteArray msg;
+
+        //decrypt message
+        msg = pdo::crypto::skenc::DecryptMessage(ba_key, encr_msg);
+
+        COND2ERR(message_len < msg.size());
+        memcpy(message, msg.data(), msg.size());
+        *message_actual_len = msg.size();
+    }
+    catch(const std::exception& e)
+    {
+        COND2LOGERR(true, e.what());
+    }
+
+    //decryption successful
+    return true;
+
+err:
+    return false;
+}
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

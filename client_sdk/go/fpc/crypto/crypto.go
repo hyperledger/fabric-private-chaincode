@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package crypto
 
 import (
+	"crypto/rand"
 	"encoding/base64"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
@@ -29,16 +30,65 @@ import "C"
 
 var logger = flogging.MustGetLogger("fpc-client-crypto")
 
-func encrypt(input []byte, encryptionKey []byte) ([]byte, error) {
-	return input, nil
+func keyGen() ([]byte, error) {
+	// generate random symmetric key of 16 bytes
+	// the length is required by the pdo crypto library
+	key := make([]byte, 16)
+	n, err := rand.Read(key)
+	if n != len(key) || err != nil {
+		return nil, err
+	}
+
+	return key, nil
 }
 
-func keyGen() ([]byte, error) {
-	return []byte("fake key"), nil
+func encrypt(input []byte, encryptionKey []byte) ([]byte, error) {
+	//This is an RSA encryption performed with the pdo crypto library
+	//Importantly, the library uses 2048bit RSA keys, so the input size has to be ~200bytes
+	//TODO-1: bump up the key length to 3072
+	//TODO-2: extend procedure for large input sizes
+
+	inputMessagePtr := C.CBytes(input)
+	defer C.free(inputMessagePtr)
+
+	encryptionKeyPtr := C.CBytes(encryptionKey)
+	defer C.free(encryptionKeyPtr)
+
+	//pdo crypto uses 2048bit (256bytes) RSA keys, the encrypted message size buffer is set accordingly
+	const encryptedMessageSize = 256
+	encryptedMessagePtr := C.malloc(encryptedMessageSize)
+	defer C.free(encryptedMessagePtr)
+
+	encryptedMessageActualSize := C.uint32_t(0)
+
+	ret := C.pk_encrypt_message((*C.uint8_t)(encryptionKeyPtr), C.uint32_t(len(encryptionKey)), (*C.uint8_t)(inputMessagePtr), C.uint32_t(len(input)), (*C.uint8_t)(encryptedMessagePtr), C.uint32_t(encryptedMessageSize), &encryptedMessageActualSize)
+	if ret == false {
+		return nil, fmt.Errorf("encryption failed")
+	}
+
+	return C.GoBytes(encryptedMessagePtr, C.int(encryptedMessageActualSize)), nil
 }
 
 func decrypt(encryptedResponse []byte, resultEncryptionKey []byte) ([]byte, error) {
-	return encryptedResponse, nil
+	encryptedResponsePtr := C.CBytes(encryptedResponse)
+	defer C.free(encryptedResponsePtr)
+
+	resultEncryptionKeyPtr := C.CBytes(resultEncryptionKey)
+	defer C.free(resultEncryptionKeyPtr)
+
+	// the (decrypted) response size is estimated to be <= the encrypted response size
+	responseSize := len(encryptedResponse)
+	responsePtr := C.malloc(C.ulong(responseSize))
+	defer C.free(responsePtr)
+
+	responseActualSize := C.uint32_t(0)
+
+	ret := C.decrypt_message((*C.uint8_t)(resultEncryptionKeyPtr), C.uint32_t(len(resultEncryptionKey)), (*C.uint8_t)(encryptedResponsePtr), C.uint32_t(len(encryptedResponse)), (*C.uint8_t)(responsePtr), C.uint32_t(responseSize), &responseActualSize)
+	if ret == false {
+		return nil, fmt.Errorf("decryption failed")
+	}
+
+	return C.GoBytes(responsePtr, C.int(responseActualSize)), nil
 }
 
 type EncryptionProvider interface {
@@ -57,6 +107,11 @@ func (e EncryptionProviderImpl) NewEncryptionContext() (EncryptionContext, error
 	}
 
 	ccEncryptionKey, err := e.GetCcEncryptionKey()
+	if err != nil {
+		return nil, err
+	}
+	//decode key
+	ccEncryptionKey, err = base64.StdEncoding.DecodeString(string(ccEncryptionKey))
 	if err != nil {
 		return nil, err
 	}

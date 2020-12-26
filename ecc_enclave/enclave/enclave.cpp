@@ -43,11 +43,13 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
     std::string b64_response;
     ByteArray cc_response_message;
     size_t cc_response_message_estimated_size;
+    ByteArray return_encryption_key;
 
     ctx.u_shim_ctx = u_shim_ctx;
 
     {
         pb_istream_t istream;
+        ByteArray clear_request;
 
         // set stream for ChaincodeRequestMessage
         istream = pb_istream_from_buffer(
@@ -57,22 +59,34 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         COND2LOGERR(!b, PB_GET_ERROR(&istream));
         COND2LOGERR(cc_request_message.encrypted_request->size == 0, "zero size request");
 
-        // TODO: decrypt request
+        // decrypt request
+        b = g_cc_data->decrypt_cc_message(ByteArray(cc_request_message.encrypted_request->bytes,
+                                              cc_request_message.encrypted_request->bytes +
+                                                  cc_request_message.encrypted_request->size),
+            clear_request);
+        COND2ERR(!b);
 
         // set stream for CleartextChaincodeRequestMessage
         istream = pb_istream_from_buffer(
-            (const unsigned char*)cc_request_message.encrypted_request->bytes,
-            cc_request_message.encrypted_request->size);
+            (const unsigned char*)clear_request.data(), clear_request.size());
         b = pb_decode(&istream, fpc_CleartextChaincodeRequest_fields, &cleartext_cc_request);
         COND2LOGERR(!b, PB_GET_ERROR(&istream));
         COND2LOGERR(!cleartext_cc_request.has_input, "no input in cleartext request");
 
+        // prepare input arguments
         for (int i = 0; i < cleartext_cc_request.input.args_count; i++)
         {
             ctx.string_args.push_back(
                 std::string((const char*)cleartext_cc_request.input.args[i]->bytes,
                     cleartext_cc_request.input.args[i]->size));
         }
+
+        // get and set return encryption key
+        return_encryption_key = ByteArray(cleartext_cc_request.return_encryption_key->bytes,
+            cleartext_cc_request.return_encryption_key->bytes +
+                cleartext_cc_request.return_encryption_key->size);
+        COND2LOGERR(return_encryption_key.size() != pdo::crypto::constants::SYM_KEY_LEN,
+            "invalid return encryption key length");
 
         // the dynamic memory in the message is released at the end
     }
@@ -90,6 +104,7 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
     {
         // TODO put response in protobuf and encode it
 
+        ByteArray encrypted_response;
         fpc_ChaincodeResponseMessage crm;
         pb_ostream_t ostream;
         std::string enclave_id;
@@ -99,13 +114,18 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         // TODO: encrypt fabric Response object
         crm = {};
 
+        {  // encrypt response
+            encrypted_response = pdo::crypto::skenc::EncryptMessage(return_encryption_key,
+                ByteArray(b64_response.c_str(), b64_response.c_str() + b64_response.length()));
+        }
+
         {  // fill encrypted response
             crm.encrypted_response = (pb_bytes_array_t*)pb_realloc(
-                crm.encrypted_response, PB_BYTES_ARRAY_T_ALLOCSIZE(b64_response.length()));
+                crm.encrypted_response, PB_BYTES_ARRAY_T_ALLOCSIZE(encrypted_response.size()));
             COND2LOGERR(crm.encrypted_response == NULL, "cannot allocate encrypted message");
-            crm.encrypted_response->size = b64_response.length();
+            crm.encrypted_response->size = encrypted_response.size();
             ret = memcpy_s(crm.encrypted_response->bytes, crm.encrypted_response->size,
-                b64_response.c_str(), b64_response.length());
+                encrypted_response.data(), encrypted_response.size());
             COND2LOGERR(ret != 0, "cannot encode field");
         }
 
