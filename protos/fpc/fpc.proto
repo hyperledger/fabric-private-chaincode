@@ -126,8 +126,13 @@ message ChaincodeResponseMessage {
     // signed proposal for this request
     protos.SignedProposal proposal = 3;
 
+    // hash of the proposal's input request
+    // this field is required because input request is passed alongside the proposal
+    // and not extracted from it; validation chaincode will check for consistency
+    bytes chaincode_request_message_hash = 4;
+
     // identity for public key used to sign
-    string enclave_id = 4;
+    string enclave_id = 5;
 }
 
 message SignedChaincodeResponseMessage {

@@ -15,6 +15,8 @@ import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric/common/flogging"
+	"google.golang.org/protobuf/proto"
+	"strings"
 )
 
 // #cgo CFLAGS: -I${SRCDIR}/../../common/crypto
@@ -139,6 +141,30 @@ func Validate(signedResponseMessage *protos.SignedChaincodeResponseMessage, atte
 	ret := C.verify_signature((*C.uint8_t)(enclaveVkPtr), C.uint32_t(len(attestedData.EnclaveVk)), (*C.uint8_t)(responseMessagePtr), C.uint32_t(len(signedResponseMessage.ChaincodeResponseMessage)), (*C.uint8_t)(signaturePtr), C.uint32_t(len(signedResponseMessage.Signature)))
 	if ret == false {
 		return fmt.Errorf("enclave signature verification failed")
+	}
+
+	// verify signed proposal input hash matches input hash
+	chaincodeResponseMessage := &protos.ChaincodeResponseMessage{}
+	if err := proto.Unmarshal(signedResponseMessage.GetChaincodeResponseMessage(), chaincodeResponseMessage); err != nil {
+		return fmt.Errorf("failed to extract response message: %s", err)
+	}
+	originalSignedProposal := chaincodeResponseMessage.GetProposal()
+	if originalSignedProposal == nil {
+		return fmt.Errorf("cannot get the signed proposal that the enclave received")
+	}
+	chaincodeRequestMessageBytes, err := GetChaincodeRequestMessageFromSignedProposal(originalSignedProposal)
+	if err != nil {
+		return fmt.Errorf("failed to extract chaincode request message: %s", err)
+	}
+	expectedChaincodeRequestMessageHash := sha256.Sum256(chaincodeRequestMessageBytes)
+	chaincodeRequestMessageHash := chaincodeResponseMessage.GetChaincodeRequestMessageHash()
+	if chaincodeRequestMessageHash == nil {
+		return fmt.Errorf("cannot get the chaincode request message hash")
+	}
+	if !bytes.Equal(expectedChaincodeRequestMessageHash[:], chaincodeRequestMessageHash) {
+		logger.Debugf("expected chaincode request message hash: %s", strings.ToUpper(hex.EncodeToString(expectedChaincodeRequestMessageHash[:])))
+		logger.Debugf("received chaincode request message hash: %s", strings.ToUpper(hex.EncodeToString(chaincodeRequestMessageHash[:])))
+		return fmt.Errorf("chaincode request message hash mismatch")
 	}
 
 	return nil

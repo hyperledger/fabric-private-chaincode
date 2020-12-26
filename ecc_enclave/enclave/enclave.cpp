@@ -154,6 +154,26 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
             crm.has_proposal = true;
         }
 
+        {  // fill chaincode request message hash
+            // hash request
+            ByteArray ba_cc_request_message(
+                cc_request_message_bytes, cc_request_message_bytes + cc_request_message_bytes_len);
+            ByteArray ba_cc_request_message_hash =
+                pdo::crypto::ComputeMessageHash(ba_cc_request_message);
+
+            // encode field
+            LOG_DEBUG("adding request hash: %s",
+                (ByteArrayToHexEncodedString(ba_cc_request_message_hash)).c_str());
+            crm.chaincode_request_message_hash = (pb_bytes_array_t*)pb_realloc(
+                NULL, PB_BYTES_ARRAY_T_ALLOCSIZE(ba_cc_request_message_hash.size()));
+            COND2LOGERR(crm.chaincode_request_message_hash == NULL, "cannot allocate request hash");
+            crm.chaincode_request_message_hash->size = ba_cc_request_message_hash.size();
+            ret = memcpy_s(crm.chaincode_request_message_hash->bytes,
+                crm.chaincode_request_message_hash->size, ba_cc_request_message_hash.data(),
+                ba_cc_request_message_hash.size());
+            COND2LOGERR(ret != 0, "cannot encode request hash");
+        }
+
         {  // fill rwset
             crm.has_fpc_rw_set = true;
             rwset_to_proto(&ctx, &crm.fpc_rw_set);
