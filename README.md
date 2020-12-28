@@ -282,10 +282,10 @@ Make sure that you have the following required dependencies installed:
 
 * Credentials for Intel Attestation Service, read [here](#intel-attestation-service-ias) (for hardware-mode SGX)
 
-* [Intel Software Guard Extensions SSL](https://github.com/intel/intel-sgx-ssl) v2.4.1
+* [Intel Software Guard Extensions SSL](https://github.com/intel/intel-sgx-ssl)
   (we recommend using branch `lin_2.10_1.1.1g` OpenSSL `1.1.1g`)
 
-* Hyperledger [Fabric](https://github.com/hyperledger/fabric/tree/v2.2.0) v2.2.0
+* Hyperledger [Fabric](https://github.com/hyperledger/fabric/tree/v2.3.0) v2.3.0
 
 * Clang-format 6.x or higher
 
@@ -347,14 +347,14 @@ Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in t
 
 Fabric Private Chaincode support requires to re-build the Fabric peer.
 
-Checkout Fabric 2.2.0 release using the following commands:
+Checkout Fabric 2.3.0 release using the following commands:
 
     $ export FABRIC_PATH=${GOPATH}/src/github.com/hyperledger/fabric
     $ git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
-    $ cd $FABRIC_PATH; git checkout tags/v2.2.0
+    $ cd $FABRIC_PATH; git checkout tags/v2.3.0
 
 Note that Fabric Private Chaincode currently does not work with the Fabric `master` branch, therefore make sure you use the Fabric
-`v2.2.0` tag. This is important as our build script applies some patches
+`v2.3.0` tag. This is important as our build script applies some patches
 to the fabric peer to enable FPC support. Make sure the source of Fabric is in your ``$GOPATH``.
 
 ### Build Fabric Private Chaincode
