@@ -5,7 +5,6 @@
 TOP = ..
 include $(TOP)/build.mk
 
-FABRIC_VERSION ?= 2.2.0
 FABRIC_VERSION_TAG =v$(FABRIC_VERSION)
 FABRIC_PEER_BIN = $(FABRIC_PATH)/build/bin/peer
 

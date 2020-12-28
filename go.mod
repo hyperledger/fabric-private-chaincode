@@ -18,22 +18,19 @@ go 1.15
 //   not be possible ....)
 
 require (
-	github.com/dustin/go-broadcast v0.0.0-20171205050544-f664265f5a66
-	github.com/gin-contrib/cors v1.3.1
-	github.com/gin-gonic/gin v1.6.1
-	github.com/golang/protobuf v1.4.1
-	github.com/hyperledger/fabric v1.4.0-rc1.0.20200715015833-3741860ac90f
-	github.com/hyperledger/fabric-chaincode-go v0.0.0-20200511190512-bcfeb58dd83a
-	github.com/hyperledger/fabric-contract-api-go v1.1.0
-	github.com/hyperledger/fabric-protos-go v0.0.0-20200707132912-fee30f3ccd23
-	github.com/hyperledger/fabric-samples/chaincode/marbles02/go v0.0.0-20200723181750-8c32a85f6617 // indirect
-	github.com/hyperledger/fabric-sdk-go v1.0.0-beta3.0.20201022122854-2f93a3201bb4
-	github.com/onsi/ginkgo v1.8.0
-	github.com/onsi/gomega v1.9.0
+	github.com/golang/protobuf v1.4.2
+	github.com/hyperledger/fabric v1.4.0-rc1.0.20201118191903-ec81f3e74fa1
+	github.com/hyperledger/fabric-chaincode-go v0.0.0-20201119163726-f8ef75b17719
+	github.com/hyperledger/fabric-contract-api-go v1.1.1
+	github.com/hyperledger/fabric-protos-go v0.0.0-20201028172056-a3136dde2354
+	github.com/hyperledger/fabric-samples/chaincode/marbles02/go v0.0.0-20201218135726-377ccb0b59d5 // indirect
+	github.com/hyperledger/fabric-sdk-go v1.0.0-rc1
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
+	github.com/onsi/ginkgo v1.12.1
+	github.com/onsi/gomega v1.10.3
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.5.1
-	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
-	golang.org/x/tools v0.0.0-20200323164354-18ea2c8f7359
+	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
+	golang.org/x/tools v0.0.0-20201023174141-c8cfbd0f21e6
 	google.golang.org/protobuf v1.25.0
 )

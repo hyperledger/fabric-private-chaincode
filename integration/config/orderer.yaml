@@ -1,9 +1,9 @@
-# Copyright 2020 Intel Corporation
 # Copyright IBM Corp. All Rights Reserved.
+# Copyright 2020 Intel Corporation
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-# Based on sampleconfig from github.com/hyperledger/fabric.git tagged with v2.2.0
+# Based on sampleconfig from github.com/hyperledger/fabric.git tagged with v2.3.0
 
 ---
 ################################################################################
@@ -22,14 +22,24 @@ General:
 
     # TLS: TLS settings for the GRPC server.
     TLS:
+        # Require server-side TLS
         Enabled: false
         # PrivateKey governs the file location of the private key of the TLS certificate.
         PrivateKey: tls/server.key
         # Certificate governs the file location of the server TLS certificate.
         Certificate: tls/server.crt
+        # RootCAs contains a list of additional root certificates used for verifying certificates
+        # of other orderer nodes during outbound connections.
+        # It is not required to be set, but can be used to augment the set of TLS CA certificates
+        # available from the MSPs of each channel’s configuration.
         RootCAs:
           - tls/ca.crt
+        # Require client certificates / mutual TLS for inbound connections.
         ClientAuthRequired: false
+        # If mutual TLS is enabled, ClientRootCAs contains a list of additional root certificates
+        # used for verifying certificates of client connections.
+        # It is not required to be set, but can be used to augment the set of TLS CA certificates
+        # available from the MSPs of each channel’s configuration.
         ClientRootCAs:
     # Keepalive settings for the GRPC server.
     Keepalive:
@@ -49,11 +59,15 @@ General:
         # Consensus messages are dropped if the buffer is full, and transaction
         # messages are waiting for space to be freed.
         SendBufferSize: 10
+
         # ClientCertificate governs the file location of the client TLS certificate
         # used to establish mutual TLS connections with other ordering service nodes.
+        # If not set, the server General.TLS.Certificate is re-used.
         ClientCertificate:
         # ClientPrivateKey governs the file location of the private key of the client TLS certificate.
+        # If not set, the server General.TLS.PrivateKey is re-used.
         ClientPrivateKey:
+
         # The below 4 properties should be either set together, or be unset together.
         # If they are set, then the orderer node uses a separate listener for intra-cluster
         # communication. If they are unset, then the general orderer listener is used.
@@ -61,12 +75,13 @@ General:
         # client-facing and the intra-cluster listeners.
 
         # ListenPort defines the port on which the cluster listens to connections.
-        # FPC Change: see related comment in 'configtx.yml' in 'Orderer: &OrdererDefaults' section
+        # FPC Change of port and address: see related comment in 'configtx.yml' in 'Orderer: &OrdererDefaults' section
         ListenPort: 7059
         # ListenAddress defines the IP on which to listen to intra-cluster communication.
         ListenAddress: 127.0.0.1
         # ServerCertificate defines the file location of the server TLS certificate used for intra-cluster
         # communication.
+        # FPC Change: explicit cert & key overriding default
         ServerCertificate: /tmp/hyperledger/test/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
         # ServerPrivateKey defines the file location of the private key of the TLS certificate.
         ServerPrivateKey: /tmp/hyperledger/test/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.key
@@ -84,6 +99,7 @@ General:
     # Generate a genesis block by updating $FABRIC_CFG_PATH/configtx.yaml and
     # using configtxgen command with "-outputBlock" option.
     # Defaults to file "genesisblock" (in $FABRIC_CFG_PATH directory) if not specified.
+    # FPC Change: explicit overriding default
     BootstrapFile: /tmp/hyperledger/test/genesisblock
 
     # LocalMSPDir is where to find the private crypto material needed by the
@@ -151,19 +167,14 @@ General:
 #
 #   SECTION: File Ledger
 #
-#   - This section applies to the configuration of the file or json ledgers.
+#   - This section applies to the configuration of the file ledger.
 #
 ################################################################################
 FileLedger:
 
     # Location: The directory to store the blocks in.
-    # NOTE: If this is unset, a new temporary location will be chosen every time
-    # the orderer is restarted, using the prefix specified by Prefix.
+    # FPC Change to much our test env
     Location: /tmp/hyperledger/test/orderer
-
-    # The prefix to use when generating a ledger directory in temporary space.
-    # Otherwise, this value is ignored.
-    Prefix: hyperledger-fabric-ordererledger
 
 ################################################################################
 #
@@ -319,7 +330,7 @@ Operations:
 
 ################################################################################
 #
-#   Metrics  Configuration
+#   Metrics Configuration
 #
 #   - This configures metrics collection for the orderer
 #
@@ -343,6 +354,56 @@ Metrics:
       # The prefix is prepended to all emitted statsd metrics
       Prefix:
 
+################################################################################
+#
+#   Admin Configuration
+#
+#   - This configures the admin server endpoint for the orderer
+#
+################################################################################
+Admin:
+    # host and port for the admin server
+    # FPC Change: port 9443 is also used by peer/in core.yaml!
+    ListenAddress: 127.0.0.1:9444
+
+    # TLS configuration for the admin endpoint
+    TLS:
+        # TLS enabled
+        Enabled: false
+
+        # Certificate is the location of the PEM encoded TLS certificate
+        Certificate:
+
+        # PrivateKey points to the location of the PEM-encoded key
+        PrivateKey:
+
+        # Most admin service endpoints require client authentication when TLS
+        # is enabled. ClientAuthRequired requires client certificate authentication
+        # at the TLS layer to access all resources.
+        #
+        # NOTE: When TLS is enabled, the admin endpoint requires mutual TLS. The
+        # orderer will panic on startup if this value is set to false.
+        ClientAuthRequired: true
+
+        # Paths to PEM encoded ca certificates to trust for client authentication
+        ClientRootCAs: []
+
+################################################################################
+#
+#   Channel participation API Configuration
+#
+#   - This provides the channel participation API configuration for the orderer.
+#   - Channel participation uses the ListenAddress and TLS settings of the Admin
+#     service.
+#
+################################################################################
+ChannelParticipation:
+    # Channel participation API is enabled.
+    Enabled: false
+
+    # The maximum size of the request body when joining a channel.
+    MaxRequestBodySize: 1 MB
+
 
 ################################################################################
 #
@@ -358,8 +419,10 @@ Consensus:
 
     # WALDir specifies the location at which Write Ahead Logs for etcd/raft are
     # stored. Each channel will have its own subdir named after channel ID.
+    # FPC Change to match our test environment
     WALDir: /tmp/hyperledger/test/orderer/etcdraft/wal
 
     # SnapDir specifies the location at which snapshots for etcd/raft are
     # stored. Each channel will have its own subdir named after channel ID.
+    # FPC Change to match our test environment
     SnapDir: /tmp/hyperledger/test/orderer/etcdraft/snapshot

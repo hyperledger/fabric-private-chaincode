@@ -87,7 +87,7 @@ process_runtime_metadata() {
     [ -f "${CC_RT_METADATA_DIR}/chaincode.json" ] || die "chaincode.json does not exist"
     export CORE_CHAINCODE_ID_NAME="$(jq -r .chaincode_id "${CC_RT_METADATA_DIR}/chaincode.json")" || die "could not extract chaincode-id"
 
-	
+
     SHORT_CHAINCODE_ID_NAME=$(echo ${CORE_CHAINCODE_ID_NAME} | sed 's/\(.*:.\{5\}\).*/\1/')
     TIMESTAMP=$(date '+%Y-%m-%d_%H:%M:%s')
     RUN_STATE_DIR="/tmp/fpc-extbuilder.${TIMESTAMP}.${SHORT_CHAINCODE_ID_NAME}"
@@ -115,7 +115,7 @@ process_runtime_metadata() {
 
     # For debugging purposes, we also symlink the source metadata & build artifacts
     # Note: the external builder in fabric 2.2.0 has started treating symlinks differently. So
-    #  far they still work here, so leave it for now as it is still useful for debugging. (But 
+    #  far they still work here, so leave it for now as it is still useful for debugging. (But
     #  as cp doesn't make sense here, we should remove it as soon as symlinks don't work anymore).
     try ln -s "${CC_BUILD_DIR}/" "${RUN_STATE_DIR}/build"
     try ln -s "${CC_RT_METADATA_DIR}/" "${RUN_STATE_DIR}/rt-metadata"
@@ -223,4 +223,3 @@ cc_run() {
     # chaincode process terminats
     wait ${CC_PID}
 }
-

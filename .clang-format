@@ -26,3 +26,4 @@ NamespaceIndentation: Inner
 DerivePointerAlignment: false
 AccessModifierOffset: -4
 BinPackParameters: false
+IncludeBlocks:   Preserve
