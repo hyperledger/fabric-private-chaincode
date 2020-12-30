@@ -31,9 +31,9 @@ import "C"
 var logger = flogging.MustGetLogger("fpc-client-crypto")
 
 func keyGen() ([]byte, error) {
-	// generate random symmetric key of 16 bytes
-	// the length is required by the pdo crypto library
-	key := make([]byte, 16)
+	// the specified key length is required by the pdo crypto library
+	keyLength := C.SYM_KEY_LEN
+	key := make([]byte, keyLength)
 	n, err := rand.Read(key)
 	if n != len(key) || err != nil {
 		return nil, err
@@ -44,9 +44,9 @@ func keyGen() ([]byte, error) {
 
 func encrypt(input []byte, encryptionKey []byte) ([]byte, error) {
 	//This is an RSA encryption performed with the pdo crypto library
-	//Importantly, the library uses 2048bit RSA keys, so the input size has to be ~200bytes
-	//TODO-1: bump up the key length to 3072
-	//TODO-2: extend procedure for large input sizes
+	//Importantly, the library uses 2048bit RSA keys & OAEP encoding, so the input size can be at most ~200bytes
+	//TODO-1: bump up the key length to 3072 to match NIST strength
+	//TODO-2: extend procedure for large input sizes (via hybrid encryption)
 
 	inputMessagePtr := C.CBytes(input)
 	defer C.free(inputMessagePtr)
@@ -54,9 +54,13 @@ func encrypt(input []byte, encryptionKey []byte) ([]byte, error) {
 	encryptionKeyPtr := C.CBytes(encryptionKey)
 	defer C.free(encryptionKeyPtr)
 
-	//pdo crypto uses 2048bit (256bytes) RSA keys, the encrypted message size buffer is set accordingly
-	const encryptedMessageSize = 256
-	encryptedMessagePtr := C.malloc(encryptedMessageSize)
+	//the max length of the message to be encrypted is dictated by the pdo crypto lib (see above)
+	if len(input) > int(C.RSA_PLAINTEXT_LEN) {
+		return nil, fmt.Errorf("input message too long for encryption")
+	}
+	//TODO add tests with different message lengths
+	encryptedMessageSize := C.RSA_KEY_SIZE >> 3 //bits-to-bytes conversion
+	encryptedMessagePtr := C.malloc(C.ulong(encryptedMessageSize))
 	defer C.free(encryptedMessagePtr)
 
 	encryptedMessageActualSize := C.uint32_t(0)
