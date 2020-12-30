@@ -10,6 +10,10 @@
 extern "C" {
 #endif
 
+extern const unsigned int SYM_KEY_LEN;
+extern const unsigned int RSA_PLAINTEXT_LEN;
+extern const unsigned int RSA_KEY_SIZE;
+
 bool compute_hash(uint8_t* message,
     uint32_t message_len,
     uint8_t* hash,

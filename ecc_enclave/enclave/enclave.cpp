@@ -115,8 +115,10 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         crm = {};
 
         {  // encrypt response
-            encrypted_response = pdo::crypto::skenc::EncryptMessage(return_encryption_key,
-                ByteArray(b64_response.c_str(), b64_response.c_str() + b64_response.length()));
+            b = g_cc_data->encrypt_message(return_encryption_key,
+                ByteArray(b64_response.c_str(), b64_response.c_str() + b64_response.length()),
+                encrypted_response);
+            COND2LOGERR(!b, "cannot encrypt message");
         }
 
         {  // fill encrypted response

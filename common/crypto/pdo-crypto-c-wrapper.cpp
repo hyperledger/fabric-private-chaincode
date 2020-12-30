@@ -14,6 +14,10 @@
 extern "C" {
 #endif
 
+extern "C" const unsigned int SYM_KEY_LEN = pdo::crypto::constants::SYM_KEY_LEN;
+extern "C" const unsigned int RSA_PLAINTEXT_LEN = pdo::crypto::constants::RSA_PLAINTEXT_LEN;
+extern "C" const unsigned int RSA_KEY_SIZE = pdo::crypto::constants::RSA_KEY_SIZE;
+
 bool compute_hash(uint8_t* message,
     uint32_t message_len,
     uint8_t* hash,
@@ -82,7 +86,8 @@ bool pk_encrypt_message(uint8_t* public_key,
         //encrypt message
         encr_msg = pk.EncryptMessage(msg);
 
-        COND2ERR(encrypted_message_len < encr_msg.size());
+        LOG_DEBUG("encr msg size %d buffer len %d",  encr_msg.size(), encrypted_message_len);
+        COND2LOGERR(encrypted_message_len < encr_msg.size(), "buffer too small for encrypted msg");
         memcpy(encrypted_message, encr_msg.data(), encr_msg.size());
         *encrypted_message_actual_len = encr_msg.size();
     }
