@@ -10,12 +10,10 @@ SPDX-License-Identifier: Apache-2.0
 package enclave
 
 import (
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"crypto/sha256"
-	"crypto/x509"
+	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 	"strings"
 
 	"github.com/golang/protobuf/proto"
@@ -28,8 +26,10 @@ import (
 )
 
 type MockEnclaveStub struct {
-	privateKey *ecdsa.PrivateKey
-	enclaveId  string
+	privateKey   []byte
+	publicKey    []byte
+	enclaveId    string
+	ccPrivateKey []byte
 }
 
 // NewEnclave starts a new enclave
@@ -51,20 +51,23 @@ func (m *MockEnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBy
 		return nil, err
 	}
 
-	// create some dummy keys for our mock enclave
-	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	// create enclave keys
+	publicKey, privateKey, err := utils.NewECDSAKeys()
 	if err != nil {
 		return nil, err
 	}
 	m.privateKey = privateKey
+	m.publicKey = publicKey
 
-	pubBytes, err := x509.MarshalPKIXPublicKey(privateKey.Public())
+	// create chaincode encryption keys keys
+	ccPublicKey, ccPrivateKey, err := utils.NewRSAKeys()
 	if err != nil {
 		return nil, err
 	}
+	m.ccPrivateKey = ccPrivateKey
 
-	hash := sha256.Sum256(pubBytes)
-	m.enclaveId = strings.ToUpper(hex.EncodeToString(hash[:]))
+	// calculate enclave id
+	m.enclaveId, _ = m.GetEnclaveId()
 
 	logger.Debug("Init")
 	credentials := &protos.Credentials{
@@ -72,9 +75,10 @@ func (m *MockEnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBy
 		SerializedAttestedData: &any.Any{
 			TypeUrl: proto.MessageName(&protos.AttestedData{}),
 			Value: protoutil.MarshalOrPanic(&protos.AttestedData{
-				EnclaveVk:  pubBytes,
-				CcParams:   chaincodeParams,
-				HostParams: hostParams,
+				EnclaveVk:   publicKey,
+				CcParams:    chaincodeParams,
+				HostParams:  hostParams,
+				ChaincodeEk: ccPublicKey,
 			}),
 		},
 	}
@@ -99,11 +103,7 @@ func (m MockEnclaveStub) ImportCCKeys() ([]byte, error) {
 }
 
 func (m *MockEnclaveStub) GetEnclaveId() (string, error) {
-	pubBytes, err := x509.MarshalPKIXPublicKey(m.privateKey.Public())
-	if err != nil {
-		return "", err
-	}
-	hash := sha256.Sum256(pubBytes)
+	hash := sha256.Sum256(m.publicKey)
 	return strings.ToUpper(hex.EncodeToString(hash[:])), nil
 }
 
@@ -115,7 +115,38 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 		shim.Error(err.Error())
 	}
 
+	// unmarshal request
+	chaincodeRequestMessageProto := &protos.ChaincodeRequestMessage{}
+	err = proto.Unmarshal(chaincodeRequestMessage, chaincodeRequestMessageProto)
+	if err != nil {
+		return nil, err
+	}
+
+	encryptedRequestBytes := chaincodeRequestMessageProto.GetEncryptedRequest()
+	if encryptedRequestBytes == nil {
+		return nil, fmt.Errorf("no encrypted request")
+	}
+
+	// decrypt request
+	requestBytes, err := utils.PkDecryptMessage(m.ccPrivateKey, encryptedRequestBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	requestProto := &protos.CleartextChaincodeRequest{}
+	err = proto.Unmarshal(requestBytes, requestProto)
+	if err != nil {
+		return nil, err
+	}
+
+	// get return encryption key
+	returnEncryptionKey := requestProto.GetReturnEncryptionKey()
+	if returnEncryptionKey == nil {
+		return nil, fmt.Errorf("no return encryption key")
+	}
+
 	v, _ := stub.GetState("SomeOtherKey")
+	v_hash := sha256.Sum256(v)
 	logger.Debug("get state: %s", v)
 
 	rwset := &kvrwset.KVRWSet{
@@ -130,28 +161,50 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 		}},
 	}
 
-	response := &protos.ChaincodeResponseMessage{
-		EncryptedResponse: []byte("some response"),
-		RwSet:             rwset,
-		Signature:         nil,
-		EnclaveId:         m.enclaveId,
-		Proposal:          signedProposal,
+	readValueHashes := [][]byte{v_hash[:]}
+
+	fpcKvSet := &protos.FPCKVSet{
+		RwSet:           rwset,
+		ReadValueHashes: readValueHashes,
 	}
 
-	// get the read/write set in the same format as processed by the chaincode enclaves
-	readset, writeset, err := utils.ReplayReadWrites(stub, response.RwSet)
-	if err != nil {
-		shim.Error(err.Error())
-	}
+	requestMessageHash := sha256.Sum256(chaincodeRequestMessage)
 
-	// create signature
-	hash := utils.ComputedHash(response, readset, writeset)
-	sig, err := ecdsa.SignASN1(rand.Reader, m.privateKey, hash[:])
+	//create dummy response
+	responseData := []byte("some response")
+
+	//response must be encoded
+	b64ResponseData := base64.StdEncoding.EncodeToString(responseData)
+
+	//encrypt response
+	encryptedResponse, err := utils.EncryptMessage(returnEncryptionKey, []byte(b64ResponseData))
 	if err != nil {
 		return nil, err
 	}
 
-	response.Signature = sig
+	response := &protos.ChaincodeResponseMessage{
+		EncryptedResponse:           encryptedResponse,
+		FpcRwSet:                    fpcKvSet,
+		EnclaveId:                   m.enclaveId,
+		Proposal:                    signedProposal,
+		ChaincodeRequestMessageHash: requestMessageHash[:],
+	}
 
-	return proto.Marshal(response)
+	responseBytes, err := proto.Marshal(response)
+	if err != nil {
+		return nil, err
+	}
+
+	// create signature
+	sig, err := utils.SignMessage(m.privateKey, responseBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	signedResponse := &protos.SignedChaincodeResponseMessage{
+		ChaincodeResponseMessage: responseBytes,
+		Signature:                sig,
+	}
+
+	return proto.Marshal(signedResponse)
 }
