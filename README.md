@@ -616,6 +616,14 @@ repository is prototype code and not intended for production use.
 - [Alessandro Sorniotti](https://github.com/ale-linux) (aso@zurich.ibm.com)
 
 
+## Core Team FPC 1.0
+- [Mic Bowman](https://github.com/cmickeyb) (mic.bowman@intel.com)
+- [Marcus Brandenburger](https://github.com/mbrandenburger) (bur@zurich.ibm.com)
+- [Jeb Linton](https://github.com/jrlinton) (jrlinton@us.ibm.com)
+- [Michael Steiner](https://github.com/g2flyer) (michael.steiner@intel.com)
+- [Bruno Vavala](https://github.com/bvavala) (bruno.vavala@intel.com)
+
+
 ## Sponsor
 
 [Gari Singh](https://github.com/mastersingh24) (garis@us.ibm.com)
