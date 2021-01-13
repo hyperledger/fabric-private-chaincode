@@ -16,7 +16,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc/attestation"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/attestation"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
@@ -120,7 +120,7 @@ func (c *managementState) InitEnclave(peerEndpoint string, attestationParams ...
 	}
 
 	var convertedCredentials string
-	convertedCredentials, err = ConvertCredentials(string(credentialsBytes))
+	convertedCredentials, err = attestation.ConvertCredentials(string(credentialsBytes))
 	if err != nil {
 		return fmt.Errorf("evaluation error: %s", err)
 	}
@@ -132,21 +132,4 @@ func (c *managementState) InitEnclave(peerEndpoint string, attestationParams ...
 	}
 
 	return nil
-}
-
-// perform attestation evidence transformation
-func ConvertCredentials(credentialsOnlyAttestation string) (credentialsWithEvidence string, err error) {
-	logger.Debugf("Received Credential: '%s'", credentialsOnlyAttestation)
-	credentials, err := utils.UnmarshalCredentials(credentialsOnlyAttestation)
-	if err != nil {
-		return "", fmt.Errorf("cannot decode credentials: %s", err)
-	}
-
-	credentials, err = attestation.ToEvidence(credentials)
-	if err != nil {
-		return "", err
-	}
-	credentialsOnlyAttestation = utils.MarshallProto(credentials)
-	logger.Debugf("Converted to Credential: '%s'", credentialsOnlyAttestation)
-	return credentialsOnlyAttestation, nil
 }

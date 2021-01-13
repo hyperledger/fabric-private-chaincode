@@ -15,12 +15,13 @@ import (
 	"strings"
 
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric/common/flogging"
 )
 
 var logger = flogging.MustGetLogger("fpc-client-attest")
 
-func ToEvidence(credentials *protos.Credentials) (*protos.Credentials, error) {
+func toEvidence(credentials *protos.Credentials) (*protos.Credentials, error) {
 
 	logger.Debugf("Perform attestation to evidence transformation")
 
@@ -36,4 +37,21 @@ func ToEvidence(credentials *protos.Credentials) (*protos.Credentials, error) {
 		credentials.Evidence = []byte(strings.TrimSuffix(string(out), "\n"))
 	}
 	return credentials, nil
+}
+
+// perform attestation evidence transformation
+func ConvertCredentials(credentialsOnlyAttestation string) (credentialsWithEvidence string, err error) {
+	logger.Debugf("Received Credential: '%s'", credentialsOnlyAttestation)
+	credentials, err := utils.UnmarshalCredentials(credentialsOnlyAttestation)
+	if err != nil {
+		return "", fmt.Errorf("cannot decode credentials: %s", err)
+	}
+
+	credentials, err = toEvidence(credentials)
+	if err != nil {
+		return "", err
+	}
+	credentialsOnlyAttestation = utils.MarshallProto(credentials)
+	logger.Debugf("Converted to Credential: '%s'", credentialsOnlyAttestation)
+	return credentialsOnlyAttestation, nil
 }

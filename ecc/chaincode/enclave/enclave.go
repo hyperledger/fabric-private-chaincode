@@ -9,7 +9,6 @@ SPDX-License-Identifier: Apache-2.0
 
 package enclave
 
-import "C"
 import (
 	"context"
 	"fmt"
