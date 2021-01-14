@@ -76,6 +76,7 @@ func GetContract(network *gateway.Network, chaincodeID string) Contract {
 		ercc:          ercc,
 		peerEndpoints: nil,
 		ep: &crypto.EncryptionProviderImpl{GetCcEncryptionKey: func() ([]byte, error) {
+			// Note that this function is called during EncryptionProvider.NewEncryptionContext()
 			return ercc.EvaluateTransaction("queryChaincodeEncryptionKey", chaincodeID)
 		}}}
 }
