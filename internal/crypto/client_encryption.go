@@ -112,7 +112,7 @@ func (e EncryptionProviderImpl) NewEncryptionContext() (EncryptionContext, error
 
 	ccEncryptionKey, err := e.GetCcEncryptionKey()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get chaincode encryption key from ercc: %s", err.Error())
 	}
 	//decode key
 	ccEncryptionKey, err = base64.StdEncoding.DecodeString(string(ccEncryptionKey))
