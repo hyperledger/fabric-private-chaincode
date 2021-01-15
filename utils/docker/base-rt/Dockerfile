@@ -19,9 +19,8 @@ ARG UBUNTU_NAME=bionic
 # NOTE: 
 # - unfortunately, we do need both name (for repo) and version (for sgx directories), only docker image supports both ..
 #   18.04 <-> bionic, 20.04 <-> focal
-# - right now, full sgx support exists only for bionic; 
+# - right now, full sgx support exists only for bionic (18.04) and, since v2.12, focal (20.04); 
 #   xenial (16.04) has support only PSW but not SDK; 
-#   support for focal is still in the making but hopefully will exist soon...
 
 FROM ubuntu:${UBUNTU_VERSION}
 
