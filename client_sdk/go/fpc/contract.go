@@ -10,7 +10,7 @@ package fpc
 import (
 	"strings"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc/crypto"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )

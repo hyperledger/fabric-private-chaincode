@@ -15,8 +15,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc"
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc/crypto"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/attestation"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric/common/flogging"
 )
 
@@ -58,7 +58,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "ERROR: couldn't read stdin: %v\n", err)
 			os.Exit(1)
 		}
-		credentialsStringOut, err := fpc.ConvertCredentials(string(credentialsIn))
+		credentialsStringOut, err := attestation.ConvertCredentials(string(credentialsIn))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: couldn't convert credentials: %v\n", err)
 			os.Exit(1)

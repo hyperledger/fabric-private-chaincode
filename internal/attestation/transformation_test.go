@@ -19,7 +19,7 @@ func Test(t *testing.T) {
 	credentials := &protos.Credentials{}
 
 	credentials.Attestation = []byte(`{"attestation_type":"simulated","attestation":"MA=="}`)
-	credentials, err = ToEvidence(credentials)
+	credentials, err = toEvidence(credentials)
 	if err != nil {
 		logger.Fatalf("conversion failed: %v", err)
 	}

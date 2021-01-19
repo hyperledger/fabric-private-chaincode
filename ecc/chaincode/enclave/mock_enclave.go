@@ -18,8 +18,8 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/any"
+	"github.com/hyperledger-labs/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
 	"github.com/hyperledger/fabric/protoutil"
@@ -52,7 +52,7 @@ func (m *MockEnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBy
 	}
 
 	// create enclave keys
-	publicKey, privateKey, err := utils.NewECDSAKeys()
+	publicKey, privateKey, err := crypto.NewECDSAKeys()
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (m *MockEnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBy
 	m.publicKey = publicKey
 
 	// create chaincode encryption keys keys
-	ccPublicKey, ccPrivateKey, err := utils.NewRSAKeys()
+	ccPublicKey, ccPrivateKey, err := crypto.NewRSAKeys()
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 	}
 
 	// decrypt request
-	requestBytes, err := utils.PkDecryptMessage(m.ccPrivateKey, encryptedRequestBytes)
+	requestBytes, err := crypto.PkDecryptMessage(m.ccPrivateKey, encryptedRequestBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +177,7 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 	b64ResponseData := base64.StdEncoding.EncodeToString(responseData)
 
 	//encrypt response
-	encryptedResponse, err := utils.EncryptMessage(returnEncryptionKey, []byte(b64ResponseData))
+	encryptedResponse, err := crypto.EncryptMessage(returnEncryptionKey, []byte(b64ResponseData))
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +196,7 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 	}
 
 	// create signature
-	sig, err := utils.SignMessage(m.privateKey, responseBytes)
+	sig, err := crypto.SignMessage(m.privateKey, responseBytes)
 	if err != nil {
 		return nil, err
 	}

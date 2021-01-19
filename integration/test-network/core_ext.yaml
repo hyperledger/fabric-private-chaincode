@@ -8,3 +8,4 @@ chaincode:
       name: fpc-external-launcher
       propagateEnvironment:
         - CORE_PEER_ID
+        - FABRIC_LOGGING_SPEC

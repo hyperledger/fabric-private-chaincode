@@ -19,8 +19,8 @@ import (
 	"fmt"
 )
 
-// #cgo CFLAGS: -I${SRCDIR}/../../../../common/crypto
-// #cgo LDFLAGS: -L${SRCDIR}/../../../../common/crypto/_build -L${SRCDIR}/../../../../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++
+// #cgo CFLAGS: -I${SRCDIR}/../../common/crypto
+// #cgo LDFLAGS: -L${SRCDIR}/../../common/crypto/_build -L${SRCDIR}/../../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++
 // #include <stdio.h>
 // #include <stdlib.h>
 // #include <stdbool.h>
