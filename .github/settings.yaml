@@ -1,0 +1,19 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+repository:
+  name: fabric private chaincode
+  description: Hyperledger Fabric Private Chaincode (FPC) enables the execution of
+    chaincodes using Intel SGX for Hyperledger Fabric.
+  homepage: https://wiki.hyperledger.org/display/fabric/Hyperledger+Fabric+Private+Chaincode
+  default_branch: master
+  has_downloads: true
+  has_issues: true
+  has_projects: true
+  has_wiki: false
+  archived: false
+  private: false
+  allow_squash_merge: true
+  allow_merge_commit: false
+  allow_rebase_merge: true
