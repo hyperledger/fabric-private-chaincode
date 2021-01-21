@@ -27,19 +27,19 @@ defined.
 
 It also requires that the peer's `core.yaml` defines the FPC CaaS
 external builder scripts as follows:
-```
-    ...
-    externalBuilders:
-        - path: ${FPC_PATH}/fabric/externalBuilder/chaincode
-          name: fpc-c
-          propagateEnvironment:
-              - FPC_HOSTING_MODE
-              - FABRIC_LOGGING_SPEC
-              - ftp_proxy
-              - http_proxy
-              - https_proxy
-              - no_proxy
-   ...
+```yaml
+...
+externalBuilders:
+    - path: ${FPC_PATH}/fabric/externalBuilder/chaincode
+      name: fpc-c
+      propagateEnvironment:
+          - FPC_HOSTING_MODE
+          - FABRIC_LOGGING_SPEC
+          - ftp_proxy
+          - http_proxy
+          - https_proxy
+          - no_proxy
+...
 ```
 
 ## Chaincode-as-a-Service mode
@@ -49,14 +49,14 @@ The chaincode will start in CaaS mode if the environment variables
 
 It also requires that the peer's `core.yaml` defines the FPC CaaS
 external builder scripts as follows:
-```
-  ...
-  externalBuilders:
-    - path: ${FPC_PATH}/fabric/externalBuilder/chaincode_server
-      name: fpc-external-launcher
-      propagateEnvironment:
-        - CORE_PEER_ID
-        - FABRIC_LOGGING_SPEC
-  ...
+```yaml
+...
+externalBuilders:
+- path: ${FPC_PATH}/fabric/externalBuilder/chaincode_server
+  name: fpc-external-launcher
+  propagateEnvironment:
+    - CORE_PEER_ID
+    - FABRIC_LOGGING_SPEC
+...
 ```
 

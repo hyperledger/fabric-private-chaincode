@@ -7,8 +7,10 @@ https://creativecommons.org/licenses/by/4.0/
 
 Run the following command:
 
-    $ cd $FPC_PATH/fabric
-    $ make
+```bash
+cd $FPC_PATH/fabric
+make
+```
 
 ## Common errors
 

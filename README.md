@@ -217,9 +217,9 @@ We currently support both `linkable` and `unlinkable` signatures for the attesta
 
 Place your ias api key and your SPID in the `ias` folder as follows:
 ```bash
-    echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/api_key.txt
-    echo 'YOUR_SPID_TYPE' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/spid_type.txt
-    echo 'YOUR_SPID' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/spid.txt
+echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/api_key.txt
+echo 'YOUR_SPID_TYPE' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/spid_type.txt
+echo 'YOUR_SPID' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/spid.txt
 ```
 where `YOUR_SPID_TYPE` must be `epid-linkable` or `epid-unlinkable`, depending on the type of your subscription.
 
@@ -271,11 +271,11 @@ A few notes:
 
 To build the docker image, run
 ```bash
-    cd utils/docker; make dev
+cd utils/docker; make dev
 ```
 and then use it with
 ```bash
-    cd utils/docker; make run
+cd utils/docker; make run
 ```
 This will open a shell inside the FPC development container, with
 environment variables like GOPATH appropriately defined and all
@@ -286,8 +286,8 @@ This allows you to edit the content of the repository using your favorite editor
 
 Optional: to do a clean build do the following *within* the container
 ```bash
-	make clean
-	make build
+make clean
+make build
 ```
 Now you are ready to start development.  Go to the [Develop Your First Private Chaincode
 ](#your-first-private-chaincode) section.
@@ -354,11 +354,11 @@ transactions. Install nanopb by following the instruction below. For this you ne
 compiler with python bindings (e.g. via `apt-get install protobuf-compiler python-protobuf libprotobuf-dev`).
 For more detailed information consult the official nanopb documentation http://github.com/nanopb/nanopb.
 ```bash
-    export NANOPB_PATH=/path-to/install/nanopb/
-    git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH}
-    cd ${NANOPB_PATH}
-    git checkout nanopb-0.4.3
-    cd generator/proto && make
+export NANOPB_PATH=/path-to/install/nanopb/
+git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH}
+cd ${NANOPB_PATH}
+git checkout nanopb-0.4.3
+cd generator/proto && make
 ```
 
 Make sure that you set `$NANOPB_PATH` as it is needed to build Fabric Private Chaincode.
@@ -366,9 +366,9 @@ Make sure that you set `$NANOPB_PATH` as it is needed to build Fabric Private Ch
 Moreover, in order to build Fabric protobufs we also require a newer Protobuf compiler than what is provided as standard ubuntu package and is used to build the
 Intel SGX SDK. For this reason you will have to download and install another version and use it together with Nanopb. Do not install the new protobuf, though, such that it is not found in your standard PATH but instead define the `PROTOC_CMD`, either as environment variable or via `config.override.mk` to point to the new `protoc` binary
 ```bash
-    wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.4/protoc-3.11.4-linux-x86_64.zip
-    unzip protoc-3.11.4-linux-x86_64.zip -d /usr/local/proto3
-    export PROTOC_CMD=/usr/local/proto3/bin/protoc
+wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.4/protoc-3.11.4-linux-x86_64.zip
+unzip protoc-3.11.4-linux-x86_64.zip -d /usr/local/proto3
+export PROTOC_CMD=/usr/local/proto3/bin/protoc
 ```
 
 #### Clone Fabric Private Chaincode
@@ -384,9 +384,9 @@ Fabric Private Chaincode support requires to re-build the Fabric peer.
 
 Checkout Fabric 2.3.0 release using the following commands:
 ```bash
-    export FABRIC_PATH=${GOPATH}/src/github.com/hyperledger/fabric
-    git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
-    cd $FABRIC_PATH; git checkout tags/v2.3.0
+export FABRIC_PATH=${GOPATH}/src/github.com/hyperledger/fabric
+git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
+cd $FABRIC_PATH; git checkout tags/v2.3.0
 ```
 
 Note that Fabric Private Chaincode currently does not work with the Fabric `master` branch, therefore make sure you use the Fabric
@@ -397,8 +397,8 @@ to the fabric peer to enable FPC support. Make sure the source of Fabric is in y
 
 Once you have your development environment up and running (i.e., using our docker-based setup or install all dependencies on your machine) you can build FPC and start developing your own FPC application.
 ```bash
-	cd $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
-	make
+cd $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
+make
  ```
 
 This will build all required components and run the integration tests.
@@ -449,8 +449,8 @@ You will also require a recent version of docker-compose. In particular, the doc
 To upgrade, install a recent version following the instructions from [docker.com](https://docs.docker.com/compose/install/), e.g.,
 for version 1.25.4 execute
 ```bash
-	sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-	sudo chmod +x /usr/local/bin/docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
 ```
 Furthermore, for docker-compose networks to work properly with proxies, the `noProxy`
 variable in your `~/.docker/config.json` should at least contain `127.0.0.1,127.0.1.1,localhost,.org1.example.com,.example.com`.
@@ -471,19 +471,18 @@ Our build system requires a few variables to be set in your environment. Missing
 Below you find a summary of all variables which you should carefully check and add to your environment.
 
 ```bash
-	# Path to your SGX SDK and SGX SSL
-	export SGX_SDK=/opt/intel/sgxsdk
-	export SGX_SSL=/opt/intel/sgxssl
+# Path to your SGX SDK and SGX SSL
+export SGX_SDK=/opt/intel/sgxsdk
+export SGX_SSL=/opt/intel/sgxssl
 
-	# Path to nanopb
-	export NANOPB_PATH=$HOME/nanopb
+# Path to nanopb
+export NANOPB_PATH=$HOME/nanopb
 
-	# SGX simulation mode
-	export SGX_MODE=SIM
+# SGX simulation mode
+export SGX_MODE=SIM
 
-	# SGX simulation mode
-	export SGX_MODE=HW
-
+# SGX simulation mode
+export SGX_MODE=HW
 ```
 The file `config.mk` contains various defaults for some of these, but
 all can be (re)defined also in an optional file `config.override.mk`.
@@ -523,8 +522,8 @@ graphviz package (e.g., via `apt-get install graphviz` on ubuntu).
 
 By running the following command you can generate the documentation.
 ```bash
-	cd docs
-	make
+cd docs
+make
 ```
 
 ## Developing with Fabric Private Chaincode
