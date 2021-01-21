@@ -4,6 +4,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+# Note: This file is adapted from hyperledger/fabric scripts/functions.sh (ec81f3e74)
+
 function filterExcludedAndGeneratedFiles {
     local excluded_files
     excluded_files=(
@@ -34,6 +36,7 @@ function filterExcludedAndGeneratedFiles {
         '(^|/)vendor\/'
         '(^|/)Pipfile$'
         '(^|/)Pipfile\.lock$'
+        '(^|/)tox\.ini$'
         'integration/test-network/fabric-samples/'
     )
 
