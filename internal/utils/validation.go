@@ -12,11 +12,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"strings"
+
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric/common/flogging"
 	"google.golang.org/protobuf/proto"
-	"strings"
 )
 
 // #cgo CFLAGS: -I${SRCDIR}/../../common/crypto
