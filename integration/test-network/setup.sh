@@ -23,7 +23,7 @@ backup() {
   fi
 }
 
-FABRIC_SAMPLES=${FPC_PATH}/integration/test-network/fabric-samples/
+FABRIC_SAMPLES=${FPC_PATH}/integration/test-network/fabric-samples
 
 if [ ! -d "${FABRIC_SAMPLES}/bin" ]; then
   echo "Error: environment not properly setup, see README.md"
@@ -35,7 +35,9 @@ fi
 # - config and docker-compose files (for fpc lite enablement)
 
 CORE_PATH=${FABRIC_SAMPLES}/config/core.yaml
-DOCKER_PATH=${FABRIC_SAMPLES}/test-network/docker/docker-compose-test-net.yaml
+DOCKER_PATH=${FABRIC_SAMPLES}/test-network/docker
+DOCKER_COMPOSE_TEST_NET=${DOCKER_PATH}/docker-compose-test-net.yaml
+DOCKER_COMPOSE_CA=${DOCKER_PATH}/docker-compose-ca.yaml
 
 # TODO the current `setup.sh` has an issue that it is not idempotent
 # In particular, when starting nodes using the ./network up ... script won't work if
@@ -45,7 +47,8 @@ backup ${CORE_PATH}
 
 yq m -i -a=append ${CORE_PATH} core_ext.yaml
 
-backup ${DOCKER_PATH}
+backup ${DOCKER_COMPOSE_TEST_NET}
+backup ${DOCKER_COMPOSE_CA}
 
 peers=("peer0.org1.example.com" "peer0.org2.example.com")
 
@@ -61,11 +64,16 @@ peers=("peer0.org1.example.com" "peer0.org2.example.com")
 if [ ! -z ${DOCKERD_FPC_PATH+x} ]; then
   echo "Oo we are in docker mode! we need to use the host fpc path"
   FPC_PATH=${DOCKERD_FPC_PATH}
-  FABRIC_SAMPLES=${FPC_PATH}/integration/test-network/fabric-samples/
+  FABRIC_SAMPLES=${FPC_PATH}/integration/test-network/fabric-samples
   echo "set FPC_PATH = ${FPC_PATH}"
+
+  sed -i "s+\.\./+${FABRIC_SAMPLES}/test-network/+g" "${DOCKER_COMPOSE_TEST_NET}"
+  sed -i "s+\.\./+${FABRIC_SAMPLES}/test-network/+g" "${DOCKER_COMPOSE_CA}"
 fi
 
 for p in "${peers[@]}"; do
-  yq w -i ${DOCKER_PATH} "services.\"$p\".volumes[+]" "${FPC_PATH}:/opt/gopath/src/github.com/hyperledger-labs/fabric-private-chaincode"
-  yq w -i ${DOCKER_PATH} "services.\"$p\".volumes[+]" "${FABRIC_SAMPLES}/config/core.yaml:/etc/hyperledger/fabric/core.yaml"
+  yq w -i ${DOCKER_COMPOSE_TEST_NET} "services.\"$p\".volumes[+]" "${FPC_PATH}:/opt/gopath/src/github.com/hyperledger-labs/fabric-private-chaincode"
+  yq w -i ${DOCKER_COMPOSE_TEST_NET} "services.\"$p\".volumes[+]" "${FABRIC_SAMPLES}/config/core.yaml:/etc/hyperledger/fabric/core.yaml"
 done
+
+
