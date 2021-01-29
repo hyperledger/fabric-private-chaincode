@@ -19,7 +19,7 @@
 #  - git user:                  GIT_USER_NAME
 #  - git user's email:          GIT_USER_EMAIL
 #  - sgxmode:                   SGX_MODE
-#  - additional dev apt pkgs:   APT_DEV_ADD_PKGS
+#  - additional dev apt pkgs:   APT_ADD_PKGS
 
 # Note on SGX_MODE:
 # In a docker build environment, we build but cannot _run_ with SGX_MODE=HW!.
@@ -31,7 +31,7 @@
 # global config params
 ARG FPC_VERSION=latest
 ARG SGX_MODE=SIM
-ARG APT_DEV_ADD_PKGS=
+ARG APT_ADD_PKGS=
 
 # global constants
 # paths relative to GOPATH. to share across stages, has to be defined global but at
@@ -171,7 +171,7 @@ FROM common as dev
 # import global vars
 ARG FPC_REL_PATH
 ARG SGX_MODE
-ARG APT_DEV_ADD_PKGS
+ARG APT_ADD_PKGS
 
 ENV SGX_MODE=${SGX_MODE}
 
@@ -179,7 +179,7 @@ RUN apt-get install -y -q \
 	psmisc \
 	bc \
 	docker-compose\
-	${APT_DEV_ADD_PKGS}
+	${APT_ADD_PKGS}
 
 RUN GO111MODULE=on \
     go get github.com/mikefarah/yq/v3
