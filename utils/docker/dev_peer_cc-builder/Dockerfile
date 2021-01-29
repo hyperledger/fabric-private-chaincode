@@ -18,8 +18,8 @@
 #  - fpc branch/tag/commit      FPC_REPO_BRANCH_TAG_OR_COMMIT
 #  - git user:                  GIT_USER_NAME
 #  - git user's email:          GIT_USER_EMAIL
-#  - sgxmode:                   SGX_MODE
-#  - additional dev apt pkgs:   APT_ADD_PKGS
+#  - sgx mode:                  SGX_MODE
+#  - additional apt pkgs:       APT_ADD_PKGS
 
 # Note on SGX_MODE:
 # In a docker build environment, we build but cannot _run_ with SGX_MODE=HW!.
