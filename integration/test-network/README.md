@@ -8,6 +8,13 @@ Make sure you have installed [yq](https://github.com/mikefarah/yq).
 Note that you will version v3.4.1 or larger. 
 For Ubuntu, `sudo snap install yq` is the easiest way to get a good version.
 
+Note if you run the FPC test network from within our FPC docker dev container, please
+use Ubuntu 20.04 Docker images by setting the corresponding settinngs in your `config.override.mk`
+before you build the dev container with `cd utils/dockder && make dev && make run`.
+```Makefile
+DOCKER_BUILD_OPTS=--build-arg UBUNTU_VERSION=20.04 --build-arg UBUNTU_NAME=focal
+```
+
 Before you start the network make sure you build ercc and ecc containers:
 
 ```bash
