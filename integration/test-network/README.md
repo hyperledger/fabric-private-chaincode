@@ -1,29 +1,35 @@
 # Setup the FPC test network
 
 The FPC test network builds on the test-network provided by [fabric-samples](https://github.com/hyperledger/fabric-samples).
-
 We provide fabric-samples as a submodule in `$FPC_PATH/integration/test-network/fabric-samples`.
 
-Make sure you have installed [yq](https://github.com/mikefarah/yq).
-Note that you will version v3.4.1 or larger. 
-For Ubuntu, `sudo snap install yq` is the easiest way to get a good version.
-
-Note if you run the FPC test network from within our FPC docker dev container, please
-use Ubuntu 20.04 Docker images by setting the corresponding settinngs in your `config.override.mk`
-before you build the dev container with `cd utils/dockder && make dev && make run`.
-```Makefile
-DOCKER_BUILD_OPTS=--build-arg UBUNTU_VERSION=20.04 --build-arg UBUNTU_NAME=focal
+In order to use FPC with the test network, make sure you have installed [yq](https://github.com/mikefarah/yq) (version 3.x).
+Not that newer versions (v4.x and higher) are currently not supported.
+You can install `yq` v3 via `go get`.
+```bash
+GO111MODULE=on go get github.com/mikefarah/yq/v3
 ```
+
+In addition to `yq` you need a recent version of docker-compose (version 1.25 or higher).
+Note Ubuntu 18.04 comes with an older version of docker-compose and thus needs to be updated.
+See related notes in [Working from behind a proxy](../../README.md#working-from-behind-a-proxy) in our [README.md](../../README.md) for more information.
+
+[comment]: <> (This comment can be removed with upgrading FPC to general Ubuntu 20.04 support)
+If you run the FPC test network from within our FPC docker dev container, please use Ubuntu 20.04 Docker images.
+```Makefile
+DOCKER_BUILD_OPTS="--build-arg UBUNTU_VERSION=20.04 --build-arg UBUNTU_NAME=focal" make -C $FPC_PATH/utils/docker run
+```
+
+## Prepare FPC containers and network
 
 Before you start the network make sure you build ercc and ecc containers:
 
 ```bash
+cd $FPC_PATH/integration/test-network/
 make build
 ```
 If you want to build with mock-ecc rather than the real enclave-based one, build with
 `make build GOTAGS="-tags mock_ecc"` instead.
-
-## Prepare network
 
 Setup fabric sample network, binaries and docker images (this follow the [instructions](https://hyperledger-fabric.readthedocs.io/en/latest/install.html)).
 

@@ -304,7 +304,7 @@ Make sure that you have the following required dependencies installed:
 
 * [Go](https://golang.org/) 1.15.4 or higher
 
-* Docker 18.x
+* Docker 18.x and docker-compose (1.25.x or higher)
 
 * Protocol Buffers
     - Protocol Buffers 3.0.x needed for the Intel SGX SDK
