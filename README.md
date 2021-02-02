@@ -123,7 +123,7 @@ Additional google documents provide details on FPC 1.0:
 
 ### Source organization
 
-- [`client_sdk`](client_sdk/): The FPC Go Client SDK
+- [`client_sdk`](client_sdk/go/): The FPC Go Client SDK
 - [`cmake`](cmake/): CMake build rules shared across the project
 - [`common`](common/): Shared C/C++ code
 - [`config`](config/): SGX configuration
@@ -569,7 +569,7 @@ before designing, implementing and deploying an FPC-based solution.
 
 ### FPC Client-side SDK
 
-See **[Godocs](https://pkg.go.dev/github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc)**
+See **[Godocs](https://pkg.go.dev/github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/)**
 for Go Client SDK.
 For the command-line invocations, use the **`fabric/bin/peer.sh`** wrapper script.
 Both make FPC related client-side encryption and decryption transparent to the user, i.e., client-side programming is mostly standard Fabric and agnostic to FPC.

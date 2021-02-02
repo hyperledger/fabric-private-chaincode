@@ -1,3 +1,7 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
 ---
 name: integration-test-network
 version: 1.0.0
@@ -14,6 +18,13 @@ client:
 organizations:
   SampleOrg:
     mspid: SampleOrg
+    cryptoPath: ${FPC_PATH}/integration/config/msp
+    users:
+      Admin:
+        cert:
+          path: ${FPC_PATH}/integration/config/msp/signcerts/peer.pem
+        key:
+          path: ${FPC_PATH}/integration/config/msp/keystore/key.pem
     peers:
       - jdoe_test.sampleorg.example.com
 

@@ -9,9 +9,10 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 	"testing"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc"
+	fpc "github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/gateway"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -22,24 +23,40 @@ func TestGoClientSDK(t *testing.T) {
 	RunSpecs(t, "Chaincode Suite")
 }
 
+var (
+	network        *gateway.Network
+	contract       fpc.Contract
+	auctionCounter int
+	auctionName    string
+	numClients     int
+)
+
+var _ = BeforeSuite(func() {
+	ccID := "auction_test"
+	ccPath := filepath.Join(fpcPath, "examples", "auction", "_build", "lib")
+
+	// setup auction chaincode (install, approve, commit)
+	initEnclave := true
+	err := setup(ccID, ccPath, initEnclave)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	// setup echo chaincode (install, approve, commit)
+	err = setup("echo_test", filepath.Join(fpcPath, "examples", "echo", "_build", "lib"), false)
+	Expect(err).ShouldNot(HaveOccurred())
+
+	// get network
+	network, err = setupNetwork("mychannel")
+	Expect(err).ShouldNot(HaveOccurred())
+	Expect(network).ShouldNot(BeNil())
+
+	// Get FPC Contract (auction)
+	contract = fpc.GetContract(network, ccID)
+	Expect(contract).ShouldNot(BeNil())
+})
+
 var _ = Describe("Go Client SDK Test", func() {
-	var (
-		contract       fpc.Contract
-		auctionCounter int
-		auctionName    string
-		numClients     int
-	)
 
 	BeforeEach(func() {
-		network, err := setupNetwork("mychannel")
-		Expect(err).ShouldNot(HaveOccurred())
-		Expect(network).ShouldNot(BeNil())
-
-		// Get FPC Contract
-		ccID := "auction_test"
-		contract = fpc.GetContract(network, ccID)
-		Expect(contract).ShouldNot(BeNil())
-
 		res, err := contract.SubmitTransaction("init", "MyAuctionHouse")
 		Expect(err).ShouldNot(HaveOccurred())
 		Expect(res).Should(Equal([]byte("OK")))
@@ -184,46 +201,33 @@ var _ = Describe("Go Client SDK Test", func() {
 	})
 
 	Context("Base SDK Tests with Auction and Echo", func() {
-		var (
-			network *gateway.Network
-			err     error
-		)
+		When("invoking/querying a non-existing fpc chaincode", func() {
+			It("should return error", func() {
+				contract := fpc.GetContract(network, "not_installed")
+				Expect(contract).ShouldNot(BeNil())
 
-		BeforeEach(func() {
-			network, err = setupNetwork("mychannel")
-			Expect(err).ShouldNot(HaveOccurred())
-			Expect(network).ShouldNot(BeNil())
+				res, err := contract.EvaluateTransaction("do", "something")
+				Expect(err).Should(HaveOccurred())
+				Expect(res).Should(BeNil())
+
+				res, err = contract.SubmitTransaction("do", "something", "else")
+				Expect(err).Should(HaveOccurred())
+				Expect(res).Should(BeNil())
+			})
 		})
 
-		Context("contract", func() {
-			When("invoking/querying a non-existing fpc chaincode", func() {
-				It("should return error", func() {
-					contract = fpc.GetContract(network, "not_installed")
-					Expect(contract).ShouldNot(BeNil())
+		When("invoking/querying a non-registered fpc chaincode (echo test)", func() {
+			It("should return error", func() {
+				contract := fpc.GetContract(network, "echo_test")
+				Expect(contract).ShouldNot(BeNil())
 
-					res, err := contract.EvaluateTransaction("do", "something")
-					Expect(err).Should(HaveOccurred())
-					Expect(res).Should(BeNil())
+				res, err := contract.EvaluateTransaction("do", "something")
+				Expect(err).Should(HaveOccurred())
+				Expect(res).Should(BeNil())
 
-					res, err = contract.SubmitTransaction("do", "something", "else")
-					Expect(err).Should(HaveOccurred())
-					Expect(res).Should(BeNil())
-				})
-			})
-
-			When("invoking/querying a non-registered fpc chaincode", func() {
-				It("should return error", func() {
-					contract = fpc.GetContract(network, "echo_test")
-					Expect(contract).ShouldNot(BeNil())
-
-					res, err := contract.EvaluateTransaction("do", "something")
-					Expect(err).Should(HaveOccurred())
-					Expect(res).Should(BeNil())
-
-					res, err = contract.SubmitTransaction("do", "something", "else")
-					Expect(err).Should(HaveOccurred())
-					Expect(res).Should(BeNil())
-				})
+				res, err = contract.SubmitTransaction("do", "something", "else")
+				Expect(err).Should(HaveOccurred())
+				Expect(res).Should(BeNil())
 			})
 		})
 	})
