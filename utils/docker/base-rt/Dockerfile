@@ -14,9 +14,9 @@
 #  - additional apt pkgs:       APT_ADD_PKGS
 
 # config/build params (part 1)
-ARG UBUNTU_VERSION=18.04
-ARG UBUNTU_NAME=bionic
-# NOTE: 
+ARG UBUNTU_VERSION=20.04
+ARG UBUNTU_NAME=focal
+# NOTE:
 # - unfortunately, we do need both name (for repo) and version (for sgx directories), only docker image supports both ..
 #   18.04 <-> bionic, 20.04 <-> focal
 # - right now, full sgx support exists only for bionic (18.04) and, since v2.12, focal (20.04); 

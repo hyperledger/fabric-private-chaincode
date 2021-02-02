@@ -298,7 +298,7 @@ Now you are ready to start development.  Go to the [Develop Your First Private C
 
 Make sure that you have the following required dependencies installed:
 
-* Linux (OS) (we recommend Ubuntu 18.04, see [list](https://github.com/intel/linux-sgx#prerequisites) supported OS)
+* Linux (OS) (we recommend Ubuntu 20.04, see [list](https://github.com/intel/linux-sgx#prerequisites) supported OS)
 
 * CMake v3.5.1 or higher
 
@@ -323,7 +323,7 @@ Make sure that you have the following required dependencies installed:
 * Clang-format 6.x or higher
 
 * jq
-* hex (for ubuntu, found in package basez)
+* hex (for Ubuntu, found in package basez)
 
 * A recent version of [PlantUML](http://plantuml.com/), including Graphviz, for building documentation. See [Documentation](#building-documentation) for our recommendations on installing. The version available in common package repositories may be out of date.
 
@@ -363,7 +363,7 @@ cd generator/proto && make
 
 Make sure that you set `$NANOPB_PATH` as it is needed to build Fabric Private Chaincode.
 
-Moreover, in order to build Fabric protobufs we also require a newer Protobuf compiler than what is provided as standard ubuntu package and is used to build the
+Moreover, in order to build Fabric protobufs we also require a newer Protobuf compiler than what is provided as standard Ubuntu package and is used to build the
 Intel SGX SDK. For this reason you will have to download and install another version and use it together with Nanopb. Do not install the new protobuf, though, such that it is not found in your standard PATH but instead define the `PROTOC_CMD`, either as environment variable or via `config.override.mk` to point to the new `protoc` binary
 ```bash
 wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.4/protoc-3.11.4-linux-x86_64.zip
@@ -444,7 +444,7 @@ The current code should work behind a proxy assuming
     [daemon](https://docs.docker.com/config/daemon/systemd/#httphttps-proxy).
 If you run Ubuntu 18.04, make sure you run docker 18.09 or later. Otherwise you will run into problems with DNS resolution inside the container.
 
-You will also require a recent version of docker-compose. In particular, the docker-compose from ubuntu 18.04
+You will also require a recent version of docker-compose. In particular, the docker-compose from Ubuntu 18.04
 (docker-compose 1.17) is _not_ recent enough to understand `~/.docker/config.json` and related proxy options.
 To upgrade, install a recent version following the instructions from [docker.com](https://docs.docker.com/compose/install/), e.g.,
 for version 1.25.4 execute
@@ -518,7 +518,7 @@ above error.
 To build documentation (e.g., images from the PlantUML `.puml` files), you will have to install `java` and download `plantuml.jar`. Either put `plantuml.jar` into
 in your `CLASSPATH` environment variable or override `PLANTUML_JAR` or `PLANTUML_CMD` in `config.override.mk`
 (see `config.mk` for default definition of the two variables). Additionally, you will need the `dot` program from the
-graphviz package (e.g., via `apt-get install graphviz` on ubuntu).
+graphviz package (e.g., via `apt-get install graphviz` on Ubuntu).
 
 By running the following command you can generate the documentation.
 ```bash

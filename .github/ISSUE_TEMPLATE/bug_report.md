@@ -33,7 +33,7 @@ Add steps to reproduce the behavior, e.g.
 
 **Environment (please complete the following information):**
 <!--
- - OS (distro+version): [e.g. Ubuntu 18.04]
+ - OS (distro+version): [e.g. Ubuntu 20.04]
  - FPC Version (tag or commit-id) [e.g. 'concept-release']
 -->
 
