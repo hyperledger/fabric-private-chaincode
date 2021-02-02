@@ -306,6 +306,10 @@ Make sure that you have the following required dependencies installed:
 
 * Docker 18.x and docker-compose (1.25.x or higher)
 
+* yq (version 3.x. Newer versions (v4.x and higher) are currently *not* supported!)
+  You can install `yq` v3 via `go get`.
+  ```bash
+  GO111MODULE=on go get github.com/mikefarah/yq/v3
 * Protocol Buffers
     - Protocol Buffers 3.0.x needed for the Intel SGX SDK
     - Protocol Buffers 3.11.x or higher and [Nanopb](http://github.com/nanopb/nanopb) 0.4.3
