@@ -8,7 +8,7 @@
 #
 #  Configuration (build) paramaters (for defaults, see below section with ARGs)
 #  - ubuntu version to use:     UBUNTU_VERSION
-#  - ubuntu name to use:        UBUNTU_VERSION
+#  - ubuntu name to use:        UBUNTU_NAME
 #  - sgx sdk/psw version:       SGX
 #  - protobuf version:          PROTO_VERSION
 #  - additional apt pkgs:       APT_ADD_PKGS
