@@ -11,11 +11,10 @@ package gateway
 import (
 	"strings"
 
-	"github.com/hyperledger/fabric/common/flogging"
-
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
+	"github.com/hyperledger/fabric/common/flogging"
 )
 
 var logger = flogging.MustGetLogger("fpc-client-gateway")
