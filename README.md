@@ -303,6 +303,10 @@ Make sure that you have the following required dependencies installed:
 * [Go](https://golang.org/) 1.15.4 or higher
 
 * Docker 18.09 (or higher) and docker-compose 1.25.x (or higher)
+  Note that version from Ubuntu 18.04 is not recent enough!  To upgrade, install a recent version following the instructions from [docker.com](https://docs.docker.com/compose/install/), e.g., for version 1.25.4 execute	
+  ```bash	
+  sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose	
+  sudo chmod +x /usr/local/bin/docker-compose	
 
     * To install docker-componse 1.25.4 from [docker.com](https://docs.docker.com/compose/install/), execute
         ```bash
