@@ -234,13 +234,11 @@ to set privileges to manage docker as a non-root user. See the
 official docker [documentation](https://docs.docker.com/install/linux/linux-postinstall/)
 for more details.
 
-We provide a docker image containing the FPC development environment. This will enable you to get a quick start to
-get FPC running.
+We provide instructions to build and run a docker image containing the FPC development environment.
 
 First make sure your host has
-* A running Docker daemon compatible with docker provided by Ubuntu
-  18.04, currently `Docker version 18.09`.  It also should use
-  `/var/run/docker.sock` as socket to interact with the daemon (or you
+* Docker 18.09 (or higher).
+  It also should use `/var/run/docker.sock` as socket to interact with the daemon (or you
   will have to override in `<absolute-project-path>/fabric-private-chaincode/config.override.mk` the default definition in make of `DOCKER_DAEMON_SOCKET`)
 * GNU make
 
@@ -304,9 +302,15 @@ Make sure that you have the following required dependencies installed:
 
 * [Go](https://golang.org/) 1.15.4 or higher
 
-* Docker 18.x and docker-compose (1.25.x or higher)
+* Docker 18.09 (or higher) and docker-compose 1.25.x (or higher)
 
-* yq (version 3.x. Newer versions (v4.x and higher) are currently *not* supported!)
+    * To install docker-componse 1.25.4 from [docker.com](https://docs.docker.com/compose/install/), execute
+        ```bash
+        sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+        ``` 
+
+* yq v3.x (newer versions, v4.x and higher, are currently *not* supported!)
   You can install `yq` v3 via `go get`.
   ```bash
   GO111MODULE=on go get github.com/mikefarah/yq/v3
@@ -342,7 +346,7 @@ official [documentation](https://github.com/intel/linux-sgx). Please make sure t
 SDK version as denoted above in the list of requirements.
 
 For SGX SSL, just follow the instructions on the [corresponding
-github page](https://github.com/intel/intel-sgx-Sal). In case you are
+github page](https://github.com/intel/intel-sgx-ssl). In case you are
 building for simulation mode only and do not have HW support, you
 might also want to make sure that [simulation mode is set](https://github.com/intel/intel-sgx-ssl#available-make-flags)
 when building and installing it.
@@ -446,16 +450,12 @@ The current code should work behind a proxy assuming
     outlined in the Docker documentation for
     [clients](https://docs.docker.com/network/proxy/) and the
     [daemon](https://docs.docker.com/config/daemon/systemd/#httphttps-proxy).
-If you run Ubuntu 18.04, make sure you run docker 18.09 or later. Otherwise you will run into problems with DNS resolution inside the container.
+  * the docker version is correct.
+    Otherwise you may run into problems with DNS resolution inside the container.
+  * the docker-compose version is correct.
+    For example, the docker-compose from Ubuntu 18.04 (docker-compose 1.17)
+    is _not_ recent enough to understand `~/.docker/config.json` and related proxy options.
 
-You will also require a recent version of docker-compose. In particular, the docker-compose from Ubuntu 18.04
-(docker-compose 1.17) is _not_ recent enough to understand `~/.docker/config.json` and related proxy options.
-To upgrade, install a recent version following the instructions from [docker.com](https://docs.docker.com/compose/install/), e.g.,
-for version 1.25.4 execute
-```bash
-sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-```
 Furthermore, for docker-compose networks to work properly with proxies, the `noProxy`
 variable in your `~/.docker/config.json` should at least contain `127.0.0.1,127.0.1.1,localhost,.org1.example.com,.example.com`.
 

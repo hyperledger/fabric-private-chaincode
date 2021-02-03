@@ -3,12 +3,8 @@
 The FPC test network builds on the test-network provided by [fabric-samples](https://github.com/hyperledger/fabric-samples).
 We provide fabric-samples as a submodule in `$FPC_PATH/integration/test-network/fabric-samples`.
 
-In order to use FPC with the test network, make sure you have installed [yq](https://github.com/mikefarah/yq) (version 3.x).
-Not that newer versions (v4.x and higher) are currently not supported.
-You can install `yq` v3 via `go get`.
-```bash
-GO111MODULE=on go get github.com/mikefarah/yq/v3
-```
+Before moving forward, follow the main [README](../../README.md) to set up your environment.
+
 ## Prepare FPC containers and network
 
 Before you start the network make sure you build ercc and ecc containers:
