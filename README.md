@@ -306,18 +306,21 @@ Make sure that you have the following required dependencies installed:
   Note that version from Ubuntu 18.04 is not recent enough!  To upgrade, install a recent version following the instructions from [docker.com](https://docs.docker.com/compose/install/), e.g., for version 1.25.4 execute	
   ```bash	
   sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose	
-  sudo chmod +x /usr/local/bin/docker-compose	
+  sudo chmod +x /usr/local/bin/docker-compose
+  ```
 
-    * To install docker-componse 1.25.4 from [docker.com](https://docs.docker.com/compose/install/), execute
-        ```bash
-        sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-        ``` 
+  To install docker-componse 1.25.4 from [docker.com](https://docs.docker.com/compose/install/), execute
+  ```bash
+  sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  sudo chmod +x /usr/local/bin/docker-compose
+  ``` 
 
 * yq v3.x (newer versions, v4.x and higher, are currently *not* supported!)
   You can install `yq` v3 via `go get`.
   ```bash
   GO111MODULE=on go get github.com/mikefarah/yq/v3
+  ```
+
 * Protocol Buffers
     - Protocol Buffers 3.0.x needed for the Intel SGX SDK
     - Protocol Buffers 3.11.x or higher and [Nanopb](http://github.com/nanopb/nanopb) 0.4.3
@@ -335,6 +338,7 @@ Make sure that you have the following required dependencies installed:
 * Clang-format 6.x or higher
 
 * jq
+
 * hex (for Ubuntu, found in package basez)
 
 * A recent version of [PlantUML](http://plantuml.com/), including Graphviz, for building documentation. See [Documentation](#building-documentation) for our recommendations on installing. The version available in common package repositories may be out of date.
@@ -387,7 +391,7 @@ export PROTOC_CMD=/usr/local/proto3/bin/protoc
 
 Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in this documentation and default configuration that your `$GOPATH` has a _single_ root-directoy!)
 ```bash
-    git clone --recursive https://github.com/hyperledger-labs/fabric-private-chaincode.git $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
+git clone --recursive https://github.com/hyperledger-labs/fabric-private-chaincode.git $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
 ```
 
 #### Prepare Fabric
@@ -591,7 +595,7 @@ section.
   Sorniotti: Blockchain and Trusted Computing: Problems, Pitfalls, and a
   Solution for Hyperledger Fabric. https://arxiv.org/abs/1805.08541
 
--  [Fabric Private Chaincode RFC](https://github.com/hyperledger/fabric-rfcs/blob/d1dc48ee934b1430b43f870f4d01e7f145576ec8/text/0000-fabric-private-chaincode-1.0.md) <!-- TODO: fix-me with pointer to version in fabric-rfcs once RFC is accepted ... -->
+- [Fabric Private Chaincode RFC](https://github.com/hyperledger/fabric-rfcs/blob/d1dc48ee934b1430b43f870f4d01e7f145576ec8/text/0000-fabric-private-chaincode-1.0.md) <!-- TODO: fix-me with pointer to version in fabric-rfcs once RFC is accepted ... -->
 
 - Presentation at the Hyperledger Fabric contributor meeting
   August 21, 2019.
