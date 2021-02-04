@@ -125,6 +125,9 @@ func validateRegularPackageInput(p *Descriptor) error {
 		return errors.New("chaincode path must be specified")
 	}
 
+	// TODO we should also check that the enclave artifacts exist at the given path.
+	// If they do not exist, getDeploymentPayload will fail, better fail at validation earlier here.
+
 	if p.SGXMode != sgx.SGXModeHwType && p.SGXMode != sgx.SGXModeSimType {
 		return errors.Errorf("SGXMode must be set either to %s or %s, actual: %s", sgx.SGXModeHwType, sgx.SGXModeSimType, p.SGXMode)
 	}

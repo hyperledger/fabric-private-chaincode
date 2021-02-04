@@ -16,7 +16,6 @@ import (
 	fpcmgmt "github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
 	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/fab/ccpackager"
 	fpcpackager "github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/fab/ccpackager"
-	fpcpolicy "github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/fab/policy"
 	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
@@ -161,21 +160,16 @@ func setup(ccID, ccPath string, initEnclave bool) error {
 		EnclavePeers: enclavePeers,
 	}
 
-	consortium := []string{"SampleOrg"}
-
 	mrenclave, err := ccpackager.ReadMrenclave(ccPath)
 	if err != nil {
 		return err
 	}
 
 	ccDetails := &chaincodeDetails{
-		Id:      ccID,
-		Path:    ccPath,
-		Version: mrenclave,
-		Lang:    ccpackager.ChaincodeType,
-		// note that this explicit EP is just for testing purpose and
-		// does not support dynamic membership change in the channel
-		Policy:       fpcpolicy.MajorityOfMembers(consortium),
+		Id:           ccID,
+		Path:         ccPath,
+		Version:      mrenclave,
+		Lang:         ccpackager.ChaincodeType,
 		Seq:          int64(1),
 		Vscc:         "vscc",
 		Escc:         "escc",
@@ -210,6 +204,9 @@ func setup(ccID, ccPath string, initEnclave bool) error {
 }
 
 func installChaincode(client *fpcmgmt.Client, cc *chaincodeDetails, nw *networkDetails) error {
+	// TODO promote this install function to a test suite for the FPC Admin API
+	// Right now this is used by the auction test to setup the "environment"; additional testing
+	// of the FPC Admin API would be good here.
 
 	// get sgx mode
 	sgxMode := os.Getenv(sgx.SGXModeEnvKey)

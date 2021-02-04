@@ -50,6 +50,7 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	contextImpl "github.com/hyperledger/fabric-sdk-go/pkg/context"
+	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/pkg/errors"
 )
 
@@ -58,6 +59,8 @@ const (
 	initEnclaveCMD     = "__initEnclave"
 	registerEnclaveCMD = "registerEnclave"
 )
+
+var logger = flogging.MustGetLogger("fpc-client-resmgmt")
 
 // LifecycleInitEnclaveRequest contains init enclave request parameters.
 // In particular, it contains the FPC chaincode ID, the endpoint of the target peer to spawn the enclave, and
@@ -109,6 +112,7 @@ func (rc *Client) LifecycleInitEnclave(channelId string, req LifecycleInitEnclav
 	if err != nil {
 		return fab.EmptyTransactionID, errors.Wrap(err, "Failed to serialize attestation parameters")
 	}
+	logger.Debugf("using attestation params: '%v'", req.AttestationParams)
 
 	initMsg := &protos.InitEnclaveMessage{
 		PeerEndpoint:      req.EnclavePeerEndpoint,
@@ -125,6 +129,7 @@ func (rc *Client) LifecycleInitEnclave(channelId string, req LifecycleInitEnclav
 	initOpts = append(initOpts, channel.WithRetry(retry.Opts{Attempts: 0}))
 	initOpts = append(initOpts, channel.WithTargetEndpoints(req.EnclavePeerEndpoint))
 
+	logger.Debugf("calling __initEnclave (%v)", initMsg)
 	// send query to create (init) enclave at the target peer
 	initResponse, err := channelClient.Query(initRequest, initOpts...)
 	if err != nil {
@@ -147,6 +152,7 @@ func (rc *Client) LifecycleInitEnclave(channelId string, req LifecycleInitEnclav
 	// TODO translate `resmgmt.RequestOption` to `channel.Option` options so we can pass it to execute
 	//registerOpts = append(registerOpts, options...)
 
+	logger.Debugf("calling registerEnclave")
 	// invoke registerEnclave at enclave registry
 	registerResponse, err := channelClient.Execute(registerRequest, registerOpts...)
 	if err != nil {
