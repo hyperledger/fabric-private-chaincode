@@ -60,13 +60,11 @@ indicating that the chaincode enclave is ready to endorse transaction proposals.
 In addition to the CLI based admin commands there exists also a FPC management API for Go.
 
 ```go
-type ManagementAPI interface {
-	InitEnclave(peerEndpoint string, attestationParams ...string) error
-}
+func LifecycleInitEnclave(channelId string, req LifecycleInitEnclaveRequest, options ...resmgmt.RequestOption) (fab.TransactionID, error)
 ```
 
-See the details of the API in [`client_sdk/go/fpc/management.go`](../../../client_sdk/go/fpc/management.go)
-and an example of its use in  [`client_sdk/go/test/main.go`](../../../client_sdk/go/test/main.go).
+See the details of the API in [godoc](https://pkg.go.dev/github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt)
+and an example of its use in  [`integration/client_sdk/go/utils.go`](../../../integration/client_sdk/go/utils.go).
 
 ### Key Distribution
 

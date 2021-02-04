@@ -52,7 +52,7 @@ make ercc-ecc-start
 
 Run test program
 ```bash
-cd ${FPC_PATH}/client_sdk/go/test
+cd ${FPC_PATH}/client_sdk/go/sample
 make
 make run
 ```
@@ -62,7 +62,7 @@ Shutdown network
 make -C $FPC_PATH/integration/test-network ercc-ecc-stop
 cd $FPC_PATH/integration/test-network/fabric-samples/test-network
 ./network.sh down
-rm -f ${FPC_PATH}/client_sdk/go/test/wallet/appUser.id
+rm -f ${FPC_PATH}/client_sdk/go/sample/wallet/appUser.id
 ```
 
 For diagnostics, you can run the following to see peer logs

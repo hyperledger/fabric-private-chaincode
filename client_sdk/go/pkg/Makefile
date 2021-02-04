@@ -6,17 +6,5 @@
 TOP = ../../..
 include $(TOP)/build.mk
 
-CC_ID ?= echo
-
-build:
-	$(GO) build
-
 test:
-	$(GO) test $(GOTAGS) -v ./...
-
-clean:
-	$(GO) clean
-	rm -rf keystore wallet
-
-run:
-	env CC_ID=${CC_ID} $(GO) run .
+	${GO} test $(GOTAGS) -race -covermode=atomic ./...

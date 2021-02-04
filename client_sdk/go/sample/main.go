@@ -13,7 +13,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/fpc"
+	fpc "github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/gateway"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	"github.com/hyperledger/fabric/common/flogging"
@@ -121,27 +121,14 @@ func main() {
 	// FPC example starts here
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	//ercc := network.GetContract("ercc")
-	admin := fpc.GetManagementAPI(network, ccID)
-
-	// Setup Chaincode Enclave
-	logger.Debugf("--> Create FPC chaincode enclave: ")
-	attestationParams := []string{"some params"}
-	err = admin.InitEnclave("peer0.org1.example.com:7051", attestationParams...)
-	// Note: strangely the hostname above is completely irrelevant and can be
-	//       non-existing, seems always to map (or fallback?) to localhost?!
-	if err != nil {
-		logger.Fatalf("Failed to create enclave: %v", err)
-	}
-
 	// Get FPC Contract
 	contract := fpc.GetContract(network, ccID)
 
 	// Invoke FPC Chaincode
-	logger.Debugf("--> Invoke FPC chaincode: ")
+	logger.Infof("--> Invoke FPC chaincode: ")
 	result, err := contract.SubmitTransaction("myFunction", "arg1", "arg2", "arg3")
 	if err != nil {
 		logger.Fatalf("Failed to Submit transaction: %v", err)
 	}
-	logger.Debugf("--> Result: %s", string(result))
+	logger.Infof("--> Result: %s", string(result))
 }
