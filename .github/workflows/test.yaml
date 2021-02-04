@@ -6,7 +6,19 @@ name: FPC test
 on: [push, pull_request]
 jobs:
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-18.04
+            os-version: 18.04
+            os-name: bionic
+
+          - os: ubuntu-20.04
+            os-version: 20.04
+            os-name: focal
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -16,4 +28,12 @@ jobs:
           DOCKER_DEV_CI_MODE: 1
           DOCKER_BUILDKIT: 0
           DOCKER_QUIET_BUILD: 1
-        run: make -C utils/docker run DOCKER_DEV_OPTIONAL_CMD='env DOCKER_QUIET_BUILD=1 DOCKER_BUILDKIT=0 make all clobber'
+        run: |
+            DOCKER_BUILD_OPTS="--build-arg UBUNTU_VERSION=${{ matrix.os-version }} --build-arg UBUNTU_NAME=${{ matrix.os-name }}" \
+            make -C utils/docker run DOCKER_DEV_OPTIONAL_CMD='env DOCKER_QUIET_BUILD=1 \
+                                                                  DOCKER_BUILDKIT=0 \
+                                                                  DOCKER_BUILD_OPTS="--build-arg UBUNTU_VERSION=${{ matrix.os-version }} --build-arg UBUNTU_NAME=${{ matrix.os-name }}" \
+                                                              make all clobber'
+            # we pass DOCKER_BUILD_OPTS, similar to DOCKER_QUITE_BUILD and DOCKER_BUILDKIT, to both 'make' invocations as 
+            # they are required when building the containers as part of 'make run' and when building inside the container (as part of make all)
+            # but make run does not automatically propagate environment variables to the container.
