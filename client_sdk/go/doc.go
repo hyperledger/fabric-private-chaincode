@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
 //
 // Usage samples
 //
-// samples/main.go: Illustrates the use of the FPC Client SDK. The application can be used with the our test-network.
-// Reference: https://github.com/hyperledger-labs/fabric-private-chaincode/tree/master/integration/test-network
+// samples/main.go: Illustrates the use of the FPC Client SDK. The application can be used with our test-network.
+// Reference: https://github.com/hyperledger-labs/fabric-private-chaincode/tree/v1.0-rc1/integration/test-network
 //
 package fpcclientsdk

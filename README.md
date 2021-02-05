@@ -407,9 +407,10 @@ git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
 cd $FABRIC_PATH; git checkout tags/v2.3.0
 ```
 
-Note that Fabric Private Chaincode currently does not work with the Fabric `master` branch, therefore make sure you use the Fabric
-`v2.3.0` tag. This is important as our build script applies some patches
-to the fabric peer to enable FPC support. Make sure the source of Fabric is in your `$GOPATH`.
+Note that Fabric Private Chaincode may not work with the Fabric `master` branch.
+Therefore make sure you use the Fabric `v2.3.0` tag.
+This is important as our build script applies some patches to the fabric peer to enable FPC support.
+Make sure the source of Fabric is in your `$GOPATH`.
 
 ### Build Fabric Private Chaincode
 
