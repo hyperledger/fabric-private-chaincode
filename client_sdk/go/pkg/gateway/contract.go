@@ -25,7 +25,7 @@ var logger = flogging.MustGetLogger("fpc-client-gateway")
 // but in addition to the normal FPC operations, it performs FPC specific steps such as encryption/decryption of chaincode requests/responses.
 //
 // A Contract object is created using the GetContract() factory method.
-// For an example of its use, see https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/client_sdk/go/test/main.go
+// For an example of its use, see https://github.com/hyperledger-labs/fabric-private-chaincode/blob/v1.0-rc1/client_sdk/go/sample/main.go
 type Contract interface {
 	// Name returns the name of the smart contract
 	Name() string
