@@ -147,6 +147,8 @@ Additional google documents provide details on FPC 1.0:
 
 ## Releases
 
+- [v1.0-rc1 - Feburary 5, 2021](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/v1.0-rc1)
+
 - [Tech Preview - July 2, 2020](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/concept-release-2.0)
 
 - [Concept Release - March 2, 2020](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/concept-release-1.0)

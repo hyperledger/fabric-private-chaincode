@@ -438,4 +438,4 @@ void log_notice(const char* format, ...);
 void log_info(const char* format, ...);
 void log_debug(const char* format, ...);
 ```
-See https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/ecc_enclave/enclave/shim.h
+See https://github.com/hyperledger-labs/fabric-private-chaincode/blob/v1.0-rc1/ecc_enclave/enclave/shim.h
