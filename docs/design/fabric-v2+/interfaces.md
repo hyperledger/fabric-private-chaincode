@@ -79,7 +79,7 @@ namespaces/exported/<chaincode_id>/<enclave_id> -> SignedExportMessage
 ```
 
 This key scheme is design with the goal in mind to reduce the write conflicts for concurrent enclave registrations.
-ERCC state can accessed and modified by the [lifecycle ledger shim](https://github.com/hyperledger/fabric/blob/master/core/chaincode/lifecycle/ledger_shim.go) or the normal [go-chaincode shim](https://github.com/hyperledger/fabric/blob/master/vendor/github.com/hyperledger/fabric-chaincode-go/shim/stub.go). Here an example:
+ERCC state can be accessed and modified by the [lifecycle ledger shim](https://github.com/hyperledger/fabric/blob/master/core/chaincode/lifecycle/ledger_shim.go) or the normal [go-chaincode shim](https://github.com/hyperledger/fabric/blob/master/vendor/github.com/hyperledger/fabric-chaincode-go/shim/stub.go). Here an example:
 ```go
 // returns the chaincode encryption key for AuctionChaincode1
 k := fmt.Sprintf("namespaces/chaincode_ek/%s", "AuctionChaincode1")
