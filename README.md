@@ -241,7 +241,10 @@ First make sure your host has
   It also should use `/var/run/docker.sock` as socket to interact with the daemon (or you
   will have to override in `<absolute-project-path>/fabric-private-chaincode/config.override.mk` the default definition in make of `DOCKER_DAEMON_SOCKET`)
 * GNU make
-
+Then clone this git repository to your local machine taking special care to specify -recursive as follows:
+```bash
+git clone --recursive https://github.com/hyperledger-labs/fabric-private-chaincode.git $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
+```
 A few notes:
 * While we mostly test on 18.04, FPC should work also with Ubuntu 20.04.
   To build also docker images based on Ubuntu 20.04, add the following to `${FPC_PATH}/config.override.mk`
@@ -267,7 +270,7 @@ A few notes:
   you will be able to run only a single FPC development container on a
   particular host.
 
-To build the docker image, run
+Once you have cloned the repository, to build the docker image navigate to the utils/docker subdirectory and run
 ```bash
 cd utils/docker; make dev
 ```
