@@ -147,6 +147,8 @@ Additional google documents provide details on FPC 1.0:
 
 ## Releases
 
+- [v1.0-rc1 - Feburary 5, 2021](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/v1.0-rc1)
+
 - [Tech Preview - July 2, 2020](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/concept-release-2.0)
 
 - [Concept Release - March 2, 2020](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/concept-release-1.0)
@@ -408,9 +410,10 @@ git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
 cd $FABRIC_PATH; git checkout tags/v2.3.0
 ```
 
-Note that Fabric Private Chaincode currently does not work with the Fabric `master` branch, therefore make sure you use the Fabric
-`v2.3.0` tag. This is important as our build script applies some patches
-to the fabric peer to enable FPC support. Make sure the source of Fabric is in your `$GOPATH`.
+Note that Fabric Private Chaincode may not work with the Fabric `master` branch.
+Therefore make sure you use the Fabric `v2.3.0` tag.
+This is important as our build script applies some patches to the fabric peer to enable FPC support.
+Make sure the source of Fabric is in your `$GOPATH`.
 
 ### Build Fabric Private Chaincode
 
