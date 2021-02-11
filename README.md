@@ -170,6 +170,13 @@ starting point. You should start with
 [installing](https://hyperledger-fabric.readthedocs.io/en/release-2.0/prereqs.html) Fabric dependencies and setting up
 your [development environment](https://hyperledger-fabric.readthedocs.io/en/release-2.0/dev-setup/build.html).
 
+### Clone Fabric Private Chaincode
+
+Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in this documentation and default configuration that your `$GOPATH` has a _single_ root-directoy!)
+```bash
+git clone --recursive https://github.com/hyperledger-labs/fabric-private-chaincode.git $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
+```
+
 Moreover, we assume that you are familiar with the Intel SGX SDK.
 
 ### Intel SGX
@@ -269,16 +276,12 @@ A few notes:
   you will be able to run only a single FPC development container on a
   particular host.
 
-To build the docker image, run
-```bash
-cd utils/docker; make dev
-```
-and then use it with
+Once you have cloned the repository, to build the docker image execute the following:
 ```bash
 cd utils/docker; make run
 ```
-This will open a shell inside the FPC development container, with
-environment variables like GOPATH appropriately defined and all
+
+This will open a shell inside the FPC development container, with environment variables like GOPATH appropriately defined and all
 dependencies like fabric built, ready to build and run FPC.
 
 Note that by default the dev container mounts your local cloned FPC project as a volume to `/project/src/github.com/hyperledger-labs/fabric-private-chaincode` within the docker container.
@@ -387,13 +390,6 @@ Intel SGX SDK. For this reason you will have to download and install another ver
 wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.4/protoc-3.11.4-linux-x86_64.zip
 unzip protoc-3.11.4-linux-x86_64.zip -d /usr/local/proto3
 export PROTOC_CMD=/usr/local/proto3/bin/protoc
-```
-
-#### Clone Fabric Private Chaincode
-
-Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in this documentation and default configuration that your `$GOPATH` has a _single_ root-directoy!)
-```bash
-git clone --recursive https://github.com/hyperledger-labs/fabric-private-chaincode.git $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
 ```
 
 #### Prepare Fabric

@@ -113,7 +113,6 @@ int invoke(
     shim_ctx_ptr_t ctx)
 {
     LOG_DEBUG("HelloworldCC: +++ Executing helloworld chaincode invocation +++");
-    LOG_DEBUG("HelloworldCC: \tArgs: %s", args);
 
     std::string function_name;
     std::vector<std::string> params;
@@ -326,6 +325,7 @@ CC_PATH=${FPC_PATH}/examples/helloworld/_build/lib/
 CC_ID=helloworld_test
 CC_VER="$(cat ${CC_PATH}/mrenclave)"
 CC_EP="OR('SampleOrg.member')"
+CC_SEQ="1"
 ```
 
 ### Launch Fabric network
@@ -361,15 +361,15 @@ With the variables set and `common_ledger.sh` executed, usage of `peer.sh` is as
 
 In the next step, the FPC chaincode must be approved by the organizations on the channel by agreeing on the chaincode definition.
 ```bash
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
 ```
 
 To complete the installation, we need to create an enclave that runs the FPC Chaincode.
 ```bash
     # create an FPC Chaincode enclave
-    try ${PEER_CMD} lifecycle chaincode initEnclave --name ${CC_ID}
+    try ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name ${CC_ID}
 ```
 
 Add the following content to the function, `helloworld_test()` in test.sh.  Please note the inline comments for each of the commands.
@@ -388,12 +388,12 @@ helloworld_test() {
 
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_ID}/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
 
     # create an FPC Chaincode enclave
-    try ${PEER_CMD} lifecycle chaincode initEnclave --name ${CC_ID}
+    try ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name ${CC_ID}
 
     # store the value of 100 in asset1
     say "- invoke storeAsset transaction to store value 100 in asset1"
@@ -426,6 +426,7 @@ CC_PATH=${FPC_PATH}/examples/helloworld/_build/lib/
 CC_ID=helloworld_test
 CC_VER="$(cat ${CC_PATH}/mrenclave)"
 CC_EP="OR('SampleOrg.member')"
+CC_SEQ="1"
 
 helloworld_test() {
     say "- do hello world"
@@ -440,12 +441,12 @@ helloworld_test() {
 
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_ID}/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode commit -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+    try ${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
 
     # create an FPC Chaincode enclave
-    try ${PEER_CMD} lifecycle chaincode initEnclave --name ${CC_ID}
+    try ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name ${CC_ID}
 
     # store the value of 100 in asset1
     say "- invoke storeAsset transaction to store value 100 in asset1"
@@ -499,67 +500,31 @@ If you see the message, `test.sh: Helloworld test PASSED`, then the transactions
 Output from test.sh for `storeAsset` transaction invocation will look like:
 ```bash
 test.sh: - invoke storeAsset transaction to store value 100 in asset1
-2019-08-25 22:47:07.022 UTC [chaincodeCmd] ClientWait -> INFO 001 txid [02b87c6451eab6ba2f5b9a80c6a80898a50a1adc20e94d79e91d7f8ae7a906c0] committed with status (VALID) at
-2019-08-25 22:47:07.022 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002 Chaincode invoke successful. result: status:200 payload:"{\"ResponseData\":\"T0s=\",\"Signature\":\"MEUCIQDF1uNxDKEx2KftztrgB4GfN8xJ9jq47NU/NgRRM0EqswIgWk63ZwiamGmFfOHy+C11I3a2z4831t0Y2qrzhVLJv9g=\",\"PublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExQZkgJymGfDZC7JcgjbacJdpX6Bbb8YvBUjX7Su3T1SJRALbJ2fSppIbHrXjmG1y6MQN41OYGKV/FhNA8FPWdQ==\"}"
+peer.sh: /project/src/github.com/hyperledger/fabric/build/bin/peer chaincode query -o localhost:7050 -C mychannel -n ercc -c {"Args":["QueryChaincodeEncryptionKey", "helloworld_test"]}
+peer.sh: /project/src/github.com/hyperledger/fabric/build/bin/peer chaincode query -o localhost:7050 -C mychannel -n ercc -c {"Args":["QueryChaincodeEndPoints", "helloworld_test"]}
+peer.sh: /project/src/github.com/hyperledger/fabric/build/bin/peer chaincode query --peerAddresses localhost:7051 -o localhost:7050 -C mychannel -n helloworld_test -c {"Args":["__invoke", "CoACqxRdrnlNKNVavdNKiMD5jJn+p4goTugbfVyQMPZ6qQxaBFoqiXpSW6ubzj1d5yutxdyP9oDdbrRdEcMyuOcTVzx94mPpSLHEF+V6Hm+6VMbXE2M3JBgzP9U0kIrrgrekwOYVfXDlnWex9oSWSdLL2rGZJhBsODvZ/1K99Ey7X+8cHe9wTEnLT/RpcVjWrnxpXiJ/ZmfascANV5MRkRsyT1LAEZUDK8u6vhwdLLGbbXy5UmnLCqEMdrPEWHJNrULiKfRTUdUx9NrqwRyZgS0ZDL95MrRhEtgtE3gkP5olslFn5qm2TRSXh02CdTh5w94vOC55dK+BtZW2l3ckPS1UMQ=="]}
+peer.sh: /project/src/github.com/hyperledger/fabric/build/bin/peer chaincode invoke -o localhost:7050 --waitForEvent -C mychannel -n helloworld_test -c {"Args":["__endorse", "CvoMCiAAGpKnvy4pnwKl/9aWElKT10xcM+5+O02AANy6OItihRI6CjgaNgoGYXNzZXQxGix3UVowT3prS0JmeHBDWWw2aXdGNlNEV2FKMWd2Z0drVVczLzA5a0duYm13PRq1CwrpCgrcBwpyCAMaDAjf+PaABhDI1OKsASIJbXljaGFubmVsKkBlOWY5Yjc0MWQzYjgxYTNhNzA2ZTVjNDQ1MDcyNzdiZjU1MzRlNDYxNWRjMmIwMjMzMmU4MWZlMTZjMTYwY2EwOhMSERIPaGVsbG93b3JsZF90ZXN0EuUGCsgGCglTYW1wbGVPcmcSugYtLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJQ05qQ0NBZDJnQXdJQkFnSVJBTW5mOS9kbVY5UnZDQ1Z3OXBaUVVmVXdDZ1lJS29aSXpqMEVBd0l3Z1lFeApDekFKQmdOVkJBWVRBbFZUTVJNd0VRWURWUVFJRXdwRFlXeHBabTl5Ym1saE1SWXdGQVlEVlFRSEV3MVRZVzRnClJuSmhibU5wYzJOdk1Sa3dGd1lEVlFRS0V4QnZjbWN4TG1WNFlXMXdiR1V1WTI5dE1Rd3dDZ1lEVlFRTEV3TkQKVDFBeEhEQWFCZ05WQkFNVEUyTmhMbTl5WnpFdVpYaGhiWEJzWlM1amIyMHdIaGNOTVRjeE1URXlNVE0wTVRFeApXaGNOTWpjeE1URXdNVE0wTVRFeFdqQnBNUXN3Q1FZRFZRUUdFd0pWVXpFVE1CRUdBMVVFQ0JNS1EyRnNhV1p2CmNtNXBZVEVXTUJRR0ExVUVCeE1OVTJGdUlFWnlZVzVqYVhOamJ6RU1NQW9HQTFVRUN4TURRMDlRTVI4d0hRWUQKVlFRREV4WndaV1Z5TUM1dmNtY3hMbVY0WVcxd2JHVXVZMjl0TUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowRApBUWNEUWdBRVo4UzRWNzFPQkpweU1JVlpkd1lkRlhBY2tJdHJwdlNyQ2YwSFFnNDBXVzlYU29PT083NkkrVW1mCkVrbVRsSUpYUDcvQXlSUlNSVTM4b0k4SXZ0dTRNNk5OTUVzd0RnWURWUjBQQVFIL0JBUURBZ2VBTUF3R0ExVWQKRXdFQi93UUNNQUF3S3dZRFZSMGpCQ1F3SW9BZ2luT1JJaG5QRUZaVWhYbTZlV0JrbTdLN1pjOFI0L3o3TFc0SApvc3NEbENzd0NnWUlLb1pJemowRUF3SURSd0F3UkFJZ1Zpa0lVWnpnZnVGc0dMUUhXSlVWSkNVN3BEYUVUa2F6ClB6RmdzQ2lMeFVBQ0lDZ3pKWWxXN252WnhQN2I2dGJldTN0OG1yaE1YUXM5NTZtRDQrQm9LdU5JCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KEhgBT3hTOjs8cnlaAk1LwePi40qsObkDW04ShwMKhAMKgQMIARIREg9oZWxsb3dvcmxkX3Rlc3Qa6QIKCF9faW52b2tlCtwCQ29BQ3F4UmRybmxOS05WYXZkTktpTUQ1akpuK3A0Z29UdWdiZlZ5UU1QWjZxUXhhQkZvcWlYcFNXNnViemoxZDV5dXR4ZHlQOW9EZGJyUmRFY015dU9jVFZ6eDk0bVBwU0xIRUYrVjZIbSs2Vk1iWEUyTTNKQmd6UDlVMGtJcnJncmVrd09ZVmZYRGxuV2V4OW9TV1NkTEwyckdaSmhCc09EdlovMUs5OUV5N1grOGNIZTl3VEVuTFQvUnBjVmpXcm54cFhpSi9abWZhc2NBTlY1TVJrUnN5VDFMQUVaVURLOHU2dmh3ZExMR2JiWHk1VW1uTENxRU1kclBFV0hKTnJVTGlLZlJUVWRVeDlOcnF3UnlaZ1MwWkRMOTVNclJoRXRndEUzZ2tQNW9sc2xGbjVxbTJUUlNYaDAyQ2RUaDV3OTR2T0M1NWRLK0J0WlcybDNja1BTMVVNUT09EkcwRQIhANz3BNlcghQhaGzN+Z7rem/JhcDXL8h2y3i4F7vFF7MBAiATGtz3GxXtCQZqJ2cjtOjhLChhkcqyIGclIQgC4W7JpSIgUCM/JIUzwZ7qRQXb1i/NmHUhccYDMQEqYBwa7KTfttcqQEVCNjA5M0ZCRTE4MTk0MTRGRUU3MzUxODAyRjYyNkE5NjY3OTFBNkQ4OTQzMkIwRTJCNURGNDBFOTNEMUI0Q0YSRjBEAiAtX4zseT2meebl5vLdCnlt5hLnH+QA3U4yAa9x7YuhEgIgY0LkRSBJkA3SW7Rpj27dXLvSmVd8kyK8c2Srqz/ZhIQ="]}
+
 ```
 
 Response from the transaction is:
-```json
-{
-    "ResponseData": "T0s=",
-    "Signature": "MEUCIQDF1uNxDKEx2KftztrgB4GfN8xJ9jq47NU/NgRRM0EqswIgWk63ZwiamGmFfOHy+C11I3a2z4831t0Y2qrzhVLJv9g=",
-    "PublicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExQZkgJymGfDZC7JcgjbacJdpX6Bbb8YvBUjX7Su3T1SJRALbJ2fSppIbHrXjmG1y6MQN41OYGKV/FhNA8FPWdQ=="
-}
 ```
-
-Response from the transactions is marked by `ResponseData`.  In this case, "ResponseData" is _Base64 encoded string_ of "OK".  In addition, the response also contains the signature of the peer and the public key of the enclave in which the chaincode was executed.
-
-Use `base64` to decode "ResponseData" i.e. `T0s=`:
-```bash
-$ echo "T0s=" | base64 -D
 OK
 ```
 
 Let us look at the output of `retrieveAsset` transaction.
 ```bash
 test.sh: - invoke retrieveAsset transaction to retrieve current value of asset1
-2019-08-25 22:47:09.292 UTC [chaincodeCmd] ClientWait -> INFO 001 txid [530658f431d04511e2eecee7b7582bb3c6b449f99e9845c6d1327e773f756f13] committed with status (VALID) at
-2019-08-25 22:47:09.293 UTC [chaincodeCmd] chaincodeInvokeOrQuery -> INFO 002 Chaincode invoke successful. result: status:200 payload:"{\"ResponseData\":\"YXNzZXQxOjEwMA==\",\"Signature\":\"MEQCIEiEdmV5jGW9kd2+a4QEeoEIlNFYB3NCvA+xtXKEkzK9AiAxIVPo0ca0s39KyY9N7tdd5ZfWXN5eSf+KeBSQPMaHKA==\",\"PublicKey\":\"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExQZkgJymGfDZC7JcgjbacJdpX6Bbb8YvBUjX7Su3T1SJRALbJ2fSppIbHrXjmG1y6MQN41OYGKV/FhNA8FPWdQ==\"}"
+peer.sh: /project/src/github.com/hyperledger/fabric/build/bin/peer chaincode query -o localhost:7050 -C mychannel -n ercc -c {"Args":["QueryChaincodeEncryptionKey", "helloworld_test"]}
+peer.sh: /project/src/github.com/hyperledger/fabric/build/bin/peer chaincode query -o localhost:7050 -C mychannel -n ercc -c {"Args":["QueryChaincodeEndPoints", "helloworld_test"]}
+peer.sh: /project/src/github.com/hyperledger/fabric/build/bin/peer chaincode query --peerAddresses localhost:7051 -o localhost:7050 -C mychannel -n helloworld_test -c {"Args":["__invoke", "CoACGbE4bFpQaubzAw/XQPRJnuD2bC3ZcCV4b9TC0gmrPIe+YBYMHYb5WDhNAPrgJvSCLiJbXb15qzp1C0I0lhSVadVLH465CL5huLbDwtmLswpGDVlswHPHmik+ce7Xx04hEqNupu3VUxar6dUdcUh8wyyW2fgj/q1f96ZAm4SH/DAjdu7y3qSqIlPp1LMpz+7SpM6/AVAP3aSuDetooyTitDjYMHU7OUxkj2pH41MSqA0g65/bszPQXKbcc49FivwnKEKyIV8KyXVrPB1s8JkpP89HfCQxmkRU3pmukMi4jkLxYT4tXz4MCwbJJp4K6aleCaz1sjdHONcIBveFb/nekQ=="]}
+peer.sh: /project/src/github.com/hyperledger/fabric/build/bin/peer chaincode invoke -o localhost:7050 --waitForEvent -C mychannel -n helloworld_test -c {"Args":["__endorse", "CvkMCiyEzRpNIXSgFVu14waJqpDwF6JIKQy0sLD2hoPjt3/Qhayc6Im3VCF1FCboqhIuCgoKCAoGYXNzZXQxEiBu8sguYb+l8QfD8ToPBdPqoJbiZhYt/6AaZvCDqo47ARq0CwrpCgrcBwpyCAMaDAji+PaABhC4hKWDAyIJbXljaGFubmVsKkBkNTVkYmQwNmNmZWUxMmJhYzczNjc1MzlkMTFmNGUxY2QyOGZjNzNlNTJmMjczYjMwMDkzYWMxNTBhOWFhNDVlOhMSERIPaGVsbG93b3JsZF90ZXN0EuUGCsgGCglTYW1wbGVPcmcSugYtLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJQ05qQ0NBZDJnQXdJQkFnSVJBTW5mOS9kbVY5UnZDQ1Z3OXBaUVVmVXdDZ1lJS29aSXpqMEVBd0l3Z1lFeApDekFKQmdOVkJBWVRBbFZUTVJNd0VRWURWUVFJRXdwRFlXeHBabTl5Ym1saE1SWXdGQVlEVlFRSEV3MVRZVzRnClJuSmhibU5wYzJOdk1Sa3dGd1lEVlFRS0V4QnZjbWN4TG1WNFlXMXdiR1V1WTI5dE1Rd3dDZ1lEVlFRTEV3TkQKVDFBeEhEQWFCZ05WQkFNVEUyTmhMbTl5WnpFdVpYaGhiWEJzWlM1amIyMHdIaGNOTVRjeE1URXlNVE0wTVRFeApXaGNOTWpjeE1URXdNVE0wTVRFeFdqQnBNUXN3Q1FZRFZRUUdFd0pWVXpFVE1CRUdBMVVFQ0JNS1EyRnNhV1p2CmNtNXBZVEVXTUJRR0ExVUVCeE1OVTJGdUlFWnlZVzVqYVhOamJ6RU1NQW9HQTFVRUN4TURRMDlRTVI4d0hRWUQKVlFRREV4WndaV1Z5TUM1dmNtY3hMbVY0WVcxd2JHVXVZMjl0TUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowRApBUWNEUWdBRVo4UzRWNzFPQkpweU1JVlpkd1lkRlhBY2tJdHJwdlNyQ2YwSFFnNDBXVzlYU29PT083NkkrVW1mCkVrbVRsSUpYUDcvQXlSUlNSVTM4b0k4SXZ0dTRNNk5OTUVzd0RnWURWUjBQQVFIL0JBUURBZ2VBTUF3R0ExVWQKRXdFQi93UUNNQUF3S3dZRFZSMGpCQ1F3SW9BZ2luT1JJaG5QRUZaVWhYbTZlV0JrbTdLN1pjOFI0L3o3TFc0SApvc3NEbENzd0NnWUlLb1pJemowRUF3SURSd0F3UkFJZ1Zpa0lVWnpnZnVGc0dMUUhXSlVWSkNVN3BEYUVUa2F6ClB6RmdzQ2lMeFVBQ0lDZ3pKWWxXN252WnhQN2I2dGJldTN0OG1yaE1YUXM5NTZtRDQrQm9LdU5JCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KEhg6Rz4AFR7yI+3X1bdhVk7rPS+piryTqagShwMKhAMKgQMIARIREg9oZWxsb3dvcmxkX3Rlc3Qa6QIKCF9faW52b2tlCtwCQ29BQ0diRTRiRnBRYXViekF3L1hRUFJKbnVEMmJDM1pjQ1Y0YjlUQzBnbXJQSWUrWUJZTUhZYjVXRGhOQVByZ0p2U0NMaUpiWGIxNXF6cDFDMEkwbGhTVmFkVkxINDY1Q0w1aHVMYkR3dG1Mc3dwR0RWbHN3SFBIbWlrK2NlN1h4MDRoRXFOdXB1M1ZVeGFyNmRVZGNVaDh3eXlXMmZnai9xMWY5NlpBbTRTSC9EQWpkdTd5M3FTcUlsUHAxTE1weis3U3BNNi9BVkFQM2FTdURldG9veVRpdERqWU1IVTdPVXhrajJwSDQxTVNxQTBnNjUvYnN6UFFYS2JjYzQ5Rml2d25LRUt5SVY4S3lYVnJQQjFzOEprcFA4OUhmQ1F4bWtSVTNwbXVrTWk0amtMeFlUNHRYejRNQ3diSkpwNEs2YWxlQ2F6MXNqZEhPTmNJQnZlRmIvbmVrUT09EkYwRAIgUfrI86tO/OpDNEny4GHP4N3p8HWza0rEpZwPZfB9hEYCIH8P7UCwBQE9gQ8Q6k6PfKMC8L2r6ayNIT61KyZK4JRyIiAMstDJrHzmQk2UsMjsABWaqNt8Sbiaau1Cnhs+j2pMjipARUI2MDkzRkJFMTgxOTQxNEZFRTczNTE4MDJGNjI2QTk2Njc5MUE2RDg5NDMyQjBFMkI1REY0MEU5M0QxQjRDRhJHMEUCIQDuN5LKLukJ2mCUA8yWBqVO18g2+uDAMniVIrcgOskb8AIgGST4CSedNDJNZXYKkdPrgPb+H8hV+RD7pykLpUBnCSU="]}
 ```
 
 Response from the transaction is:
-```json
-{
-    "ResponseData": "YXNzZXQxOjEwMA==", 
-    "Signature": "MEQCIEiEdmV5jGW9kd2+a4QEeoEIlNFYB3NCvA+xtXKEkzK9AiAxIVPo0ca0s39KyY9N7tdd5ZfWXN5eSf+KeBSQPMaHKA==", 
-    "PublicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExQZkgJymGfDZC7JcgjbacJdpX6Bbb8YvBUjX7Su3T1SJRALbJ2fSppIbHrXjmG1y6MQN41OYGKV/FhNA8FPWdQ=="
-}
 ```
-
-Use `base64` to decode "ResponseData" i.e. `YXNzZXQxOjEwMA==` which is _Base64 encoded string_ of "asset1:100".
-```bash
-$ echo "YXNzZXQxOjEwMA==" | base64 -D
 asset1:100
 ```
-
-
-Output of `retrieveAsset` query will look like:
-```bash
-test.sh: - invoke query with retrieveAsset transaction to retrieve current value of asset1
-{"ResponseData":"YXNzZXQxOjEwMA==","Signature":"MEQCIHViPWLKQvd2RezK8oKk4E9nY1WrAR1F5J0wFptX4erVAiAZgTmug8QBqZaFWLPBCfRFWste66H7QN5a3BOA+G5aCg==","PublicKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEkx5nDA1TjDA5j4b8cmQcU0JpjALu6UFZKNOpttRJCNlaAighZi8ftnjJTeMuyHgEQHeHz/m/p/noJcxilrtMxQ=="}
-```
-
-
-Response from the query is:
-```json
-{
-    "ResponseData":"YXNzZXQxOjEwMA==",
-    "Signature":"MEQCIHViPWLKQvd2RezK8oKk4E9nY1WrAR1F5J0wFptX4erVAiAZgTmug8QBqZaFWLPBCfRFWste66H7QN5a3BOA+G5aCg==",
-    "PublicKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEkx5nDA1TjDA5j4b8cmQcU0JpjALu6UFZKNOpttRJCNlaAighZi8ftnjJTeMuyHgEQHeHz/m/p/noJcxilrtMxQ=="
-}
-```
-
-The response from the query is the same as the corresponding transaction.  "ResponseData" is _Base64 encoded string_ of "asset1:100".
 
 Yay !  You did it !
 
