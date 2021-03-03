@@ -54,8 +54,6 @@ RUN apt-get update -q \
     python-protobuf \
     # docker commands (need as we use docker daemon from "outside")
     docker.io \
-    # jq need for e.g., external-builder
-    jq \
     ${APT_ADD_PKGS}
 
 

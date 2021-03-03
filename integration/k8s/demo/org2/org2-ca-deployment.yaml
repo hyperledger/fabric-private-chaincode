@@ -1,0 +1,72 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ca-org2
+  name: ca-org2
+  namespace: hyperledger
+spec:
+  selector:
+    matchLabels:
+      app: ca-org2
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: ca-org2
+    spec:
+      containers:
+        - args:
+            - sh
+            - -c
+            - fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org2-cert.pem
+              --ca.keyfile /etc/hyperledger/fabric-ca-server-config/priv_sk
+              -b admin:adminpw -d
+          env:
+            - name: FABRIC_CA_HOME
+              value: /etc/hyperledger/fabric-ca-server
+            - name: FABRIC_CA_SERVER_CA_NAME
+              value: ca-org2
+            - name: FABRIC_CA_SERVER_TLS_CERTFILE
+              value: /etc/hyperledger/fabric-ca-server-config/ca.org2-cert.pem
+            - name: FABRIC_CA_SERVER_TLS_ENABLED
+              value: "true"
+            - name: FABRIC_CA_SERVER_TLS_KEYFILE
+              value: /etc/hyperledger/fabric-ca-server-config/priv_sk
+          image: hyperledger/fabric-ca:1.4.7
+          name: ca-org2
+          ports:
+            - containerPort: 7054
+          volumeMounts:
+            - mountPath: /etc/hyperledger/fabric-ca-server-config
+              name: ca-org2-claim0
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: ca-org2-claim0
+          hostPath:
+            path: /fpc/integration/k8s/demo/crypto-config/peerOrganizations/org2/ca/
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ca-org2
+  name: ca-org2
+  namespace: hyperledger
+spec:
+  type: ClusterIP
+  ports:
+    - name: "https"
+      port: 7054
+      targetPort: 7054
+  selector:
+    app: ca-org2
+

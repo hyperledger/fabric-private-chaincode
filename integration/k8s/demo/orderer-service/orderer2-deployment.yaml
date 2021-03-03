@@ -1,0 +1,116 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: orderer2
+  name: orderer2
+  namespace: hyperledger
+spec:
+  selector:
+    matchLabels:
+      app: orderer2
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: orderer2
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: "app"
+                      operator: In
+                      values:
+                        - orderer0
+                        - orderer1
+                topologyKey: "kubernetes.io/hostname"
+      containers:
+        - args:
+            - orderer
+          env:
+            - name: FABRIC_LOGGING_SPEC
+              value: DEBUG
+            - name: ORDERER_OPERATIONS_LISTENADDRESS
+              value: 0.0.0.0:8443
+            - name: ORDERER_METRICS_PROVIDER
+              value: prometheus
+            - name: ORDERER_GENERAL_GENESISFILE
+              value: /var/hyperledger/orderer/genesis.block
+            - name: ORDERER_GENERAL_GENESISMETHOD
+              value: file
+            - name: ORDERER_GENERAL_LISTENADDRESS
+              value: 0.0.0.0
+            - name: ORDERER_GENERAL_LOCALMSPDIR
+              value: /var/hyperledger/orderer/msp
+            - name: ORDERER_GENERAL_LOCALMSPID
+              value: OrdererMSP
+            - name: ORDERER_GENERAL_TLS_CERTIFICATE
+              value: /var/hyperledger/orderer/tls/server.crt
+            - name: ORDERER_GENERAL_TLS_ENABLED
+              value: "true"
+            - name: ORDERER_GENERAL_TLS_PRIVATEKEY
+              value: /var/hyperledger/orderer/tls/server.key
+            - name: ORDERER_GENERAL_TLS_ROOTCAS
+              value: "[/var/hyperledger/orderer/tls/ca.crt]"
+            - name: ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE
+              value: /var/hyperledger/orderer/tls/server.crt
+            - name: ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY
+              value: /var/hyperledger/orderer/tls/server.key
+            - name: ORDERER_GENERAL_CLUSTER_ROOTCAS
+              value: "[/var/hyperledger/orderer/tls/ca.crt]"
+          image: hyperledger/fabric-orderer:2.3.0
+          name: orderer
+          ports:
+            - containerPort: 7050
+            - containerPort: 8443
+          volumeMounts:
+            - mountPath: /var/hyperledger/production
+              name: orderer2-persistentdata
+            - mountPath: /var/hyperledger/orderer/genesis.block
+              name: orderer2-claim0
+            - mountPath: /var/hyperledger/orderer/msp
+              name: orderer2-claim1
+            - mountPath: /var/hyperledger/orderer/tls
+              name: orderer2-claim2
+          workingDir: /opt/gopath/src/github.com/hyperledger/fabric
+      restartPolicy: Always
+      volumes:
+        - name: orderer2-persistentdata
+          hostPath:
+            path: /tmp/storage/orderer2
+            type: DirectoryOrCreate
+        - name: orderer2-claim0
+          hostPath:
+            path: /fpc/integration/k8s/demo/channel-artifacts/genesis.block
+        - name: orderer2-claim1
+          hostPath:
+            path: /fpc/integration/k8s/demo/crypto-config/ordererOrganizations/consortium/orderers/orderer2/msp
+        - name: orderer2-claim2
+          hostPath:
+            path: /fpc/integration/k8s/demo/crypto-config/ordererOrganizations/consortium/orderers/orderer2/tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: orderer2
+  name: orderer2
+  namespace: hyperledger
+spec:
+  type: ClusterIP
+  ports:
+    - name: "orderer"
+      port: 7050
+      targetPort: 7050
+  selector:
+    app: orderer2

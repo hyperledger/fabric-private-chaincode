@@ -1,0 +1,91 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cli-org1
+  name: cli-org1
+  namespace: hyperledger
+spec:
+  selector:
+    matchLabels:
+      app: cli-org1
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: cli-org1
+    spec:
+      containers:
+        - env:
+            - name: ORG
+              value: org1
+            - name: FABRIC_LOGGING_SPEC
+              value: INFO
+            - name: CORE_PEER_ADDRESS
+              value: peer0-org1:7051
+            - name: CORE_PEER_ID
+              value: cli-org1
+            - name: CORE_PEER_LOCALMSPID
+              value: org1MSP
+            - name: CORE_PEER_MSPCONFIGPATH
+              value: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1/users/Admin@org1/msp
+            - name: CORE_PEER_TLS_CERT_FILE
+              value: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1/peers/peer0-org1/tls/server.crt
+            - name: CORE_PEER_TLS_ENABLED
+              value: "true"
+            - name: CORE_PEER_TLS_KEY_FILE
+              value: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1/peers/peer0-org1/tls/server.key
+            - name: CORE_PEER_TLS_ROOTCERT_FILE
+              value: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1/peers/peer0-org1/tls/ca.crt
+            - name: GOPATH
+              value: /opt/gopath
+            - name: ORDERER_CA
+              value: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/consortium/orderers/orderer0/msp/tlscacerts/tlsca.consortium-cert.pem
+            - name: FPC_MRENCLAVE
+              valueFrom:
+                configMapKeyRef:
+                  name: chaincode-config
+                  key: FPC_MRENCLAVE
+          image: hyperledger/fabric-tools:2.3.0
+          name: cli
+          tty: true
+          volumeMounts:
+            # - mountPath: /host/var/run/
+            #   name: cli-claim0
+            - mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+              name: cli-claim2
+            - mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+              name: cli-claim3
+            - mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/packages/
+              name: cli-claim4
+            - mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+              name: cli-claim5
+          workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+      restartPolicy: Always
+      volumes:
+        # - name: cli-claim0
+        #   hostPath:
+        #     path: /var/run/
+        #     type: Directory
+        - name: cli-claim2
+          hostPath:
+            path: /fpc/integration/k8s/demo/channel-artifacts
+            type: Directory
+        - name: cli-claim3
+          hostPath:
+            path: /fpc/integration/k8s/demo/crypto-config
+            type: Directory
+        - name: cli-claim4
+          hostPath:
+            path: /fpc/integration/k8s/demo/packages
+            type: Directory
+        - name: cli-claim5
+          hostPath:
+            path: /fpc/integration/k8s/demo/scripts
+            type: Directory

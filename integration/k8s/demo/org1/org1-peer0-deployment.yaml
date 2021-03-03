@@ -1,0 +1,119 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: peer0-org1
+  name: peer0-org1
+  namespace: hyperledger
+spec:
+  selector:
+    matchLabels:
+      app: peer0-org1
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: peer0-org1
+    spec:
+      containers:
+        - args:
+            - peer
+            - node
+            - start
+          env:
+            - name: FABRIC_LOGGING_SPEC
+              value: INFO
+            - name: CORE_PEER_ADDRESS
+              value: peer0-org1:7051
+            - name: CORE_PEER_GOSSIP_EXTERNALENDPOINT
+              value: peer0-org1:7051
+            - name: CORE_PEER_CHAINCODELISTENADDRESS
+              value: localhost:7052
+            - name: CORE_PEER_GOSSIP_BOOTSTRAP
+              value: peer0-org1:7051
+            - name: CORE_PEER_ID
+              value: peer0-org1
+            - name: CORE_PEER_LOCALMSPID
+              value: org1MSP
+            - name: CORE_PEER_PROFILE_ENABLED
+              value: "true"
+            - name: CORE_PEER_TLS_CERT_FILE
+              value: /etc/hyperledger/fabric/tls/server.crt
+            - name: CORE_PEER_TLS_ENABLED
+              value: "true"
+            - name: CORE_PEER_TLS_KEY_FILE
+              value: /etc/hyperledger/fabric/tls/server.key
+            - name: CORE_PEER_TLS_ROOTCERT_FILE
+              value: /etc/hyperledger/fabric/tls/ca.crt
+            - name: CORE_VM_ENDPOINT
+              value: http://localhost:2375
+            - name: CORE_OPERATIONS_LISTENADDRESS
+              value: 0.0.0.0:9443
+            - name: CORE_METRICS_PROVIDER
+              value: prometheus
+          image: hyperledger/fabric-peer:2.3.0
+          name: peer0
+          ports:
+            - containerPort: 7051
+            - containerPort: 7052
+            - containerPort: 7053
+            - containerPort: 9443
+          volumeMounts:
+            - mountPath: /etc/hyperledger/fabric/msp
+              name: peer0-org1-claim1
+            - mountPath: /etc/hyperledger/fabric/tls
+              name: peer0-org1-claim2
+            - mountPath: /var/hyperledger/production
+              name: peer0-persistentdata
+            - mountPath: /etc/hyperledger/fabric/core.yaml
+              name: peer0-config
+              subPath: core.yaml
+            - mountPath: /builders/external/bin/
+              name: external-builder
+      restartPolicy: Always
+      volumes:
+        - name: peer0-org1-claim1
+          hostPath:
+            path: /fpc/integration/k8s/demo/crypto-config/peerOrganizations/org1/peers/peer0-org1/msp
+            type: Directory
+        - name: peer0-org1-claim2
+          hostPath:
+            path: /fpc/integration/k8s/demo/crypto-config/peerOrganizations/org1/peers/peer0-org1/tls
+            type: Directory
+        - name: peer0-persistentdata
+          hostPath:
+            path: /tmp/storage/peer0-org1
+            type: DirectoryOrCreate
+        - name: peer0-config
+          configMap:
+            name: peer-config
+            items:
+              - key: core.yaml
+                path: core.yaml
+        - name: external-builder
+          hostPath:
+            path: /fpc/fabric/externalBuilder/chaincode_server/bin
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: peer0-org1
+  name: peer0-org1
+  namespace: hyperledger
+spec:
+  type: ClusterIP
+  ports:
+    - name: "peer-core"
+      port: 7051
+      targetPort: 7051
+  selector:
+    app: peer0-org1
+
