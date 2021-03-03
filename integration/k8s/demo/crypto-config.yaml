@@ -1,0 +1,42 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+OrdererOrgs:
+  - Name: Orderer
+    Domain: consortium
+    Specs:
+      - Hostname: orderer0
+        CommonName: orderer0
+      - Hostname: orderer1
+        CommonName: orderer1
+      - Hostname: orderer2
+        CommonName: orderer2
+
+PeerOrgs:
+  - Name: org1
+    Domain: org1
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: peer0
+        CommonName: peer0-org1
+    Users:
+      Count: 1
+
+  - Name: org2
+    Domain: org2
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: peer0
+        CommonName: peer0-org2
+    Users:
+      Count: 1
+
+  - Name: org3
+    Domain: org3
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: peer0
+        CommonName: peer0-org3
+    Users:
+      Count: 1

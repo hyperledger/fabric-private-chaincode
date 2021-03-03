@@ -1,0 +1,497 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+---
+################################################################################
+#
+#   Section: Organizations
+#
+#   - This section defines the different organizational identities which will
+#   be referenced later in the configuration.
+#
+################################################################################
+Organizations:
+
+    # SampleOrg defines an MSP using the sampleconfig.  It should never be used
+    # in production but may be used as a template for other definitions
+    - &OrdererOrg
+        # DefaultOrg defines the organization which is used in the sampleconfig
+        # of the fabric.git development environment
+        Name: OrdererOrg
+
+        # ID to load the MSP definition as
+        ID: OrdererMSP
+
+        # MSPDir is the filesystem path which contains the MSP configuration
+        MSPDir: crypto-config/ordererOrganizations/consortium/msp
+
+        # Policies defines the set of policies at this level of the config tree
+        # For organization policies, their canonical path is usually
+        #   /Channel/<Application|Orderer>/<OrgName>/<PolicyName>
+        Policies: &ordererPolicies
+            Readers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Writers:
+                Type: Signature
+                Rule: "OR('OrdererMSP.member')"
+            Admins:
+                Type: Signature
+                Rule: "OR('OrdererMSP.admin')"
+
+    - &org1
+        # DefaultOrg defines the organization which is used in the sampleconfig
+        # of the fabric.git development environment
+        Name: org1MSP
+
+        # ID to load the MSP definition as
+        ID: org1MSP
+
+        MSPDir: crypto-config/peerOrganizations/org1/msp
+
+        # Policies defines the set of policies at this level of the config tree
+        # For organization policies, their canonical path is usually
+        #   /Channel/<Application|Orderer>/<OrgName>/<PolicyName>
+        Policies: &org1Policies
+            Readers:
+                Type: Signature
+                Rule: "OR('org1MSP.admin', 'org1MSP.peer', 'org1MSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('org1MSP.admin', 'org1MSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('org1MSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('org1MSP.peer')"
+
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0-org1
+              Port: 7051
+            # - Host: peer1-org1
+            #   Port: 7051
+
+    - &org2
+        # DefaultOrg defines the organization which is used in the sampleconfig
+        # of the fabric.git development environment
+        Name: org2MSP
+
+        # ID to load the MSP definition as
+        ID: org2MSP
+
+        MSPDir: crypto-config/peerOrganizations/org2/msp
+
+        # Policies defines the set of policies at this level of the config tree
+        # For organization policies, their canonical path is usually
+        #   /Channel/<Application|Orderer>/<OrgName>/<PolicyName>
+        Policies: &org2Policies
+            Readers:
+                Type: Signature
+                Rule: "OR('org2MSP.admin', 'org2MSP.peer', 'org2MSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('org2MSP.admin', 'org2MSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('org2MSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('org2MSP.peer')"
+
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0-org2
+              Port: 7051
+            # - Host: peer1-org2
+            #   Port: 7051
+
+    - &org3
+        # DefaultOrg defines the organization which is used in the sampleconfig
+        # of the fabric.git development environment
+        Name: org3MSP
+
+        # ID to load the MSP definition as
+        ID: org3MSP
+
+        MSPDir: crypto-config/peerOrganizations/org3/msp
+
+        # Policies defines the set of policies at this level of the config tree
+        # For organization policies, their canonical path is usually
+        #   /Channel/<Application|Orderer>/<OrgName>/<PolicyName>
+        Policies: &org3Policies
+            Readers:
+                Type: Signature
+                Rule: "OR('org3MSP.admin', 'org3MSP.peer', 'org3MSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('org3MSP.admin', 'org3MSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('org3MSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('org3MSP.peer')"
+
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0-org3
+              Port: 7051
+            # - Host: peer1-org2
+            #   Port: 7051
+
+################################################################################
+#
+#   SECTION: Capabilities
+#
+#   - This section defines the capabilities of fabric network. This is a new
+#   concept as of v1.1.0 and should not be utilized in mixed networks with
+#   v1.0.x peers and orderers.  Capabilities define features which must be
+#   present in a fabric binary for that binary to safely participate in the
+#   fabric network.  For instance, if a new MSP type is added, newer binaries
+#   might recognize and validate the signatures from this type, while older
+#   binaries without this support would be unable to validate those
+#   transactions.  This could lead to different versions of the fabric binaries
+#   having different world states.  Instead, defining a capability for a channel
+#   informs those binaries without this capability that they must cease
+#   processing transactions until they have been upgraded.  For v1.0.x if any
+#   capabilities are defined (including a map with all capabilities turned off)
+#   then the v1.0.x peer will deliberately crash.
+#
+################################################################################
+Capabilities:
+    # Channel capabilities apply to both the orderers and the peers and must be
+    # supported by both.
+    # Set the value of the capability to true to require it.
+    Channel: &ChannelCapabilities
+        # V2.0 for Channel is a catchall flag for behavior which has been
+        # determined to be desired for all orderers and peers running at the v2.0.0
+        # level, but which would be incompatible with orderers and peers from
+        # prior releases.
+        # Prior to enabling V2.0 channel capabilities, ensure that all
+        # orderers and peers on a channel are at v2.0.0 or later.
+        V2_0: true
+
+    # Orderer capabilities apply only to the orderers, and may be safely
+    # used with prior release peers.
+    # Set the value of the capability to true to require it.
+    Orderer: &OrdererCapabilities
+        # V1.1 for Orderer is a catchall flag for behavior which has been
+        # determined to be desired for all orderers running at the v1.1.x
+        # level, but which would be incompatible with orderers from prior releases.
+        # Prior to enabling V2.0 orderer capabilities, ensure that all
+        # orderers on a channel are at v2.0.0 or later.
+        V2_0: true
+
+    # Application capabilities apply only to the peer network, and may be safely
+    # used with prior release orderers.
+    # Set the value of the capability to true to require it.
+    Application: &ApplicationCapabilities
+        # V2.0 for Application enables the new non-backwards compatible
+        # features and fixes of fabric v2.0.
+        # Prior to enabling V2.0 orderer capabilities, ensure that all
+        # orderers on a channel are at v2.0.0 or later.
+        V2_0: true
+
+################################################################################
+#
+#   SECTION: Application
+#
+#   - This section defines the values to encode into a config transaction or
+#   genesis block for application related parameters
+#
+################################################################################
+Application: &ApplicationDefaults
+    # ACLs: &ACLsDefault
+    #     # This section provides defaults for policies for various resources
+    #     # in the system. These "resources" could be functions on system chaincodes
+    #     # (e.g., "GetBlockByNumber" on the "qscc" system chaincode) or other resources
+    #     # (e.g.,who can receive Block events). This section does NOT specify the resource's
+    #     # definition or API, but just the ACL policy for it.
+    #     #
+    #     # User's can override these defaults with their own policy mapping by defining the
+    #     # mapping under ACLs in their channel definition
+
+    #     #---New Lifecycle System Chaincode (_lifecycle) function to policy mapping for access control--#
+
+    #     # ACL policy for _lifecycle's "CommitChaincodeDefinition" function
+    #     _lifecycle/CommitChaincodeDefinition: /Channel/Application/Writers
+
+    #     # ACL policy for _lifecycle's "QueryChaincodeDefinition" function
+    #     _lifecycle/QueryChaincodeDefinition: /Channel/Application/Readers
+
+    #     # ACL policy for _lifecycle's "QueryNamespaceDefinitions" function
+    #     _lifecycle/QueryNamespaceDefinitions: /Channel/Application/Readers
+
+    #     #---Lifecycle System Chaincode (lscc) function to policy mapping for access control---#
+
+    #     # ACL policy for lscc's "getid" function
+    #     lscc/ChaincodeExists: /Channel/Application/Readers
+
+    #     # ACL policy for lscc's "getdepspec" function
+    #     lscc/GetDeploymentSpec: /Channel/Application/Readers
+
+    #     # ACL policy for lscc's "getccdata" function
+    #     lscc/GetChaincodeData: /Channel/Application/Readers
+
+    #     # ACL Policy for lscc's "getchaincodes" function
+    #     lscc/GetInstantiatedChaincodes: /Channel/Application/Readers
+
+    #     #---Query System Chaincode (qscc) function to policy mapping for access control---#
+
+    #     # ACL policy for qscc's "GetChainInfo" function
+    #     qscc/GetChainInfo: /Channel/Application/Readers
+
+    #     # ACL policy for qscc's "GetBlockByNumber" function
+    #     qscc/GetBlockByNumber: /Channel/Application/Readers
+
+    #     # ACL policy for qscc's  "GetBlockByHash" function
+    #     qscc/GetBlockByHash: /Channel/Application/Readers
+
+    #     # ACL policy for qscc's "GetTransactionByID" function
+    #     qscc/GetTransactionByID: /Channel/Application/Readers
+
+    #     # ACL policy for qscc's "GetBlockByTxID" function
+    #     qscc/GetBlockByTxID: /Channel/Application/Readers
+
+    #     #---Configuration System Chaincode (cscc) function to policy mapping for access control---#
+
+    #     # ACL policy for cscc's "GetConfigBlock" function
+    #     cscc/GetConfigBlock: /Channel/Application/Readers
+
+    #     # ACL policy for cscc's "GetConfigTree" function
+    #     cscc/GetConfigTree: /Channel/Application/Readers
+
+    #     # ACL policy for cscc's "SimulateConfigTreeUpdate" function
+    #     cscc/SimulateConfigTreeUpdate: /Channel/Application/Readers
+
+    #     #---Miscellanesous peer function to policy mapping for access control---#
+
+    #     # ACL policy for invoking chaincodes on peer
+    #     peer/Propose: /Channel/Application/Writers
+
+    #     # ACL policy for chaincode to chaincode invocation
+    #     peer/ChaincodeToChaincode: /Channel/Application/Readers
+
+    #     #---Events resource to policy mapping for access control###---#
+
+    #     # ACL policy for sending block events
+    #     event/Block: /Channel/Application/Readers
+
+    #     # ACL policy for sending filtered block events
+    #     event/FilteredBlock: /Channel/Application/Readers
+
+    # Organizations is the list of orgs which are defined as participants on
+    # the application side of the network
+    Organizations:
+
+    # Policies defines the set of policies at this level of the config tree
+    # For Application policies, their canonical path is
+    #   /Channel/Application/<PolicyName>
+    Policies: &ApplicationDefaultPolicies
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        LifecycleEndorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+        Endorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+
+    # Capabilities describes the application level capabilities, see the
+    # dedicated Capabilities section elsewhere in this file for a full
+    # description
+    Capabilities:
+        <<: *ApplicationCapabilities
+
+################################################################################
+#
+#   SECTION: Orderer
+#
+#   - This section defines the values to encode into a config transaction or
+#   genesis block for orderer related parameters
+#
+################################################################################
+Orderer: &OrdererDefaults
+
+    # Orderer Type: The orderer implementation to start
+    # Available types are "solo" and "kafka"
+    OrdererType: etcdraft
+
+    Addresses:
+        - orderer0:7050
+        - orderer1:7050
+        - orderer2:7050
+
+    # Batch Timeout: The amount of time to wait before creating a batch
+    BatchTimeout: 2s
+
+    # Batch Size: Controls the number of messages batched into a block
+    BatchSize:
+
+        # Max Message Count: The maximum number of messages to permit in a batch
+        MaxMessageCount: 10
+
+        # Absolute Max Bytes: The absolute maximum number of bytes allowed for
+        # the serialized messages in a batch.
+        AbsoluteMaxBytes: 98 MB
+
+        # Preferred Max Bytes: The preferred maximum number of bytes allowed for
+        # the serialized messages in a batch. A message larger than the preferred
+        # max bytes will result in a batch larger than preferred max bytes.
+        PreferredMaxBytes: 512 KB
+
+
+    # EtcdRaft defines configuration which must be set when the "etcdraft"
+    # orderertype is chosen.
+    EtcdRaft:
+        # The set of Raft replicas for this network. For the etcd/raft-based
+        # implementation, we expect every replica to also be an OSN. Therefore,
+        # a subset of the host:port items enumerated in this list should be
+        # replicated under the Orderer.Addresses key above.
+        Consenters:
+            - Host: orderer0
+              Port: 7050
+              ClientTLSCert: crypto-config/ordererOrganizations/consortium/orderers/orderer0/tls/server.crt
+              ServerTLSCert: crypto-config/ordererOrganizations/consortium/orderers/orderer0/tls/server.crt
+            - Host: orderer1
+              Port: 7050
+              ClientTLSCert: crypto-config/ordererOrganizations/consortium/orderers/orderer1/tls/server.crt
+              ServerTLSCert: crypto-config/ordererOrganizations/consortium/orderers/orderer1/tls/server.crt
+            - Host: orderer2
+              Port: 7050
+              ClientTLSCert: crypto-config/ordererOrganizations/consortium/orderers/orderer2/tls/server.crt
+              ServerTLSCert: crypto-config/ordererOrganizations/consortium/orderers/orderer2/tls/server.crt
+
+        # Options to be specified for all the etcd/raft nodes. The values here
+        # are the defaults for all new channels and can be modified on a
+        # per-channel basis via configuration updates.
+        Options:
+            # TickInterval is the time interval between two Node.Tick invocations.
+            TickInterval: 500ms
+
+            # ElectionTick is the number of Node.Tick invocations that must pass
+            # between elections. That is, if a follower does not receive any
+            # message from the leader of current term before ElectionTick has
+            # elapsed, it will become candidate and start an election.
+            # ElectionTick must be greater than HeartbeatTick.
+            ElectionTick: 10
+
+            # HeartbeatTick is the number of Node.Tick invocations that must
+            # pass between heartbeats. That is, a leader sends heartbeat
+            # messages to maintain its leadership every HeartbeatTick ticks.
+            HeartbeatTick: 1
+
+            # MaxInflightBlocks limits the max number of in-flight append messages
+            # during optimistic replication phase.
+            MaxInflightBlocks: 5
+
+            # SnapshotIntervalSize defines number of bytes per which a snapshot is taken
+            SnapshotIntervalSize: 16 MB
+
+    # Organizations is the list of orgs which are defined as participants on
+    # the orderer side of the network
+    Organizations:
+
+    # Policies defines the set of policies at this level of the config tree
+    # For Orderer policies, their canonical path is
+    #   /Channel/Orderer/<PolicyName>
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        # BlockValidation specifies what signatures must be included in the block
+        # from the orderer for the peer to validate it.
+        BlockValidation:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+
+################################################################################
+#
+#   CHANNEL
+#
+#   This section defines the values to encode into a config transaction or
+#   genesis block for channel related parameters.
+#
+################################################################################
+Channel: &ChannelDefaults
+    # Policies defines the set of policies at this level of the config tree
+    # For Channel policies, their canonical path is
+    #   /Channel/<PolicyName>
+    Policies:
+        # Who may invoke the 'Deliver' API
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        # Who may invoke the 'Broadcast' API
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        # By default, who may modify elements at this config level
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+
+    # Capabilities describes the channel level capabilities, see the
+    # dedicated Capabilities section elsewhere in this file for a full
+    # description
+    Capabilities:
+        <<: *ChannelCapabilities
+
+################################################################################
+#
+#   Profile
+#
+#   - Different configuration profiles may be encoded here to be specified
+#   as parameters to the configtxgen tool
+#
+################################################################################
+Profiles:
+
+    DemoGenesis:
+        <<: *ChannelDefaults
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        Consortiums:
+            DemoConsortium:
+                Organizations:
+                    - *org1
+                    - *org2
+                    - *org3
+    DemoChannel:
+        <<: *ChannelDefaults
+        Consortium: DemoConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *org1
+                - *org2
+                - *org3
+            Capabilities:
+                <<: *ApplicationCapabilities

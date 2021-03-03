@@ -1,0 +1,55 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+name: k8s-demo
+version: 1.0.0
+
+client:
+  logging:
+    level: info
+  organization: {{ORG}}
+  cryptoconfig:
+    path: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+  tlsCerts:
+    client:
+      key:
+        path: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/{{ORG}}/users/User1@{{ORG}}/tls/client.key
+      cert:
+        path: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/{{ORG}}/users/User1@{{ORG}}/tls/client.crt
+
+organizations:
+  {{ORG}}:
+    mspid: {{ORG}}MSP
+    cryptoPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/{{ORG}}/users/User1@{{ORG}}/msp
+    users:
+      Admin:
+        cert:
+          path: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/{{ORG}}/users/User1@{{ORG}}/msp/signcerts/User1@{{ORG}}-cert.pem
+        key:
+          path: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/{{ORG}}/users/User1@{{ORG}}/msp/keystore/priv_sk
+    peers:
+      - peer0-{{ORG}}
+
+orderers:
+  orderer0:
+    url: grpcs://orderer0:7050
+    tlsCACerts:
+      path: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/consortium/tlsca/tlsca.consortium-cert.pem
+
+peers:
+  peer0-{{ORG}}:
+    url: grpcs://peer0-{{ORG}}:7051
+    tlsCACerts:
+      path: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/{{ORG}}/peers/peer0-{{ORG}}/tls/ca.crt
+
+channels:
+  _default:
+    orderers:
+      - orderer0
+    peers:
+      peer0-{{ORG}}:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true

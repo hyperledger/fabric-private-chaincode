@@ -1,0 +1,46 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+generate:
+    ./generate.sh
+
+up:
+    kubectl create ns hyperledger
+    kubectl create configmap peer-config --from-file=core.yaml -n hyperledger
+    kubectl create configmap chaincode-config --from-env-file=packages/chaincode-config.properties -n hyperledger
+    kubectl create -f orderer-service/
+    kubectl create -f org1/
+    kubectl create -f org2/
+    kubectl create -f org3/
+
+down:
+    kubectl delete --all all --namespace=hyperledger
+    kubectl delete ns hyperledger
+
+clean:
+    rm -rf channel-artifacts crypto-config packages
+
+clean-minikube:
+    # Note that orderers maintain some persistent storage which allows them to reboot.
+    # If you generate new crypto material and genesis block, please perform some cleanup first.
+    minikube ssh -- sudo rm -rf /tmp/storage
+
+chaincode:
+    kubectl create configmap chaincode-config --from-env-file=packages/chaincode-config.properties -n hyperledger --dry-run=client -o yaml | kubectl apply -f -
+    kubectl create -f chaincode/ercc/
+    kubectl create -f chaincode/fpccc/
+
+run NAME:
+    kubectl exec -it $(kubectl get pods -n hyperledger | grep {{NAME}} | awk '{print $1}') -n hyperledger -- bash
+
+restart-pod NAME:
+    kubectl -n hyperledger rollout restart deployment {{NAME}}
+
+reload-images:
+    minikube cache delete fpc/ercc:latest
+    minikube cache add fpc/ercc:latest
+    minikube cache delete fpc/fpccc:latest
+    minikube cache add fpc/fpccc:latest
+    minikube cache delete fpc/fpcclient:latest
+    minikube cache add fpc/fpcclient:latest

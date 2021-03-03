@@ -1,0 +1,81 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fpcclient-org1
+  name: fpcclient-org1
+  namespace: hyperledger
+spec:
+  selector:
+    matchLabels:
+      app: fpcclient-org1
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: fpcclient-org1
+    spec:
+      containers:
+        - env:
+            - name: SGX_MODE
+              value: SIM
+            - name: CC_NAME
+              value: fpccc
+            - name: CHANNEL_NAME
+              value: mychannel
+            - name: GATEWAY_CONFIG
+              value: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1/connection.yaml
+            - name: ORG
+              value: org1
+            - name: FABRIC_LOGGING_SPEC
+              value: INFO
+            - name: CORE_PEER_ADDRESS
+              value: peer0-org1:7051
+            - name: CORE_PEER_ID
+              value: peer0-org1
+            - name: CORE_PEER_LOCALMSPID
+              value: org1MSP
+            - name: CORE_PEER_MSPCONFIGPATH
+              value: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1/users/Admin@org1/msp
+            - name: CORE_PEER_TLS_CERT_FILE
+              value: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1/peers/peer0-org1/tls/server.crt
+            - name: CORE_PEER_TLS_ENABLED
+              value: "true"
+            - name: CORE_PEER_TLS_KEY_FILE
+              value: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1/peers/peer0-org1/tls/server.key
+            - name: CORE_PEER_TLS_ROOTCERT_FILE
+              value: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1/peers/peer0-org1/tls/ca.crt
+            - name: GOPATH
+              value: /opt/gopath
+            - name: ORDERER_CA
+              value: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/consortium/orderers/orderer0/msp/tlscacerts/tlsca.consortium-cert.pem
+            - name: FPC_PATH
+              value: /opt/gopath/src/github.com/hyperledger-labs/fabric-private-chaincode/
+          image: fpc/fpcclient
+          imagePullPolicy: IfNotPresent
+          name: fpcclient
+          tty: true
+          volumeMounts:
+            - mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+              name: fpcclient-claim3
+            - mountPath: /opt/gopath/src/github.com/hyperledger-labs/fabric-private-chaincode/
+              name: fpc-claim
+          workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+      restartPolicy: Always
+      volumes:
+        - name: fpcclient-claim3
+          hostPath:
+            path: /fpc/integration/k8s/demo/crypto-config
+            type: Directory
+        - name: fpc-claim
+          hostPath:
+            path: /fpc
+            type: Directory
+
+

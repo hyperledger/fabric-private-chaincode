@@ -9,6 +9,7 @@ include $(TOP)/build.mk
 CC_NAME ?= ecc
 NET_ID ?=dev
 PEER_ID ?=jdoe
+CAAS_PORT ?= 9999
 
 DOCKER_CONTAINER_ID?=$$(docker ps | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
 # the following are the required docker build parameters
@@ -60,6 +61,7 @@ docker: docker-fpc-app
 docker-boilerplate-ecc: ecc
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_BOILERPLATE_ECC_IMAGE) -f Dockerfile.boilerplate-ecc\
 		--build-arg SGX_MODE=$(SGX_MODE)\
+		--build-arg CAAS_PORT=$(CAAS_PORT)\
 		..
 	$(DOCKER) tag $(DOCKER_BOILERPLATE_ECC_IMAGE) $(DOCKER_BOILERPLATE_ECC_IMAGE):${FPC_VERSION}
 

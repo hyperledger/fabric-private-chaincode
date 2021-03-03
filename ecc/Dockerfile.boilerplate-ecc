@@ -7,9 +7,9 @@
 #   Sets up the template of a docker environment to run FPC chaincode, just missing the chaincode's enclave.so*
 #
 #  Configuration (build) paramaters (for defaults, see below section with ARGs)
-#  - fpc image version:         FPC_VERSION
-#  - sgxmode:                   SGX_MODE
-#  - additional dev apt pkgs:   APT_ADD_DEV_PKGS
+#  - fpc image version:          FPC_VERSION
+#  - sgxmode:                    SGX_MODE
+#  - Chaincode as a Server Port: CAAS_PORT
 
 ARG FPC_VERSION=latest
 
@@ -22,6 +22,7 @@ ENV SGX_MODE=${SGX_MODE}
 # the container is. No default, though, as we do not control
 # the build and rely on a proper value provided from outside.
 
+ARG CAAS_PORT=9999
 ARG CC_NAME="ecc"
 ARG CC_PATH="/usr/local/bin"
 ARG CC_LIB_PATH=${CC_PATH}"/enclave/lib"
@@ -36,3 +37,5 @@ copy ecc/${CC_NAME} ${CC_PATH}/chaincode
 copy ecc_enclave/_build/lib/libsgxcc.so ${CC_LIB_PATH}/
 
 WORKDIR ${CC_PATH}
+EXPOSE ${CAAS_PORT}
+CMD ["chaincode"]

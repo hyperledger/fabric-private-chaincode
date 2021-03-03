@@ -3,10 +3,17 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-TOP = ../../..
+TOP = ../../../..
 include $(TOP)/build.mk
 
-SUB_DIRS = cli_app simple
+CC_ID ?= echo
 
-all build test clean clobber:
-	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit ;)
+build:
+	$(GO) build
+
+clean:
+	$(GO) clean
+	rm -rf keystore wallet
+
+run:
+	env CC_ID=${CC_ID} $(GO) run .
