@@ -1,0 +1,106 @@
+/'
+    Copyright 2020 Intel Corporation
+    Copyright IBM Corp. All Rights Reserved.
+
+    SPDX-License-Identifier: Apache-2.0
+'/
+
+@startuml
+
+'- force wrapping of longer text
+'skinparam wrapWidth 400
+
+!pragma teoz true
+
+hide footbox
+title Foot Box removed
+
+title Fabric Private Chaincode - Secure Provisioning of an external TEE-based worker
+
+participant "FPC_IRB_CC" as FPC order 1 #99FF99
+Actor Experimenter order 10
+participant "Graphene Worker" as Worker order 20 #99FF99
+database "Storage" as Storage order 40
+
+note over Storage
+    This storage can be implemented through
+    a remote storage or local storage.
+end note
+
+note right Experimenter
+An experiment contains a unique identifier (id),
+a description of the type of experiment and what data it requires,
+**f** specifies the code of the experiment.
+
+    experiment := <id, description, **f**>
+end note
+
+note right FPC
+    FPC maintains patient data which contains the following:
+    metadata - description of the data
+    consent - description of who can use the data
+    handler - location where the data stored
+    sk - decryption key
+
+        data := <metadata, consent, handler, sk>
+end note
+
+Experimenter -> Worker ** : Create worker (experiment)
+activate Worker
+Worker -> Worker : Create identity := <pk, sk>
+Worker -> Worker : Create attestation (identity.pk, experiment.**f**)
+return Return <attestation, identity.pk>
+
+Experimenter -> Experimenter : convert attestation to\npublicly verifiable evidence
+
+Experimenter -> FPC ++ : Request evaluation pack (experiment.id, attestation, identity.pk)
+
+FPC -> FPC : Check "enough" approvals for experiment.id available;\n abort if failed
+
+group Attestation verification
+FPC -> FPC : Verify attestation; abort if failed
+FPC -> FPC : Check attestation matches identity.pk
+FPC -> FPC : Check attestation matches approved experiment
+note right FPC
+    Check that approved experiment.**f**
+    corresponds to the attestation
+end note
+end group
+
+loop collect <evaluation pack> items
+    note right FPC
+        Collect all data items that satisfy experiment
+        description; in particular, only data can be used
+        where a proper consent is available for this type
+        of use.
+    end note
+    FPC -> FPC : add item := <handler, sk> to evaluation pack
+end loop
+
+
+FPC -> FPC : Encrypt <evaluation pack> using identity.pk
+return evaluation pack
+
+
+Experimenter -> Worker ++ : Trigger execution (evaluation pack)
+
+Worker -> Worker : Decrypt <evaluation pack> using identity.sk
+
+loop for all items in <evaluation pack>
+    Worker -> Storage ++ : Fetch (item.handler)
+    return return <encrypted_data>
+    Worker -> Worker : Decrypt <encrypted_data> using item.sk
+    note right Worker
+        uses authenticated encryption to protect
+        data confidentiality and data integrity;
+        abort if decryption failed
+    end note
+end
+
+
+Worker -> Worker : Execute **f**(decrypted data)
+
+Worker --> Experimenter : Return <result>
+destroy Worker
+
+@enduml
