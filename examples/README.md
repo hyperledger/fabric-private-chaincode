@@ -1,35 +1,38 @@
 # Hello World Tutorial
-This tutorial shows how to create, build, install and test  chaincode using the Fabric-Private-chaincode(FPC) framework.  This assumes familiarity with the [concepts](https://hyperledger-fabric.readthedocs.io/en/release-2.0/whatis.html#) and [the programming model](https://hyperledger-fabric.readthedocs.io/en/release-2.0/chaincode.html) in Hyperledger Fabric v2.0.
+This tutorial shows how to create, build, install and test chaincode using the Fabric Private Chaincode (FPC) framework.  This assumes familiarity with the [concepts](https://hyperledger-fabric.readthedocs.io/en/release-2.3/whatis.html#) and [the programming model](https://hyperledger-fabric.readthedocs.io/en/release-2.3/chaincode.html) in Hyperledger Fabric v2.3.
 
 
-Refer to [package shim](https://pkg.go.dev/github.com/hyperledger/fabric-chaincode-go/shim?tab=doc) for the GoDoc for shim interface provided by Fabric.  The FPC programming model for chaincode provides a simpler version of the _shim_ SDK provided by Hyperledger Fabric in Go and node.js.  FPC provides a C++ interface  to access its state variables and transaction context through [shim.h](../ecc_enclave/enclave/shim.h).  The standard commands are similar to the ones in Fabric.  To ensure confidentiality of the arguments passed to the chaincode, the arguments are transparently encrypted while using FPC SDK.
+Refer to [package shim](https://pkg.go.dev/github.com/hyperledger/fabric-chaincode-go/shim?tab=doc) for the GoDoc for shim interface provided by Fabric.  The FPC programming model for chaincode provides a simpler version of the _shim_ SDK provided by Hyperledger Fabric in Go and node.js.  FPC provides a C++ interface  to access its state variables and transaction context through [shim.h](../ecc_enclave/enclave/shim.h).  The standard commands are similar to the ones in Fabric.  To ensure confidentiality of the arguments passed to the chaincode, the arguments are transparently encrypted while using the FPC SDK.
 
-Regarding management functionally such as chaincode installation and alike, plus refer to  [FPC Management API document](../docs/design/fabric-v2%2B/fpc-management.md) for details.
+Regarding management functionally such as chaincode installation and alike, please refer to [FPC Management API document](../docs/design/fabric-v2%2B/fpc-management.md) for details.
 
-This example illustrates a simple usecase where the chaincode is used to store a single asset, `asset1` in the ledger and then retrieve the latest value of `asset1`.  Here are the steps to accomplish this:
+This tutorial illustrates a simple usecase where a FPC chaincode is used to store a single asset, `asset1` in the ledger and then retrieve the latest value of `asset1`.  Here are the steps to accomplish this:
 * Develop chaincode
 * Launch Fabric network
 * Install and instantiate chaincode on the peer
 * Invoke transactions (`storeAsset` and `retrieveAsset`)
+    * by using the Peer CLI and
+    * by using the FPC Client SDK for Go
 * Shut down the network
 
 Please refer to [Architecture and
 Components](https://github.com/hyperledger-labs/fabric-private-chaincode#architecture-and-components)
 for more details of involved components.
 
-## Prequisites
-This tutorial presumes that the repository in https://github.com/hyperledger-labs/fabric-private-chaincode has been installed as per [README.md](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/main/README.md#requirements) in `FPC-INSTALL-DIR` which is in the `$GOPATH` folder.
+## Prerequisites
+This tutorial presumes that you have installed FPC on your `$GOPATH` as described in the FPC [README.md](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/main/README.md#requirements) and `$FPC_PATH` is set accordingly.
 
 ## Develop chaincode
-* Create a folder named `helloworld`  in `FPC-INSTALL-DIR/examples`.
+Create a folder named `helloworld`  in `$FPC_PATH/examples`.
 ```bash
-cd $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/examples
+cd $FPC_PATH/examples
 mkdir helloworld
 cd helloworld
 touch helloworld_cc.cpp
 ```
 
-* Add the necessary includes and a preliminary version of `invoke` function. The result of the transaction is returned in `response`. `ctx` represents the transaction context. The function body illustrates another way to get invocation parameters, similar to functions provided in go shim.
+Add the necessary includes and a preliminary version of `invoke` function. The result of the transaction is returned in `response`.
+`ctx` represents the transaction context. The function body illustrates another way to get invocation parameters, similar to functions provided in go shim.
 ```c++
 #include "shim.h"
 #include "logging.h"
@@ -67,9 +70,7 @@ std::string storeAsset(std::string asset_name, int value, shim_ctx_ptr_t ctx)
 ```
 
 
-Similarly, let us add the next transaction, `retrieveAsset` which reads the value of an asset by calling `get_state` method defined in shim.h.
-
-
+Similarly, let us add the next transaction, `retrieveAsset` which reads the value of an asset by calling `get_state` method defined in `shim.h`.
 ```c++
 #define NOT_FOUND "Asset not found"
 #define MAX_VALUE_SIZE 1024
@@ -260,11 +261,12 @@ set(SOURCE_FILES
     helloworld_cc.cpp
     )
 
-include(../../ecc_enclave/enclave/CMakeLists-common-app-enclave.txt)
+include($ENV{FPC_PATH}/ecc_enclave/enclave/CMakeLists-common-app-enclave.txt)
 ```
 
-Create `Makefile` with the following content.  For your convenience, you can copy the `Makefile` from `FPC-INSTALL-DIR/examples/auction` folder.
-File: `examples/helloworld/Makefile`
+Create `Makefile` with the following content.  For your convenience, you can copy the `Makefile` from `$FPC_PATH/examples/auction` folder.
+
+File: `$FPC_PATH/examples/helloworld/Makefile`
 ```Makefile
 TOP = ../..
 include $(TOP)/build.mk
@@ -284,9 +286,9 @@ build: $(BUILD_DIR)
 clean:
 	rm -rf $(BUILD_DIR)
 ```
+Please make sure that in the file above the variable `TOP` points to the FPC root directory (i.e., `$FPC_PATH`).
 
-
-In `FPC-INSTALL-DIR/examples/helloworld` folder, to build the chaincode, execute:
+In `$FPC_PATH/examples/helloworld` folder, to build the chaincode, execute:
 ```bash
 make
 ```
@@ -303,24 +305,27 @@ make[1]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger-labs/fa
 
 
 ## Time to test!
-Next step is to test the chaincode by invoking the transactions, for which you need a basic Fabric network with a channel. You will use the FPC test framework to bring up a Fabric network in which the helloworld code can be executed as a chaincode _in an SGX enclave_.  The Fabric network used in this tutorial is defined and configured using `integration/config/core.yaml`.  Specifically, please note the additions to the standard Fabric configurations.  These are marked as `FPC Addition`;  these enable the integration points with Fabric and have to be replicated if you want to use your own Fabric configuration.
+Next step is to test the chaincode by invoking transactions, for which you need a basic Fabric network with a channel. You will use the FPC test framework to bring up a Fabric network in which the helloworld code can be executed as a chaincode _in an SGX enclave_.  The Fabric network contains just a single peer and orderer node as defined in `$FPC_PATH/integration/config/`.  Please note the FPC-specific additions to the `core.yaml` to the standard Fabric configurations.  These are marked as `FPC Addition`;  these enable the integration points with Fabric and have to be replicated if you want to use your own Fabric configuration.
 
-Create a file `test.sh` in `examples/helloworld` folder as follows.  Note that the initial lines in the script points to files and folders in FPC framework.
--`FPC_PATH` points to FPC-INSTALL-DIR
--`FABRIC_CFG_PATH` points to the FPC-INSTALL-DIR/integration/config, which contains yaml files that define the Fabric network
--`FABRIC_SCRIPTDIR` points to scripts with custom FPC wrappers and utility scripts.
+Create a file `test.sh` in `$FPC_PATH/examples/helloworld` folder as follows.  Note that the initial lines in the script points to files and folders in FPC framework.
+- `FABRIC_CFG_PATH` points to the `$FPC_PATH/integration/config/, which contains yaml files that define the Fabric network
+- `FABRIC_SCRIPTDIR` points to scripts with custom FPC wrappers and utility scripts.
 
-File:  test.sh
+File:  `test.sh`
 ```Makefile
-SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
-FPC_PATH="${SCRIPTDIR}/../.."
-FABRIC_CFG_PATH="${SCRIPTDIR}/../../integration/config"
+#!/usr/bin/env bash
+
+if [[ -z "${FPC_PATH}" ]]; then
+  echo "Error: FPC_PATH not set"; exit 1
+fi
+
+FABRIC_CFG_PATH="${FPC_PATH}/integration/config"
 FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
-#this is the path that will be used for the docker build of the chaincode enclave
+# this is the path points to FPC chaincode binary
 CC_PATH=${FPC_PATH}/examples/helloworld/_build/lib/
 
 CC_ID=helloworld_test
@@ -329,99 +334,94 @@ CC_EP="OR('SampleOrg.member')"
 CC_SEQ="1"
 ```
 
-### Launch Fabric network
-
-Now that the environment is set, add commands to clear docker containers previously created, if any.   Add calls to `ledger_init` (which sets up a test network), run helloworld test and `ledger_shutdown` (which cleans up the test network).
+Now that the environment is set, add the following lines to set up a test network, run our test, and eventually shut down the test network.
 ```bash
-# 1. prepare
-para
-say "Preparing Helloworld Test ..."
-# - clean up relevant docker images
-docker_clean ${ERCC_ID}
-docker_clean ${CC_ID}
+trap ledger_shutdown EXIT
 
-# 2. run
-say "- setup ledger"
+say "Setup ledger ..."
 ledger_init
 
-say "- helloworld test"
-helloworld_test    #  yet to be created
+para
+say "Run helloworld test ..."
+run_test
 
-say "- shutdown ledger"
+para
+say "Shutdown ledger ..."
 ledger_shutdown
+
+yell "Helloworld test PASSED
 ```
 
-### Install our FPC Chaincode
-Like in the case of Fabric, you install the chaincode using the `peer lifecycle` commands and then invoke transactions. 
-To install the FPC chaincode, you need to use `FPC-INSTALL-DIR/fabric/bin/peer.sh`.  This is a custom FPC wrapper to be used _instead_ of the `peer` cli command from Fabric.  `${PEER_CMD}` is set in `FPC-INSTALL-DIR/fabric/bin/lib/common_ledger.sh` and conveniently points to the required script file.
+Next we will write the code for the `run_test` function.
+Like in the case of Fabric, you install the FPC chaincode using the `peer lifecycle` commands and then invoke transactions. 
+To install the FPC chaincode, you need to use `$FPC_PATH/fabric/bin/peer.sh`.  This is a custom FPC wrapper to be used _instead_ of the `peer` cli command from Fabric.  `${PEER_CMD}` is set in `$FPC_PATH/fabric/bin/lib/common_ledger.sh` and conveniently points to the required script file.
 With the variables set and `common_ledger.sh` executed, usage of `peer.sh` is as follows:
 ```bash
-    try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label ${CC_ID} --path ${CC_PATH} ${PKG}
-    try ${PEER_CMD} lifecycle chaincode install ${PKG}
+${PEER_CMD} lifecycle chaincode package --lang fpc-c --label ${CC_ID} --path ${CC_PATH} ${PKG}
+${PEER_CMD} lifecycle chaincode install ${PKG}
 ```
 
 In the next step, the FPC chaincode must be approved by the organizations on the channel by agreeing on the chaincode definition.
 ```bash
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+${PEER_CMD} lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
 ```
 
-To complete the installation, we need to create an enclave that runs the FPC Chaincode.
+To complete the installation, we need to create an enclave that runs the FPC chaincode.
 ```bash
-    # create an FPC Chaincode enclave
-    try ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name ${CC_ID}
+# create an FPC chaincode enclave
+${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name ${CC_ID}
 ```
 
-Add the following content to the function, `helloworld_test()` in test.sh.  Please note the inline comments for each of the commands.
-
+Add the following content to the `run_test()` function in `test.sh`.  Please note the inline comments for each of the commands.
 ```bash
-helloworld_test() {
-    say "- do hello world"
-
-    # install helloworld  chaincode
+run_test() {
+    # install helloworld chaincode
     # input:  CC_ID:chaincode name; CC_VER:chaincode version;
     #         CC_PATH:path to build artifacts
     say "- install helloworld chaincode"
     PKG=/tmp/${CC_ID}.tar.gz
-    try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label ${CC_ID} --path ${CC_PATH} ${PKG}
-    try ${PEER_CMD} lifecycle chaincode install ${PKG}
+    ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label ${CC_ID} --path ${CC_PATH} ${PKG}
+    ${PEER_CMD} lifecycle chaincode install ${PKG}
 
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_ID}/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+    ${PEER_CMD} lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+    ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+    ${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
 
-    # create an FPC Chaincode enclave
-    try ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name ${CC_ID}
+    # create an FPC chaincode enclave
+    ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name ${CC_ID}
 
     # store the value of 100 in asset1
     say "- invoke storeAsset transaction to store value 100 in asset1"
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["storeAsset","asset1","100"]}' --waitForEvent
+    ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["storeAsset","asset1","100"]}' --waitForEvent
 
     # retrieve current value for "asset1";  should be 100;
     say "- invoke retrieveAsset transaction to retrieve current value of asset1"
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["retrieveAsset","asset1"]}' --waitForEvent
+    ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["retrieveAsset","asset1"]}' --waitForEvent
 
     say "- invoke query with retrieveAsset transaction to retrieve current value of asset1"
-    try ${PEER_CMD} chaincode query  -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["retrieveAsset","asset1"]}'
+    ${PEER_CMD} chaincode query  -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["retrieveAsset","asset1"]}'
 }
 ```
 
-Putting all these code snippets together, here is the complete `test.sh` file.
+Putting all these code snippets together, here is the complete `test.sh` file:
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 
-SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
-FPC_PATH="${SCRIPTDIR}/../.."
-FABRIC_CFG_PATH="${SCRIPTDIR}/../../integration/config"
+if [[ -z "${FPC_PATH}" ]]; then
+  echo "Error: FPC_PATH not set"; exit 1
+fi
+
+FABRIC_CFG_PATH="${FPC_PATH}/integration/config"
 FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
-#this is the path that will be used for the docker build of the chaincode enclave
+# this is the path points to FPC chaincode binary
 CC_PATH=${FPC_PATH}/examples/helloworld/_build/lib/
 
 CC_ID=helloworld_test
@@ -429,69 +429,58 @@ CC_VER="$(cat ${CC_PATH}/mrenclave)"
 CC_EP="OR('SampleOrg.member')"
 CC_SEQ="1"
 
-helloworld_test() {
-    say "- do hello world"
-
-    # install helloworld  chaincode
+run_test() {
+    # install helloworld chaincode
     # input:  CC_ID:chaincode name; CC_VER:chaincode version;
     #         CC_PATH:path to build artifacts
     say "- install helloworld chaincode"
     PKG=/tmp/${CC_ID}.tar.gz
-    try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label ${CC_ID} --path ${CC_PATH} ${PKG}
-    try ${PEER_CMD} lifecycle chaincode install ${PKG}
+    ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label ${CC_ID} --path ${CC_PATH} ${PKG}
+    ${PEER_CMD} lifecycle chaincode install ${PKG}
 
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: ${CC_ID}/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
-    try ${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+    ${PEER_CMD} lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} -C ${CHAN_ID} --package-id ${PKG_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+    ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
+    ${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name ${CC_ID} --version ${CC_VER} --sequence ${CC_SEQ} --signature-policy ${CC_EP}
 
-    # create an FPC Chaincode enclave
-    try ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name ${CC_ID}
+    # create an FPC chaincode enclave
+    ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name ${CC_ID}
 
     # store the value of 100 in asset1
     say "- invoke storeAsset transaction to store value 100 in asset1"
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["storeAsset","asset1","100"]}' --waitForEvent
+    ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["storeAsset","asset1","100"]}' --waitForEvent
 
     # retrieve current value for "asset1";  should be 100;
     say "- invoke retrieveAsset transaction to retrieve current value of asset1"
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["retrieveAsset","asset1"]}' --waitForEvent
+    ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["retrieveAsset","asset1"]}' --waitForEvent
 
     say "- invoke query with retrieveAsset transaction to retrieve current value of asset1"
-    try ${PEER_CMD} chaincode query  -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["retrieveAsset","asset1"]}'
+    ${PEER_CMD} chaincode query  -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Args":["retrieveAsset","asset1"]}'
 }
-
-# 1. prepare
-para
-say "Preparing Helloworld Test ..."
-# - clean up relevant docker images
-docker_clean ${ERCC_ID}
-docker_clean ${CC_ID}
 
 trap ledger_shutdown EXIT
 
-para
-say "Run helloworld  test"
-
-say "- setup ledger"
+say "Setup ledger ..."
 ledger_init
 
-say "- helloworld test"
-helloworld_test
-
-say "- shutdown ledger"
-ledger_shutdown
+para
+say "Run helloworld test ..."
+run_test
 
 para
+say "Shutdown ledger ..."
+ledger_shutdown
+
 yell "Helloworld test PASSED"
 
 exit 0
 ```
 
 
-Assuming we are still in `$GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/examples`, execute the test script:
+Assuming we are still in `$FPC_PATH/examples`, execute the test script:
 ```hash
-cd $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode/examples/helloworld
+cd $FPC_PATH/examples/helloworld
 bash ./test.sh
 ```
 
@@ -531,4 +520,129 @@ Yay !  You did it !
 
 ### Interactive testing
 
-If you want to interactively test FPC, you can use the commands in `../fabric/bin/`. It contains the standard cli commands you expect from fabric -- note: it is though important that you use these scripts rather than use the fabric commands directly. The provide the same interface as the fabric commands but do some additional magic under the cover.   Additionally, there are also two convenience functions for quickly setting up and shutting down a ledger: `ledger_init.sh` and `ledger_shutdown.sh`.
+If you want to interactively test FPC, you can use the commands in `$FPC_PATH/fabric/bin/`. It contains the standard cli commands you expect from fabric -- note: it is though important that you use these scripts rather than use the fabric commands directly.
+They provide the same interface as the fabric commands but do some additional magic under the cover, including encryption and decryption of transaction arguments and responses.
+Additionally, there are also two convenience functions for quickly setting up and shutting down a single-peer test network: `ledger_init.sh` and `ledger_shutdown.sh`.
+See the code above how we used them in our `test.sh` of this tutorial.
+
+
+## Using the FPC Client SDK
+
+This section of our tutorial shows how to interact with our `helloworld` FPC chaincode using the FPC Client SDK for Go.
+We will write an application in Go that invokes the same functions of our `helloworld` FPC chaincode as we did in the previous section using the Peer CLI.
+You can find the documentation of the FPC Client SDK [here](https://pkg.go.dev/github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go) and more information about the [gateway](https://hyperledger-fabric.readthedocs.io/en/release-2.3/developapps/gateway.html) API in Hyperledger Fabric v2.3.
+
+### Develop client app
+
+First we create a folder named `client_app` in `$FPC_PATH/examples/helloworld` which will contain our Go code `helloworld.go`.
+```bash
+cd $FPC_PATH/examples/helloworld
+mkdir client_app
+touch client_app/helloworld.go
+```
+
+Add the following code to `helloworld.go`:
+
+```go
+package main
+
+import (
+	"os"
+
+	fpc "github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/gateway"
+	"github.com/hyperledger-labs/fabric-private-chaincode/integration/client_sdk/go/utils"
+	"github.com/hyperledger/fabric/common/flogging"
+)
+
+var logger = flogging.MustGetLogger("helloworld")
+
+func main() {
+	ccID := os.Getenv("CC_ID")
+	logger.Infof("Use Chaincode ID: %v", ccID)
+
+	channelID := os.Getenv("CHAN_ID")
+	logger.Infof("Use channel: %v", channelID)
+
+	// get network
+	network, err := utils.SetupNetwork(channelID)
+
+	// Get FPC Contract
+	contract := fpc.GetContract(network, ccID)
+
+	// Invoke FPC Chaincode storeAsset
+	logger.Infof("--> Invoke FPC Chaincode: storeAsset")
+	result, err := contract.SubmitTransaction("storeAsset", "asset1", "100")
+	if err != nil {
+		logger.Fatalf("Failed to Submit transaction: %v", err)
+	}
+	logger.Infof("--> Result: %s", string(result))
+
+	// Evaluate FPC Chaincode retrieveAsset
+	logger.Infof("--> Evaluate FPC Chaincode: retrieveAsset")
+	result, err = contract.EvaluateTransaction("retrieveAsset", "asset1")
+	if err != nil {
+		logger.Fatalf("Failed to Evaluate transaction: %v", err)
+	}
+	logger.Infof("--> Result: %s", string(result))
+}
+```
+
+As you can see in the go imports, we are going to use the FPC Client SDK [gateway](https://pkg.go.dev/github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/gateway) package named as `fpc` to better differentiate between the [gateway](https://pkg.go.dev/github.com/hyperledger/fabric-sdk-go/pkg/gateway) package provided by the Fabric SDK.
+
+The main function consists just of a few lines of code.
+To focus on the use of the FPC Client SDK we omit to go through the entire process of setting up the Fabric Gateway.
+Instead, we create a `network` instance of the type [gateway.Network](https://pkg.go.dev/github.com/hyperledger/fabric-sdk-go/pkg/gateway#Network) by using `utils.SetupNetwork("mychannel")` which implements the normal gateway setup process.
+The `network` instance represents a Fabric Network with the channel specified in `channelID`.
+
+Similar to the Fabric SDK, we create a `contract` instance by using `fpc.GetContract(network, ccID)`. 
+This function receives a `network` instance and the chaincode ID `ccID`.
+As you can see in the code, we read the chaincode ID and the channel ID from the environment variables `CC_ID` and `CHAN_ID`.
+
+The `contract` represents the FPC chaincode which we interact with using the `SubmitTransaction` and the `EvaluateTransaction` methods.
+If you are not familiar with the gateway concept, `SubmitTransaction` corresponds to a `peer chaincode invoke` call and `EvaluateTransaction` corresponds to a `peer chaincode query` call.
+Both methods require one or more arguments as strings.
+The first argument is the chaincode function to invoke. In this tutorial, the second argument is the name of the asset followed by the value as third argument.
+
+In the example code we submit a transaction (`SubmitTransaction`) to store a new asset `asset1` with the value `100` by invoking the `storeAsset` function of the chaincode.
+To retrieve the value of the asset `asset1` stored on the ledger we invoke the `retrieveAsset` function of the chaincode using `EvaluateTransaction`.
+
+Also note that the transaction arguments and the response are encrypted while in transit.
+That is, the Fabric Client SDK encrypts the transaction arguments using the Chaincode Encryption Key associated with the Chaincode at the FPC Enclave Registry.
+The transaction arguments are then decrypted inside the FPC enclave.
+The transaction arguments also contain a Response Encryption Key, which is generated by the Fabric Client SDK.
+This key is then used by the FPC enclave to encrypt the response. When the Fabric Client SDK receives the response, it decrypts the response and returns in clear.
+
+### Run the app
+
+To run our client application we will use the `test.sh` we used in the previous section.
+Just add the following lines at the end of the `run_test()` function in `test.sh`:
+```bash
+say "- interact with the FPC chaincode using our client app"
+export CC_ID
+export CHAN_ID
+go run client_app/helloworld.go
+```
+
+
+When you execute from the `client_app` directory:
+```bash
+cd $FPC_PATH/examples/helloworld
+bash ./test.sh
+```
+
+you should get the following output:
+```bash
+test.sh: - Interact with the FPC chaincode using our client app
+2021-04-07 15:31:52.554 UTC [helloworld] main -> INFO 001 Environment variable CC_ID: helloworld_test
+ [fabsdk/core] 2021/04/07 15:31:52 UTC - cryptosuite.GetDefault -> INFO No default cryptosuite found, using default SW implementation
+2021-04-07 15:31:52.666 UTC [helloworld] main -> INFO 002 --> Invoke FPC chaincode storeAsset: 
+2021-04-07 15:31:54.881 UTC [helloworld] main -> INFO 003 --> Result: OK
+2021-04-07 15:31:56.970 UTC [helloworld] main -> INFO 006 --> Evaluate FPC chaincode retrieveAsset: 
+2021-04-07 15:31:57.005 UTC [helloworld] main -> INFO 007 --> Result: asset1:100
+test.sh: - shutdown ledger
+
+
+test.sh: Helloworld test PASSED
+```
+
+Congratulations! You have created a client app using the FPC Client SDK to invoke your FPC chaincode!
