@@ -94,7 +94,7 @@ The system consists of the following components:
 
 ### Design
 
-More detailed architectural information and overview of the protocols can be found in the [Fabric Private Chaincode RFC](https://github.com/hyperledger/fabric-rfcs/blob/d1dc48ee934b1430b43f870f4d01e7f145576ec8/text/0000-fabric-private-chaincode-1.0.md) <!-- TODO: fix-me with pointer to version in fabric-rfcs once RFC is accepted ... -->
+More detailed architectural information and overview of the protocols can be found in the [Fabric Private Chaincode RFC](https://github.com/hyperledger/fabric-rfcs/blob/master/text/0000-fabric-private-chaincode-1.0.md)
 
 The full detailed operation of FPC is documented in a series of UML
 Sequence Diagrams. Note that FPC version 1.x corresponds to `FPC Lite`
@@ -558,7 +558,7 @@ These details are documented separately in the Shim header file itself: **[`ecc_
 
 *Important*: The initial version of FPC, FPC 1.0 (aka FPC Lite), has a
 few constraints in applicability and programming model.  Hence, study carefully the
-[section discussing this in the FPC RFC](https://github.com/hyperledger/fabric-rfcs/blob/d1dc48ee934b1430b43f870f4d01e7f145576ec8/text/0000-fabric-private-chaincode-1.0.md#fpc-10-application-domain) <!-- TODO: fix-me with pointer to version in fabric-rfcs once RFC is accepted ... -->
+[section discussing this in the FPC RFC](https://github.com/hyperledger/fabric-rfcs/blob/master/text/0000-fabric-private-chaincode-1.0.md#fpc-10-application-domain)
 and the comments at the top of [`shim.h`](ecc_enclave/enclave/shim.h)
 before designing, implementing and deploying an FPC-based solution.
 <!-- could also mention
@@ -594,7 +594,7 @@ section.
   Sorniotti: Blockchain and Trusted Computing: Problems, Pitfalls, and a
   Solution for Hyperledger Fabric. https://arxiv.org/abs/1805.08541
 
-- [Fabric Private Chaincode RFC](https://github.com/hyperledger/fabric-rfcs/blob/d1dc48ee934b1430b43f870f4d01e7f145576ec8/text/0000-fabric-private-chaincode-1.0.md) <!-- TODO: fix-me with pointer to version in fabric-rfcs once RFC is accepted ... -->
+- [Fabric Private Chaincode RFC](https://github.com/hyperledger/fabric-rfcs/blob/master/text/0000-fabric-private-chaincode-1.0.md)
 
 - Presentation at the Hyperledger Fabric contributor meeting
   August 21, 2019.
