@@ -45,6 +45,7 @@ import (
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
+	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel/invoke"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
@@ -76,8 +77,20 @@ type LifecycleInitEnclaveRequest struct {
 // from the standard Fabric Client SDK with additional FPC-specific functionality.
 type Client struct {
 	*resmgmt.Client
-	clientProvider context.ClientProvider
+	getChannelClient   getChannelClientFunction
+	convertCredentials convertCredentialsFunction
 }
+
+// helper interfaces for better testing
+type channelClient interface {
+	Query(request channel.Request, options ...channel.RequestOption) (channel.Response, error)
+	Execute(request channel.Request, options ...channel.RequestOption) (channel.Response, error)
+	InvokeHandler(handler invoke.Handler, request channel.Request, options ...channel.RequestOption) (channel.Response, error)
+	RegisterChaincodeEvent(chainCodeID string, eventFilter string) (fab.Registration, <-chan *fab.CCEvent, error)
+	UnregisterChaincodeEvent(registration fab.Registration)
+}
+type getChannelClientFunction func(channelId string) (channelClient, error)
+type convertCredentialsFunction func(credentialsOnlyAttestation string) (credentialsWithEvidence string, err error)
 
 // New returns a FPC resource management client instance.
 func New(ctxProvider context.ClientProvider, opts ...resmgmt.ClientOption) (*Client, error) {
@@ -87,7 +100,19 @@ func New(ctxProvider context.ClientProvider, opts ...resmgmt.ClientOption) (*Cli
 		return nil, err
 	}
 
-	return &Client{client, ctxProvider}, nil
+	// create getChannelClient function
+	getChannelClient := func(channelId string) (channelClient, error) {
+		channelProvider := func() (context.Channel, error) {
+			return contextImpl.NewChannel(ctxProvider, channelId)
+		}
+
+		return channel.New(channelProvider)
+	}
+
+	// use normal convert credentials function
+	convertCredentials := attestation.ConvertCredentials
+
+	return &Client{client, getChannelClient, convertCredentials}, nil
 }
 
 // LifecycleInitEnclave initializes and registers an enclave for a particular FPC chaincode.
@@ -97,12 +122,7 @@ func (rc *Client) LifecycleInitEnclave(channelId string, req LifecycleInitEnclav
 		return fab.EmptyTransactionID, err
 	}
 
-	// get resource management client
-	channelProvider := func() (context.Channel, error) {
-		return contextImpl.NewChannel(rc.clientProvider, channelId)
-	}
-
-	channelClient, err := channel.New(channelProvider)
+	channelClient, err := rc.getChannelClient(channelId)
 	if err != nil {
 		return fab.EmptyTransactionID, errors.Wrap(err, "Failed to create new channel client")
 	}
@@ -137,7 +157,7 @@ func (rc *Client) LifecycleInitEnclave(channelId string, req LifecycleInitEnclav
 	}
 
 	// convert credentials received from enclave
-	convertedCredentials, err := attestation.ConvertCredentials(string(initResponse.Payload))
+	convertedCredentials, err := rc.convertCredentials(string(initResponse.Payload))
 	if err != nil {
 		return fab.EmptyTransactionID, errors.Wrap(err, "credentials conversion error")
 	}
