@@ -7,7 +7,7 @@
 | Bruno Vavala | bvavala | bruno.vavala@intel.com |
 | Marcus Brandenburger | mbrandenburger | bur@zurich.ibm.com |
 
-### Retired Maintainers
+### Emeritus Maintainers
 
 | Name | GitHub | email |
 |---|---|---|
