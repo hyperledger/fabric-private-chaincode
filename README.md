@@ -287,13 +287,8 @@ dependencies like fabric built, ready to build and run FPC.
 Note that by default the dev container mounts your local cloned FPC project as a volume to `/project/src/github.com/hyperledger-labs/fabric-private-chaincode` within the docker container.
 This allows you to edit the content of the repository using your favorite editor in your system and the changes inside the docker container. Additionally, you are also not loosing changes inside the container when you reboot or the container gets stopped for other reasons.
 
-Optional: to do a clean build do the following *within* the container
-```bash
-make clean
-make build
-```
-Now you are ready to start development.  Go to the [Develop Your First Private Chaincode
-](#your-first-private-chaincode) section.
+Now you are ready to start development *within* the container. Continue with building FPC as described in the [Build Fabric Private Chaincode
+]() Section and then write [your first Private Chaincode](#your-first-private-chaincode).
 
 ### Option 2: Setting up your system to do local development
 
