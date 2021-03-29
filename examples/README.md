@@ -50,7 +50,8 @@ int invoke(
 }
 ```
 
-Let us add the first transaction, `storeAsset` which simply saves the value of an asset by calling `put_state` method defined in shim.h.  LOG_DEBUG sends log messages to the file `/tmp/hyperledger/test/peer.err` (if the environment variable `SGX_BUILD` is set to `DEBUG`).
+Let us add the first transaction, `storeAsset` which simply saves the value of an asset by calling `put_state` method defined in `shim.h`.
+`LOG_DEBUG` sends log messages to the file `/tmp/fpc-extbuilder.${date_time}.{chaincode_name}/chaincode.log` (if the environment variable `SGX_BUILD` is set to `DEBUG`).
 ```c++
 #define OK "OK"
 
