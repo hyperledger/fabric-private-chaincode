@@ -5,7 +5,7 @@ Copyright 2020 Intel Corporation
 SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+package integration_test
 
 import (
 	"fmt"
@@ -13,6 +13,8 @@ import (
 	"testing"
 
 	fpc "github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/gateway"
+	"github.com/hyperledger-labs/fabric-private-chaincode/integration/client_sdk/go/utils"
+	testutils "github.com/hyperledger-labs/fabric-private-chaincode/integration/client_sdk/go/utils"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -33,19 +35,19 @@ var (
 
 var _ = BeforeSuite(func() {
 	ccID := "auction_test"
-	ccPath := filepath.Join(fpcPath, "examples", "auction", "_build", "lib")
+	ccPath := filepath.Join(utils.FPCPath, "examples", "auction", "_build", "lib")
 
 	// setup auction chaincode (install, approve, commit)
 	initEnclave := true
-	err := setup(ccID, ccPath, initEnclave)
+	err := testutils.Setup(ccID, ccPath, initEnclave)
 	Expect(err).ShouldNot(HaveOccurred())
 
 	// setup echo chaincode (install, approve, commit)
-	err = setup("echo_test", filepath.Join(fpcPath, "examples", "echo", "_build", "lib"), false)
+	err = testutils.Setup("echo_test", filepath.Join(testutils.FPCPath, "examples", "echo", "_build", "lib"), false)
 	Expect(err).ShouldNot(HaveOccurred())
 
 	// get network
-	network, err = setupNetwork("mychannel")
+	network, err = testutils.SetupNetwork("mychannel")
 	Expect(err).ShouldNot(HaveOccurred())
 	Expect(network).ShouldNot(BeNil())
 
