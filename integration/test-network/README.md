@@ -44,7 +44,7 @@ Since the Fabric-Samples test network uses docker and docker-compose, we need to
 scripts are also available inside the peer container. For this reason, we mount `$FPC_PATH/fabric/externalBuilder/chaincode_server` into
 `/opt/gopath/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/externalBuilder/chaincode_server`.
 
-For convince we provide a `setup.sh` script to update the `core.yaml` and the docker compose files to mount the external
+For convenience, we provide a `setup.sh` script to update the `core.yaml` and the docker compose files to mount the external
 Builder.
 
 ```bash
