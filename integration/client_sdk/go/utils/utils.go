@@ -4,7 +4,7 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+package utils
 
 import (
 	"errors"
@@ -28,7 +28,7 @@ import (
 )
 
 var (
-	fpcPath         string
+	FPCPath         string
 	testNetworkPath string
 	ccpPath         string
 	logger          = flogging.MustGetLogger("client_sdk_test")
@@ -61,12 +61,12 @@ func init() {
 	os.Setenv("GRPC_VERBOSITY", "DEBUG")
 	os.Setenv("GRPC_GO_LOG_SEVERITY_LEVEL", "INFO")
 
-	fpcPath = os.Getenv("FPC_PATH")
-	if fpcPath == "" {
+	FPCPath = os.Getenv("FPC_PATH")
+	if FPCPath == "" {
 		panic("FPC_PATH not set")
 	}
 
-	testNetworkPath = filepath.Join(fpcPath, "integration")
+	testNetworkPath = filepath.Join(FPCPath, "integration")
 
 	ccpPath = filepath.Join(
 		testNetworkPath,
@@ -110,7 +110,7 @@ func populateWallet(wallet *gateway.Wallet) error {
 	return wallet.Put("appUser", identity)
 }
 
-func setupNetwork(channel string) (*gateway.Network, error) {
+func SetupNetwork(channel string) (*gateway.Network, error) {
 
 	err := os.Setenv("DISCOVERY_AS_LOCALHOST", "false")
 	if err != nil {
@@ -146,7 +146,7 @@ func setupNetwork(channel string) (*gateway.Network, error) {
 	return network, nil
 }
 
-func setup(ccID, ccPath string, initEnclave bool) error {
+func Setup(ccID, ccPath string, initEnclave bool) error {
 
 	var enclavePeers []string
 	if initEnclave {
