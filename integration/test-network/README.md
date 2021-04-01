@@ -66,7 +66,7 @@ including chaincode `package`, `install`, `approveformyorg`, and `commit`. An im
 chaincode packaging differs from traditional chaincode. Since we are using the external Builder and run the FPC Chaincode
 as `Chaincode as a Service (CaaS)`, the packaging artifact will contain information including the CaaS endpoint rather
 than the actual Chaincode.
-We continue will the following command to install the FPC Chaincode as just described.
+We continue with the following command to install the FPC Chaincode as just described.
 ```bash
 cd $FPC_PATH/integration/test-network
 ./installFPC.sh
