@@ -8,13 +8,17 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
+	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
 	fpc "github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/gateway"
+	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
+	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	"github.com/hyperledger/fabric/common/flogging"
 )
@@ -22,6 +26,18 @@ import (
 var logger = flogging.MustGetLogger("sdk-test")
 
 var testNetworkPath string
+
+func firstFileInPath(dir string) (string, error) {
+	// there's a single file in this dir containing the private key
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return "", err
+	}
+	if len(files) != 1 {
+		return "", fmt.Errorf("folder should contain only a single file")
+	}
+	return filepath.Join(dir, files[0].Name()), nil
+}
 
 func populateWallet(wallet *gateway.Wallet) error {
 	logger.Debugf("============ Populating wallet ============")
@@ -35,23 +51,21 @@ func populateWallet(wallet *gateway.Wallet) error {
 		"msp",
 	)
 
-	certPath := filepath.Join(credPath, "signcerts", "cert.pem")
-	// read the certificate pem
+	certPath, err := firstFileInPath(filepath.Join(credPath, "signcerts"))
+	if err != nil {
+		return err
+	}
+
 	cert, err := ioutil.ReadFile(filepath.Clean(certPath))
 	if err != nil {
 		return err
 	}
 
-	keyDir := filepath.Join(credPath, "keystore")
-	// there's a single file in this dir containing the private key
-	files, err := ioutil.ReadDir(keyDir)
+	keyPath, err := firstFileInPath(filepath.Join(credPath, "keystore"))
 	if err != nil {
 		return err
 	}
-	if len(files) != 1 {
-		return fmt.Errorf("keystore folder should have contain one file")
-	}
-	keyPath := filepath.Join(keyDir, files[0].Name())
+
 	key, err := ioutil.ReadFile(filepath.Clean(keyPath))
 	if err != nil {
 		return err
@@ -63,6 +77,9 @@ func populateWallet(wallet *gateway.Wallet) error {
 }
 
 func main() {
+	withLifecycleInitEnclave := flag.Bool("withLifecycleInitEnclave", false, "run with lifecycleInitEnclave")
+	flag.Parse()
+
 	os.Setenv("GRPC_TRACE", "all")
 	os.Setenv("GRPC_VERBOSITY", "DEBUG")
 	os.Setenv("GRPC_GO_LOG_SEVERITY_LEVEL", "INFO")
@@ -112,13 +129,57 @@ func main() {
 	}
 	defer gw.Close()
 
-	network, err := gw.GetNetwork("mychannel")
+	channelID := "mychannel"
+
+	network, err := gw.GetNetwork(channelID)
 	if err != nil {
 		logger.Fatalf("Failed to get network: %v", err)
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// FPC example starts here
+	// FPC Client SDK Lifecycle API example
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// if we call this app with the "-withLifecycleInitEnclave" flag
+	if *withLifecycleInitEnclave {
+
+		fmt.Println("---------- SDK -------------")
+
+		sdk, err := fabsdk.New(config.FromFile(filepath.Clean(ccpPath)))
+		if err != nil {
+			logger.Fatalf("failed to create sdk: %v", err)
+		}
+		defer sdk.Close()
+
+		orgAdmin := "Admin"
+		orgName := "org1"
+
+		adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
+		adminClient, err := resmgmt.New(adminContext)
+		if err != nil {
+			logger.Fatal(err)
+		}
+
+		attestationParams, err := sgx.CreateAttestationParamsFromEnvironment()
+		if err != nil {
+			logger.Fatal(err)
+		}
+
+		initReq := resmgmt.LifecycleInitEnclaveRequest{
+			ChaincodeID:         ccID,
+			EnclavePeerEndpoint: "peer0.org1.example.com", // define the peer where we wanna init our enclave
+			AttestationParams:   attestationParams,
+		}
+
+		logger.Infof("--> Invoke LifecycleInitEnclave")
+		_, err = adminClient.LifecycleInitEnclave(channelID, initReq)
+		if err != nil {
+			logger.Fatalf("Failed to invoke LifecycleInitEnclave: %v", err)
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// FPC Client SDK contract API example
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Get FPC Contract
