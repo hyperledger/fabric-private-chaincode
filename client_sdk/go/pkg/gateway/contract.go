@@ -11,6 +11,7 @@ package gateway
 import (
 	"strings"
 
+	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/gateway/internal"
 	"github.com/hyperledger-labs/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
@@ -74,12 +75,13 @@ type Contract interface {
 //
 //  Returns:
 //  The contract object
-func GetContract(network *gateway.Network, chaincodeID string) Contract {
+func GetContract(network internal.Network, chaincodeID string) Contract {
+
 	contract := network.GetContract(chaincodeID)
 	ercc := network.GetContract("ercc")
 	return &contractState{
-		contract:      contract,
-		ercc:          ercc,
+		contract:      &internal.ContractAdapter{Contract: contract},
+		ercc:          &internal.ContractAdapter{Contract: ercc},
 		peerEndpoints: nil,
 		ep: &crypto.EncryptionProviderImpl{GetCcEncryptionKey: func() ([]byte, error) {
 			// Note that this function is called during EncryptionProvider.NewEncryptionContext()
@@ -88,8 +90,12 @@ func GetContract(network *gateway.Network, chaincodeID string) Contract {
 }
 
 type contractState struct {
-	contract      *gateway.Contract
-	ercc          *gateway.Contract
+	// note that we wrap the target chaincode and ercc with an adapter that
+	// implements the internal.Contract interface. This removes the direct
+	// dependency to gateway.Contract struct as provided by the Fabric Go SDK,
+	// and therefore allows better of this component.
+	contract      internal.Contract
+	ercc          internal.Contract
 	peerEndpoints []string
 	ep            crypto.EncryptionProvider
 }
@@ -137,8 +143,6 @@ func (c *contractState) evaluateTransaction(args ...string) ([]byte, error) {
 		return nil, err
 	}
 
-	// note that WithEndorsingPeers is only used with txn.Submit!!!
-	// GO SDK needs to be patched! We should create a PR for that!
 	txn, err := c.contract.CreateTransaction(
 		"__invoke",
 		gateway.WithEndorsingPeers(peers...),
@@ -176,10 +180,6 @@ func (c *contractState) SubmitTransaction(name string, args ...string) ([]byte, 
 
 	return ctx.Reveal(encryptedResponse)
 }
-
-//func (c *Contract) CreateTransaction(name string, opts ...gateway.TransactionOption) (*gateway.Transaction, error) {
-//	return c.CreateTransaction(name, opts...)
-//}
 
 func (c *contractState) RegisterEvent(eventFilter string) (fab.Registration, <-chan *fab.CCEvent, error) {
 	return c.contract.RegisterEvent(eventFilter)

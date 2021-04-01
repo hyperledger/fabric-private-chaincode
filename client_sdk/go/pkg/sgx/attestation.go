@@ -101,27 +101,30 @@ func CreateAttestationParamsFromCredentialsPath(sgxCredentialsPath string) (*Att
 // ReadSPIDType reads the SPID type from a credentials path and returns it as string.
 func ReadSPIDType(sgxCredentialsPath string) (string, error) {
 	spidTypePath := filepath.Join(sgxCredentialsPath, "spid_type.txt")
-	spidType, err := ioutil.ReadFile(spidTypePath)
-	if err != nil {
-		return "", errors.Wrapf(err, "Could not read properly spid type file %s", spidTypePath)
-	}
-
-	return strings.TrimSuffix(string(spidType), "\n"), nil
+	return readFile(spidTypePath)
 }
 
 // ReadSPID reads the SPID from a credentials path and returns it as string.
 func ReadSPID(sgxCredentialsPath string) (string, error) {
 	hexSpidPath := filepath.Join(sgxCredentialsPath, "spid.txt")
-	hexSpid, err := ioutil.ReadFile(hexSpidPath)
-	if err != nil {
-		return "", errors.Wrapf(err, "Could not read properly (hex) spid file %s", hexSpidPath)
-	}
-
-	return strings.TrimSuffix(string(hexSpid), "\n"), nil
+	return readFile(hexSpidPath)
 }
 
 // ReadSigRL reads the Signature Revocation List from a credentials path and returns it as string.
 func ReadSigRL(sgxCredentialsPath string) (string, error) {
 	// TODO implement me
 	return "", nil
+}
+
+func readFile(path string) (string, error) {
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		return "", errors.Wrapf(err, "could not read %s", path)
+	}
+
+	if len(content) == 0 {
+		return "", errors.Errorf("empty file %s", path)
+	}
+
+	return strings.TrimSuffix(string(content), "\n"), nil
 }
