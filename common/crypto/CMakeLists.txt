@@ -66,6 +66,8 @@ TARGET_INCLUDE_DIRECTORIES(${U_CRYPTO_ADAPT_LIB_NAME} PRIVATE "$ENV{FPC_PATH}/co
 TARGET_INCLUDE_DIRECTORIES(${U_CRYPTO_ADAPT_LIB_NAME} PUBLIC "$ENV{SGX_SDK}/include")
 TARGET_COMPILE_OPTIONS(${U_CRYPTO_ADAPT_LIB_NAME} PRIVATE ${COMMON_CXX_FLAGS} "-D_UNTRUSTED_=1")
 
+COND_ENABLE_COVERAGE(${U_CRYPTO_ADAPT_LIB_NAME})
+
 ###################################################################################################
 # Trusted crypto adapt library
 ###################################################################################################

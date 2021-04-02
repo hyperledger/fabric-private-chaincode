@@ -18,6 +18,8 @@ TARGET_INCLUDE_DIRECTORIES(${TEST_LOG_APP} PRIVATE "../untrusted") # for logging
 TARGET_INCLUDE_DIRECTORIES(${TEST_LOG_APP} PRIVATE "../../") # for error.h
 TARGET_LINK_LIBRARIES(${TEST_LOG_APP} ${U_LOGGING_LIB_NAME})
 
+COND_ENABLE_COVERAGE(${TEST_LOG_APP})
+
 # Register this application as a test
 add_test(
     NAME ${TEST_LOG_APP}

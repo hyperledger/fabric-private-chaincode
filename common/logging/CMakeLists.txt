@@ -31,6 +31,9 @@ TARGET_INCLUDE_DIRECTORIES(${U_LOGGING_LIB_NAME} PRIVATE "../") # path for error
 # fPIC necessary for `g_log_callback`
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 
+# if necessary, enable coverage for checking test coverage
+COND_ENABLE_COVERAGE(${U_LOGGING_LIB_NAME})
+
 ###################################################################################################
 # Trusted logging library
 ###################################################################################################

@@ -81,3 +81,16 @@ export DOCKERD_FPC_PATH ?= $(FPC_PATH)
 # Additional SGX related settings
 #--------------------------------------------------
 export SGX_CREDENTIALS_PATH ?= $(FPC_PATH)/config/ias
+
+# Environment settings
+# by default, CI is not running
+export IS_CI_RUNNING ?= false
+
+# in CI build, enable code coverage; disable it otherwise
+ifeq (${IS_CI_RUNNING}, true)
+        #this enables coverage in c/cpp code, libraries and linked binaries
+        export CODE_COVERAGE_ENABLED ?= true
+else
+        export CODE_COVERAGE_ENABLED ?= false
+endif
+
