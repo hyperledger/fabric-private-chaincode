@@ -11,3 +11,15 @@ SET(T_CRYPTO_LIB_NAME tpdo-crypto)
 # load logging library variables
 SET(LOGGING_PATH "$ENV{FPC_PATH}/common/logging")
 INCLUDE("${LOGGING_PATH}/CMakeVariables.txt")
+
+FUNCTION(COND_ENABLE_COVERAGE TARGET_LIB)
+    IF($ENV{CODE_COVERAGE_ENABLED})
+        MESSAGE("codcov enabled")
+        TARGET_COMPILE_OPTIONS(${TARGET_LIB} PUBLIC $<$<COMPILE_LANGUAGE:C>:-O0 -g --coverage>)
+        TARGET_COMPILE_OPTIONS(${TARGET_LIB} PUBLIC $<$<COMPILE_LANGUAGE:CXX>:-O0 -g --coverage>)
+
+        TARGET_LINK_LIBRARIES(${TARGET_LIB} --coverage)
+    ELSE()
+        MESSAGE("codcov disabled")
+    ENDIF()
+ENDFUNCTION()

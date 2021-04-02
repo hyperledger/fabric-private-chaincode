@@ -20,7 +20,7 @@ import (
 )
 
 // #cgo CFLAGS: -I${SRCDIR}/ecc-enclave-include -I${SRCDIR}/../../../common/sgxcclib
-// #cgo LDFLAGS: -L${SRCDIR}/ecc-enclave-lib -lsgxcc
+// #cgo LDFLAGS: -L${SRCDIR}/ecc-enclave-lib -lsgxcc -lgcov
 // #include "common-sgxcclib.h"
 // #include "sgxcclib.h"
 //

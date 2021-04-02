@@ -38,6 +38,8 @@ TARGET_LINK_LIBRARIES(${VERIFY_EVIDENCE_APP}
     "-Wl,--start-group" ${OPENSSL_LDFLAGS} "-l${U_CRYPTO_ADAPT_LIB_NAME}" "-l${U_CRYPTO_LIB_NAME}" "-Wl,--end-group"
     )
 
+COND_ENABLE_COVERAGE(${VERIFY_EVIDENCE_APP})
+
 ###################################################################################################
 ## Attestation app:
 ## this application performs a sim/hw attestation from input files and writes output on file
@@ -68,6 +70,8 @@ TARGET_INCLUDE_DIRECTORIES(${GET_ATTESTATION_APP} PRIVATE "${LOGGING_PATH}/untru
 TARGET_INCLUDE_DIRECTORIES(${GET_ATTESTATION_APP} PRIVATE "$ENV{FPC_PATH}/common/crypto/attestation-api/test/common")
 
 TARGET_LINK_LIBRARIES(${GET_ATTESTATION_APP} "${U_LOGGING_LIB_NAME}")
+
+COND_ENABLE_COVERAGE(${GET_ATTESTATION_APP})
 
 SET(ATTESTED_EVIDENCE_TEST_FILE "attested_evidence_test.sh")
 ADD_CUSTOM_COMMAND(
