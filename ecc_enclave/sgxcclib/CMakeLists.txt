@@ -57,6 +57,8 @@ target_link_libraries(libsgxcc
     -L${COMMON_SOURCE_DIR}/logging/_build -l${U_LOGGING_LIB_NAME}
     )
 
+COND_ENABLE_COVERAGE(libsgxcc)
+
 add_custom_command(TARGET libsgxcc
     POST_BUILD
     COMMAND mkdir -p ${CMAKE_BINARY_DIR}/include

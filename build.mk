@@ -14,12 +14,13 @@ ifeq (${SGX_MODE}, HW)
 endif
 GO := $(GO_CMD) $(GOFLAGS)
 
-
 .PHONY: all
-all: build test checks # keep checks last as license test is brittle ...
+all: build test ci_report checks # keep checks last as license test is brittle ...
 
 .PHONY: test
 test: build
+
+.PHONY: ci_report
 
 .PHONY: build
 .PHONY: checks

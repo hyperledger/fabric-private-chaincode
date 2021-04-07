@@ -2,6 +2,7 @@
 
 /*
 Copyright IBM Corp. All Rights Reserved.
+Copyright 2020 Intel Corporation
 
 SPDX-License-Identifier: Apache-2.0
 */
@@ -11,7 +12,7 @@ package attestation
 import "fmt"
 
 // #cgo CFLAGS: -I${SRCDIR}/../../common/crypto
-// #cgo LDFLAGS: -L${SRCDIR}/../../common/crypto/_build -L${SRCDIR}/../../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++
+// #cgo LDFLAGS: -L${SRCDIR}/../../common/crypto/_build -L${SRCDIR}/../../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++ -lgcov
 // #include <stdio.h> /* needed for free */
 // #include <stdlib.h>
 // #include <string.h>
