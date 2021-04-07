@@ -6,7 +6,7 @@
 TOP = ..
 include $(TOP)/build.mk
 
-EXAMPLES = auction echo
+EXAMPLES = auction echo kv-test
 
 build clean:
 	$(foreach DIR, $(EXAMPLES), $(MAKE) -C $(DIR) $@ || exit;)
