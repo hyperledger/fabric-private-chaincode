@@ -90,7 +90,7 @@ bool rwset_to_proto(t_shim_ctx_t* ctx, fpc_FPCKVSet* fpc_rwset_proto)
 
         // serialize value
         fpc_rwset_proto->rw_set.writes[i].value =
-            (pb_bytes_array_t*)pb_realloc(NULL, it->second.size());
+            (pb_bytes_array_t*)pb_realloc(NULL, PB_BYTES_ARRAY_T_ALLOCSIZE(it->second.size()));
         COND2ERR(fpc_rwset_proto->rw_set.writes[i].value == NULL);
         fpc_rwset_proto->rw_set.writes[i].value->size = it->second.size();
         ret = memcpy_s(fpc_rwset_proto->rw_set.writes[i].value->bytes,
