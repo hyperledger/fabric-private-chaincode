@@ -94,7 +94,7 @@ The system consists of the following components:
 
 ### Design
 
-More detailed architectural information and overview of the protocols can be found in the [Fabric Private Chaincode RFC](https://github.com/hyperledger/fabric-rfcs/blob/master/text/0000-fabric-private-chaincode-1.0.md)
+More detailed architectural information and overview of the protocols can be found in the [Fabric Private Chaincode RFC](https://github.com/hyperledger/fabric-rfcs/blob/main/text/0000-fabric-private-chaincode-1.0.md)
 
 The full detailed operation of FPC is documented in a series of UML
 Sequence Diagrams. Note that FPC version 1.x corresponds to `FPC Lite`
@@ -153,7 +153,7 @@ Additional google documents provide details on FPC 1.0:
 
 - [Concept Release - March 2, 2020](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/concept-release-1.0)
 
-*WARNING: This project is in continous development and the `master`
+*WARNING: This project is in continous development and the `main`
  branch will not always be stable. Unless you want to actively
  contribute to the project itself, we advice you to use one of above releases*
 
@@ -398,7 +398,7 @@ git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
 cd $FABRIC_PATH; git checkout tags/v2.3.0
 ```
 
-Note that Fabric Private Chaincode may not work with the Fabric `master` branch.
+Note that Fabric Private Chaincode may not work with the Fabric `main` branch.
 Therefore make sure you use the Fabric `v2.3.0` tag.
 This is important as our build script applies some patches to the fabric peer to enable FPC support.
 Make sure the source of Fabric is in your `$GOPATH`.
@@ -553,7 +553,7 @@ These details are documented separately in the Shim header file itself: **[`ecc_
 
 *Important*: The initial version of FPC, FPC 1.0 (aka FPC Lite), has a
 few constraints in applicability and programming model.  Hence, study carefully the
-[section discussing this in the FPC RFC](https://github.com/hyperledger/fabric-rfcs/blob/master/text/0000-fabric-private-chaincode-1.0.md#fpc-10-application-domain)
+[section discussing this in the FPC RFC](https://github.com/hyperledger/fabric-rfcs/blob/main/text/0000-fabric-private-chaincode-1.0.md#fpc-10-application-domain)
 and the comments at the top of [`shim.h`](ecc_enclave/enclave/shim.h)
 before designing, implementing and deploying an FPC-based solution.
 <!-- could also mention
@@ -589,7 +589,7 @@ section.
   Sorniotti: Blockchain and Trusted Computing: Problems, Pitfalls, and a
   Solution for Hyperledger Fabric. https://arxiv.org/abs/1805.08541
 
-- [Fabric Private Chaincode RFC](https://github.com/hyperledger/fabric-rfcs/blob/master/text/0000-fabric-private-chaincode-1.0.md)
+- [Fabric Private Chaincode RFC](https://github.com/hyperledger/fabric-rfcs/blob/main/text/0000-fabric-private-chaincode-1.0.md)
 
 - Presentation at the Hyperledger Fabric contributor meeting
   August 21, 2019.

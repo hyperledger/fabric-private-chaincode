@@ -59,7 +59,7 @@ Ledger state is abstracted as a simple map:
 map[string][]byte
 ```
 
-To store data, we use the following key scheme, which is inspired by [_lifecycle](https://github.com/hyperledger/fabric/blob/master/core/chaincode/lifecycle/lifecycle.go#L81). A variable is denoted using <variable_name> annotation. Note that this scheme is defined here as, both, ERCC and TLCC need to parse/retrieve this information.
+To store data, we use the following key scheme, which is inspired by [_lifecycle](https://github.com/hyperledger/fabric/blob/main/core/chaincode/lifecycle/lifecycle.go#L81). A variable is denoted using <variable_name> annotation. Note that this scheme is defined here as, both, ERCC and TLCC need to parse/retrieve this information.
 
 The `enclave_id` a hex-encoded string of SHA256 hash over `enclave_vk`.
 
@@ -79,7 +79,7 @@ namespaces/exported/<chaincode_id>/<enclave_id> -> SignedExportMessage
 ```
 
 This key scheme is design with the goal in mind to reduce the write conflicts for concurrent enclave registrations.
-ERCC state can be accessed and modified by the [lifecycle ledger shim](https://github.com/hyperledger/fabric/blob/master/core/chaincode/lifecycle/ledger_shim.go) or the normal [go-chaincode shim](https://github.com/hyperledger/fabric/blob/master/vendor/github.com/hyperledger/fabric-chaincode-go/shim/stub.go). Here an example:
+ERCC state can be accessed and modified by the [lifecycle ledger shim](https://github.com/hyperledger/fabric/blob/main/core/chaincode/lifecycle/ledger_shim.go) or the normal [go-chaincode shim](https://github.com/hyperledger/fabric/blob/main/vendor/github.com/hyperledger/fabric-chaincode-go/shim/stub.go). Here an example:
 ```go
 // returns the chaincode encryption key for AuctionChaincode1
 k := fmt.Sprintf("namespaces/chaincode_ek/%s", "AuctionChaincode1")
@@ -438,4 +438,4 @@ void log_notice(const char* format, ...);
 void log_info(const char* format, ...);
 void log_debug(const char* format, ...);
 ```
-See https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/ecc_enclave/enclave/shim.h
+See https://github.com/hyperledger-labs/fabric-private-chaincode/blob/main/ecc_enclave/enclave/shim.h

@@ -5,7 +5,7 @@ Copyright 2020 Intel Corporation
 SPDX-License-Identifier: Apache-2.0
 */
 
-// this package defines the client-facing interface of ERCC as defined in the ERCC Interface section in [specifications](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/master/docs/design/fabric-v2%2B/interfaces.md)
+// this package defines the client-facing interface of ERCC as defined in the ERCC Interface section in [specifications](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/main/docs/design/fabric-v2%2B/interfaces.md)
 package registry
 
 import (

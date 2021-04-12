@@ -44,7 +44,7 @@ message GetMultiMetadataResponse {
 
 // verify that a given identity is part of a msp
 // the input is a serialized identity proto message as defined in
-// https://github.com/hyperledger/fabric-protos/blob/master/msp/identities.proto#L15
+// https://github.com/hyperledger/fabric-protos/blob/main/msp/identities.proto#L15
 //    public bool validate_identity(
 //            const uint8_t *serializedIdentity,
 //            const uint32_t len);
