@@ -23,8 +23,7 @@ require (
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20201119163726-f8ef75b17719
 	github.com/hyperledger/fabric-contract-api-go v1.1.1
 	github.com/hyperledger/fabric-protos-go v0.0.0-20201028172056-a3136dde2354
-	github.com/hyperledger/fabric-samples/chaincode/marbles02/go v0.0.0-20201218135726-377ccb0b59d5 // indirect
-	github.com/hyperledger/fabric-sdk-go v1.0.0-rc1
+	github.com/hyperledger/fabric-sdk-go v1.0.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
 	github.com/onsi/ginkgo v1.12.1
 	github.com/onsi/gomega v1.10.3

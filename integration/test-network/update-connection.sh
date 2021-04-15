@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright IBM Corp. All Rights Reserved.
 # Copyright 2020 Intel Corporation
@@ -12,6 +12,15 @@ if [[ -z "${FPC_PATH}" ]]; then
   exit 1
 fi
 
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
+tmp_dir=$(mktemp -d -t tmp-XXXXXXXXXX --tmpdir="${script_dir}")
+
+trap cleanup SIGINT SIGTERM ERR EXIT
+cleanup() {
+  trap - SIGINT SIGTERM ERR EXIT
+  rm -rf "${tmp_dir}"
+}
+
 backup() {
   FILE=$1
   BACKUP="${FILE}.backup"
@@ -24,7 +33,6 @@ backup() {
 }
 
 orgs=("org1" "org2")
-#orgs=("org1")
 user="Admin"
 
 shopt -s nullglob
@@ -66,7 +74,18 @@ entityMatchers:
       mappedHost: \${1}
 EOF
 
+  # fetch all peers from connections
+  yq r --printMode pv "${CONNECTIONS_PATH}" peers >> "${tmp_dir}/peers-${org}.yaml"
 done
 
+# consolidate all collected peers in a single peers.yaml
+yq m "${tmp_dir}"/peers-*.yaml >> "${tmp_dir}/peers.yaml"
+yq v "${tmp_dir}/peers.yaml"
 
-
+# merge peers.yaml into all connection files
+for org in "${orgs[@]}"; do
+  ORG_PATH="${FPC_PATH}/integration/test-network/fabric-samples/test-network/organizations/peerOrganizations/${org}.example.com"
+  CONNECTIONS_PATH="${ORG_PATH}/connection-${org}.yaml"
+  yq m -i "${CONNECTIONS_PATH}" "${tmp_dir}/peers.yaml"
+  yq v "${CONNECTIONS_PATH}"
+done

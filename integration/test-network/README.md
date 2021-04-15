@@ -92,11 +92,11 @@ The FPC Chaincode is now up and running, ready for processing invocations!
 Now we show how to use the [FPC Client SDK](../../client_sdk/go) to interact with the FPC Chaincode running on the test network.
 
 The Fabric-Samples test network generates the connection profiles which are required by the FPC Client SDK to connect to
-the network. For example, you can find the connection profile for org1 in
+the network. For example, you can find the connection profile for `org1` in
 `$FPC_PATH/integration/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/`.
-However, the generated connection profiles are supposed to be only used with the gateway API. For this reason,   
-we need to prepare the `connection-*.yaml` files to support the FPC [LifecycleInitEnclave](../../client_sdk/go/pkg/client/resmgmt/lifecycleclient.go)
-command as it builds on the Fabric SDK Go Low-level API. 
+However, the generated connection profiles are missing some additional information to be used with FPC, in particular, to use
+the [LifecycleInitEnclave](../../client_sdk/go/pkg/client/resmgmt/lifecycleclient.go) command.
+Moreover, FPC Client SDK currently requires the connection profile to contain the connection details of the peer that hosts the FPC Chaincode Enclave. We use a helper script to update the connect profile files.
 
 ```bash
 cd $FPC_PATH/integration/test-network
@@ -104,18 +104,19 @@ cd $FPC_PATH/integration/test-network
 ```
 
 Now we will use the go app in `${FPC_PATH}/client_sdk/go/sample` to demonstrate the usage of the FPC Client SDK.
-
 In order to initiate the FPC Chaincode enclave and register it with the FPC Enclave Registry, run the app with the `-withLifecycleInitEnclave` flag.
 
 ```bash
-cd ${FPC_PATH}/client_sdk/go/sample
-CC_ID=echo go run . -withLifecycleInitEnclave
+cd $FPC_PATH/client_sdk/go/sample
+CC_ID=echo ORG_NAME=Org1 go run . -withLifecycleInitEnclave
 ```
+Note that we execute the go app as `Org1`, thereby creating and registering the FPC Chaincode enclave at `peer0.org1.example.com`. Alternativley, we could run this as `Org2` to initiate the enclave at `peer0.org2.example.com`.
 
-Afterwards you can run the application without the flag
+Afterwards you _must_ run the application without the `withLifecycleInitEnclave` flag and you can play with multiple organizations.
 ```bash
-cd ${FPC_PATH}/client_sdk/go/sample
-CC_ID=echo go run .
+cd $FPC_PATH/client_sdk/go/sample
+CC_ID=echo ORG_NAME=Org1 go run .
+CC_ID=echo ORG_NAME=Org2 go run .
 ```
 
 ## Shutdown network
@@ -123,19 +124,18 @@ CC_ID=echo go run .
 make -C $FPC_PATH/integration/test-network ercc-ecc-stop
 cd $FPC_PATH/integration/test-network/fabric-samples/test-network
 ./network.sh down
-rm -f ${FPC_PATH}/client_sdk/go/sample/wallet/appUser.id
 ```
 
 ## Debugging
 
-For diagnostics, you can run the following to see logs for peer0.org1 ...
+For diagnostics, you can run the following to see logs for `peer0.org1.example.com`.
 ```bash
 docker logs -f peer0.org1.example.com
 docker logs -f ercc.peer0.org1.example.com
 docker logs -f ecc.peer0.org1.example.com
 ```
 
-To interact interactively with the peer, run the following
+To interact with the peer using the `peer CLI`, run the following
 ```bash
 cd $FPC_PATH/integration/test-network/fabric-samples/test-network;
 export FABRIC_CFG_PATH=$FPC_PATH/integration/test-network/fabric-samples/config
