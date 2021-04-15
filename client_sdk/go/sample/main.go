@@ -25,8 +25,6 @@ import (
 
 var logger = flogging.MustGetLogger("sdk-test")
 
-var testNetworkPath string
-
 func firstFileInPath(dir string) (string, error) {
 	// there's a single file in this dir containing the private key
 	files, err := ioutil.ReadDir(dir)
@@ -39,19 +37,8 @@ func firstFileInPath(dir string) (string, error) {
 	return filepath.Join(dir, files[0].Name()), nil
 }
 
-func populateWallet(wallet *gateway.Wallet) error {
-	logger.Debugf("============ Populating wallet ============")
-	credPath := filepath.Join(
-		testNetworkPath,
-		"organizations",
-		"peerOrganizations",
-		"org1.example.com",
-		"users",
-		"User1@org1.example.com",
-		"msp",
-	)
-
-	certPath, err := firstFileInPath(filepath.Join(credPath, "signcerts"))
+func populateWallet(wallet *gateway.Wallet, mspPath, mspId, userId string) error {
+	certPath, err := firstFileInPath(filepath.Join(mspPath, "signcerts"))
 	if err != nil {
 		return err
 	}
@@ -61,7 +48,7 @@ func populateWallet(wallet *gateway.Wallet) error {
 		return err
 	}
 
-	keyPath, err := firstFileInPath(filepath.Join(credPath, "keystore"))
+	keyPath, err := firstFileInPath(filepath.Join(mspPath, "keystore"))
 	if err != nil {
 		return err
 	}
@@ -71,70 +58,75 @@ func populateWallet(wallet *gateway.Wallet) error {
 		return err
 	}
 
-	identity := gateway.NewX509Identity("Org1MSP", string(cert), string(key))
+	identity := gateway.NewX509Identity(mspId, string(cert), string(key))
 
-	return wallet.Put("appUser", identity)
+	return wallet.Put(userId, identity)
+}
+
+func getEnvWithFallback(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		value = fallback
+	}
+	return value
+}
+
+func getEnvWithPanic(key string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		panic(key + " not set")
+	}
+	return value
+}
+
+func setEnvWithPanic(key, value string) {
+	err := os.Setenv(key, value)
+	if err != nil {
+		panic(fmt.Sprintf("Error setting %s environemnt variable: %v", key, err))
+	}
 }
 
 func main() {
 	withLifecycleInitEnclave := flag.Bool("withLifecycleInitEnclave", false, "run with lifecycleInitEnclave")
 	flag.Parse()
 
-	os.Setenv("GRPC_TRACE", "all")
-	os.Setenv("GRPC_VERBOSITY", "DEBUG")
-	os.Setenv("GRPC_GO_LOG_SEVERITY_LEVEL", "INFO")
+	setEnvWithPanic("GRPC_TRACE", "all")
+	setEnvWithPanic("GRPC_VERBOSITY", "DEBUG")
+	setEnvWithPanic("GRPC_GO_LOG_SEVERITY_LEVEL", "INFO")
+	setEnvWithPanic("DISCOVERY_AS_LOCALHOST", "true")
 
-	ccID := os.Getenv("CC_ID")
-	if ccID == "" {
-		panic("CC_ID not set")
-	}
+	// let's make sure FPC_PATH is set
+	fpcPath := getEnvWithPanic("FPC_PATH")
 
-	fpcPath := os.Getenv("FPC_PATH")
-	if fpcPath == "" {
-		panic("FPC_PATH not set")
-	}
-	testNetworkPath = filepath.Join(fpcPath, "integration", "test-network", "fabric-samples", "test-network")
+	ccID := getEnvWithFallback("CC_ID", "echo")
+	channelID := getEnvWithFallback("CHANNEL_ID", "mychannel")
+	orgName := getEnvWithFallback("ORG_NAME", "org1")
+	orgNameFull := getEnvWithFallback("ORG_NAME_FULL", orgName+".example.com")
+	mspId := getEnvWithFallback("MSP_ID", orgName+"MSP")
+	userId := getEnvWithFallback("USER_ID", "User1")
 
-	err := os.Setenv("DISCOVERY_AS_LOCALHOST", "true")
-	if err != nil {
-		logger.Fatalf("Error setting DISCOVERY_AS_LOCALHOST environemnt variable: %v", err)
-	}
+	// we use the mspPath and connections profil provided by the fabric-samples test network if not specified by the user
+	testNetworkPath := filepath.Join(fpcPath, "integration", "test-network", "fabric-samples", "test-network")
 
-	wallet, err := gateway.NewFileSystemWallet("wallet")
-	if err != nil {
-		logger.Fatalf("Failed to create wallet: %v", err)
-	}
-
-	if !wallet.Exists("appUser") {
-		err = populateWallet(wallet)
-		if err != nil {
-			logger.Fatalf("Failed to populate wallet contents: %v", err)
-		}
-	}
-
-	ccpPath := filepath.Join(
+	// If not set we use the msp folder in the fabric-samples test network
+	mspPath := getEnvWithFallback("MSP_PATH", filepath.Join(
 		testNetworkPath,
 		"organizations",
 		"peerOrganizations",
-		"org1.example.com",
-		"connection-org1.yaml",
-	)
+		orgNameFull,
+		"users",
+		fmt.Sprintf("%s@%s", userId, orgNameFull),
+		"msp",
+	))
 
-	gw, err := gateway.Connect(
-		gateway.WithConfig(config.FromFile(filepath.Clean(ccpPath))),
-		gateway.WithIdentity(wallet, "appUser"),
-	)
-	if err != nil {
-		logger.Fatalf("Failed to connect to gateway: %v", err)
-	}
-	defer gw.Close()
-
-	channelID := "mychannel"
-
-	network, err := gw.GetNetwork(channelID)
-	if err != nil {
-		logger.Fatalf("Failed to get network: %v", err)
-	}
+	// If not set we use the msp folder in the fabric-samples test network
+	ccpPath := getEnvWithFallback("CCP_PATH", filepath.Join(
+		testNetworkPath,
+		"organizations",
+		"peerOrganizations",
+		orgNameFull,
+		fmt.Sprintf("connection-%s.yaml", orgName),
+	))
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// FPC Client SDK Lifecycle API example
@@ -143,8 +135,6 @@ func main() {
 	// if we call this app with the "-withLifecycleInitEnclave" flag
 	if *withLifecycleInitEnclave {
 
-		fmt.Println("---------- SDK -------------")
-
 		sdk, err := fabsdk.New(config.FromFile(filepath.Clean(ccpPath)))
 		if err != nil {
 			logger.Fatalf("failed to create sdk: %v", err)
@@ -152,7 +142,6 @@ func main() {
 		defer sdk.Close()
 
 		orgAdmin := "Admin"
-		orgName := "org1"
 
 		adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
 		adminClient, err := resmgmt.New(adminContext)
@@ -167,7 +156,7 @@ func main() {
 
 		initReq := resmgmt.LifecycleInitEnclaveRequest{
 			ChaincodeID:         ccID,
-			EnclavePeerEndpoint: "peer0.org1.example.com", // define the peer where we wanna init our enclave
+			EnclavePeerEndpoint: "peer0." + orgNameFull, // define the peer where we wanna init our enclave
 			AttestationParams:   attestationParams,
 		}
 
@@ -176,6 +165,30 @@ func main() {
 		if err != nil {
 			logger.Fatalf("Failed to invoke LifecycleInitEnclave: %v", err)
 		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Setup Fabric Gateway
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	wallet := gateway.NewInMemoryWallet()
+	err := populateWallet(wallet, mspPath, mspId, userId)
+	if err != nil {
+		logger.Fatalf("Failed to populate wallet contents: %v", err)
+	}
+
+	gw, err := gateway.Connect(
+		gateway.WithConfig(config.FromFile(filepath.Clean(ccpPath))),
+		gateway.WithIdentity(wallet, userId),
+	)
+	if err != nil {
+		logger.Fatalf("Failed to connect to gateway: %v", err)
+	}
+	defer gw.Close()
+
+	network, err := gw.GetNetwork(channelID)
+	if err != nil {
+		logger.Fatalf("Failed to get network: %v", err)
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
