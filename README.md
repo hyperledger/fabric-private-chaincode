@@ -102,19 +102,17 @@ in documents and code.
 
 Specifically:
 
-- The `fpc-lifecycle-v2`([puml](docs/design/fabric-v2%2B/fpc-lifecycle-v2.puml)/[png](docs/design/fabric-v2%2B/fpc-lifecycle-v2.png)) diagram describes the normal lifecycle of a chaincode in FPC, focusing in particular on those elements that change in FPC vs. regular Fabric.
-- The `fpc-registration`([puml](docs/design/fabric-v2%2B/fpc-registration.puml)/[png](/design/fabric-v2%2B/fpc-registration.png)) diagram describes how an FPC Chaincode Enclave is created on a Peer and registered in the FPC Registry, including the Remote Attestation process.
-- The `fpc-key-dist`([puml](docs/design/fabric-v2%2B/fpc-key-dist.puml),[png](docs/design/fabric-v2%2B/fpc-key-dist.ng))) diagram describes the process by which chaincode-unique cryptographic keys are created and distributed among enclaves running identical chaincodes. Note that in the current version of FPC, key generation is performed, but the key distribution protocol has not yet been implemented.
-- The `fpc-cc-invocation`([puml](docs/design/fabric-v2%2B/fpc-cc-invocation.puml)/[png](docs/design/fabric-v2%2B/fpc-cc-invocation.png)) diagram illustrates the invocation process at the beginning of the chaincode lifecycle in detail, focusing on the cryptographic operations between the Client and Peer leading up to submission of a transaction for Ordering.
-- The `fpc-cc-execution`([puml](docs/design/fabric-v2%2B/fpc-cc-execution.puml)/[png](docs/design/fabric-v2%2B/fpc-cc-execution.png)) diagram provides further detail of the execution phase of an FPC chaincode, focusing in particular on the `getState` and `putState` interactions with the Ledger.
-- The `fpc-validation`([puml](docs/design/fabric-v2%2B/fpc-validation.puml)/[png](docs/design/fabric-v2%2B/fpc-validation.png)) diagram describes the FPC-specific process of validation.
-- The `fpc-components`([puml](docs/design/fabric-v2%2B/fpc-components.puml)/[png](docs/design/fabric-v2%2B/fpc-components.png)) diagram shows the important data structures of FPC components and messages exchanged between components.
+- The `fpc-lifecycle-v2`([puml](docs/design/fabric-v2%2B/fpc-lifecycle-v2.puml)) diagram describes the normal lifecycle of a chaincode in FPC, focusing in particular on those elements that change in FPC vs. regular Fabric.
+- The `fpc-registration`([puml](docs/design/fabric-v2%2B/fpc-registration.puml)) diagram describes how an FPC Chaincode Enclave is created on a Peer and registered in the FPC Registry, including the Remote Attestation process.
+- The `fpc-key-dist`([puml](docs/design/fabric-v2%2B/fpc-key-dist.puml)) diagram describes the process by which chaincode-unique cryptographic keys are created and distributed among enclaves running identical chaincodes. Note that in the current version of FPC, key generation is performed, but the key distribution protocol has not yet been implemented.
+- The `fpc-cc-invocation`([puml](docs/design/fabric-v2%2B/fpc-cc-invocation.puml)) diagram illustrates the invocation process at the beginning of the chaincode lifecycle in detail, focusing on the cryptographic operations between the Client and Peer leading up to submission of a transaction for Ordering.
+- The `fpc-cc-execution`([puml](docs/design/fabric-v2%2B/fpc-cc-execution.puml)) diagram provides further detail of the execution phase of an FPC chaincode, focusing in particular on the `getState` and `putState` interactions with the Ledger.
+- The `fpc-validation`([puml](docs/design/fabric-v2%2B/fpc-validation.puml)) diagram describes the FPC-specific process of validation.
+- The `fpc-components`([puml](docs/design/fabric-v2%2B/fpc-components.puml)) diagram shows the important data structures of FPC components and messages exchanged between components.
 - The detailed message definitions can be found as [protobufs](protos/fpc).
 - The [interfaces document](docs/design/fabric-v2%2B/interfaces.md) defines the interfaces exposed by the FPC components and their internal state.
 
-(Note: for the `png`-files, you will have to build the documentation as described [below](#building-documentation).)
-
-Additional google documents provide details on FPC 1.0:
+Additional Google documents provide details on FPC 1.0:
 
 - The [FPC for Health use case](https://docs.google.com/document/d/1jbiOY6Eq7OLpM_s3nb-4X4AJXROgfRHOrNLQDLxVnsc/) describes how FPC 1.0 enables a health care use case.
   The document also gives more details on the FPC 1.0-enabled application domains and related constraints. Lastly, it provides a security analysis why these constraints are sufficient for security.
@@ -439,7 +437,7 @@ The makefiles do not ensure that docker files are always rebuild to
 match the latest version of the code in the repo.  If you suspect you
 have an issue with outdated docker images, you can run `make clobber
 build` which forces a rebuild.  It also ensures that all other
-downlad, build or test artifacts are scrubbed from your repo and might
+download, build or test artifacts are scrubbed from your repo and might
 help overcoming other problems. Be advised that that the rebuild can
 take a fair amount of time.
 
