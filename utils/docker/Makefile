@@ -120,9 +120,10 @@ DOCKER_DEV_OPTIONAL_CMD=
 # ------------------------------
 .PHONY: base-rt base-dev ccenv dev peer cc-builder
 
-build: ccenv cc-builder peer
-# note: we do _not_ include dev here as this is not needed in integration tests and 
-# a rebuild could cause trouble for a dev container user ..
+build: ccenv
+# Note 1: we do _not_ include dev here as this is not needed in integration tests and
+# a rebuild could cause trouble for a dev container user.
+# Note 2: we removed "cc-builder peer" as dependencies since they are currenty unused (but might be helpful).
 
 run: dev
 	# Cleanup existing but non-running (note absence of --force in rm!) old dev containers
