@@ -3,11 +3,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-TOP = ..
+TOP = ../..
 include $(TOP)/build.mk
 
-EXAMPLES = auction echo kv-test
+SUB_DIRS = auction echo kv-test
 
-build clean:
-	$(foreach DIR, $(EXAMPLES), $(MAKE) -C $(DIR) $@ || exit;)
-
+all build test clean clobber:
+	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit ;)

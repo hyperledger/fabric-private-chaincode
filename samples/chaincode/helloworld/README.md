@@ -23,11 +23,9 @@ for more details of involved components.
 This tutorial presumes that you have installed FPC on your `$GOPATH` as described in the FPC [README.md](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/main/README.md#requirements) and `$FPC_PATH` is set accordingly.
 
 ## Develop chaincode
-Create a folder named `helloworld`  in `$FPC_PATH/examples`.
+Create a folder named `helloworld`  in `$FPC_PATH/samples/chaincode`.
 ```bash
-cd $FPC_PATH/examples
-mkdir helloworld
-cd helloworld
+cd $FPC_PATH/samples/chaincode/helloworld
 touch helloworld_cc.cpp
 ```
 
@@ -264,11 +262,11 @@ set(SOURCE_FILES
 include($ENV{FPC_PATH}/ecc_enclave/enclave/CMakeLists-common-app-enclave.txt)
 ```
 
-Create `Makefile` with the following content.  For your convenience, you can copy the `Makefile` from `$FPC_PATH/examples/auction` folder.
+Create `Makefile` with the following content.  For your convenience, you can copy the `Makefile` from `$FPC_PATH/samples/chaincode/auction` folder.
 
-File: `$FPC_PATH/examples/helloworld/Makefile`
+File: `$FPC_PATH/samples/chaincode/helloworld/Makefile`
 ```Makefile
-TOP = ../..
+TOP = ../../..
 include $(TOP)/build.mk
 
 BUILD_DIR := _build
@@ -288,7 +286,7 @@ clean:
 ```
 Please make sure that in the file above the variable `TOP` points to the FPC root directory (i.e., `$FPC_PATH`).
 
-In `$FPC_PATH/examples/helloworld` folder, to build the chaincode, execute:
+In `$FPC_PATH/samples/chaincode/helloworld` folder, to build the chaincode, execute:
 ```bash
 make
 ```
@@ -307,7 +305,7 @@ make[1]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger-labs/fa
 ## Time to test!
 Next step is to test the chaincode by invoking transactions, for which you need a basic Fabric network with a channel. You will use the FPC test framework to bring up a Fabric network in which the helloworld code can be executed as a chaincode _in an SGX enclave_.  The Fabric network contains just a single peer and orderer node as defined in `$FPC_PATH/integration/config/`.  Please note the FPC-specific additions to the `core.yaml` to the standard Fabric configurations.  These are marked as `FPC Addition`;  these enable the integration points with Fabric and have to be replicated if you want to use your own Fabric configuration.
 
-Create a file `test.sh` in `$FPC_PATH/examples/helloworld` folder as follows.  Note that the initial lines in the script points to files and folders in FPC framework.
+Create a file `test.sh` in `$FPC_PATH/samples/chaincode/helloworld` folder as follows.  Note that the initial lines in the script points to files and folders in FPC framework.
 - `FABRIC_CFG_PATH` points to the `$FPC_PATH/integration/config/, which contains yaml files that define the Fabric network
 - `FABRIC_SCRIPTDIR` points to scripts with custom FPC wrappers and utility scripts.
 
@@ -478,9 +476,9 @@ exit 0
 ```
 
 
-Assuming we are still in `$FPC_PATH/examples`, execute the test script:
-```hash
-cd $FPC_PATH/examples/helloworld
+Assuming we are still in `$FPC_PATH/samples/chaincode`, execute the test script:
+```bash
+cd $FPC_PATH/samples/chaincode/helloworld
 bash ./test.sh
 ```
 
@@ -534,9 +532,9 @@ You can find the documentation of the FPC Client SDK [here](https://pkg.go.dev/g
 
 ### Develop client app
 
-First we create a folder named `client_app` in `$FPC_PATH/examples/helloworld` which will contain our Go code `helloworld.go`.
+First we create a folder named `client_app` in `$FPC_PATH/samples/chaincode/helloworld` which will contain our Go code `helloworld.go`.
 ```bash
-cd $FPC_PATH/examples/helloworld
+cd $FPC_PATH/samples/chaincode/helloworld
 mkdir client_app
 touch client_app/helloworld.go
 ```
@@ -626,7 +624,7 @@ go run client_app/helloworld.go
 
 When you execute from the `client_app` directory:
 ```bash
-cd $FPC_PATH/examples/helloworld
+cd $FPC_PATH/samples/chaincode/helloworld
 bash ./test.sh
 ```
 

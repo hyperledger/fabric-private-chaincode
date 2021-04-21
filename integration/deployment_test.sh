@@ -22,8 +22,8 @@ NUM_TESTS=0
 
 run_test() {
 
-    # install examples/auction
-    CC_PATH=${FPC_PATH}/examples/auction/_build/lib/
+    # install samples/chaincode/auction
+    CC_PATH=${FPC_PATH}/samples/chaincode/auction/_build/lib/
     CC_VER="$(cat ${CC_PATH}/mrenclave)"
     CC_SEQ="1"
     PKG=/tmp/auction_test.tar.gz
@@ -60,13 +60,13 @@ run_test() {
 
     try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n marbles02 -c '{"Args":["initMarble","marble1","blue","35","tom"]}' --waitForEvent
 
-    # install examples/echo
-    CC_PATH=${FPC_PATH}/examples/echo/_build/lib/
+    # install samples/chaincode/echo
+    CC_PATH=${FPC_PATH}/samples/chaincode/echo/_build/lib/
     CC_VER="$(cat ${CC_PATH}/mrenclave)"
     CC_SEQ="1"
     PKG=/tmp/echo_test.tar.gz
 
-    try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label echo_test --path ${FPC_PATH}/examples/echo/_build/lib ${PKG}
+    try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label echo_test --path ${FPC_PATH}/samples/chaincode/echo/_build/lib ${PKG}
     try ${PEER_CMD} lifecycle chaincode install ${PKG}
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: echo_test/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 
