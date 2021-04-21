@@ -66,7 +66,7 @@ VERBOSE=${VERBOSE:-}
 echo ""
 echo "Packaging chaincodes: ERCC (id=${ERCC_ID}/version=${ERCC_VER}) and ECC (id=${CC_ID}/version=${CC_VER}) for peers ${PEERS[@]}"
 
-PKG_PATH=${TEST_NET_SCRIPT_PATH}/_deployment
+PKG_PATH=${TEST_NET_SCRIPT_PATH}/packages
 
 # as Org 1
 ${TEST_NET_SCRIPT_PATH}/package.sh "${PKG_PATH}" "${ERCC_ID}" "${ERCC_VER}" "${CC_ID}" "${CC_VER}" "${PEERS[0]}"

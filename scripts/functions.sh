@@ -37,7 +37,7 @@ function filterExcludedAndGeneratedFiles {
         '(^|/)Pipfile$'
         '(^|/)Pipfile\.lock$'
         '(^|/)tox\.ini$'
-        'integration/test-network/fabric-samples/'
+        'samples/deployment/test-network/fabric-samples/'
     )
 
     local filter

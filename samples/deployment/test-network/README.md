@@ -1,9 +1,9 @@
 # FPC and the Fabric-Samples Test Network
 
 This guide shows how to deploy and run a FPC Chaincode on test-network provided by [fabric-samples](https://github.com/hyperledger/fabric-samples).
-We provide fabric-samples as a submodule in `$FPC_PATH/integration/test-network/fabric-samples`.
+We provide fabric-samples as a submodule in `$FPC_PATH/samples/deployment/test-network/fabric-samples`.
 
-Before moving forward, follow the main [README](../../README.md) to set up your environment. This guide works also with
+Before moving forward, follow the main [README](../../../README.md) to set up your environment. This guide works also with
 the FPC Dev docker container.
 
 ## Prepare FPC Containers and the Test Network
@@ -12,13 +12,13 @@ We start with building the FPC components as docker images which are deployed on
 Use `TEST_CC_ID` and `TEST_CC_PATH` to define the FPC Chaincode you want to build. 
 
 ```bash
-cd $FPC_PATH/integration/test-network/
+cd FPC_PATH/samples/deployment/test-network
 export TEST_CC_ID=echo
-export TEST_CC_PATH=${FPC_PATH}/examples/echo
+export TEST_CC_PATH=${FPC_PATH}/samples/chaincode/echo
 make build
 ```
 
-Note: If you want to build with [mock-enclave](../../ecc/chaincode/enclave/mock_enclave.go) rather than the real enclave-based one, build with
+Note: If you want to build with [mock-enclave](../../../ecc/chaincode/enclave/mock_enclave.go) rather than the real enclave-based one, build with
 `make build GOTAGS="-tags mock_ecc"` instead.
 
 Next, setup fabric sample network, binaries and docker images. Here we follow the official Fabric [instructions](https://hyperledger-fabric.readthedocs.io/en/latest/install.html).
@@ -48,7 +48,7 @@ For convenience, we provide a `setup.sh` script to update the `core.yaml` and th
 Builder.
 
 ```bash
-cd $FPC_PATH/integration/test-network
+cd $FPC_PATH/samples/deployment/test-network
 ./setup.sh
 ```
 
@@ -56,7 +56,7 @@ cd $FPC_PATH/integration/test-network
 
 Let's start the Fabric-Samples test network.
 ```bash
-cd $FPC_PATH/integration/test-network/fabric-samples/test-network
+cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
 ./network.sh up 
 ./network.sh createChannel -c mychannel -ca -cai 1.4.9 -i 2.3.0
 ```
@@ -68,7 +68,7 @@ as `Chaincode as a Service (CaaS)`, the packaging artifact will contain informat
 than the actual Chaincode.
 We continue with the following command to install the FPC Chaincode as just described.
 ```bash
-cd $FPC_PATH/integration/test-network
+cd $FPC_PATH/samples/deployment/test-network
 ./installFPC.sh
 # IMPORTANT: a successfully install will show you an `export ...`
 # statement as stdout on the command-line.  Copy/Paste this statement
@@ -89,13 +89,13 @@ The FPC Chaincode is now up and running, ready for processing invocations!
 
 ## Interact with the FPC Chaincode
 
-Now we show how to use the [FPC Client SDK](../../client_sdk/go) to interact with the FPC Chaincode running on the test network.
+Now we show how to use the [FPC Client SDK](../../../client_sdk/go) to interact with the FPC Chaincode running on the test network.
 
 The Fabric-Samples test network generates the connection profiles which are required by the FPC Client SDK to connect to
 the network. For example, you can find the connection profile for `org1` in
 `$FPC_PATH/integration/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/`.
 However, the generated connection profiles are missing some additional information to be used with FPC, in particular, to use
-the [LifecycleInitEnclave](../../client_sdk/go/pkg/client/resmgmt/lifecycleclient.go) command.
+the [LifecycleInitEnclave](../../../client_sdk/go/pkg/client/resmgmt/lifecycleclient.go) command.
 Moreover, FPC Client SDK currently requires the connection profile to contain the connection details of the peer that hosts the FPC Chaincode Enclave. We use a helper script to update the connect profile files.
 
 ```bash
@@ -103,26 +103,26 @@ cd $FPC_PATH/integration/test-network
 ./update-connection.sh
 ```
 
-Now we will use the go app in `${FPC_PATH}/client_sdk/go/sample` to demonstrate the usage of the FPC Client SDK.
+Now we will use the go app in `$FPC_PATH/samples/application/simple-go` to demonstrate the usage of the FPC Client SDK.
 In order to initiate the FPC Chaincode enclave and register it with the FPC Enclave Registry, run the app with the `-withLifecycleInitEnclave` flag.
 
 ```bash
-cd $FPC_PATH/client_sdk/go/sample
+cd $FPC_PATH/samples/application/simple-go
 CC_ID=echo ORG_NAME=Org1 go run . -withLifecycleInitEnclave
 ```
-Note that we execute the go app as `Org1`, thereby creating and registering the FPC Chaincode enclave at `peer0.org1.example.com`. Alternativley, we could run this as `Org2` to initiate the enclave at `peer0.org2.example.com`.
+Note that we execute the go app as `Org1`, thereby creating and registering the FPC Chaincode enclave at `peer0.org1.example.com`. Alternatively, we could run this as `Org2` to initiate the enclave at `peer0.org2.example.com`.
 
 Afterwards you _must_ run the application without the `withLifecycleInitEnclave` flag and you can play with multiple organizations.
 ```bash
-cd $FPC_PATH/client_sdk/go/sample
+cd $FPC_PATH/samples/application/simple-go
 CC_ID=echo ORG_NAME=Org1 go run .
 CC_ID=echo ORG_NAME=Org2 go run .
 ```
 
 ## Shutdown network
 ```bash
-make -C $FPC_PATH/integration/test-network ercc-ecc-stop
-cd $FPC_PATH/integration/test-network/fabric-samples/test-network
+make -C $FPC_PATH/samples/deployment/test-network ercc-ecc-stop
+cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
 ./network.sh down
 ```
 
@@ -137,8 +137,8 @@ docker logs -f ecc.peer0.org1.example.com
 
 To interact with the peer using the `peer CLI`, run the following
 ```bash
-cd $FPC_PATH/integration/test-network/fabric-samples/test-network;
-export FABRIC_CFG_PATH=$FPC_PATH/integration/test-network/fabric-samples/config
+cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network;
+export FABRIC_CFG_PATH=$FPC_PATH/samples/deployment/test-network/fabric-samples/config
 export PATH=$(readlink -f ../bin):$PATH
 source ./scripts/envVar.sh; \
 setGlobals 1;
