@@ -34,13 +34,13 @@ make docker
 
 ### Build your FPC Chaincode
 
-For this demo we use the FPC Echo Chaincode in `$FPC_PATH/examples/echo`.
-Alternativley, you can also use another example or your own FPC Chaincode.
+For this demo we use the FPC Echo Chaincode in `$FPC_PATH/samples/chaincode/echo`.
+Alternatively, you can also use another example or your own FPC Chaincode.
 We build the chaincode and package the enclave binary in a FPC Chaincode docker image using the following command:
 
 ```bash
 # TODO SETUP and test with SGX HW mode
-export TEST_CC_PATH=$FPC_PATH/examples/echo
+export TEST_CC_PATH=$FPC_PATH/samples/chaincode/echo
 
 make -C $TEST_CC_PATH
 make -C $FPC_PATH/ecc DOCKER_IMAGE=fpc/fpccc DOCKER_ENCLAVE_SO_PATH=$TEST_CC_PATH/_build/lib all docker
@@ -54,10 +54,10 @@ FPC Chaincode image. For non-development purpose we recommend a more descriptive
 ### Writing your FPC Client App
 
 In order to communicate with the FPC Chaincode we use an app written in Go using our FPC Client SDK.
-In this tutorial we will use a simple CLI app in `$FPC_PATH/client_sdk/go/sample/cli_app/`.
+In this tutorial we will use a simple CLI app in `$FPC_PATH/samples/application/simple-cli-go/`.
 
 ```bash
-cd $FPC_PATH/client_sdk/go/sample/cli_app/
+cd $FPC_PATH/samples/application/simple-cli-go/
 make build docker
 ```
 
