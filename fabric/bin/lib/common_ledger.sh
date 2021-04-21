@@ -12,7 +12,7 @@
 [ -d "${FPC_PATH}" ] || (echo "FPC_PATH not properly defined in '${FPC_PATH}'"; exit 1; )
 
 : ${FABRIC_PATH:="${FPC_PATH}/../../hyperledger/fabric/"}
-: ${FABRIC_BIN_DIR:="${FABRIC_PATH}/build/bin"}
+: ${FABRIC_BIN_DIR:="${FPC_PATH}/fabric/_internal/bin"}
 : ${FABRIC_UTIL_BIN_DIR:="${FPC_PATH}/utils/fabric"}
 
 FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"

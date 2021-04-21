@@ -3,7 +3,7 @@ Licensed under Creative Commons Attribution 4.0 International License
 https://creativecommons.org/licenses/by/4.0/
 --->
 
-# Build Fabric with FPC support
+# Fetch default Fabric binaries
 
 Run the following command:
 
@@ -11,6 +11,16 @@ Run the following command:
 cd $FPC_PATH/fabric
 make
 ```
+
+# Build custom Fabric binaries
+
+```bash
+cd $FPC_PATH/fabric
+make native
+```
+
+Note that this applies all fabric code patches residing in `patches`.
+This is optional and not required in order to use FPC.
 
 ## Common errors
 
