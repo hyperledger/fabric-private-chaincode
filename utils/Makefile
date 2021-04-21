@@ -5,7 +5,7 @@
 TOP = ..
 include $(TOP)/build.mk
 
-SUB_DIRS = docker fabric
+SUB_DIRS = fabric
 
 all build test clean clobber:
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit ;)

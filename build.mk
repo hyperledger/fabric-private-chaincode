@@ -18,7 +18,6 @@ GO := $(GO_CMD) $(GOFLAGS)
 all: build test ci_report checks # keep checks last as license test is brittle ...
 
 .PHONY: test
-test: build
 
 .PHONY: ci_report
 
