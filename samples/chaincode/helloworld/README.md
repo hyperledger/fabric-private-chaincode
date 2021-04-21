@@ -23,7 +23,7 @@ for more details of involved components.
 This tutorial presumes that you have installed FPC on your `$GOPATH` as described in the FPC [README.md](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/main/README.md#requirements) and `$FPC_PATH` is set accordingly.
 
 ## Develop chaincode
-Create a folder named `helloworld`  in `$FPC_PATH/samples/chaincode`.
+Go to `$FPC_PATH/samples/chaincode/helloworld` and create a file named `helloworld_cc.cpp` where we will place our chaincode.
 ```bash
 cd $FPC_PATH/samples/chaincode/helloworld
 touch helloworld_cc.cpp
