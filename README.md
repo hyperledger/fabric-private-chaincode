@@ -131,7 +131,7 @@ Additional Google documents provide details on FPC 1.0:
 - [`ecc`](ecc/): Go code for FPC chaincode package, including
 	dispatcher and (high-level code for) enclave endorsement validation.
 - [`ercc`](ercc/): Go code for Enclave Registry Chaincode
-- [`examples`](examples/): FPC Examples
+- [`samples`](samples/): FPC Samples
 - [`fabric`](fabric/): FPC wrapper for Fabric peer and utilities to
 	start and stop a simple Fabric test network with FPC enabled, used
 	by integration tests.
@@ -533,7 +533,7 @@ make
 ## Developing with Fabric Private Chaincode
 
 ### Your first private chaincode
-Create, build and test your first private chaincode with this [tutorial](examples/README.md).
+Create, build and test your first private chaincode with this [tutorial](samples/chaincode/helloworld/README.md).
 
 
 ## Reference Guides
