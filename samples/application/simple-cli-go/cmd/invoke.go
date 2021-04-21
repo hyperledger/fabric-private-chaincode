@@ -9,17 +9,17 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/sample/cli_app/pkg"
+	"github.com/hyperledger-labs/fabric-private-chaincode/samples/application/simple-cli-go/pkg"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	rootCmd.AddCommand(queryCmd)
+	rootCmd.AddCommand(invokeCmd)
 }
 
-var queryCmd = &cobra.Command{
-	Use:   "query [function] [arg1] [arg2] ...",
-	Short: "query FPC Chaincode with function and arguments",
+var invokeCmd = &cobra.Command{
+	Use:   "invoke [function] [arg1] [arg2] ...",
+	Short: "invoke FPC Chaincode with function and arguments",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		client := pkg.NewClient(config)

@@ -14,7 +14,7 @@ FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 CC_ID=echo_test
-CC_PATH=${FPC_PATH}/examples/echo/_build/lib/
+CC_PATH=${FPC_PATH}/samples/chaincode/echo/_build/lib/
 CC_LANG=fpc-c
 CC_VER="$(cat ${CC_PATH}/mrenclave)"
 CC_SEQ="1"

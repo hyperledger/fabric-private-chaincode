@@ -11,7 +11,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/sample/cli_app/pkg"
+	"github.com/hyperledger-labs/fabric-private-chaincode/samples/application/simple-cli-go/pkg"
 	"github.com/spf13/cobra"
 )
 

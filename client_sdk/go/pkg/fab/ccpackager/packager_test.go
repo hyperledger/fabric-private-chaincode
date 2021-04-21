@@ -39,7 +39,7 @@ var _ = BeforeSuite(func() {
 
 var _ = Describe("Go Client SDK Test", func() {
 	BeforeEach(func() {
-		ccPath = filepath.Join(fpcPath, "examples", "auction", "_build", "lib")
+		ccPath = filepath.Join(fpcPath, "samples", "chaincode", "auction", "_build", "lib")
 		var err error
 		mrenclave, err = ccpackager.ReadMrenclave(ccPath)
 		Expect(err).ShouldNot(HaveOccurred())

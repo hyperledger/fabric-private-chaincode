@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/sample/cli_app/cmd"
+	"github.com/hyperledger-labs/fabric-private-chaincode/samples/application/simple-cli-go/cmd"
 )
 
 func main() {

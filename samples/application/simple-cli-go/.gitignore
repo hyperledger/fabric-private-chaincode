@@ -2,4 +2,4 @@
 **/wallet/*
 **/keystore/*
 fpcclient
-cli_app
+simple-cli-go
