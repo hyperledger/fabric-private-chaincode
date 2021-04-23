@@ -58,9 +58,10 @@ report:
 	@echo "Reporting CI data..."
 	@cd $$(/bin/pwd) && ./scripts/report.sh
 
+docker:
+	$(MAKE) -C utils/docker
+
 # add the ci_report target only at CI time, when coverage is enabled
-ifeq (${IS_CI_RUNNING}, true)
 ifeq (${CODE_COVERAGE_ENABLED}, true)
 ci_report: report
-endif
 endif
