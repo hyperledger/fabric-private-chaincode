@@ -116,7 +116,7 @@ ARG SGX_MODE
 # note these envs are _not_ inhereted from above as we start from base-rt !
 ARG FABRIC_PATH=${GOPATH}/${FABRIC_REL_PATH}
 ARG FPC_PATH=${GOPATH}/${FPC_REL_PATH}
-ARG FABRIC_BIN_DIR=${FABRIC_PATH}/build/bin
+ARG FABRIC_BIN_DIR=${FPC_PATH}/fabric/_internal/bin
 ARG FPC_CMDS=${FPC_PATH}/fabric/bin
 
 ENV FABRIC_PATH=${FABRIC_PATH}
