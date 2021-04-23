@@ -310,7 +310,7 @@ Create a file `test.sh` in `$FPC_PATH/samples/chaincode/helloworld` folder as fo
 - `FABRIC_SCRIPTDIR` points to scripts with custom FPC wrappers and utility scripts.
 
 File:  `test.sh`
-```Makefile
+```bash
 #!/usr/bin/env bash
 
 if [[ -z "${FPC_PATH}" ]]; then
