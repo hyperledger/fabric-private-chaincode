@@ -15,12 +15,7 @@ endif
 GO := $(GO_CMD) $(GOFLAGS)
 
 .PHONY: all
-# if we run CI, we add some additional targets on the default make
-ifeq (${IS_CI_RUNNING}, true)
 all: build test docker ci_report checks # keep checks last as license test is brittle ...
-else
-all: build test checks # keep checks last as license test is brittle ...
-endif
 
 .PHONY: ci_report
 
