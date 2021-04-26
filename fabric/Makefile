@@ -99,7 +99,9 @@ native: peer
 	cd $(FABRIC_PATH) && \
 	$(MAKE) -j orderer cryptogen configtxgen
 
-clean: clean-fetched
+clean:
+
+clobber: clean-fetched
 
 clean-peer:
 	rm -rf $(FABRIC_PEER_BIN)

@@ -13,7 +13,7 @@ make
 ```
 
 # Build custom Fabric binaries
-
+The following assumes that the `FABRIC_PATH` environment variable contains the path to Fabric's source code.
 ```bash
 cd $FPC_PATH/fabric
 make native
@@ -21,7 +21,7 @@ make native
 
 Note that this applies all fabric code patches residing in `patches`.
 This is optional and not required in order to use FPC.
-
+To clean the native build, type `cd $FPC_PATH/fabric; make clean-native`.
 ## Common errors
 
 ### Wrong Fabric version
