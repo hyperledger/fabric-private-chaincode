@@ -23,7 +23,7 @@ backup() {
   fi
 }
 
-FABRIC_SAMPLES=${FPC_PATH}/integration/test-network/fabric-samples
+FABRIC_SAMPLES=${FPC_PATH}/samples/deployment/test-network/fabric-samples
 
 if [ ! -d "${FABRIC_SAMPLES}/bin" ]; then
   echo "Error: environment not properly setup, see README.md"
