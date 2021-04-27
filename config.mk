@@ -78,6 +78,11 @@ export FPC_PATH=$(abspath $(TOP))
 # re-defined to point to the FPC path as seen by the docker daemon
 export DOCKERD_FPC_PATH ?= $(FPC_PATH)
 
+# Fabric binaries are needed for testing; you can customize these via the following
+# env variable. By default we fetch the binaries into $(FPC_PATH)/fabric/_internal/bin
+# In case you want to use your custom fabric bins, for instance: $(FABRIC_PATH)/build/bin
+export FABRIC_BIN_DIR ?= $(FPC_PATH)/fabric/_internal/bin
+
 # Additional SGX related settings
 #--------------------------------------------------
 export SGX_CREDENTIALS_PATH ?= $(FPC_PATH)/config/ias

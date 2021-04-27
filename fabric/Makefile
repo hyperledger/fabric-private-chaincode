@@ -11,8 +11,24 @@ FABRIC_PEER_BIN = $(FABRIC_PATH)/build/bin/peer
 FABRIC_PATCHED = $(FABRIC_PATH)/.fpc_patched
 FABRIC_CURRENT_DIFF_COMMITS_CMD = git log $(FABRIC_VERSION_TAG)..HEAD --oneline
 
-build: native
+FABS = _internal
+FABS_FETCHED = $(FABS)/.fetched
 
+build: fetch
+
+fetch: $(FABS_FETCHED)
+
+$(FABS_FETCHED):
+	mkdir -p $(FABS) && cd $(FABS) \
+	&& curl -sSL https://bit.ly/2ysbOFE | bash -s -- $(FABRIC_VERSION) 1.4.9 -s -d \
+	&& touch .fetched
+
+
+# this target applies all fabric patches in the patches folder;
+# these patches are not required for FPC but may be helpful for 
+# developers testing (e.g., residing behind a proxy environment)
+#
+# optional target
 patch: $(FABRIC_PATCHED)
 
 $(FABRIC_PATCHED): patches/*.patch $(FABRIC_PATH)/.git
@@ -76,14 +92,22 @@ $(FABRIC_PEER_BIN): $(FABRIC_PATCHED)
 	cd $(FABRIC_PATH) && \
         $(MAKE) peer
 
+# this target builds custom fabric binaries in the provided FABRIC_PATH
+# 
+# optional target
 native: peer
 	cd $(FABRIC_PATH) && \
 	$(MAKE) -j orderer cryptogen configtxgen
 
-clean: clean-native clean-patch
+clean:
+
+clobber: clean-fetched
 
 clean-peer:
 	rm -rf $(FABRIC_PEER_BIN)
 
 clean-native:
 	rm -rf $(FABRIC_PATH)/build/bin/
+
+clean-fetched:
+	rm -rf $(FABS)

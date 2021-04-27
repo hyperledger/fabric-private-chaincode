@@ -385,20 +385,18 @@ unzip protoc-3.11.4-linux-x86_64.zip -d /usr/local/proto3
 export PROTOC_CMD=/usr/local/proto3/bin/protoc
 ```
 
-#### Prepare Fabric
+#### Hyperledger Fabric
 
-Fabric Private Chaincode support requires to re-build the Fabric peer.
-
-Checkout Fabric 2.3.0 release using the following commands:
+Our project fetches the latest supported Fabric binaries during the build process automatically.
+However, if you want to use your own Fabric binaries, please checkout Fabric 2.3.0 release using the following commands:
 ```bash
-export FABRIC_PATH=${GOPATH}/src/github.com/hyperledger/fabric
+export FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
 git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
 cd $FABRIC_PATH; git checkout tags/v2.3.0
 ```
 
 Note that Fabric Private Chaincode may not work with the Fabric `main` branch.
 Therefore make sure you use the Fabric `v2.3.0` tag.
-This is important as our build script applies some patches to the fabric peer to enable FPC support.
 Make sure the source of Fabric is in your `$GOPATH`.
 
 ### Build Fabric Private Chaincode
