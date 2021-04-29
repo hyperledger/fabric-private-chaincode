@@ -24,7 +24,7 @@ ERCC_EP="OutOf(2, 'Org1MSP.peer', 'Org2MSP.peer')"
 ECC_EP="OutOf(2, 'Org1MSP.peer', 'Org2MSP.peer')"
 
 CC_ID="echo"
-CC_VER="$(cat ${FPC_PATH}/examples/${CC_ID}/_build/lib/mrenclave)"
+CC_VER="$(cat ${FPC_PATH}/samples/chaincode/${CC_ID}/_build/lib/mrenclave)"
 
 ERCC_ID="ercc"
 ERCC_VER="1.0"
@@ -36,7 +36,7 @@ ERCC_VER="1.0"
 # Prepare
 #------------
 
-TEST_NET_SCRIPT_PATH=${FPC_PATH}/integration/test-network
+TEST_NET_SCRIPT_PATH=${FPC_PATH}/samples/deployment/test-network
 SAMPLES_PATH=${TEST_NET_SCRIPT_PATH}/fabric-samples
 NETWORK_PATH=${SAMPLES_PATH}/test-network
 export FABRIC_CFG_PATH=${SAMPLES_PATH}/config

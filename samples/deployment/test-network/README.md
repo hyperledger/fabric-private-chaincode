@@ -9,10 +9,10 @@ the FPC Dev docker container.
 ## Prepare FPC Containers and the Test Network
 
 We start with building the FPC components as docker images which are deployed on our test network.
-Use `TEST_CC_ID` and `TEST_CC_PATH` to define the FPC Chaincode you want to build. 
+Use `TEST_CC_ID` and `TEST_CC_PATH` to define the FPC Chaincode you want to build.
 
 ```bash
-cd FPC_PATH/samples/deployment/test-network
+cd $FPC_PATH/samples/deployment/test-network
 export TEST_CC_ID=echo
 export TEST_CC_PATH=${FPC_PATH}/samples/chaincode/echo
 make build
@@ -24,7 +24,9 @@ Note: If you want to build with [mock-enclave](../../../ecc/chaincode/enclave/mo
 Next, setup fabric sample network, binaries and docker images. Here we follow the official Fabric [instructions](https://hyperledger-fabric.readthedocs.io/en/latest/install.html).
 
 ```bash
-cd $FPC_PATH/integration/test-network/fabric-samples
+cd $FPC_PATH/samples/deployment/test-network
+git clone https://github.com/hyperledger/fabric-samples -b v2.3.0
+cd $FPC_PATH/samples/deployment/test-network/fabric-samples
 curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.3.0 1.4.9 -s
 ```
 
@@ -57,7 +59,7 @@ cd $FPC_PATH/samples/deployment/test-network
 Let's start the Fabric-Samples test network.
 ```bash
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
-./network.sh up 
+./network.sh up
 ./network.sh createChannel -c mychannel -ca -cai 1.4.9 -i 2.3.0
 ```
 
@@ -76,7 +78,7 @@ cd $FPC_PATH/samples/deployment/test-network
 # (but also would not give you clear errors that it doesn't!!)
 ```
 
-Now we have the FPC Chaincode installed on the Fabric peers, but we still need to start our chaincode containers. 
+Now we have the FPC Chaincode installed on the Fabric peers, but we still need to start our chaincode containers.
 Make sure you have set `TEST_CC_ID` to the same chaincode ID as used in the earlier step when building the chaincode.
 
 ```bash
@@ -93,13 +95,13 @@ Now we show how to use the [FPC Client SDK](../../../client_sdk/go) to interact 
 
 The Fabric-Samples test network generates the connection profiles which are required by the FPC Client SDK to connect to
 the network. For example, you can find the connection profile for `org1` in
-`$FPC_PATH/integration/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/`.
+`$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/`.
 However, the generated connection profiles are missing some additional information to be used with FPC, in particular, to use
 the [LifecycleInitEnclave](../../../client_sdk/go/pkg/client/resmgmt/lifecycleclient.go) command.
 Moreover, FPC Client SDK currently requires the connection profile to contain the connection details of the peer that hosts the FPC Chaincode Enclave. We use a helper script to update the connect profile files.
 
 ```bash
-cd $FPC_PATH/integration/test-network
+cd $FPC_PATH/samples/deployment/test-network
 ./update-connection.sh
 ```
 

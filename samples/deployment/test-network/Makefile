@@ -3,12 +3,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-TOP = ../..
+TOP = ../../..
 include $(TOP)/build.mk
 
 
 TEST_CC_ID ?= echo
-TEST_CC_PATH ?= ${FPC_PATH}/examples/${TEST_CC_ID}
+TEST_CC_PATH ?= ${FPC_PATH}/samples/chaincode/${TEST_CC_ID}
 
 build: ercc-container ecc-container
 
