@@ -29,9 +29,9 @@ license:
 
 linter: gotools
 	@echo "LINT: Running code checks for Go files..."
-	@cd $$(/bin/pwd) && ./scripts/golinter.sh
+	@./scripts/golinter.sh ${FPC_PATH}
 	@echo "LINT: Running code checks for Cpp/header files..."
-	@cd $$(/bin/pwd) && ./scripts/cpplinter.sh
+	@./scripts/cpplinter.sh ${FPC_PATH}
 	@echo "LINT completed."
 
 gotools:
