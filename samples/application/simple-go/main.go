@@ -14,9 +14,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
-	fpc "github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/gateway"
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/sgx"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
+	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"

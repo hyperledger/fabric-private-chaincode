@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	fpcmgmt "github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/sgx"
+	fpcmgmt "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
 	cfg "github.com/hyperledger/fabric-sdk-go/pkg/core/config"

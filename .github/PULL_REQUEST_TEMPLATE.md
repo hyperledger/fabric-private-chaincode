@@ -1,8 +1,8 @@
 <!--  Thanks for sending a pull request!  Here are some tips for you:
 
 1. If this is your first time, please read our code of conduct and contributor guidelines: 
-     https://github.com/hyperledger-labs/fabric-private-chaincode/blob/main/CONTRIBUTING.md
-     https://github.com/hyperledger-labs/fabric-private-chaincode/blob/main/CODE_OF_CONDUCT.md
+     https://github.com/hyperledger/fabric-private-chaincode/blob/main/CONTRIBUTING.md
+     https://github.com/hyperledger/fabric-private-chaincode/blob/main/CODE_OF_CONDUCT.md
    In particular pay attention to the git workflows
       https://docs.google.com/document/d/1sR7YV3pSYN3NEFiW-2fUqtpsJeJrpC0EWUVtEm0Blcg/edit#heading=h.kwcug3pkefak
 2. Fill out below sections.

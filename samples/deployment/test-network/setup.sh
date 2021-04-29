@@ -54,9 +54,9 @@ peers=("peer0.org1.example.com" "peer0.org2.example.com")
 
 # Also there is another issue with this approach here. When working completely inside the FPC dev-container,
 # the volume mounts won't work. The reason is that the docker daemon provided by the host cannot parse volume paths.
-# For instance, ${FPC_PATH} inside dev-container is `/project/src/github.com/hyperledger-labs/fabric-private-chaincode/`.
+# For instance, ${FPC_PATH} inside dev-container is `/project/src/github.com/hyperledger/fabric-private-chaincode/`.
 # The correct path from the docker daemon perspective is something like
-# `/Users/marcusbrandenburger/Developer/gocode/src/github.com/hyperledger-labs/fabric-private-chaincode/` (in my case on the mac).
+# `/Users/marcusbrandenburger/Developer/gocode/src/github.com/hyperledger/fabric-private-chaincode/` (in my case on the mac).
 
 # Using DOCKERED_FPC_PATH fixes our custom volumes but still there is an issue default mounts in `docker-compose-test-net.yaml`
 # TODO need to be fixed
@@ -72,7 +72,7 @@ if [ ! -z ${DOCKERD_FPC_PATH+x} ]; then
 fi
 
 for p in "${peers[@]}"; do
-  yq w -i ${DOCKER_COMPOSE_TEST_NET} "services.\"$p\".volumes[+]" "${FPC_PATH}:/opt/gopath/src/github.com/hyperledger-labs/fabric-private-chaincode"
+  yq w -i ${DOCKER_COMPOSE_TEST_NET} "services.\"$p\".volumes[+]" "${FPC_PATH}:/opt/gopath/src/github.com/hyperledger/fabric-private-chaincode"
   yq w -i ${DOCKER_COMPOSE_TEST_NET} "services.\"$p\".volumes[+]" "${FABRIC_SAMPLES}/config/core.yaml:/etc/hyperledger/fabric/core.yaml"
 done
 

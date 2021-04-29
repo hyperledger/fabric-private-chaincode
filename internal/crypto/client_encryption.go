@@ -11,7 +11,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/common/flogging"
 	"google.golang.org/protobuf/proto"

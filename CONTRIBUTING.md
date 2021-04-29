@@ -14,7 +14,7 @@ docs to learn more about it.
 step-by-step tutorial to getting started with your first contribution. We guide
 you through our processes and give tips on how to prepare your contribution.  
 
-Please go the [issues page](https://github.com/hyperledger-labs/fabric-private-chaincode/issues) to create a bug report
+Please go the [issues page](https://github.com/hyperledger/fabric-private-chaincode/issues) to create a bug report
 or suggest a new feature.  Feel free to create a push request (PR) and link it to the corresponding issue.
 
 Note that we follow the Hyperledger [Charter](https://www.hyperledger.org/about/charter), particularly, 

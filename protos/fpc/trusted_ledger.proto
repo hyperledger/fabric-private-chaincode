@@ -6,7 +6,7 @@
 syntax = "proto3";
 
 package trusted_ledger;
-option go_package = "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos";
+option go_package = "github.com/hyperledger/fabric-private-chaincode/internal/protos";
 
 // - verify state data
 
@@ -95,9 +95,9 @@ message Request {
     // =>
     // TODO: Above has to be reconciled with the resolution of following issues/PRs
     //   related to view consistency:
-    //   - [#402](https://github.com/hyperledger-labs/fabric-private-chaincode/issues/402)
-    //   - [#435](https://github.com/hyperledger-labs/fabric-private-chaincode/pull/435)
-    //   - [#361](https://github.com/hyperledger-labs/fabric-private-chaincode/issues/361)
+    //   - [#402](https://github.com/hyperledger/fabric-private-chaincode/issues/402)
+    //   - [#435](https://github.com/hyperledger/fabric-private-chaincode/pull/435)
+    //   - [#361](https://github.com/hyperledger/fabric-private-chaincode/issues/361)
     oneof request {
         GetMetadataRequest metadata = 2;
         GetMultiMetadataRequest multi_metadata = 3;

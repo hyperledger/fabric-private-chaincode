@@ -35,8 +35,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/sgx"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
+	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric/core/chaincode/persistence"
 	"github.com/hyperledger/fabric/core/chaincode/platforms/util"
 	"github.com/pkg/errors"

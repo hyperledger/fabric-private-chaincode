@@ -8,7 +8,7 @@ syntax = "proto3";
 import "google/protobuf/any.proto";
 
 package tl_session;
-option go_package = "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos/tl_session";
+option go_package = "github.com/hyperledger/fabric-private-chaincode/internal/protos/tl_session";
 
 message SessionSetupInitRequest {
     string channel_id = 1;

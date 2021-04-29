@@ -11,10 +11,10 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/pkg/cid"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric/protoutil"
 	"google.golang.org/protobuf/proto"
 )

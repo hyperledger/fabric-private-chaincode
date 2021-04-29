@@ -15,7 +15,7 @@ import "peer/proposal_response.proto";
 import "ledger/rwset/kvrwset/kv_rwset.proto";
 
 package fpc;
-option go_package = "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos";
+option go_package = "github.com/hyperledger/fabric-private-chaincode/internal/protos";
 
 message CCParameters {
     // name of the chaincode

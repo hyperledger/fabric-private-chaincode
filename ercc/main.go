@@ -9,11 +9,11 @@ package main
 import (
 	"os"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
-	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/registry"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	"github.com/hyperledger/fabric-private-chaincode/ercc/attestation"
+	"github.com/hyperledger/fabric-private-chaincode/ercc/registry"
+	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric/common/flogging"
 )
 

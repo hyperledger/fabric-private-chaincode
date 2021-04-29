@@ -12,9 +12,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	fpc "github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/gateway"
-	"github.com/hyperledger-labs/fabric-private-chaincode/integration/client_sdk/go/utils"
-	testutils "github.com/hyperledger-labs/fabric-private-chaincode/integration/client_sdk/go/utils"
+	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
+	"github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
+	testutils "github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

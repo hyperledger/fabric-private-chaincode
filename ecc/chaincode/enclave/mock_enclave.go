@@ -18,9 +18,9 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/any"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/crypto"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
+	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
 	"github.com/hyperledger/fabric/protoutil"
 )

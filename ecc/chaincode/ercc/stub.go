@@ -10,9 +10,9 @@ package ercc
 import (
 	"fmt"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 )
 
 func QueryEnclaveCredentials(stub shim.ChaincodeStubInterface, channelId, chaincodeId, enclaveId string) (*protos.Credentials, error) {

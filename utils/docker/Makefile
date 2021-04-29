@@ -32,7 +32,7 @@ SGX_DEVICE_PATH ?= $(shell if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ 
 SGX_PSW_SOCKET ?= /var/run/aesmd
 
 DOCKER_GOPATH=/project
-DOCKER_FPC_PATH=$(DOCKER_GOPATH)/src/github.com/hyperledger-labs/fabric-private-chaincode
+DOCKER_FPC_PATH=$(DOCKER_GOPATH)/src/github.com/hyperledger/fabric-private-chaincode
 
 
 

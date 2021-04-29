@@ -9,7 +9,7 @@ package utils_test
 import (
 	"testing"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
+	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	cb "github.com/hyperledger/fabric-protos-go/common"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric-protos-go/peer/lifecycle"

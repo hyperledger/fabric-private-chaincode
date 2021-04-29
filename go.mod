@@ -1,4 +1,4 @@
-module github.com/hyperledger-labs/fabric-private-chaincode
+module github.com/hyperledger/fabric-private-chaincode
 
 go 1.15
 
@@ -23,6 +23,7 @@ require (
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20201119163726-f8ef75b17719
 	github.com/hyperledger/fabric-contract-api-go v1.1.1
 	github.com/hyperledger/fabric-protos-go v0.0.0-20201028172056-a3136dde2354
+	github.com/hyperledger/fabric-samples/chaincode/marbles02/go v0.0.0-20210428060230-9db8164f049b // indirect
 	github.com/hyperledger/fabric-sdk-go v1.0.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
 	github.com/onsi/ginkgo v1.12.1

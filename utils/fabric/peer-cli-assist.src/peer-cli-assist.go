@@ -15,8 +15,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/attestation"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/crypto"
+	"github.com/hyperledger/fabric-private-chaincode/internal/attestation"
+	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric/common/flogging"
 )
 

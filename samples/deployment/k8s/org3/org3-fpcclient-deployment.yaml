@@ -56,7 +56,7 @@ spec:
             - name: ORDERER_CA
               value: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/consortium/orderers/orderer0/msp/tlscacerts/tlsca.consortium-cert.pem
             - name: FPC_PATH
-              value: /opt/gopath/src/github.com/hyperledger-labs/fabric-private-chaincode/
+              value: /opt/gopath/src/github.com/hyperledger/fabric-private-chaincode/
           image: fpc/fpcclient
           imagePullPolicy: IfNotPresent
           name: fpcclient
@@ -64,7 +64,7 @@ spec:
           volumeMounts:
             - mountPath: /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
               name: fpcclient-claim3
-            - mountPath: /opt/gopath/src/github.com/hyperledger-labs/fabric-private-chaincode/
+            - mountPath: /opt/gopath/src/github.com/hyperledger/fabric-private-chaincode/
               name: fpc-claim
           workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
       restartPolicy: Always

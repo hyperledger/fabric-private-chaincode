@@ -8,7 +8,7 @@ syntax = "proto3";
 import "google/protobuf/any.proto";
 
 package key_distribution;
-option go_package = "github.com/hyperledger-labs/fabric-private-chaincode/internal/protos";
+option go_package = "github.com/hyperledger/fabric-private-chaincode/internal/protos";
 
 message CCKeyRegistrationMessage {
     // defines the context as SHA256 of cc_params

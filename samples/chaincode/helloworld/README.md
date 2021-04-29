@@ -16,11 +16,11 @@ This tutorial illustrates a simple usecase where a FPC chaincode is used to stor
 * Shut down the network
 
 Please refer to [Architecture and
-Components](https://github.com/hyperledger-labs/fabric-private-chaincode#architecture-and-components)
+Components](https://github.com/hyperledger/fabric-private-chaincode#architecture-and-components)
 for more details of involved components.
 
 ## Prerequisites
-This tutorial presumes that you have installed FPC on your `$GOPATH` as described in the FPC [README.md](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/main/README.md#requirements) and `$FPC_PATH` is set accordingly.
+This tutorial presumes that you have installed FPC on your `$GOPATH` as described in the FPC [README.md](https://github.com/hyperledger/fabric-private-chaincode/blob/main/README.md#requirements) and `$FPC_PATH` is set accordingly.
 
 ## Develop chaincode
 Go to `$FPC_PATH/samples/chaincode/helloworld` and create a file named `helloworld_cc.cpp` where we will place our chaincode.
@@ -247,7 +247,7 @@ int invoke(
 
 ## Build
 
-Make sure you have the [environment variables](https://github.com/hyperledger-labs/fabric-private-chaincode#environment-settings) set.  In addition, set `SGX_BUILD=DEBUG` to enable log messages.
+Make sure you have the [environment variables](https://github.com/hyperledger/fabric-private-chaincode#environment-settings) set.  In addition, set `SGX_BUILD=DEBUG` to enable log messages.
 
 To build the helloworld chaincode, we are using CMake. This simplifies the build process and compiles our chaincode using the SGX SDK. Create `CMakeLists.txt` with the following content.
 
@@ -294,11 +294,11 @@ make
 Following is a part of expected output.  Please note `[100%] Built target enclave` message in the output.  This suggests that build was successful.
 Output:
 ```bash
-make[3]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger-labs/fabric-private-chaincode/examples/helloworld/_build'
+make[3]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger/fabric-private-chaincode/examples/helloworld/_build'
 [100%] Built target enclave
-make[2]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger-labs/fabric-private-chaincode/examples/helloworld/_build'
-/usr/bin/cmake -E cmake_progress_start /home/bcuser/work/src/github.com/hyperledger-labs/fabric-private-chaincode/examples/helloworld/_build/CMakeFiles 0
-make[1]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger-labs/fabric-private-chaincode/examples/helloworld/_build'
+make[2]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger/fabric-private-chaincode/examples/helloworld/_build'
+/usr/bin/cmake -E cmake_progress_start /home/bcuser/work/src/github.com/hyperledger/fabric-private-chaincode/examples/helloworld/_build/CMakeFiles 0
+make[1]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger/fabric-private-chaincode/examples/helloworld/_build'
 ```
 
 
@@ -528,7 +528,7 @@ See the code above how we used them in our `test.sh` of this tutorial.
 
 This section of our tutorial shows how to interact with our `helloworld` FPC chaincode using the FPC Client SDK for Go.
 We will write an application in Go that invokes the same functions of our `helloworld` FPC chaincode as we did in the previous section using the Peer CLI.
-You can find the documentation of the FPC Client SDK [here](https://pkg.go.dev/github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go) and more information about the [gateway](https://hyperledger-fabric.readthedocs.io/en/release-2.3/developapps/gateway.html) API in Hyperledger Fabric v2.3.
+You can find the documentation of the FPC Client SDK [here](https://pkg.go.dev/github.com/hyperledger/fabric-private-chaincode/client_sdk/go) and more information about the [gateway](https://hyperledger-fabric.readthedocs.io/en/release-2.3/developapps/gateway.html) API in Hyperledger Fabric v2.3.
 
 ### Develop client app
 
@@ -547,8 +547,8 @@ package main
 import (
 	"os"
 
-	fpc "github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/gateway"
-	"github.com/hyperledger-labs/fabric-private-chaincode/integration/client_sdk/go/utils"
+	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
+	"github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
 	"github.com/hyperledger/fabric/common/flogging"
 )
 
@@ -585,7 +585,7 @@ func main() {
 }
 ```
 
-As you can see in the go imports, we are going to use the FPC Client SDK [gateway](https://pkg.go.dev/github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/gateway) package named as `fpc` to better differentiate between the [gateway](https://pkg.go.dev/github.com/hyperledger/fabric-sdk-go/pkg/gateway) package provided by the Fabric SDK.
+As you can see in the go imports, we are going to use the FPC Client SDK [gateway](https://pkg.go.dev/github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway) package named as `fpc` to better differentiate between the [gateway](https://pkg.go.dev/github.com/hyperledger/fabric-sdk-go/pkg/gateway) package provided by the Fabric SDK.
 
 The main function consists just of a few lines of code.
 To focus on the use of the FPC Client SDK we omit to go through the entire process of setting up the Fabric Gateway.

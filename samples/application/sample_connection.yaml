@@ -13,13 +13,13 @@ organizations:
       - peer0.org2.example.com
     certificateAuthorities:
       - ca.org2.example.com
-    cryptoPath: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/integration/test-network/fabric-samples/test-network/organizations/peerOrganizations/org2.example.com/msp
+    cryptoPath: /project/src/github.com/hyperledger/fabric-private-chaincode/integration/test-network/fabric-samples/test-network/organizations/peerOrganizations/org2.example.com/msp
     users:
       Admin:
         cert:
-          path: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/integration/test-network/fabric-samples/test-network/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/signcerts/Admin@org2.example.com-cert.pem
+          path: /project/src/github.com/hyperledger/fabric-private-chaincode/integration/test-network/fabric-samples/test-network/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/signcerts/Admin@org2.example.com-cert.pem
         key:
-          path: /project/src/github.com/hyperledger-labs/fabric-private-chaincode/integration/test-network/fabric-samples/test-network/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/keystore/priv_sk
+          path: /project/src/github.com/hyperledger/fabric-private-chaincode/integration/test-network/fabric-samples/test-network/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/keystore/priv_sk
 peers:
   peer0.org2.example.com:
     url: grpcs://localhost:9051

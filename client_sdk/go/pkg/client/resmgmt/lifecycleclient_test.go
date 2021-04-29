@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt/fakes"
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/sgx"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt/fakes"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
