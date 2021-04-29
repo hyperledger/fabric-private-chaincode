@@ -5,10 +5,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-SCRIPT=`realpath $0`
-SCRIPTDIR=`dirname $SCRIPT`
+if [ $# -eq 0 ] || [ -z $1 ]; then
+    echo "Missing top folder input parameter for $0"
+    exit 1
+fi
 
-FILES_TO_PARSE=`find $SCRIPTDIR/.. -iname *.cpp -o -iname *.h -o -iname *.c`
+FILES_TO_PARSE=`find $1 -iname *.cpp -o -iname *.h -o -iname *.c`
 
 RET=0
 
@@ -33,7 +35,7 @@ for FILE in $FILES_TO_PARSE; do
     done
 
     #do format (if specified) or simply check format
-    if [[ $1 == 'DO_FORMAT' ]]
+    if [[ $2 == 'DO_FORMAT' ]]
     then
         clang-format -i $FILE
     else

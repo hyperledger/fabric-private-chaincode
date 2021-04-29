@@ -8,11 +8,16 @@
 
 set -e
 
+if [ $# -eq 0 ] || [ -z $1 ]; then
+    echo "Missing top folder input parameter for $0"
+    exit 1
+fi
+
 # shellcheck source=/dev/null
 source "$(cd "$(dirname "$0")" && pwd)/functions.sh"
 
 echo "Checking with gofmt"
-OUTPUT="$(gofmt -l -s ./..)"
+OUTPUT="$(gofmt -l -s $1)"
 OUTPUT="$(filterExcludedAndGeneratedFiles "$OUTPUT")"
 if [ -n "$OUTPUT" ]; then
     echo "The following files contain gofmt errors"
@@ -22,7 +27,7 @@ if [ -n "$OUTPUT" ]; then
 fi
 
 echo "Checking with goimports"
-OUTPUT="$(goimports -l ./..)"
+OUTPUT="$(goimports -l $1)"
 OUTPUT="$(filterExcludedAndGeneratedFiles "$OUTPUT")"
 if [ -n "$OUTPUT" ]; then
     echo "The following files contain goimports errors"
@@ -37,7 +42,7 @@ fi
 echo "Checking for golang.org/x/net/context"
 # shellcheck disable=SC2016
 TEMPLATE='{{with $d := .}}{{range $d.Imports}}{{ printf "%s:%s " $d.ImportPath . }}{{end}}{{end}}'
-OUTPUT="$(go list -f "$TEMPLATE" ./... | grep 'golang.org/x/net/context' | cut -f1 -d:)"
+OUTPUT="$(go list -f "$TEMPLATE" $1/... | grep 'golang.org/x/net/context' | cut -f1 -d:)"
 if [ -n "$OUTPUT" ]; then
     echo "The following packages import golang.org/x/net/context instead of context"
     echo "$OUTPUT"
@@ -49,7 +54,7 @@ fi
 echo "Checking for github.com/gogo/protobuf"
 # shellcheck disable=SC2016
 TEMPLATE='{{with $d := .}}{{range $d.Imports}}{{ printf "%s:%s " $d.ImportPath . }}{{end}}{{end}}'
-OUTPUT="$(go list -f "$TEMPLATE" ./... | grep 'github.com/gogo/protobuf' | cut -f1 -d:)"
+OUTPUT="$(go list -f "$TEMPLATE" $1/... | grep 'github.com/gogo/protobuf' | cut -f1 -d:)"
 if [ -n "$OUTPUT" ]; then
     echo "The following packages import github.com/gogo/protobuf instead of github.com/golang/protobuf"
     echo "$OUTPUT"
@@ -58,7 +63,7 @@ fi
 
 echo "Checking with go vet"
 PRINTFUNCS="Debug,Debugf,Print,Printf,Info,Infof,Warning,Warningf,Error,Errorf,Critical,Criticalf,Sprint,Sprintf,Log,Logf,Panic,Panicf,Fatal,Fatalf,Notice,Noticef,Wrap,Wrapf,WithMessage"
-OUTPUT="$(go vet -all -printfuncs "$PRINTFUNCS" ./...)"
+OUTPUT="$(go vet -all -printfuncs "$PRINTFUNCS" $1/...)"
 if [ -n "$OUTPUT" ]; then
     echo "The following files contain go vet errors"
     echo "$OUTPUT"
