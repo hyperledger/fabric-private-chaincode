@@ -39,7 +39,7 @@ shopt -s nullglob
 
 for org in "${orgs[@]}"; do
 
-  ORG_PATH=${FPC_PATH}/integration/test-network/fabric-samples/test-network/organizations/peerOrganizations/${org}.example.com
+  ORG_PATH=${FPC_PATH}/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/${org}.example.com
   CONNECTIONS_PATH=${ORG_PATH}/connection-${org}.yaml
   backup "${CONNECTIONS_PATH}"
 
@@ -84,7 +84,7 @@ yq v "${tmp_dir}/peers.yaml"
 
 # merge peers.yaml into all connection files
 for org in "${orgs[@]}"; do
-  ORG_PATH="${FPC_PATH}/integration/test-network/fabric-samples/test-network/organizations/peerOrganizations/${org}.example.com"
+  ORG_PATH="${FPC_PATH}/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/${org}.example.com"
   CONNECTIONS_PATH="${ORG_PATH}/connection-${org}.yaml"
   yq m -i "${CONNECTIONS_PATH}" "${tmp_dir}/peers.yaml"
   yq v "${CONNECTIONS_PATH}"

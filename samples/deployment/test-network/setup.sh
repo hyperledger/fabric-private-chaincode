@@ -64,7 +64,7 @@ peers=("peer0.org1.example.com" "peer0.org2.example.com")
 if [ ! -z ${DOCKERD_FPC_PATH+x} ]; then
   echo "Oo we are in docker mode! we need to use the host fpc path"
   FPC_PATH=${DOCKERD_FPC_PATH}
-  FABRIC_SAMPLES=${FPC_PATH}/integration/test-network/fabric-samples
+  FABRIC_SAMPLES=${FPC_PATH}/samples/deployment/test-network/fabric-samples
   echo "set FPC_PATH = ${FPC_PATH}"
 
   sed -i "s+\.\./+${FABRIC_SAMPLES}/test-network/+g" "${DOCKER_COMPOSE_TEST_NET}"
