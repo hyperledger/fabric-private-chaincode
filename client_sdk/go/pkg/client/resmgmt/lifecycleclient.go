@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 // Package resmgmt provides FPC specific chaincode management functionality.
 //
 // For more information on the FPC management commands and related constraints on chaincode versions and endorsement policies,
-// see https://github.com/hyperledger-labs/fabric-private-chaincode/blob/main/docs/design/fabric-v2+/fpc-management.md
+// see https://github.com/hyperledger/fabric-private-chaincode/blob/main/docs/design/fabric-v2+/fpc-management.md
 //
 // Example:
 //
@@ -34,16 +34,16 @@ SPDX-License-Identifier: Apache-2.0
 //  	log.Fatal(err)
 //  }
 //
-// See also https://github.com/hyperledger-labs/fabric-private-chaincode/blob/main/integration/client_sdk/go/utils.go
+// See also https://github.com/hyperledger/fabric-private-chaincode/blob/main/integration/client_sdk/go/utils.go
 // for a running example.
 //
 package resmgmt
 
 import (
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/sgx"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/attestation"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
+	"github.com/hyperledger/fabric-private-chaincode/internal/attestation"
+	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel/invoke"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"

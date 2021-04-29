@@ -10,9 +10,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/gateway/fakes"
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/gateway/internal"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/crypto"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway/fakes"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway/internal"
+	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	"github.com/stretchr/testify/assert"
 )

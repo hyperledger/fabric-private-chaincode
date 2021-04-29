@@ -4,7 +4,7 @@
 
 chaincode:
   externalBuilders:
-    - path: /opt/gopath/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/externalBuilder/chaincode_server
+    - path: /opt/gopath/src/github.com/hyperledger/fabric-private-chaincode/fabric/externalBuilder/chaincode_server
       name: fpc-external-launcher
       propagateEnvironment:
         - CORE_PEER_ID

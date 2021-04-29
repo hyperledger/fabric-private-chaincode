@@ -4,7 +4,7 @@ package fakes
 import (
 	"sync"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/pkg/gateway/internal"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway/internal"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	gatewaya "github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )

@@ -10,7 +10,7 @@ package attestation
 import (
 	"testing"
 
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 )
 
 func Test(t *testing.T) {

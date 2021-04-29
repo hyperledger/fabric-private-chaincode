@@ -5,7 +5,7 @@ Copyright 2020 Intel Corporation
 SPDX-License-Identifier: Apache-2.0
 */
 
-// this package defines the client-facing interface of ERCC as defined in the ERCC Interface section in [specifications](https://github.com/hyperledger-labs/fabric-private-chaincode/blob/main/docs/design/fabric-v2%2B/interfaces.md)
+// this package defines the client-facing interface of ERCC as defined in the ERCC Interface section in [specifications](https://github.com/hyperledger/fabric-private-chaincode/blob/main/docs/design/fabric-v2%2B/interfaces.md)
 package registry
 
 import (
@@ -14,10 +14,10 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
-	"github.com/hyperledger-labs/fabric-private-chaincode/ercc/attestation"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/protos"
-	"github.com/hyperledger-labs/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	"github.com/hyperledger/fabric-private-chaincode/ercc/attestation"
+	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/pkg/errors"
 )

@@ -37,7 +37,7 @@ ARG APT_ADD_PKGS=
 # paths relative to GOPATH. to share across stages, has to be defined global but at
 # this stage we do not know GOPATH, so has to be relative ...
 ARG FABRIC_REL_PATH=src/github.com/hyperledger/fabric
-ARG FPC_REL_PATH=src/github.com/hyperledger-labs/fabric-private-chaincode
+ARG FPC_REL_PATH=src/github.com/hyperledger/fabric-private-chaincode
 
 
 # Note on multi-stage: pre-docker build kit, all stages are evaluated, even if they are not required.
@@ -54,7 +54,7 @@ ARG SGX_MODE
 # config/build params
 ARG FABRIC_REPO=https://github.com/hyperledger/fabric.git
 ARG FABRIC_VERSION=2.3.0
-ARG FPC_REPO_URL=https://github.com/hyperledger-labs/fabric-private-chaincode.git
+ARG FPC_REPO_URL=https://github.com/hyperledger/fabric-private-chaincode.git
 ARG FPC_REPO_BRANCH_TAG_OR_COMMIT=main
 ARG GIT_USER_NAME=tester
 ARG GIT_USER_EMAIL=tester@fpc

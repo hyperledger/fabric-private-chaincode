@@ -97,7 +97,7 @@ credentials, err := getState(k)
 Data types are defined in `protos/fpc/fpc.proto` and `protos/fpc/attestation.proto`.
 
 ERCC keeps in instance of an attestation.Verifier to check an attestation evidence message. ERCC just passes the serialized attestation evidence message to the verifier.
-Depending on the attestation protocol (e.g., EPID- or DCAP-based attestation), the verifier implements the corresponding logic. Details of the evidence verification are defined in [#412](https://github.com/hyperledger-labs/fabric-private-chaincode/issues/412).
+Depending on the attestation protocol (e.g., EPID- or DCAP-based attestation), the verifier implements the corresponding logic. Details of the evidence verification are defined in [#412](https://github.com/hyperledger/fabric-private-chaincode/issues/412).
 
 ```go
 type EnclaveRegistryCC struct {
@@ -190,7 +190,7 @@ The internal TLCC state consists of the current ledger state (block number, inte
 Note: Sessions information for ecc communication is maintained by the  [Ledger Enclave - FPC
 Stub Secure Channel Module](interfaces.ecc-tlcc-channel.md) separatedly.
 
-More details on the TLCC state will also be output of [#402](https://github.com/hyperledger-labs/fabric-private-chaincode/issues/402). Therefore, the state representation here is not strict about actually data types, but should illustrate what state is maintained.
+More details on the TLCC state will also be output of [#402](https://github.com/hyperledger/fabric-private-chaincode/issues/402). Therefore, the state representation here is not strict about actually data types, but should illustrate what state is maintained.
 
 ```c++
 // TODO: this needs some more brain cycles with respect of #402 and #410
@@ -286,9 +286,9 @@ additional ocall provided by that module.
 An ECC instance keeps a local reference of the FPC chaincode enclave id.
 
 ECC also keeps a reference to an EvidenceService is part of the attestation module as defined
-[#412](https://github.com/hyperledger-labs/fabric-private-chaincode/issues/412).
+[#412](https://github.com/hyperledger/fabric-private-chaincode/issues/412).
 
-ECC instance also keeps a reference to a sealed storage module as defined in [#421](https://github.com/hyperledger-labs/fabric-private-chaincode/issues/421).
+ECC instance also keeps a reference to a sealed storage module as defined in [#421](https://github.com/hyperledger/fabric-private-chaincode/issues/421).
 
 ```go
 type EnclaveChaincode struct {
@@ -355,7 +355,7 @@ public int ecall_get_CSR(
 ## State:
 We use the `fsm` to control the state of ecc, for instance, to signal
 when an ecc enclave is ready to process transaction invocations or additional
-ecc state, such as key provision must be completed. More details on the provisioning using the sealed storage module in [#421](https://github.com/hyperledger-labs/fabric-private-chaincode/issues/421).
+ecc state, such as key provision must be completed. More details on the provisioning using the sealed storage module in [#421](https://github.com/hyperledger/fabric-private-chaincode/issues/421).
 
 ```c++
 // this is create on enclave creation and kept inside the enclave
@@ -438,4 +438,4 @@ void log_notice(const char* format, ...);
 void log_info(const char* format, ...);
 void log_debug(const char* format, ...);
 ```
-See https://github.com/hyperledger-labs/fabric-private-chaincode/blob/main/ecc_enclave/enclave/shim.h
+See https://github.com/hyperledger/fabric-private-chaincode/blob/main/ecc_enclave/enclave/shim.h

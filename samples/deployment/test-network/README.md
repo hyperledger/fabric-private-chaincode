@@ -35,7 +35,7 @@ That is, we need to install the external builders by adding the following lines 
 ```yaml
 chaincode:
   externalBuilders:
-    - path: /opt/gopath/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/externalBuilder/chaincode_server
+    - path: /opt/gopath/src/github.com/hyperledger/fabric-private-chaincode/fabric/externalBuilder/chaincode_server
       name: fpc-external-launcher
       propagateEnvironment:
         - CORE_PEER_ID
@@ -44,7 +44,7 @@ chaincode:
 
 Since the Fabric-Samples test network uses docker and docker-compose, we need to ensure that the external Builder
 scripts are also available inside the peer container. For this reason, we mount `$FPC_PATH/fabric/externalBuilder/chaincode_server` into
-`/opt/gopath/src/github.com/hyperledger-labs/fabric-private-chaincode/fabric/externalBuilder/chaincode_server`.
+`/opt/gopath/src/github.com/hyperledger/fabric-private-chaincode/fabric/externalBuilder/chaincode_server`.
 
 For convenience, we provide a `setup.sh` script to update the `core.yaml` and the docker compose files to mount the external
 Builder.

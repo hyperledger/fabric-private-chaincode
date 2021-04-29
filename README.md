@@ -145,11 +145,11 @@ Additional Google documents provide details on FPC 1.0:
 
 ## Releases
 
-- [v1.0-rc1 - Feburary 5, 2021](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/v1.0-rc1)
+- [v1.0-rc1 - Feburary 5, 2021](https://github.com/hyperledger/fabric-private-chaincode/tree/v1.0-rc1)
 
-- [Tech Preview - July 2, 2020](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/concept-release-2.0)
+- [Tech Preview - July 2, 2020](https://github.com/hyperledger/fabric-private-chaincode/tree/concept-release-2.0)
 
-- [Concept Release - March 2, 2020](https://github.com/hyperledger-labs/fabric-private-chaincode/tree/concept-release-1.0)
+- [Concept Release - March 2, 2020](https://github.com/hyperledger/fabric-private-chaincode/tree/concept-release-1.0)
 
 *WARNING: This project is in continous development and the `main`
  branch will not always be stable. Unless you want to actively
@@ -172,7 +172,7 @@ your [development environment](https://hyperledger-fabric.readthedocs.io/en/rele
 
 Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in this documentation and default configuration that your `$GOPATH` has a _single_ root-directoy!)
 ```bash
-git clone --recursive https://github.com/hyperledger-labs/fabric-private-chaincode.git $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
+git clone --recursive https://github.com/hyperledger/fabric-private-chaincode.git $GOPATH/src/github.com/hyperledger/fabric-private-chaincode
 ```
 
 Moreover, we assume that you are familiar with the Intel SGX SDK.
@@ -224,9 +224,9 @@ We currently support both `linkable` and `unlinkable` signatures for the attesta
 
 Place your ias api key and your SPID in the `ias` folder as follows:
 ```bash
-echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/api_key.txt
-echo 'YOUR_SPID_TYPE' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/spid_type.txt
-echo 'YOUR_SPID' > ${GOPATH}/src/github.com/hyperledger-labs/fabric-private-chaincode/config/ias/spid.txt
+echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger/fabric-private-chaincode/config/ias/api_key.txt
+echo 'YOUR_SPID_TYPE' > ${GOPATH}/src/github.com/hyperledger/fabric-private-chaincode/config/ias/spid_type.txt
+echo 'YOUR_SPID' > ${GOPATH}/src/github.com/hyperledger/fabric-private-chaincode/config/ias/spid.txt
 ```
 where `YOUR_SPID_TYPE` must be `epid-linkable` or `epid-unlinkable`, depending on the type of your subscription.
 
@@ -282,7 +282,7 @@ cd utils/docker; make run
 This will open a shell inside the FPC development container, with environment variables like GOPATH appropriately defined and all
 dependencies like fabric built, ready to build and run FPC.
 
-Note that by default the dev container mounts your local cloned FPC project as a volume to `/project/src/github.com/hyperledger-labs/fabric-private-chaincode` within the docker container.
+Note that by default the dev container mounts your local cloned FPC project as a volume to `/project/src/github.com/hyperledger/fabric-private-chaincode` within the docker container.
 This allows you to edit the content of the repository using your favorite editor in your system and the changes inside the docker container. Additionally, you are also not loosing changes inside the container when you reboot or the container gets stopped for other reasons.
 
 Now you are ready to start development *within* the container. Continue with building FPC as described in the [Build Fabric Private Chaincode
@@ -403,7 +403,7 @@ Make sure the source of Fabric is in your `$GOPATH`.
 
 Once you have your development environment up and running (i.e., using our docker-based setup or install all dependencies on your machine) you can build FPC and start developing your own FPC application.
 ```bash
-cd $GOPATH/src/github.com/hyperledger-labs/fabric-private-chaincode
+cd $GOPATH/src/github.com/hyperledger/fabric-private-chaincode
 make
  ```
 
@@ -559,7 +559,7 @@ before designing, implementing and deploying an FPC-based solution.
 
 ### FPC Client-side SDK
 
-See **[Godocs](https://pkg.go.dev/github.com/hyperledger-labs/fabric-private-chaincode/client_sdk/go/)**
+See **[Godocs](https://pkg.go.dev/github.com/hyperledger/fabric-private-chaincode/client_sdk/go/)**
 for Go Client SDK.
 For the command-line invocations, use the **`fabric/bin/peer.sh`** wrapper script.
 Both make FPC related client-side encryption and decryption transparent to the user, i.e., client-side programming is mostly standard Fabric and agnostic to FPC.
