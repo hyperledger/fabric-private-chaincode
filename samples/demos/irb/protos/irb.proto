@@ -1,0 +1,157 @@
+// Copyright IBM Corp. All Rights Reserved.
+// Copyright 2020 Intel Corporation
+//
+// SPDX-License-Identifier: Apache-2.0
+
+// SAS
+service StudyApprovalService {
+    // Note that only details of approved studies are returned
+    rpc GetStudyDetails (StudyDetailsRequest) returns StudyDetailsResponse {}
+}
+
+message StudyDetailsRequest {
+    string study_id = 1;
+}
+
+message StudyDetailsMessage {
+    string metadata = 1;
+    repeated Identity participant = 2;
+}
+
+message StudyDetailsResponse {
+    bytes study_details_message = 1;
+
+    // signed by Study Approval Service (SAS)
+    // used to be verified by EAS when new study is created
+    bytes signature = 2;
+
+    Status status = 3;
+}
+
+// EAS
+service ExperimentApprovalService {
+    rpc RegisterData (RegisterDataRequest) returns Status {}
+
+    rpc RegisterStudy (SubmitStudyRequest) returns Status {}
+
+    rpc NewExperiment (NewExperimentRequest) returns Status {}
+    rpc GetExperimentProposal (GetExperimentRequest) returns GetExperimentResponse {}
+    rpc ApproveExperiment (ApprovalRequest) returns Status {}
+
+    rpc RequestEvaluationPack (EvaluationRequest) returns EvaluationPackResponse {}
+
+    // helper functions
+    // rpc GetStudy ... return ... {}
+}
+
+message RegisterDataRequest {
+    Identity participant = 1;
+    bytes decryption_key = 2;
+    string data_handler = 3;
+}
+
+message SubmitStudyRequest {
+   StudyDetailsResponse details = 1; 
+}
+
+message NewExperimentRequest {
+    Experiment experiment = 1;
+}
+
+message GetExperimentResponse {
+    ExperimentProposal experiment_proposal = 1;
+    Status status = 2;
+}
+
+message ExperimentProposal {
+    string study_id = 1;
+    string experiment_id = 2;
+    string mrenclave = 3;
+    string metadata = 4;
+    Identity worker = 5;
+    bytes attestation = 6;
+}
+
+message Experiment {
+    ExperimentProposal = 1;
+    repeated Approval approval = 2;
+}
+
+message ApproveRequest {
+    Approval approval = 1;
+}
+
+message Approval {
+    string proposal_id = 1;
+    // serialized Experiment Proposal
+    bytes proposal = 2;
+    enum Decision {
+        APPROVED = 0;
+        REJECTED = 1;
+    }
+    Decision decision = 3;
+    Identity approver = 4;
+
+    // signature over proposal_id, proposal, decision, and approver
+    bytes signature = 4;
+}
+
+message EvaluationRequest {
+    string study_id = 1;
+    string experiment_id = 2;
+}
+
+message EvaluationPackResponse {
+    // this is ciphertext of a serialized EvaluationPack msg
+    bytes encrypted_evaluationPack = 1;
+}
+
+message EvaluationPack {
+    repeated EvaluationPackItem item = 1;
+}
+
+message EvaluationPackItem {
+    bytes encryption_key = 1;
+    string data_handler = 2;
+}
+
+// EAS State
+
+// note that the State message is just here to represent the KVS accessable via putState and getState functions within FPC
+message State {
+    map<string, Study> state = 1;
+    map<Identity, Data> registered_data = 2; 
+}
+
+message Study {
+    string study_id = 1;
+    repeated Identity participant = 2;
+    repeated Experiment 
+}
+
+message Data {
+    Identity participant = 1;
+    bytes decryption_key = 2;
+    string data_handler = 3;
+}
+
+// Graphene Worker
+service Worker {
+    rpc Execute (ExecuteRequest) returns Status {}
+}
+
+message ExecuteRequest {
+    string experiment_id = 1;
+    bytes encrypted_evaluationPack = 2; 
+}
+
+// Common messages
+message Identity {
+    string uuid = 1;
+    bytes public_key = 2;
+}
+
+message Status {
+    string msg = 1;
+    string error = 2;
+}
