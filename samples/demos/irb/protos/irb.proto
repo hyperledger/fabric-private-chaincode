@@ -16,8 +16,9 @@ message StudyDetailsRequest {
 }
 
 message StudyDetailsMessage {
-    required string metadata = 1;
-    repeated Identity participant = 2;
+    required string study_id = 1;
+    required string metadata = 2;
+    repeated Identity participant = 3;
 }
 
 message StudyDetailsResponse {
@@ -88,7 +89,7 @@ message ApprovalRequest {
 }
 
 message Approval {
-    required string proposal_id = 1;
+    required string experiment_id = 1;
     // serialized Experiment Proposal
     required bytes proposal = 2;
     enum Decision {
@@ -125,6 +126,7 @@ message EvaluationPackItem {
 
 // note that the State message is just here to represent the KVS accessable via putState and getState functions within FPC
 message State {
+    // as key we use study id
     map<string, Study> state = 1;
     // as key we use an identity.uuid
     map<string, Data> registered_data = 2;
