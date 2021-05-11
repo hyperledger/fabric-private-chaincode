@@ -106,7 +106,7 @@ func main() {
 	userId := getEnvWithFallback("USER_ID", "User1")
 
 	// we use the mspPath and connections profil provided by the fabric-samples test network if not specified by the user
-	testNetworkPath := filepath.Join(fpcPath, "integration", "test-network", "fabric-samples", "test-network")
+	testNetworkPath := filepath.Join(fpcPath, "samples", "deployment", "test-network", "fabric-samples", "test-network")
 
 	// If not set we use the msp folder in the fabric-samples test network
 	mspPath := getEnvWithFallback("MSP_PATH", filepath.Join(
