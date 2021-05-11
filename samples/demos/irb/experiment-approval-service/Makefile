@@ -15,9 +15,8 @@ $(BUILD_DIR):
 		cmake ./..; \
 	fi
 
-build: $(BUILD_DIR) protos
-#build: $(BUILD_DIR) protos
-	$(MAKE) --directory=$<
+build: protos $(BUILD_DIR)
+	$(MAKE) --directory=$(BUILD_DIR)
 
 clean: protos-clean
 	rm -rf $(BUILD_DIR)
