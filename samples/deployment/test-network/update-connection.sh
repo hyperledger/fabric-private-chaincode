@@ -89,3 +89,5 @@ for org in "${orgs[@]}"; do
   yq m -i "${CONNECTIONS_PATH}" "${tmp_dir}/peers.yaml"
   yq v "${CONNECTIONS_PATH}"
 done
+
+echo "Updated!"

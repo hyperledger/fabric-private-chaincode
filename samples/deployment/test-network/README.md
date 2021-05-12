@@ -87,11 +87,14 @@ export TEST_CC_ID=echo
 make ercc-ecc-start
 ```
 
+You should see two instances of the FPC Echo chaincode and two instances of the FPC Enclave Registry chaincode running.
 The FPC Chaincode is now up and running, ready for processing invocations!
+Note that the containers are running in foreground in your terminal using docker-compose. You can close them by pressing Ctrl+C.
 
 ## Interact with the FPC Chaincode
 
 Now we show how to use the [FPC Client SDK](../../../client_sdk/go) to interact with the FPC Chaincode running on the test network.
+We continue with a new terminal to keep the FPC Chaincode running in the other terminal.
 
 The Fabric-Samples test network generates the connection profiles which are required by the FPC Client SDK to connect to
 the network. For example, you can find the connection profile for `org1` in
