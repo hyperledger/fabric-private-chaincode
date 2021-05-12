@@ -86,12 +86,27 @@ Make sure you have set `TEST_CC_ID` to the same chaincode ID as used in the earl
 export TEST_CC_ID=echo
 make ercc-ecc-start
 ```
-
+You should see two instances of the FPC Echo chaincode and two instances of the FPC Enclave Registry chaincode running such as in the following example:
+```bash
+Creating ercc.peer0.org2.example.com ... done
+Creating ercc.peer0.org1.example.com ... done
+Creating echo.peer0.org2.example.com ... done
+Creating echo.peer0.org1.example.com ... done
+Attaching to echo.peer0.org2.example.com, echo.peer0.org1.example.com, ercc.peer0.org1.example.com, ercc.peer0.org2.example.com
+echo.peer0.org1.example.com    | 2021-05-11 16:11:31.342 UTC [ecc] main -> INFO 001 starting fpc chaincode (echo_16B510D1D2581EA4679A2D0D1C50A7C3BE87282324D5AB4DBAA89C1CC4832C85:73e7a0e342f5ea85ec2809a4c9423f17ad0388824be4e85ce02d0b80b6d39723)
+echo.peer0.org2.example.com    | 2021-05-11 16:11:31.112 UTC [ecc] main -> INFO 001 starting fpc chaincode (echo_16B510D1D2581EA4679A2D0D1C50A7C3BE87282324D5AB4DBAA89C1CC4832C85:fcc2e8287c940009011a87830a1f5ca3085c4412fb86fa86060a094cac1e5f03)
+ercc.peer0.org2.example.com    | 2021-05-11 16:11:32.107 UTC [cgo] 0 -> INFO 001 Initializing logger
+ercc.peer0.org1.example.com    | 2021-05-11 16:11:32.108 UTC [cgo] 0 -> INFO 001 Initializing logger
+ercc.peer0.org2.example.com    | 2021-05-11 16:11:32.170 UTC [ercc] main -> INFO 002 starting enclave registry (ercc_1.0:db2e97768a87d2b9ed9d86a729a767ef1040fb2e20d2f2a907e727ece7256028)
+ercc.peer0.org1.example.com    | 2021-05-11 16:11:32.199 UTC [ercc] main -> INFO 002 starting enclave registry (ercc_1.0:0919bd1be2e779a582a537da8e29fba241972c3531472006b170b0c26a1d71fb)
+```
 The FPC Chaincode is now up and running, ready for processing invocations!
+Note that the containers are running in foreground in your terminal using docker-compose.
 
 ## Interact with the FPC Chaincode
 
 Now we show how to use the [FPC Client SDK](../../../client_sdk/go) to interact with the FPC Chaincode running on the test network.
+We continue with a new terminal to keep the FPC Chaincode running in the other terminal as mentioned before.
 
 The Fabric-Samples test network generates the connection profiles which are required by the FPC Client SDK to connect to
 the network. For example, you can find the connection profile for `org1` in

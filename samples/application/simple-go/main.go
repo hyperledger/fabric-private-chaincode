@@ -199,7 +199,7 @@ func main() {
 	contract := fpc.GetContract(network, ccID)
 
 	// Invoke FPC Chaincode
-	logger.Infof("--> Invoke FPC chaincode: ")
+	logger.Infof("--> Invoke FPC chaincode: %s", contract.Name())
 	result, err := contract.SubmitTransaction("myFunction", "arg1", "arg2", "arg3")
 	if err != nil {
 		logger.Fatalf("Failed to Submit transaction: %v", err)
