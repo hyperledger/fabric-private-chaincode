@@ -75,17 +75,17 @@ spec:
         #     type: Directory
         - name: cli-claim2
           hostPath:
-            path: /fpc/integration/k8s/demo/channel-artifacts
+            path: /fpc/samples/deployment/k8s/channel-artifacts
             type: Directory
         - name: cli-claim3
           hostPath:
-            path: /fpc/integration/k8s/demo/crypto-config
+            path: /fpc/samples/deployment/k8s/crypto-config
             type: Directory
         - name: cli-claim4
           hostPath:
-            path: /fpc/integration/k8s/demo/packages
+            path: /fpc/samples/deployment/k8s/packages
             type: Directory
         - name: cli-claim5
           hostPath:
-            path: /fpc/integration/k8s/demo/scripts
+            path: /fpc/samples/deployment/k8s/scripts
             type: Directory

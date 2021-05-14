@@ -91,13 +91,13 @@ spec:
             type: DirectoryOrCreate
         - name: orderer2-claim0
           hostPath:
-            path: /fpc/integration/k8s/demo/channel-artifacts/genesis.block
+            path: /fpc/samples/deployment/k8s/channel-artifacts/genesis.block
         - name: orderer2-claim1
           hostPath:
-            path: /fpc/integration/k8s/demo/crypto-config/ordererOrganizations/consortium/orderers/orderer2/msp
+            path: /fpc/samples/deployment/k8s/crypto-config/ordererOrganizations/consortium/orderers/orderer2/msp
         - name: orderer2-claim2
           hostPath:
-            path: /fpc/integration/k8s/demo/crypto-config/ordererOrganizations/consortium/orderers/orderer2/tls
+            path: /fpc/samples/deployment/k8s/crypto-config/ordererOrganizations/consortium/orderers/orderer2/tls
 ---
 apiVersion: v1
 kind: Service

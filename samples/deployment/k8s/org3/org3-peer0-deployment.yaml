@@ -80,11 +80,11 @@ spec:
       volumes:
         - name: peer0-org3-claim1
           hostPath:
-            path: /fpc/integration/k8s/demo/crypto-config/peerOrganizations/org3/peers/peer0-org3/msp
+            path: /fpc/samples/deployment/k8s/crypto-config/peerOrganizations/org3/peers/peer0-org3/msp
             type: Directory
         - name: peer0-org3-claim2
           hostPath:
-            path: /fpc/integration/k8s/demo/crypto-config/peerOrganizations/org3/peers/peer0-org3/tls
+            path: /fpc/samples/deployment/k8s/crypto-config/peerOrganizations/org3/peers/peer0-org3/tls
             type: Directory
         - name: peer0-persistentdata
           hostPath:
