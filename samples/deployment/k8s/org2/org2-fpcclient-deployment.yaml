@@ -71,7 +71,7 @@ spec:
       volumes:
         - name: fpcclient-claim3
           hostPath:
-            path: /fpc/integration/k8s/demo/crypto-config
+            path: /fpc/samples/deployment/k8s/crypto-config
             type: Directory
         - name: fpc-claim
           hostPath:
