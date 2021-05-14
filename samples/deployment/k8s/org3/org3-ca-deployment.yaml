@@ -51,7 +51,7 @@ spec:
       volumes:
         - name: ca-org3-claim0
           hostPath:
-            path: /fpc/integration/k8s/demo/crypto-config/peerOrganizations/org3/ca/
+            path: /fpc/samples/deployment/k8s/crypto-config/peerOrganizations/org3/ca/
             type: Directory
 ---
 apiVersion: v1
