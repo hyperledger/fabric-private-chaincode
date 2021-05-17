@@ -83,7 +83,7 @@ minikube dashboard
 First let's go the demo folder
 
 ```bash
-cd $FPC_PATH/integration/k8s/demo
+cd $FPC_PATH/samples/deployment/k8s
 ```
 
 In order to use our docker images for the Enclave Registry, the FPC Chaincode, and the FPC Client App, we need to
@@ -118,7 +118,7 @@ If you have installed them somewhere else on your system, please set `FABIC_BIN_
 
 For instance, you can download the binaries and use them by following the commands:
 ```bash
-cd $FPC_PATH/integration/k8s/demo
+cd $FPC_PATH/samples/deployment/k8s
 curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.3.0 1.4.9 -d -s
 export FABRIC_BIN_DIR=$(pwd)/bin
 ```
@@ -126,7 +126,7 @@ export FABRIC_BIN_DIR=$(pwd)/bin
 Use the `generate.sh` script to create the crypto material for the peer organizations and the orderer. Moreover, this
 script create the genesis block, the client connection profiles, and packages the FPC Chaincode and the FPC Enclave Registry.
 ```bash
-cd $FPC_PATH/integration/k8s/demo
+cd $FPC_PATH/samples/deployment/k8s
 ./generate.sh
 ````
 
