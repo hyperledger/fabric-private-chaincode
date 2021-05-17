@@ -1,0 +1,7 @@
+# Copyright 2021 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+run:
+	PYTHONPATH=../../ python3 workerCLI.py
+

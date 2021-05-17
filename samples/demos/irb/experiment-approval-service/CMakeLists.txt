@@ -13,6 +13,7 @@ set(SOURCE_FILES
     errors.cpp
     messages.cpp
     _protos/irb.pb.c
+    storage.cpp
     )
 
 # NANOPB for protos

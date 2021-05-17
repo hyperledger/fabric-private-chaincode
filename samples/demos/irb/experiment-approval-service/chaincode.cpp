@@ -10,7 +10,7 @@
 #include "errors.h"
 #include "messages.h"
 
-Contract::ExperimentApprovalService::ExperimentApprovalService(shim_ctx_ptr_t ctx)
+Contract::ExperimentApprovalService::ExperimentApprovalService(shim_ctx_ptr_t ctx) : storage_(ctx)
 {
     // set Study Approval Service verification key
 
@@ -23,6 +23,26 @@ CONTRACT_API_PROTOTYPE(Contract::ExperimentApprovalService::registerData)
 {
     // store participant_uuid <- <dec_key, data_handler>
 
+    std::string uuid;
+    ByteArray pk, dk;
+    bool b;
+    Contract::EASMessage icm(inputString);
+
+    // get relevant fields
+    b = icm.fromRegisterDataRequest(uuid, pk, dk);
+    FAST_FAIL_CHECK_EX(er, &icm.er_, EC_INVALID_INPUT, !b);
+
+    LOG_DEBUG("Participant uuid: %s", uuid);
+    LOG_DEBUG("Participant pk: %s", std::string((char*)pk.data(), pk.size()));
+
+    // TODO implement logic
+
+    // prepare status message
+    Contract::EASMessage ocm;
+    b = ocm.toStatus("", 1, outputString);
+    FAST_FAIL_CHECK_EX(er, &ocm.er_, EC_INVALID_INPUT, !b);
+
+    er.set(EC_SUCCESS, "");
     return true;
 }
 

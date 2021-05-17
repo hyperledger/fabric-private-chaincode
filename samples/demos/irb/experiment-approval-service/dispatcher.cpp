@@ -34,7 +34,7 @@ Contract::Dispatcher::Dispatcher(const std::string& functionName,
     LOG_DEBUG("Try dispatch function %s with parameters %s", functionName_.c_str(),
         functionParameters[0].c_str());
 
-    // Call auction function
+    // Call function
     auto fIter = fMap_.find(functionName_);
     if (fIter == fMap_.end())
     {

@@ -105,6 +105,37 @@ func SignMessage(privateKey []byte, message []byte) (signature []byte, e error) 
 	return C.GoBytes(signaturePtr, C.int(signatureActualLen)), nil
 }
 
+func PkEncryptMessage(publicKey []byte, message []byte) (encryptedMessage []byte, e error) {
+	//This is an RSA encryption performed with the pdo crypto library
+	//Importantly, the library uses 2048bit RSA keys & OAEP encoding, so the input size can be at most ~200bytes
+	//TODO-1: bump up the key length to 3072 to match NIST strength
+	//TODO-2: extend procedure for large input sizes (via hybrid encryption)
+
+	inputMessagePtr := C.CBytes(message)
+	defer C.free(inputMessagePtr)
+
+	encryptionKeyPtr := C.CBytes(publicKey)
+	defer C.free(encryptionKeyPtr)
+
+	//the max length of the message to be encrypted is dictated by the pdo crypto lib (see above)
+	if len(message) > int(C.RSA_PLAINTEXT_LEN) {
+		return nil, fmt.Errorf("input message too long for encryption")
+	}
+	//TODO add tests with different message lengths
+	encryptedMessageSize := C.RSA_KEY_SIZE >> 3 //bits-to-bytes conversion
+	encryptedMessagePtr := C.malloc(C.ulong(encryptedMessageSize))
+	defer C.free(encryptedMessagePtr)
+
+	encryptedMessageActualSize := C.uint32_t(0)
+
+	ret := C.pk_encrypt_message((*C.uint8_t)(encryptionKeyPtr), C.uint32_t(len(publicKey)), (*C.uint8_t)(inputMessagePtr), C.uint32_t(len(message)), (*C.uint8_t)(encryptedMessagePtr), C.uint32_t(encryptedMessageSize), &encryptedMessageActualSize)
+	if ret == false {
+		return nil, fmt.Errorf("encryption failed")
+	}
+
+	return C.GoBytes(encryptedMessagePtr, C.int(encryptedMessageActualSize)), nil
+}
+
 func PkDecryptMessage(privateKey []byte, encryptedMessage []byte) (message []byte, e error) {
 	//This is an RSA dencryption performed with the pdo crypto library
 	//Importantly, the library uses 2048bit RSA keys & OAEP encoding, so the input size can be at most ~200bytes

@@ -1,0 +1,56 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+---
+name: integration-test-network
+version: 1.0.0
+
+client:
+  logging:
+    level: info
+  organization: SampleOrg
+  connection:
+    timeout:
+      peer:
+        endorser: '300'
+
+organizations:
+  SampleOrg:
+    mspid: SampleOrg
+    cryptoPath: ${FPC_PATH}/integration/config/msp
+    users:
+      Admin:
+        cert:
+          path: ${FPC_PATH}/integration/config/msp/signcerts/peer.pem
+        key:
+          path: ${FPC_PATH}/integration/config/msp/keystore/key.pem
+    peers:
+      - jdoe_test.sampleorg.example.com
+
+orderers:
+  _default:
+    grpcOptions:
+      allow-insecure: true
+
+  orderer.example.com:
+    url: grpc://127.0.0.1:7050
+
+peers:
+  _default:
+    grpcOptions:
+      allow-insecure: true
+
+  jdoe_test.sampleorg.example.com:
+    url: grpc://127.0.0.1:7051
+
+channels:
+  _default:
+    orderers:
+      - orderer.example.com
+    peers:
+      jdoe_test.sampleorg.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
