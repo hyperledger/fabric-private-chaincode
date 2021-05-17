@@ -18,6 +18,7 @@ go 1.15
 //   not be possible ....)
 
 require (
+	github.com/go-redis/redis/v8 v8.8.2 // indirect
 	github.com/golang/protobuf v1.4.2
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20201118191903-ec81f3e74fa1
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20201119163726-f8ef75b17719
@@ -26,13 +27,13 @@ require (
 	github.com/hyperledger/fabric-samples/chaincode/marbles02/go v0.0.0-20210428060230-9db8164f049b // indirect
 	github.com/hyperledger/fabric-sdk-go v1.0.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
-	github.com/onsi/ginkgo v1.12.1
-	github.com/onsi/gomega v1.10.3
+	github.com/onsi/ginkgo v1.15.0
+	github.com/onsi/gomega v1.10.5
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v0.0.5
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
-	golang.org/x/tools v0.0.0-20201023174141-c8cfbd0f21e6
+	golang.org/x/tools v0.0.0-20201224043029-2b0845dc783e
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.3.0
 )
