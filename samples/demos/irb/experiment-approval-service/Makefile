@@ -30,7 +30,7 @@ PROTO_FILES := irb.proto
 protos: $(PROTO_BUILD_DIR)
 	$(PROTOC_CMD) \
 		--plugin=protoc-gen-nanopb=$(NANOPB_PATH)/generator/protoc-gen-nanopb-py2 \
-		--proto_path=$(PROTO_PATH) --nanopb_out=$(PROTO_BUILD_DIR) $(PROTO_FILES)
+		--proto_path=$(PROTO_PATH) "--nanopb_out=-f ${PROTO_PATH}/irb.options:$(PROTO_BUILD_DIR)" $(PROTO_FILES)
 
 $(PROTO_BUILD_DIR):
 	mkdir -p $@

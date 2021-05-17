@@ -1,0 +1,12 @@
+// Copyright 2021 Intel Corporation
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+option go_package = "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/protos";
+
+message ProtoTest {
+    string study_id = 1;
+    int32 counter = 2;
+}

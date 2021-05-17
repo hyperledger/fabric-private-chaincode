@@ -10,6 +10,7 @@
 #include <string>
 #include "errors.h"
 #include "shim.h"
+#include "storage.h"
 
 #define CONTRACT_API_PROTOTYPE(api_name) \
     bool api_name(                       \
@@ -20,6 +21,8 @@ namespace Contract
 class ExperimentApprovalService
 {
 private:
+    Contract::Storage storage_;
+
 public:
     ExperimentApprovalService(shim_ctx_ptr_t ctx);
     ErrorReport er_;

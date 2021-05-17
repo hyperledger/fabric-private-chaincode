@@ -3,7 +3,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-syntax = "proto2";
+syntax = "proto3";
+
+option go_package = "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/protos";
 
 // SAS
 service StudyApprovalService {
@@ -12,23 +14,23 @@ service StudyApprovalService {
 }
 
 message StudyDetailsRequest {
-    required string study_id = 1;
+     string study_id = 1;
 }
 
 message StudyDetailsMessage {
-    required string study_id = 1;
-    required string metadata = 2;
+     string study_id = 1;
+     string metadata = 2;
     repeated Identity participant = 3;
 }
 
 message StudyDetailsResponse {
-    required bytes study_details_message = 1;
+     bytes study_details_message = 1;
 
     // signed by Study Approval Service (SAS)
     // used to be verified by EAS when new study is created
-    required bytes signature = 2;
+     bytes signature = 2;
 
-    required Status status = 3;
+     Status status = 3;
 }
 
 // EAS
@@ -48,69 +50,69 @@ service ExperimentApprovalService {
 }
 
 message RegisterDataRequest {
-    required Identity participant = 1;
-    required bytes decryption_key = 2;
-    required string data_handler = 3;
+     Identity participant = 1;
+     bytes decryption_key = 2;
+     string data_handler = 3;
 }
 
 message SubmitStudyRequest {
-    required StudyDetailsResponse details = 1;
+     StudyDetailsResponse details = 1;
 }
 
 message NewExperimentRequest {
-    required Experiment experiment = 1;
+     Experiment experiment = 1;
 }
 
 message GetExperimentRequest {
-    required string experiment_id = 1;
+     string experiment_id = 1;
 }
 
 message GetExperimentResponse {
-    required ExperimentProposal experiment_proposal = 1;
-    required Status status = 2;
+     ExperimentProposal experiment_proposal = 1;
+     Status status = 2;
 }
 
 message ExperimentProposal {
-    required string study_id = 1;
-    required string experiment_id = 2;
-    required string mrenclave = 3;
-    required string metadata = 4;
-    required Identity worker = 5;
-    required bytes attestation = 6;
+     string study_id = 1;
+     string experiment_id = 2;
+     string mrenclave = 3;
+     string metadata = 4;
+     Identity worker = 5;
+     bytes attestation = 6;
 }
 
 message Experiment {
-    required ExperimentProposal proposal = 1;
+     ExperimentProposal proposal = 1;
     repeated Approval approval = 2;
 }
 
 message ApprovalRequest {
-    required Approval approval = 1;
+     Approval approval = 1;
 }
 
 message Approval {
-    required string experiment_id = 1;
+     string experiment_id = 1;
     // serialized Experiment Proposal
-    required bytes proposal = 2;
+     bytes proposal = 2;
     enum Decision {
         APPROVED = 0;
         REJECTED = 1;
     }
-    required Decision decision = 3;
-    required Identity approver = 4;
+     Decision decision = 3;
+     Identity approver = 4;
 
     // signature over proposal_id, proposal, decision, and approver
-    required bytes signature = 5;
+     bytes signature = 5;
 }
 
 message EvaluationRequest {
-    required string study_id = 1;
-    required string experiment_id = 2;
+     string study_id = 1;
+     string experiment_id = 2;
 }
 
 message EvaluationPackResponse {
     // this is ciphertext of a serialized EvaluationPack msg
-    required bytes encrypted_evaluationPack = 1;
+     bytes encrypted_evaluationPack = 1;
 }
 
 message EvaluationPack {
@@ -118,8 +120,8 @@ message EvaluationPack {
 }
 
 message EvaluationPackItem {
-    required bytes encryption_key = 1;
-    required string data_handler = 2;
+     bytes encryption_key = 1;
+     string data_handler = 2;
 }
 
 // EAS State
@@ -133,15 +135,15 @@ message State {
 }
 
 message Study {
-    required string study_id = 1;
+     string study_id = 1;
     repeated Identity participant = 2;
     repeated Experiment experiment = 3;
 }
 
 message Data {
-    required Identity participant = 1;
-    required bytes decryption_key = 2;
-    required string data_handler = 3;
+     Identity participant = 1;
+     bytes decryption_key = 2;
+     string data_handler = 3;
 }
 
 // Graphene Worker
@@ -150,17 +152,22 @@ service Worker {
 }
 
 message ExecuteRequest {
-    required string experiment_id = 1;
-    required bytes encrypted_evaluationPack = 2;
+    string experiment_id = 1;
+    bytes encrypted_evaluationPack = 2;
 }
 
 // Common messages
 message Identity {
-    required string uuid = 1;
-    optional bytes public_key = 2;
+    string uuid = 1;
+    bytes public_key = 2;
+    bytes public_encryption_key = 3;
 }
 
 message Status {
-    required string msg = 1;
-    required string error = 2;
+    string msg = 1;
+    enum ReturnCode {
+        ERROR_UNKNOWN = 0;
+        OK = 1;
+    }
+    ReturnCode return_code = 2;
 }

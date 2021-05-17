@@ -1,0 +1,18 @@
+diff --git a/python/setup.py b/python/setup.py
+index 6b16672..c7af9ab 100644
+--- a/python/setup.py
++++ b/python/setup.py
+@@ -66,10 +66,11 @@ include_dirs = [
+     os.path.join(pdo_root_dir, 'common/packages/base64')
+ ] + openssl_include_dirs
+ 
+-libraries = ['updo-common', 'updo-crypto'] + openssl_libs
++libraries = ['updo-crypto-adapt', 'updo-crypto'] + openssl_libs
+ 
+ library_dirs = [
+-    os.path.join(pdo_root_dir, 'common/build')
++    os.path.join(pdo_root_dir, 'common/build'),
++    os.path.join(pdo_root_dir, '../_build')
+ ] + openssl_lib_dirs
+ 
+ modulefiles = [
