@@ -19,8 +19,8 @@ all: build
 ${PDO_CRYPTO_PY_BUILD_DIR}:
 	cd ${PDO_CRYPTO_PY_DIR} && \
 	git apply ${PDO_SETUP_PY_PATCH} && \
-	python3 setup.py build_ext && \
-	PDO_HOME=${./build} python3 setup.py bdist_egg
+	python3.8 setup.py build_ext && \
+	PDO_HOME=${./build} python3.8 setup.py bdist_egg
 
 ${PDO_CRYPTO_PY_INSTALL_DIR}: ${PDO_CRYPTO_PY_BUILD_DIR}
 	cp -r ${PDO_CRYPTO_PY_BUILD_DIR} ${PDO_CRYPTO_PY_INSTALL_DIR}
