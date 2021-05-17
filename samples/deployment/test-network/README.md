@@ -173,3 +173,31 @@ peer chaincode query -C mychannel -n ercc -c '{"Function": "queryListEnclaveCred
 E_ID=$(peer chaincode query -C mychannel -n ercc -c '{"Function": "queryListProvisionedEnclaves", "Args" : ["echo"]}' 2> /dev/null  | jq -r '.[0]')
 peer chaincode query -C mychannel -n ercc -c '{"Function": "queryEnclaveCredentials", "Args" : ["echo", "'${E_ID}'"]}'
 ```
+
+
+## Adding Blockchain Explorer
+
+Another way to look at the transactions and confirm how they are written to the ledger is adding [Hyperledger Explorer] (https://github.com/hyperledger/blockchain-explorer) to our test-network. To do so we will create a directory under test-network and we will copy some files (per the previous instructions) and directories from the network created.
+
+```bash
+cd $FPC_PATH/samples/deployment/test-network
+mkdir blockchain-explorer
+wget https://raw.githubusercontent.com/hyperledger/blockchain-explorer/main/examples/net1/config.json
+wget https://raw.githubusercontent.com/hyperledger/blockchain-explorer/main/examples/net1/connection-profile/test-network.json -P connection-profile
+wget https://raw.githubusercontent.com/hyperledger/blockchain-explorer/main/docker-compose.yaml
+
+```
+Next we will copy the crypto material of the network generated
+```bash
+cd $FPC_PATH/samples/deployment/test-network/blockchain-explorer
+mkdir organizations
+cd $FPC_PATH/samples/deployment/test-network/blockchain-explorer/organizations
+cp $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/ordererOrganizations .
+cp $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations .
+```
+You can review the file directory structure and the files copied. You should not need to modify any of them. Now to start the Blockchain Explorer you need to start up the docker image. This docker image will use the docker-compose.yaml that we downloaded.
+```bash
+cd $FPC_PATH/samples/deployment/test-network/blockchain-explorer/organizations
+docker-compose up -d
+```
+After it has started as part of the output it will tell you the url you have to use in your browser to access the web interface.
