@@ -120,6 +120,8 @@ cd $FPC_PATH/samples/deployment/test-network
 ./update-connection.sh
 ```
 
+### How to use simple-go
+
 Now we will use the go app in `$FPC_PATH/samples/application/simple-go` to demonstrate the usage of the FPC Client SDK.
 In order to initiate the FPC Chaincode enclave and register it with the FPC Enclave Registry, run the app with the `-withLifecycleInitEnclave` flag.
 
@@ -134,6 +136,37 @@ Afterwards you _must_ run the application without the `withLifecycleInitEnclave`
 cd $FPC_PATH/samples/application/simple-go
 CC_ID=echo ORG_NAME=Org1 go run .
 CC_ID=echo ORG_NAME=Org2 go run .
+```
+
+### How to use simple-cli-go
+
+You can also use `$FPC_PATH/samples/application/simple-cli-go` instead of the simple-go application.
+
+```bash
+# make fpcclient
+cd $FPC_PATH/samples/application/simple-cli-go
+make
+
+# export fpcclient settings
+export CC_NAME=echo
+export CHANNEL_NAME=mychannel
+export CORE_PEER_ADDRESS=localhost:7051
+export CORE_PEER_ID=peer0.org1.example.com
+export CORE_PEER_LOCALMSPID=Org1MSP
+export CORE_PEER_MSPCONFIGPATH=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+export CORE_PEER_TLS_CERT_FILE=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt
+export CORE_PEER_TLS_ENABLED="true"
+export CORE_PEER_TLS_KEY_FILE=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.key
+export CORE_PEER_TLS_ROOTCERT_FILE=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+export ORDERER_CA=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+export GATEWAY_CONFIG=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/connection-org1.yaml
+
+# init our enclave
+./fpcclient init $CORE_PEER_ID
+
+# interact with the FPC Chaincode
+./fpcclient invoke foo
+./fpcclient query foo
 ```
 
 ## Shutdown network
