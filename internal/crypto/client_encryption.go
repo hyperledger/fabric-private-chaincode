@@ -8,92 +8,17 @@ SPDX-License-Identifier: Apache-2.0
 package crypto
 
 import (
-	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/common/flogging"
+	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
-
-	"fmt"
 )
 
-// #cgo CFLAGS: -I${SRCDIR}/../../common/crypto
-// #cgo LDFLAGS: -L${SRCDIR}/../../common/crypto/_build -L${SRCDIR}/../../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++ -lgcov
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <stdbool.h>
-// #include <stdint.h>
-// #include "pdo-crypto-c-wrapper.h"
-import "C"
-
 var logger = flogging.MustGetLogger("fpc-client-crypto")
-
-func keyGen() ([]byte, error) {
-	// the specified key length is required by the pdo crypto library
-	keyLength := C.SYM_KEY_LEN
-	key := make([]byte, keyLength)
-	n, err := rand.Read(key)
-	if n != len(key) || err != nil {
-		return nil, err
-	}
-
-	return key, nil
-}
-
-func encrypt(input []byte, encryptionKey []byte) ([]byte, error) {
-	//This is an RSA encryption performed with the pdo crypto library
-	//Importantly, the library uses 2048bit RSA keys & OAEP encoding, so the input size can be at most ~200bytes
-	//TODO-1: bump up the key length to 3072 to match NIST strength
-	//TODO-2: extend procedure for large input sizes (via hybrid encryption)
-
-	inputMessagePtr := C.CBytes(input)
-	defer C.free(inputMessagePtr)
-
-	encryptionKeyPtr := C.CBytes(encryptionKey)
-	defer C.free(encryptionKeyPtr)
-
-	//the max length of the message to be encrypted is dictated by the pdo crypto lib (see above)
-	if len(input) > int(C.RSA_PLAINTEXT_LEN) {
-		return nil, fmt.Errorf("input message too long for encryption")
-	}
-	//TODO add tests with different message lengths
-	encryptedMessageSize := C.RSA_KEY_SIZE >> 3 //bits-to-bytes conversion
-	encryptedMessagePtr := C.malloc(C.ulong(encryptedMessageSize))
-	defer C.free(encryptedMessagePtr)
-
-	encryptedMessageActualSize := C.uint32_t(0)
-
-	ret := C.pk_encrypt_message((*C.uint8_t)(encryptionKeyPtr), C.uint32_t(len(encryptionKey)), (*C.uint8_t)(inputMessagePtr), C.uint32_t(len(input)), (*C.uint8_t)(encryptedMessagePtr), C.uint32_t(encryptedMessageSize), &encryptedMessageActualSize)
-	if ret == false {
-		return nil, fmt.Errorf("encryption failed")
-	}
-
-	return C.GoBytes(encryptedMessagePtr, C.int(encryptedMessageActualSize)), nil
-}
-
-func decrypt(encryptedResponse []byte, resultEncryptionKey []byte) ([]byte, error) {
-	encryptedResponsePtr := C.CBytes(encryptedResponse)
-	defer C.free(encryptedResponsePtr)
-
-	resultEncryptionKeyPtr := C.CBytes(resultEncryptionKey)
-	defer C.free(resultEncryptionKeyPtr)
-
-	// the (decrypted) response size is estimated to be <= the encrypted response size
-	responseSize := len(encryptedResponse)
-	responsePtr := C.malloc(C.ulong(responseSize))
-	defer C.free(responsePtr)
-
-	responseActualSize := C.uint32_t(0)
-
-	ret := C.decrypt_message((*C.uint8_t)(resultEncryptionKeyPtr), C.uint32_t(len(resultEncryptionKey)), (*C.uint8_t)(encryptedResponsePtr), C.uint32_t(len(encryptedResponse)), (*C.uint8_t)(responsePtr), C.uint32_t(responseSize), &responseActualSize)
-	if ret == false {
-		return nil, fmt.Errorf("decryption failed")
-	}
-
-	return C.GoBytes(responsePtr, C.int(responseActualSize)), nil
-}
 
 type EncryptionProvider interface {
 	NewEncryptionContext() (EncryptionContext, error)
@@ -103,14 +28,20 @@ type EncryptionProviderImpl struct {
 	GetCcEncryptionKey func() ([]byte, error)
 }
 
-func (e EncryptionProviderImpl) NewEncryptionContext() (EncryptionContext, error) {
-	// pick response encryption key
-	resultEncryptionKey, err := keyGen()
+func (p EncryptionProviderImpl) NewEncryptionContext() (EncryptionContext, error) {
+	// pick request encryption key
+	requestEncryptionKey, err := NewSymmetricKey()
 	if err != nil {
 		return nil, err
 	}
 
-	ccEncryptionKey, err := e.GetCcEncryptionKey()
+	// pick response encryption key
+	resultEncryptionKey, err := NewSymmetricKey()
+	if err != nil {
+		return nil, err
+	}
+
+	ccEncryptionKey, err := p.GetCcEncryptionKey()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get chaincode encryption key from ercc: %s", err.Error())
 	}
@@ -121,13 +52,14 @@ func (e EncryptionProviderImpl) NewEncryptionContext() (EncryptionContext, error
 	}
 
 	return &EncryptionContextImpl{
-		resultEncryptionKey:    resultEncryptionKey,
+		requestEncryptionKey:   requestEncryptionKey,
+		responseEncryptionKey:  resultEncryptionKey,
 		chaincodeEncryptionKey: ccEncryptionKey,
 	}, nil
 }
 
 // EncryptionContext defines the interface of an object responsible to encrypt the contents of a transaction invocation
-// and decrypt the corresponding response.
+// and to decrypt the corresponding response.
 // Conceal and Reveal must be called only once during the lifetime of an object that implements this interface. That is,
 // an EncryptionContext is only valid for a single transaction invocation.
 type EncryptionContext interface {
@@ -136,7 +68,8 @@ type EncryptionContext interface {
 }
 
 type EncryptionContextImpl struct {
-	resultEncryptionKey    []byte
+	requestEncryptionKey   []byte
+	responseEncryptionKey  []byte
 	chaincodeEncryptionKey []byte
 }
 
@@ -163,9 +96,9 @@ func (e *EncryptionContextImpl) Reveal(signedResponseBytesB64 []byte) ([]byte, e
 		return nil, err
 	}
 
-	clearResponseB64, err := decrypt(response.EncryptedResponse, e.resultEncryptionKey)
+	clearResponseB64, err := DecryptMessage(e.responseEncryptionKey, response.EncryptedResponse)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "decryption of response failed")
 	}
 	// TODO: above should eventually be a (protobuf but not base64 serialized) fabric response object,
 	//   rather than just the (base64-serialized) response string.
@@ -185,9 +118,25 @@ func (e *EncryptionContextImpl) Conceal(function string, args []string) (string,
 		bytes[i] = []byte(v)
 	}
 
+	// prepare KeyTransportMessage
+	keyTransport := &protos.KeyTransportMessage{
+		RequestEncryptionKey:  e.requestEncryptionKey,
+		ResponseEncryptionKey: e.responseEncryptionKey,
+	}
+
+	serializedKeyTransport, err := proto.Marshal(keyTransport)
+	if err != nil {
+		return "", err
+	}
+
+	encryptedKeyTransport, err := PkEncryptMessage(e.chaincodeEncryptionKey, serializedKeyTransport)
+	if err != nil {
+		return "", errors.Wrap(err, "encryption of request encryption key failed")
+	}
+
+	// prepare CleartextChaincodeRequest
 	ccRequest := &protos.CleartextChaincodeRequest{
-		Input:               &peer.ChaincodeInput{Args: bytes},
-		ReturnEncryptionKey: e.resultEncryptionKey,
+		Input: &peer.ChaincodeInput{Args: bytes},
 	}
 	logger.Debugf("prepping chaincode params: %s", ccRequest)
 
@@ -196,13 +145,15 @@ func (e *EncryptionContextImpl) Conceal(function string, args []string) (string,
 		return "", err
 	}
 
-	encryptedParams, err := encrypt(serializedCcRequest, e.chaincodeEncryptionKey)
+	encryptedRequest, err := EncryptMessage(e.requestEncryptionKey, serializedCcRequest)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "encryption of request failed")
 	}
 
+	// prepare ChaincodeRequestMessage
 	encryptedCcRequest := &protos.ChaincodeRequestMessage{
-		EncryptedRequest: encryptedParams,
+		EncryptedRequest:             encryptedRequest,
+		EncryptedKeyTransportMessage: encryptedKeyTransport,
 	}
 
 	serializedEncryptedCcRequest, err := proto.Marshal(encryptedCcRequest)
