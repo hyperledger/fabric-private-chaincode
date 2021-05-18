@@ -249,10 +249,17 @@ err:
     return false;
 }
 
-bool cc_data::decrypt_cc_message(const ByteArray& encrypted_message, ByteArray& message) const
+bool cc_data::decrypt_cc_message(const ByteArray& encrypted_message_key,
+    const ByteArray& encrypted_message,
+    ByteArray& message) const
 {
     bool b;
-    CATCH(b, message = cc_decryption_key_.DecryptMessage(encrypted_message));
+    ByteArray message_key;
+
+    CATCH(b, message_key = cc_decryption_key_.DecryptMessage(encrypted_message_key));
+    COND2LOGERR(!b, "message key decryption failed");
+
+    CATCH(b, message = pdo::crypto::skenc::DecryptMessage(message_key, encrypted_message));
     COND2LOGERR(!b, "message decryption failed");
 
     return true;

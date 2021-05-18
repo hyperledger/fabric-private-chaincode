@@ -60,9 +60,13 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         COND2LOGERR(cc_request_message.encrypted_request->size == 0, "zero size request");
 
         // decrypt request
-        b = g_cc_data->decrypt_cc_message(ByteArray(cc_request_message.encrypted_request->bytes,
-                                              cc_request_message.encrypted_request->bytes +
-                                                  cc_request_message.encrypted_request->size),
+        b = g_cc_data->decrypt_cc_message(
+            ByteArray(cc_request_message.encrypted_request_encryption_key->bytes,
+                cc_request_message.encrypted_request_encryption_key->bytes +
+                    cc_request_message.encrypted_request_encryption_key->size),
+            ByteArray(cc_request_message.encrypted_request->bytes,
+                cc_request_message.encrypted_request->bytes +
+                    cc_request_message.encrypted_request->size),
             clear_request);
         COND2ERR(!b);
 

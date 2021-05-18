@@ -23,6 +23,7 @@ import (
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
 	"github.com/hyperledger/fabric/protoutil"
+	"github.com/pkg/errors"
 )
 
 type MockEnclaveStub struct {
@@ -122,15 +123,26 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 		return nil, err
 	}
 
+	encryptedRequestEncryptionKey := chaincodeRequestMessageProto.GetEncryptedRequestEncryptionKey()
+	if encryptedRequestEncryptionKey == nil {
+		return nil, fmt.Errorf("no encrypted request")
+	}
+
+	// decrypt request encryption key
+	encryptionKey, err := crypto.PkDecryptMessage(m.ccPrivateKey, encryptedRequestEncryptionKey)
+	if err != nil {
+		return nil, errors.Wrap(err, "decryption of request encryption key failed")
+	}
+
 	encryptedRequestBytes := chaincodeRequestMessageProto.GetEncryptedRequest()
 	if encryptedRequestBytes == nil {
 		return nil, fmt.Errorf("no encrypted request")
 	}
 
 	// decrypt request
-	requestBytes, err := crypto.PkDecryptMessage(m.ccPrivateKey, encryptedRequestBytes)
+	requestBytes, err := crypto.DecryptMessage(encryptionKey, encryptedRequestBytes)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "decryption of request failed")
 	}
 
 	requestProto := &protos.CleartextChaincodeRequest{}
@@ -145,7 +157,9 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 		return nil, fmt.Errorf("no return encryption key")
 	}
 
-	v, _ := stub.GetState("SomeOtherKey")
+	_ = stub.PutState("SomeOtherKey", []byte("some value"))
+
+	v, _ := stub.GetState("helloKey")
 	v_hash := sha256.Sum256(v)
 	logger.Debug("get state: %s", v)
 
