@@ -33,6 +33,7 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
     bool b;
     fpc_ChaincodeRequestMessage cc_request_message = {};
     fpc_CleartextChaincodeRequest cleartext_cc_request = {};
+    fpc_KeyTransportMessage key_transport_message = {};
     t_shim_ctx_t ctx;
     int ret;
     int invoke_ret;
@@ -43,13 +44,14 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
     std::string b64_response;
     ByteArray cc_response_message;
     size_t cc_response_message_estimated_size;
-    ByteArray return_encryption_key;
+    ByteArray response_encryption_key;
 
     ctx.u_shim_ctx = u_shim_ctx;
 
     {
         pb_istream_t istream;
         ByteArray clear_request;
+        ByteArray key_transport;
 
         // set stream for ChaincodeRequestMessage
         istream = pb_istream_from_buffer(
@@ -58,13 +60,48 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         b = pb_decode(&istream, fpc_ChaincodeRequestMessage_fields, &cc_request_message);
         COND2LOGERR(!b, PB_GET_ERROR(&istream));
         COND2LOGERR(cc_request_message.encrypted_request->size == 0, "zero size request");
+        COND2LOGERR(cc_request_message.encrypted_key_transport_message->size == 0,
+            "zero size key transport message");
 
-        // decrypt request
-        b = g_cc_data->decrypt_cc_message(ByteArray(cc_request_message.encrypted_request->bytes,
-                                              cc_request_message.encrypted_request->bytes +
-                                                  cc_request_message.encrypted_request->size),
-            clear_request);
-        COND2ERR(!b);
+        {  // decrypt key transport
+            ByteArray encrypted_key_transport_message =
+                ByteArray(cc_request_message.encrypted_key_transport_message->bytes,
+                    cc_request_message.encrypted_key_transport_message->bytes +
+                        cc_request_message.encrypted_key_transport_message->size);
+            b = g_cc_data->decrypt_key_transport_message(
+                encrypted_key_transport_message, key_transport);
+            COND2LOGERR(!b, "cannot decrypt key transport message");
+        }
+
+        // set stream for KeyTransportMessage
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)key_transport.data(), key_transport.size());
+        b = pb_decode(&istream, fpc_KeyTransportMessage_fields, &key_transport_message);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+        COND2LOGERR(key_transport_message.request_encryption_key->size !=
+                        pdo::crypto::constants::SYM_KEY_LEN,
+            "invalid request encryption key length");
+        COND2LOGERR(key_transport_message.response_encryption_key->size !=
+                        pdo::crypto::constants::SYM_KEY_LEN,
+            "invalid response encryption key length");
+
+        // get and set response encryption key
+        response_encryption_key = ByteArray(key_transport_message.response_encryption_key->bytes,
+            key_transport_message.response_encryption_key->bytes +
+                key_transport_message.response_encryption_key->size);
+
+        {  // decrypt request
+            ByteArray request_encryption_key =
+                ByteArray(key_transport_message.request_encryption_key->bytes,
+                    key_transport_message.request_encryption_key->bytes +
+                        key_transport_message.request_encryption_key->size);
+            ByteArray encrypted_request = ByteArray(cc_request_message.encrypted_request->bytes,
+                cc_request_message.encrypted_request->bytes +
+                    cc_request_message.encrypted_request->size);
+            CATCH(b, clear_request = pdo::crypto::skenc::DecryptMessage(
+                         request_encryption_key, encrypted_request));
+            COND2LOGERR(!b, "message decryption failed");
+        }
 
         // set stream for CleartextChaincodeRequestMessage
         istream = pb_istream_from_buffer(
@@ -80,13 +117,6 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
                 std::string((const char*)cleartext_cc_request.input.args[i]->bytes,
                     cleartext_cc_request.input.args[i]->size));
         }
-
-        // get and set return encryption key
-        return_encryption_key = ByteArray(cleartext_cc_request.return_encryption_key->bytes,
-            cleartext_cc_request.return_encryption_key->bytes +
-                cleartext_cc_request.return_encryption_key->size);
-        COND2LOGERR(return_encryption_key.size() != pdo::crypto::constants::SYM_KEY_LEN,
-            "invalid return encryption key length");
 
         // the dynamic memory in the message is released at the end
     }
@@ -115,10 +145,11 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         crm = {};
 
         {  // encrypt response
-            b = g_cc_data->encrypt_message(return_encryption_key,
-                ByteArray(b64_response.c_str(), b64_response.c_str() + b64_response.length()),
-                encrypted_response);
-            COND2LOGERR(!b, "cannot encrypt message");
+            ByteArray response =
+                ByteArray(b64_response.c_str(), b64_response.c_str() + b64_response.length());
+            CATCH(b, encrypted_response =
+                         pdo::crypto::skenc::EncryptMessage(response_encryption_key, response));
+            COND2LOGERR(!b, "cannot encrypt response message");
         }
 
         {  // fill encrypted response

@@ -93,14 +93,22 @@ message InitEnclaveMessage {
 message CleartextChaincodeRequest {
     // the function and args to invoke
     protos.ChaincodeInput input = 1;
-
-    // key to (aes128-gcm) encrypt ChaincodeResponse
-    bytes return_encryption_key = 3;
 }
 
 message ChaincodeRequestMessage {
-    // an RSA-encryption of the serialization of CleartextChaincodeRequest with the chaincode encryption key
+    // an encryption (symmetric) of the serialization of CleartextChaincodeRequest with KeyTransportMessage.request_encryption_key
     bytes encrypted_request = 1;
+
+    // an encryption (asymmetric) of the serialization of request KeyTransportMessage with AttestedData.chaincode_ek
+    bytes encrypted_key_transport_message = 2;
+}
+
+message KeyTransportMessage {
+    // key to decrypt CleartextChaincodeRequest
+    bytes request_encryption_key = 1;
+
+    // key to encrypt CleartextChaincodeResponse
+    bytes response_encryption_key = 2;
 }
 
 message CleartextChaincodeResponse {
@@ -116,7 +124,7 @@ message FPCKVSet {
 }
 
 message ChaincodeResponseMessage {
-    // an aes128-gcm encryption of the serialization of CleartextChaincodeResponse
+    // an encryption (symmetric) of the serialization of CleartextChaincodeRequest with KeyTransportMessage.response_encryption_key
     bytes encrypted_response = 1;
 
     // R/W set (of cleartext keys but encrypted values)
