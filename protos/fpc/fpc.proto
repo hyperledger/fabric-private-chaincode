@@ -99,8 +99,11 @@ message CleartextChaincodeRequest {
 }
 
 message ChaincodeRequestMessage {
-    // an RSA-encryption of the serialization of CleartextChaincodeRequest with the chaincode encryption key
+    // an encryption (using the request encryption key (aes128-gcm)) of the serialization of CleartextChaincodeRequest with the chaincode encryption key
     bytes encrypted_request = 1;
+
+    // an RSA-encryption of the request encryption key (aes128-gcm) with the chaincode encryption key
+    bytes encrypted_request_encryption_key = 2;
 }
 
 message CleartextChaincodeResponse {

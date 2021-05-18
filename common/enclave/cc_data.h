@@ -45,7 +45,9 @@ public:
     ByteArray get_state_encryption_key();
     std::string get_enclave_id();
     bool sign_message(const ByteArray& message, ByteArray& signature) const;
-    bool decrypt_cc_message(const ByteArray& encrypted_message, ByteArray& message) const;
+    bool decrypt_cc_message(const ByteArray& encrypted_message_key,
+        const ByteArray& encrypted_message,
+        ByteArray& message) const;
     bool encrypt_message(
         const ByteArray key, const ByteArray& message, ByteArray& encrypted_message) const;
 };

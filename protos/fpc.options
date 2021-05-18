@@ -3,6 +3,7 @@
 fpc.CleartextChaincodeRequest.return_encryption_key type:FT_POINTER
 
 fpc.ChaincodeRequestMessage.encrypted_request type:FT_POINTER
+fpc.ChaincodeRequestMessage.encrypted_request_encryption_key type:FT_POINTER
 
 fpc.FPCKVSet.read_value_hashes type:FT_POINTER
 
