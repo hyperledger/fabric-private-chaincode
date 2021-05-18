@@ -249,24 +249,15 @@ err:
     return false;
 }
 
-bool cc_data::decrypt_cc_message(const ByteArray& encrypted_message, ByteArray& message) const
+// decrypts a key transport message using asymmetric encryption provided by pdo::crypto with
+// the chaincode decryption key (cc_data.cc_decryption_key_)
+bool cc_data::decrypt_key_transport_message(
+    const ByteArray& encrypted_key_transport_message, ByteArray& key_transport_message) const
 {
     bool b;
-    CATCH(b, message = cc_decryption_key_.DecryptMessage(encrypted_message));
-    COND2LOGERR(!b, "message decryption failed");
-
-    return true;
-
-err:
-    return false;
-}
-
-bool cc_data::encrypt_message(
-    const ByteArray key, const ByteArray& message, ByteArray& encrypted_message) const
-{
-    bool b;
-    CATCH(b, encrypted_message = pdo::crypto::skenc::EncryptMessage(key, message));
-    COND2LOGERR(!b, "message encryption failed");
+    CATCH(b,
+        key_transport_message = cc_decryption_key_.DecryptMessage(encrypted_key_transport_message));
+    COND2LOGERR(!b, "key transport message decryption failed");
 
     return true;
 

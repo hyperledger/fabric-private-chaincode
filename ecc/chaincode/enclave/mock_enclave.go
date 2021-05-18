@@ -23,6 +23,7 @@ import (
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
 	"github.com/hyperledger/fabric/protoutil"
+	"github.com/pkg/errors"
 )
 
 type MockEnclaveStub struct {
@@ -107,7 +108,7 @@ func (m *MockEnclaveStub) GetEnclaveId() (string, error) {
 	return strings.ToUpper(hex.EncodeToString(hash[:])), nil
 }
 
-func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincodeRequestMessage []byte) ([]byte, error) {
+func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincodeRequestMessageBytes []byte) ([]byte, error) {
 	logger.Debug("ChaincodeInvoke")
 
 	signedProposal, err := stub.GetSignedProposal()
@@ -115,40 +116,61 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 		shim.Error(err.Error())
 	}
 
-	// unmarshal request
-	chaincodeRequestMessageProto := &protos.ChaincodeRequestMessage{}
-	err = proto.Unmarshal(chaincodeRequestMessage, chaincodeRequestMessageProto)
+	// unmarshal chaincodeRequest
+	chaincodeRequestMessage := &protos.ChaincodeRequestMessage{}
+	err = proto.Unmarshal(chaincodeRequestMessageBytes, chaincodeRequestMessage)
 	if err != nil {
 		return nil, err
 	}
 
-	encryptedRequestBytes := chaincodeRequestMessageProto.GetEncryptedRequest()
-	if encryptedRequestBytes == nil {
+	if chaincodeRequestMessage.GetEncryptedRequest() == nil {
 		return nil, fmt.Errorf("no encrypted request")
 	}
 
+	if chaincodeRequestMessage.GetEncryptedKeyTransportMessage() == nil {
+		return nil, fmt.Errorf("no encrypted key transport message")
+	}
+
+	// decrypt key transport message with chaincode decryption key
+	keyTransportMessageBytes, err := crypto.PkDecryptMessage(m.ccPrivateKey, chaincodeRequestMessage.GetEncryptedKeyTransportMessage())
+	if err != nil {
+		return nil, errors.Wrap(err, "decryption of key transport message failed")
+	}
+
+	keyTransportMessage := &protos.KeyTransportMessage{}
+	err = proto.Unmarshal(keyTransportMessageBytes, keyTransportMessage)
+	if err != nil {
+		return nil, err
+	}
+
+	// check that we have booth, request and response encryption key
+	if keyTransportMessage.GetRequestEncryptionKey() == nil {
+		return nil, fmt.Errorf("no request encryption key")
+	}
+
+	if keyTransportMessage.GetRequestEncryptionKey() == nil {
+		return nil, fmt.Errorf("no response encryption key")
+	}
+
 	// decrypt request
-	requestBytes, err := crypto.PkDecryptMessage(m.ccPrivateKey, encryptedRequestBytes)
+	clearChaincodeRequestBytes, err := crypto.DecryptMessage(keyTransportMessage.GetRequestEncryptionKey(), chaincodeRequestMessage.GetEncryptedRequest())
+	if err != nil {
+		return nil, errors.Wrap(err, "decryption of request failed")
+	}
+
+	cleartextChaincodeRequest := &protos.CleartextChaincodeRequest{}
+	err = proto.Unmarshal(clearChaincodeRequestBytes, cleartextChaincodeRequest)
 	if err != nil {
 		return nil, err
 	}
 
-	requestProto := &protos.CleartextChaincodeRequest{}
-	err = proto.Unmarshal(requestBytes, requestProto)
-	if err != nil {
-		return nil, err
-	}
-
-	// get return encryption key
-	returnEncryptionKey := requestProto.GetReturnEncryptionKey()
-	if returnEncryptionKey == nil {
-		return nil, fmt.Errorf("no return encryption key")
-	}
-
-	v, _ := stub.GetState("SomeOtherKey")
+	// do some read/write ops
+	_ = stub.PutState("SomeOtherKey", []byte("some value"))
+	v, _ := stub.GetState("helloKey")
 	v_hash := sha256.Sum256(v)
-	logger.Debug("get state: %s", v)
+	logger.Debug("get state: %s with hash %s", v, v_hash)
 
+	// construct rwset for validation
 	rwset := &kvrwset.KVRWSet{
 		Reads: []*kvrwset.KVRead{{
 			Key:     "helloKey",
@@ -161,14 +183,12 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 		}},
 	}
 
-	readValueHashes := [][]byte{v_hash[:]}
-
 	fpcKvSet := &protos.FPCKVSet{
 		RwSet:           rwset,
-		ReadValueHashes: readValueHashes,
+		ReadValueHashes: [][]byte{v_hash[:]},
 	}
 
-	requestMessageHash := sha256.Sum256(chaincodeRequestMessage)
+	requestMessageHash := sha256.Sum256(chaincodeRequestMessageBytes)
 
 	//create dummy response
 	responseData := []byte("some response")
@@ -177,7 +197,7 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 	b64ResponseData := base64.StdEncoding.EncodeToString(responseData)
 
 	//encrypt response
-	encryptedResponse, err := crypto.EncryptMessage(returnEncryptionKey, []byte(b64ResponseData))
+	encryptedResponse, err := crypto.EncryptMessage(keyTransportMessage.GetResponseEncryptionKey(), []byte(b64ResponseData))
 	if err != nil {
 		return nil, err
 	}
