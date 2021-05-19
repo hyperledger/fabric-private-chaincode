@@ -9,7 +9,7 @@
 #include <numeric>
 #include <vector>
 
-#define MAX_VALUE_SIZE (1 << 10)
+#define MAX_VALUE_SIZE (1 << 16)
 
 int invoke(
     uint8_t* response, uint32_t max_response_len, uint32_t* actual_response_len, shim_ctx_ptr_t ctx)
@@ -29,8 +29,15 @@ int invoke(
         }
         else
         {
-            put_state(params[0].c_str(), (uint8_t*)params[1].c_str(), params[1].length(), ctx);
-            result = std::string("OK");
+            if (params[1].length() > MAX_VALUE_SIZE)
+            {
+                result = std::string("max value size exceeded");
+            }
+            else
+            {
+                put_state(params[0].c_str(), (uint8_t*)params[1].c_str(), params[1].length(), ctx);
+                result = std::string("OK");
+            }
         }
     }
     else if (function_name == "get_state")
