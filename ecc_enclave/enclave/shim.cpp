@@ -12,7 +12,6 @@
 #include "shim_internals.h"
 
 #include "crypto.h"
-#include "pdo/common/crypto/crypto.h"
 
 #include "base64.h"
 #include "parson.h"
@@ -43,8 +42,7 @@ void get_state(
     const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* val_len, shim_ctx_ptr_t ctx)
 {
     // estimate max encrypted val length
-    uint32_t max_encrypted_val_len =
-        (max_val_len + pdo::crypto::constants::IV_LEN + pdo::crypto::constants::TAG_LEN) * 2;
+    uint32_t max_encrypted_val_len = cc_data::estimate_encrypted_state_value_length(max_val_len);
     uint8_t encoded_cipher[max_encrypted_val_len];
     uint32_t encoded_cipher_len = 0;
     std::string encoded_cipher_s;
@@ -71,14 +69,13 @@ void get_state(
     // TODO: double check if Fabric handles values as strings; if it handles binary values, remove
     // encoding
     cipher = base64_decode(encoded_cipher_s);
-    COND2LOGERR(cipher.size() <= pdo::crypto::constants::IV_LEN + pdo::crypto::constants::TAG_LEN,
-        "base64 decoding failed/produced too short a value");
 
     // decrypt
     try
     {
-        ByteArray value = pdo::crypto::skenc::DecryptMessage(g_cc_data->get_state_encryption_key(),
-            ByteArray(cipher.c_str(), cipher.c_str() + cipher.size()));
+        ByteArray value;
+        ByteArray encrypted_value = ByteArray(cipher.c_str(), cipher.c_str() + cipher.size());
+        g_cc_data->decrypt_state_value(encrypted_value, value);
         COND2ERR(memcpy_s(val, max_val_len, value.data(), value.size()) != 0);
         *val_len = value.size();
     }
@@ -112,7 +109,8 @@ void get_public_state(
 
     // save in rw set: only save the first key/value-hash pair
     std::string key_s(key);
-    ByteArray value_hash = pdo::crypto::ComputeMessageHash(ByteArray(val, val + *val_len));
+    ByteArray value_hash;
+    compute_message_hash(ByteArray(val, val + *val_len), value_hash);
     auto it = ctx->read_set.find(key_s);
     if (it == ctx->read_set.end())
     {
@@ -149,17 +147,13 @@ void put_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_ptr_t c
         throw std::runtime_error(s);
     }
 
-    ByteArray b = ByteArray(val, val + val_len);
-    ByteArray sek = g_cc_data->get_state_encryption_key();
-
     ByteArray encrypted_val;
 
     // encrypt
     try
     {
         ByteArray value(val, val + val_len);
-        encrypted_val =
-            pdo::crypto::skenc::EncryptMessage(g_cc_data->get_state_encryption_key(), value);
+        g_cc_data->encrypt_state_value(value, encrypted_val);
     }
     catch (...)
     {
@@ -224,9 +218,9 @@ void get_state_by_partial_composite_key(
         // decrypt
         try
         {
-            ByteArray value =
-                pdo::crypto::skenc::DecryptMessage(g_cc_data->get_state_encryption_key(),
-                    ByteArray(cipher.c_str(), cipher.c_str() + cipher.size()));
+            ByteArray value;
+            g_cc_data->decrypt_state_value(
+                ByteArray(cipher.c_str(), cipher.c_str() + cipher.size()), value);
             std::string s((const char*)value.data(), value.size());
             u.second = s;
         }

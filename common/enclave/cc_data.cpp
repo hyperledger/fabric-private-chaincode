@@ -217,11 +217,6 @@ err:
     return false;
 }
 
-ByteArray cc_data::get_state_encryption_key()
-{
-    return state_encryption_key_;
-}
-
 std::string cc_data::get_enclave_id()
 {
     // get enclave vk
@@ -263,4 +258,36 @@ bool cc_data::decrypt_key_transport_message(
 
 err:
     return false;
+}
+
+bool cc_data::decrypt_state_value(const ByteArray& encrypted_value, ByteArray& value) const
+{
+    bool b;
+    COND2LOGERR(
+        encrypted_value.size() <= pdo::crypto::constants::IV_LEN + pdo::crypto::constants::TAG_LEN,
+        "encrypted value too short");
+    CATCH(b, value = pdo::crypto::skenc::DecryptMessage(state_encryption_key_, encrypted_value));
+    COND2LOGERR(!b, "state decryption failed");
+
+    return true;
+
+err:
+    return false;
+}
+
+bool cc_data::encrypt_state_value(const ByteArray& value, ByteArray& encrypted_value) const
+{
+    bool b;
+    CATCH(b, encrypted_value = pdo::crypto::skenc::EncryptMessage(state_encryption_key_, value));
+    COND2LOGERR(!b, "state encryption failed");
+
+    return true;
+
+err:
+    return false;
+}
+
+int cc_data::estimate_encrypted_state_value_length(const int value_len)
+{
+    return (value_len + pdo::crypto::constants::IV_LEN + pdo::crypto::constants::TAG_LEN) * 2;
 }
