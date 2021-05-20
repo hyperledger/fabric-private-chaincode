@@ -42,11 +42,13 @@ public:
         uint32_t credentials_max_size,
         uint32_t* credentials_size);
 
-    ByteArray get_state_encryption_key();
     std::string get_enclave_id();
     bool sign_message(const ByteArray& message, ByteArray& signature) const;
     bool decrypt_key_transport_message(
         const ByteArray& encrypted_key_transport_message, ByteArray& key_transport_message) const;
+    bool decrypt_state_value(const ByteArray& encrypted_value, ByteArray& value) const;
+    bool encrypt_state_value(const ByteArray& value, ByteArray& encrypted_value) const;
+    static int estimate_encrypted_state_value_length(const int value_len);
 };
 
 extern cc_data* g_cc_data;

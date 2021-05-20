@@ -7,6 +7,7 @@
 
 #include "base64.h"
 #include "cc_data.h"
+#include "crypto.h"
 #include "enclave_t.h"
 #include "error.h"
 #include "fpc/fpc.pb.h"
@@ -78,12 +79,6 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
             (const unsigned char*)key_transport.data(), key_transport.size());
         b = pb_decode(&istream, fpc_KeyTransportMessage_fields, &key_transport_message);
         COND2LOGERR(!b, PB_GET_ERROR(&istream));
-        COND2LOGERR(key_transport_message.request_encryption_key->size !=
-                        pdo::crypto::constants::SYM_KEY_LEN,
-            "invalid request encryption key length");
-        COND2LOGERR(key_transport_message.response_encryption_key->size !=
-                        pdo::crypto::constants::SYM_KEY_LEN,
-            "invalid response encryption key length");
 
         // get and set response encryption key
         response_encryption_key = ByteArray(key_transport_message.response_encryption_key->bytes,
@@ -98,8 +93,7 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
             ByteArray encrypted_request = ByteArray(cc_request_message.encrypted_request->bytes,
                 cc_request_message.encrypted_request->bytes +
                     cc_request_message.encrypted_request->size);
-            CATCH(b, clear_request = pdo::crypto::skenc::DecryptMessage(
-                         request_encryption_key, encrypted_request));
+            b = decrypt_message(request_encryption_key, encrypted_request, clear_request);
             COND2LOGERR(!b, "message decryption failed");
         }
 
@@ -147,8 +141,7 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         {  // encrypt response
             ByteArray response =
                 ByteArray(b64_response.c_str(), b64_response.c_str() + b64_response.length());
-            CATCH(b, encrypted_response =
-                         pdo::crypto::skenc::EncryptMessage(response_encryption_key, response));
+            b = encrypt_message(response_encryption_key, response, encrypted_response);
             COND2LOGERR(!b, "cannot encrypt response message");
         }
 
@@ -191,8 +184,9 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
             // hash request
             ByteArray ba_cc_request_message(
                 cc_request_message_bytes, cc_request_message_bytes + cc_request_message_bytes_len);
-            ByteArray ba_cc_request_message_hash =
-                pdo::crypto::ComputeMessageHash(ba_cc_request_message);
+            ByteArray ba_cc_request_message_hash;
+            b = compute_message_hash(ba_cc_request_message, ba_cc_request_message_hash);
+            COND2LOGERR(!b, "cannot compute request message hash");
 
             // encode field
             LOG_DEBUG("adding request hash: %s",
