@@ -4,7 +4,7 @@
    SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+package data_provider
 
 import (
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
