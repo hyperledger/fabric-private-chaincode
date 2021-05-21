@@ -6,9 +6,8 @@ TOP = ../../../..
 include $(TOP)/build.mk
 
 
-build:
-	go build
+build clean:
+	make -C test $@
 
-clean:
-	go clean
-	rm -rf keystore wallet
+test:
+	cd test && make run
