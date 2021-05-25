@@ -9,6 +9,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	dp "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/data-provider"
 )
 
@@ -30,19 +31,33 @@ func main() {
 	fmt.Printf("done.\n")
 
 	fmt.Printf("Uploading data...")
-	decryptionKeys := [][]byte{}
+	var decryptionKeys [][]byte
+	var dataHandlers []string
 	for i := 0; i < len(users); i++ {
 		data, err := LoadOrCreateData(users[i])
 		if err != nil {
 			panic(err)
 		}
 
-		dk, err := dp.Upload(data)
+		// create new encryption
+		sk, err := crypto.NewSymmetricKey()
 		if err != nil {
 			panic(err)
 		}
 
-		decryptionKeys = append(decryptionKeys, dk)
+		// encrypt data before uploading
+		encryptedData, err := crypto.EncryptMessage(sk, data)
+		if err != nil {
+			panic(err)
+		}
+		decryptionKeys = append(decryptionKeys, sk)
+
+		// upload data
+		handler, err := dp.Upload(encryptedData)
+		if err != nil {
+			panic(err)
+		}
+		dataHandlers = append(dataHandlers, handler)
 	}
 	fmt.Printf("done.\n")
 
@@ -53,7 +68,7 @@ func main() {
 			panic(err)
 		}
 
-		err = dp.RegisterData(uuid, vk, decryptionKeys[i])
+		err = dp.RegisterData(uuid, vk, decryptionKeys[i], dataHandlers[i])
 		if err != nil {
 			panic(err)
 		}

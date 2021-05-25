@@ -1,1 +1,4 @@
-users
+**/users
+**/wallet
+**/keystore
+service/data-provider-service
