@@ -53,6 +53,7 @@ message RegisterDataRequest {
      Identity participant = 1;
      bytes decryption_key = 2;
      string data_handler = 3;
+     string study_id = 4;
 }
 
 message SubmitStudyRequest {

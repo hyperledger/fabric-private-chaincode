@@ -7,25 +7,20 @@
 package data_provider
 
 import (
-	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
+	"crypto/sha256"
+	"encoding/base64"
+
 	storage "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/storage/go"
 )
 
-func Upload(data []byte) (privateKey []byte, e error) {
-	ek, dk, err := crypto.NewRSAKeys()
-	if err != nil {
-		return nil, err
-	}
+func Upload(data []byte) (handler string, e error) {
+	hashedContent := sha256.Sum256(data)
+	encodedContent := base64.StdEncoding.EncodeToString(data)
+	key := base64.StdEncoding.EncodeToString(hashedContent[:])
 
-	encryptedData, err := crypto.PkEncryptMessage(ek, []byte(data))
+	err := storage.Set(key, encodedContent)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-
-	err = storage.Set(ek, encryptedData)
-	if err != nil {
-		return nil, err
-	}
-
-	return dk, nil
+	return key, nil
 }
