@@ -15,7 +15,7 @@ def GetAttestation():
         attestation = dict()
         attestation['attestation_type'] = "simulated"
         attestation['attestation'] = base64.b64encode(b"0").decode()
-        return json.dumps(attestation)
+        return json.dumps(attestation, separators=(',', ':'))
 
     if sgx_mode == "HW":
         return str("TODO: get Graphene attestation")

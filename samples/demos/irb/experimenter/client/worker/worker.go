@@ -1,0 +1,86 @@
+/*
+   Copyright 2021 Intel Corporation
+
+   SPDX-License-Identifier: Apache-2.0
+*/
+
+package worker
+
+import (
+	"bytes"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+
+	"github.com/golang/protobuf/proto"
+	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/protos"
+)
+
+var workerAddress = "http://localhost:5000/"
+
+func toEvidence(attestation []byte) ([]byte, error) {
+	fpcPath := os.Getenv("FPC_PATH")
+	if fpcPath == "" {
+		return nil, fmt.Errorf("FPC_PATH not set")
+	}
+
+	convertScript := filepath.Join(fpcPath, "common/crypto/attestation-api/conversion/attestation_to_evidence.sh")
+	cmd := exec.Command(convertScript, string(attestation))
+
+	if out, err := cmd.Output(); err != nil {
+		return nil, err
+	} else {
+		return []byte(strings.TrimSuffix(string(out), "\n")), nil
+	}
+}
+
+func GetWorkerCredentials() (*pb.WorkerCredentials, error) {
+	resp, err := http.Get(workerAddress + "attestation")
+	if err != nil {
+		return nil, err
+	}
+
+	workerCredentialsBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	workerCredentials := &pb.WorkerCredentials{}
+	err = proto.Unmarshal(workerCredentialsBytes, workerCredentials)
+	if err != nil {
+		return nil, err
+	}
+
+	evidence, err := toEvidence(workerCredentials.Attestation)
+	if err != nil {
+		return nil, err
+	}
+
+	workerCredentials.Evidence = evidence
+
+	return workerCredentials, nil
+}
+
+func ExecuteEvaluationPack(encryptedEvaluationPackBytes []byte) ([]byte, error) {
+	resp, err := http.Post(workerAddress+"execute-evaluationpack", "", bytes.NewBuffer(encryptedEvaluationPackBytes))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode >= 400 {
+		return nil, errors.New(fmt.Sprintf("Error %d: %s", resp.StatusCode, string(bodyBytes)))
+	}
+
+	return bodyBytes, nil
+}

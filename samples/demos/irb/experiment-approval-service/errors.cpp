@@ -17,18 +17,11 @@ void Contract::ErrorReport::set(error_codes_e e, const std::string& s)
     errorString_ = s;
 }
 
-void Contract::ErrorReport::toStatusJsonString(std::string& jsonString)
+void Contract::ErrorReport::toStatusProtoString(std::string& outputString)
 {
-    //    ClockAuction::SpectrumAuctionMessage msg;
-    //    msg.toStatusJsonString(ec_, errorString_, jsonString);
-}
-
-void Contract::ErrorReport::toWrappedStatusJsonString(std::string& jsonString)
-{
-    //    ClockAuction::SpectrumAuctionMessage msg;
-    //    JSON_Object* root_object = ClockAuction::JsonUtils::openJsonObject(NULL);
-    //    msg.toWrappedStatusJsonObject(root_object, ec_, errorString_);
-    //    ClockAuction::JsonUtils::closeJsonObject(root_object, &jsonString);
+Contract:
+    EASMessage m;
+    m.toStatus(errorString_, ec_, outputString);
 }
 
 bool Contract::ErrorReport::isSuccess()

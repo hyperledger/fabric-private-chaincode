@@ -14,6 +14,11 @@ set(SOURCE_FILES
     messages.cpp
     _protos/irb.pb.c
     storage.cpp
+    id.cpp
+    experiment.cpp
+    study.cpp
+    signedapproval.cpp
+    evaluationpack.cpp
     )
 
 # NANOPB for protos

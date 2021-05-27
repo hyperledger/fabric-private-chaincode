@@ -14,6 +14,8 @@ PDO_SETUP_PY_PATCH=${mkfile_dir}/pdo_python_setup.py.patch
 PDO_CRYPTO_PY_BUILD_DIR=${PDO_CRYPTO_PY_DIR}/build/lib.linux-x86_64-3.8/pdo
 PDO_CRYPTO_PY_INSTALL_DIR=${mkfile_dir}/worker/pdo
 
+SUB_DIRS = test client
+
 all: build
 
 ${PDO_CRYPTO_PY_BUILD_DIR}:
@@ -28,12 +30,12 @@ ${PDO_CRYPTO_PY_INSTALL_DIR}: ${PDO_CRYPTO_PY_BUILD_DIR}
 clean:
 	cd ${PDO_CRYPTO_PY_DIR}; python3 setup.py clean --all; git checkout -- setup.py
 	rm -rf ${PDO_CRYPTO_PY_INSTALL_DIR}
-	make -C test $@
+	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)
 
 .PHONY: docker
 docker: ${PDO_CRYPTO_PY_INSTALL_DIR}
 	DOCKER_BUILDKIT=0 docker build -t fpc/experimenter-worker .
 
 build: ${PDO_CRYPTO_PY_INSTALL_DIR} docker
-	make -C test $@
+	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)
 

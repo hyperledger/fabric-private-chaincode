@@ -5,6 +5,9 @@
 TOP = ../../../..
 include $(TOP)/build.mk
 
+RUNNING_CONTAINER="$(shell docker ps --filter name=irb-storage-service --quiet)"
+
+
 all: pull-redis
 
 .PHONY: pull-redis
@@ -13,9 +16,14 @@ pull-redis:
 
 .PHONY: run
 run:
-	docker run --name irb-storage-service --network host -d redis
+	@if [ -z "${RUNNING_CONTAINER}" ]; then \
+		docker run --name irb-storage-service --network host -d redis; \
+	fi
 
 .PHONY: stop
 stop:
-	docker stop irb-storage-service
-	docker rm irb-storage-service
+	@if [ ! -z "${RUNNING_CONTAINER}" ]; then \
+		docker stop irb-storage-service ; \
+		docker rm irb-storage-service ; \
+	fi
+

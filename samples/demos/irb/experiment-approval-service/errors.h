@@ -33,9 +33,8 @@ private:
 public:
     ErrorReport();
 
+    void toStatusProtoString(std::string& outputString);
     void set(error_codes_e ec, const std::string& errorString);
-    void toStatusJsonString(std::string& jsonString);
-    void toWrappedStatusJsonString(std::string& jsonString);
     bool isSuccess();
 };
 }  // namespace Contract
@@ -69,3 +68,17 @@ public:
             return false;                                                 \
         }                                                                 \
     }
+
+#define CATCH(b, expr) \
+    do                 \
+    {                  \
+        try            \
+        {              \
+            expr;      \
+            b = true;  \
+        }              \
+        catch (...)    \
+        {              \
+            b = false; \
+        }              \
+    } while (0);
