@@ -7,13 +7,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/experimenter/client/eas"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/experimenter/client/worker"
-	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/protos"
 )
 
 func usage() {
@@ -44,21 +44,6 @@ func main() {
 			panic(err)
 		}
 
-		//no encryption
-		evaluationPackBytes := encryptedEvaluationPack.GetEncryptedEvaluationpack()
-		evaluationPackMessage := &pb.EvaluationPackMessage{}
-		err = proto.Unmarshal(evaluationPackBytes, evaluationPackMessage)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("Dumping registered data decryption keys keys:\n")
-		registeredData := evaluationPackMessage.GetRegisteredData()
-		for i := 0; i < len(registeredData); i++ {
-			dk := registeredData[i].GetDecryptionKey()
-			fmt.Printf("%d: %s\n", i, string(dk))
-		}
-
 		encryptedEvaluationPackBytes, err := proto.Marshal(encryptedEvaluationPack)
 		if err != nil {
 			panic(err)
@@ -66,7 +51,7 @@ func main() {
 
 		resultBytes, err := worker.ExecuteEvaluationPack(encryptedEvaluationPackBytes)
 		if err != nil {
-			panic(err)
+			panic(errors.New(err.Error() + ": " + string(resultBytes)))
 		}
 
 		fmt.Printf("Result received:\n%s", string(resultBytes))

@@ -147,6 +147,8 @@ bool Contract::EASMessage::fromNewExperiment(Contract::Experiment& experiment)
     FAST_FAIL_CHECK(er_, EC_INVALID_INPUT, !b);
     FAST_FAIL_CHECK(er_, EC_INVALID_INPUT, experimentProposal.study_id == NULL);
     FAST_FAIL_CHECK(er_, EC_INVALID_INPUT, experimentProposal.experiment_id == NULL);
+    FAST_FAIL_CHECK(
+        er_, EC_INVALID_INPUT, experimentProposal.worker_credentials.identity_bytes == NULL);
 
     experiment.studyId_ = std::string(experimentProposal.study_id);
     experiment.experimentId_ = std::string(experimentProposal.experiment_id);

@@ -24,7 +24,10 @@ bool Contract::EvaluationPack::build(
     std::string storedExperiment, storedStudy;
     EvaluationPackMessage epm;
     ByteArray evaluationPackMessageBytes;
+    ByteArray encryptedEvaluationPackMessageBytes;
     ByteArray encryptedEvaluationPackBytes;
+    ByteArray encryptionKey;
+    ByteArray encryptedEncryptionKey;
     EncryptedEvaluationPack eep;
     bool b;
 
@@ -111,19 +114,42 @@ bool Contract::EvaluationPack::build(
         pb_release(EvaluationPackMessage_fields, &epm);
     }
 
-    // encrypt and authenticate using workerPK
-    // TODO
+    {
+        // encrypt evaluation pack
+        CATCH(b, encryptionKey = pdo::crypto::skenc::GenerateKey());
+        FAST_FAIL_CHECK(er_, EC_ERROR, !b);
+        CATCH(b, encryptedEvaluationPackMessageBytes =
+                     pdo::crypto::skenc::EncryptMessage(encryptionKey, evaluationPackMessageBytes));
+        FAST_FAIL_CHECK(er_, EC_ERROR, !b);
+
+        // encrypt encryption key with worker's public encryption key
+        pdo::crypto::pkenc::PublicKey pek;
+        CATCH(b, pek.Deserialize(std::string(experiment.workerId_.publicEncryptionKey_.data(),
+                     experiment.workerId_.publicEncryptionKey_.data() +
+                         experiment.workerId_.publicEncryptionKey_.size())));
+        FAST_FAIL_CHECK(er_, EC_ERROR, !b);
+        CATCH(b, encryptedEncryptionKey = pek.EncryptMessage(encryptionKey));
+        FAST_FAIL_CHECK(er_, EC_ERROR, !b);
+    }
 
     {
         eep = EncryptedEvaluationPack_init_zero;
 
         // encode encrypted pack
         eep.encrypted_evaluationpack = (pb_bytes_array_t*)pb_realloc(
-            NULL, PB_BYTES_ARRAY_T_ALLOCSIZE(evaluationPackMessageBytes.size()));
+            NULL, PB_BYTES_ARRAY_T_ALLOCSIZE(encryptedEvaluationPackMessageBytes.size()));
         FAST_FAIL_CHECK(er_, EC_ERROR, eep.encrypted_evaluationpack == NULL);
-        eep.encrypted_evaluationpack->size = evaluationPackMessageBytes.size();
-        memcpy(eep.encrypted_evaluationpack->bytes, evaluationPackMessageBytes.data(),
-            evaluationPackMessageBytes.size());
+        eep.encrypted_evaluationpack->size = encryptedEvaluationPackMessageBytes.size();
+        memcpy(eep.encrypted_evaluationpack->bytes, encryptedEvaluationPackMessageBytes.data(),
+            encryptedEvaluationPackMessageBytes.size());
+
+        // encode encrypted key
+        eep.encrypted_encryption_key = (pb_bytes_array_t*)pb_realloc(
+            NULL, PB_BYTES_ARRAY_T_ALLOCSIZE(encryptedEncryptionKey.size()));
+        FAST_FAIL_CHECK(er_, EC_ERROR, eep.encrypted_encryption_key == NULL);
+        eep.encrypted_encryption_key->size = encryptedEncryptionKey.size();
+        memcpy(eep.encrypted_encryption_key->bytes, encryptedEncryptionKey.data(),
+            encryptedEncryptionKey.size());
 
         // get encoding size
         size_t estimated_size;
