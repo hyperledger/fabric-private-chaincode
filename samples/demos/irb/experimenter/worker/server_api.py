@@ -30,10 +30,18 @@ def HandleExecuteEvaluationPack(evaluation_pack):
     eep = irb.EncryptedEvaluationPack()
     eep.ParseFromString(evaluation_pack)
 
-    #TODO decrypt
+    #decrypt encrypted evalution pack
+    res = keys.PkDecrypt(eep.encrypted_encryption_key)
+    if res[1] != None:
+        return "Error: " + res[1]
+    key = bytearray(res[0])
+    res = keys.Decrypt(key, eep.encrypted_evaluationpack)
+    if res[1] != None:
+        return "Error: " + res[1]
+    evaluationpack = bytearray(res[0])
 
     epm = irb.EvaluationPackMessage()
-    epm.ParseFromString(eep.encrypted_evaluationpack)
+    epm.ParseFromString(evaluationpack)
 
     sc = storage_client.StorageClient()
 
@@ -46,7 +54,6 @@ def HandleExecuteEvaluationPack(evaluation_pack):
         else:
             return_string += ", "
 
-        print("Decryption key: {0}".format(r.decryption_key))
         print("Data handler: {0}".format(r.data_handler))
 
         val = sc.get(r.data_handler)
@@ -57,7 +64,6 @@ def HandleExecuteEvaluationPack(evaluation_pack):
         encrypted_data = base64.b64decode(val[0])
 
         data = bytearray(crypto.SKENC_DecryptMessage(r.decryption_key, encrypted_data))
-        print("Retrieved data: {0}".format(data))
 
         result = diagnose.diagnose(data)
         if result[1] != "" :
