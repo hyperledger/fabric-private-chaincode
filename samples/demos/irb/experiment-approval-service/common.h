@@ -21,3 +21,7 @@
 // needed for types and Base64 conversion primitives
 // TODO: see if this can be moved in shim
 #include "../../../../common/crypto/pdo/common/types.h"
+
+// needed for crypto primitives
+// TODO: see if this can be moved in shim
+#include "../../../../common/crypto/pdo/common/crypto/crypto.h"

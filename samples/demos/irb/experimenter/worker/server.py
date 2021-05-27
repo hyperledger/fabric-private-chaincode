@@ -9,6 +9,8 @@ from twisted.internet import reactor, defer
 
 import protos.proto_test_pb2 as proto_test
 import attestation
+import server_api
+import diagnose
 
 class WorkerServer(resource.Resource):
     isLeaf = True
@@ -20,15 +22,35 @@ class WorkerServer(resource.Resource):
             request.setResponseCode(http.OK)
             return "I'm up and running ..".encode("ascii")
 
+        if request.uri == b'/attestation-old':
+            attestation_s = attestation.GetAttestation()
+            return attestation_s.encode("ascii")
+
         if request.uri == b'/attestation':
-            str = attestation.GetAttestation()
-            return str.encode("ascii")
+            return server_api.HandleAttestation()
 
         if request.uri == b'/proto-test':
             se = proto_test.ProtoTest()
             se.study_id = "this is a study"
             se.counter = 17
             return se.SerializeToString()
+
+        if request.uri == b'/shutdown':
+            __shutdown__()
+            return request.uri
+
+        if request.uri == b'/test-diagnose':
+            data = b'37.7, 0, 0, 1, 1, 0'
+            try:
+                result = diagnose.diagnose(data)
+            except Exception as e:
+                return str(e).encode("ascii")
+
+            if result[0] == "":
+                return result[1].encode("ascii")
+            else:
+                return result[0].encode("ascii")
+
 
         return ("Unsupported: " + (request.uri).decode("ascii")).encode("ascii")
 
@@ -40,6 +62,17 @@ class WorkerServer(resource.Resource):
             se.ParseFromString(data)
             se.counter += 1
             return se.SerializeToString()
+
+        if request.uri == b'/execute-evaluationpack':
+            try:
+                #data should contain the encrypted evaluation pack protobuf
+                data = request.content.read()
+                result = server_api.HandleExecuteEvaluationPack(data)
+                return result.encode("ascii")
+
+            except Exception as e:
+                request.setResponseCode(400)
+                return ("Error: " + str(e)).encode("ascii")
 
         return ("Unsupported: " + (request.uri).decode("ascii")).encode("ascii")        
     

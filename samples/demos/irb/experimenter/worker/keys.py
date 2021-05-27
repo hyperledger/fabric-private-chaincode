@@ -30,3 +30,10 @@ def InitializeKeys():
     logger.info("Verifying key: {0}".format(verifying_key.Serialize()))
     logger.info("Encryption key: {0}".format(encryption_key.Serialize()))
     return True
+
+def GetVerifyingKey():
+    return verifying_key
+
+def GetEncryptionKey():
+    return encryption_key
+

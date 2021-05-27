@@ -29,6 +29,9 @@ include_directories(
     ${SGX_SDK}/include
     ${SGX_SDK}/include/tlibc
     ${SGX_SDK}/include/libcxx
+    #following only needed for demo
+    ${SGX_SSL}/include
+    ${COMMON_SOURCE_DIR}/crypto/pdo/common
     )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -nostdinc -fno-builtin -fvisibility=hidden -fpie -fstack-protector -std=c11")

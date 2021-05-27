@@ -2,10 +2,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-TOP = ../../../..
+TOP = ../../../../..
 include $(TOP)/build.mk
 
 
-build clean:
-	make -C test $@
+build:
+	go build
+
+clean:
+	go clean
+	rm -rf keystore wallet
 

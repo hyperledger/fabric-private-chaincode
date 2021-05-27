@@ -20,7 +20,7 @@ message StudyDetailsRequest {
 message StudyDetailsMessage {
      string study_id = 1;
      string metadata = 2;
-    repeated Identity participant = 3;
+    repeated Identity user_identities = 3;
 }
 
 message StudyDetailsResponse {
@@ -43,7 +43,7 @@ service ExperimentApprovalService {
     rpc GetExperimentProposal (GetExperimentRequest) returns (GetExperimentResponse) {}
     rpc ApproveExperiment (ApprovalRequest) returns (Status) {}
 
-    rpc RequestEvaluationPack (EvaluationRequest) returns (EvaluationPackResponse) {}
+    rpc RequestEvaluationPack (EvaluationPackRequest) returns (EncryptedEvaluationPack) {}
 
     // helper functions
     // rpc GetStudy ... return ... {}
@@ -73,55 +73,66 @@ message GetExperimentResponse {
      Status status = 2;
 }
 
+message WorkerCredentials {
+    bytes identity_bytes = 1;
+    bytes attestation = 2;
+    bytes evidence = 3;
+}
+
 message ExperimentProposal {
      string study_id = 1;
      string experiment_id = 2;
      string mrenclave = 3;
      string metadata = 4;
-     Identity worker = 5;
-     bytes attestation = 6;
+     WorkerCredentials worker_credentials = 5;
 }
 
 message Experiment {
-     ExperimentProposal proposal = 1;
-    repeated Approval approval = 2;
+    // we keep bytes
+    bytes experiment_proposal = 1;
+    Approval approval = 2;
 }
 
 message ApprovalRequest {
-     Approval approval = 1;
+    Approval approval = 1;
 }
 
 message Approval {
-     string experiment_id = 1;
+    string experiment_id = 1;
     // serialized Experiment Proposal
-     bytes proposal = 2;
+    bytes experiment_proposal = 2;
     enum Decision {
-        APPROVED = 0;
-        REJECTED = 1;
+        UNDEFINED = 0;
+        APPROVED = 1;
+        REJECTED = 2;
     }
-     Decision decision = 3;
-     Identity approver = 4;
-
-    // signature over proposal_id, proposal, decision, and approver
-     bytes signature = 5;
+    Decision decision = 3;
+    Identity approver = 4;
 }
 
-message EvaluationRequest {
+message SignedApprovalMessage {
+    bytes approval = 1;
+    bytes signature = 2;
+}
+
+message EvaluationPackRequest {
      string study_id = 1;
      string experiment_id = 2;
 }
 
-message EvaluationPackResponse {
+message EncryptedEvaluationPack {
+    bytes encrypted_encryption_key = 1;
     // this is ciphertext of a serialized EvaluationPack msg
-     bytes encrypted_evaluationPack = 1;
+    bytes encrypted_evaluationpack = 2;
 }
 
-message EvaluationPack {
+message EvaluationPackMessage {
     repeated EvaluationPackItem item = 1;
+    repeated RegisterDataRequest registered_data = 2;
 }
 
 message EvaluationPackItem {
-     bytes encryption_key = 1;
+     bytes decryption_key = 1;
      string data_handler = 2;
 }
 

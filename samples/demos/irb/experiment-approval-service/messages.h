@@ -10,6 +10,11 @@
 #include <string>
 #include "common.h"
 #include "errors.h"
+#include "evaluationpack.h"
+#include "experiment.h"
+#include "id.h"
+#include "signedapproval.h"
+#include "study.h"
 
 namespace Contract
 {
@@ -24,10 +29,21 @@ public:
 
     EASMessage();
     EASMessage(const std::string& message);
+    EASMessage(const ByteArray& messageBytes);
     ErrorReport getErrorReport();
+    ByteArray getInputMessageBytes();
 
     bool toStatus(const std::string& message, int rc, std::string& outputMessage);
 
-    bool fromRegisterDataRequest(std::string& uuid, ByteArray& publicKey, ByteArray& decryptionKey);
+    bool fromIdentity(Contract::Id& contractId);
+    bool fromRegisterDataRequest(std::string& uuid,
+        ByteArray& publicKey,
+        ByteArray& decryptionKey,
+        std::string& dataHandler);
+    bool fromNewExperiment(Contract::Experiment& experiment);
+    bool fromGetExperimentRequest(Contract::Experiment& experiment);
+    bool fromStudyDetails(Contract::Study& study);
+    bool fromSignedApproval(Contract::SignedApproval& signedApproval);
+    bool fromEvaluationPackRequest(Contract::EvaluationPack& evaluationPack);
 };
 }  // namespace Contract

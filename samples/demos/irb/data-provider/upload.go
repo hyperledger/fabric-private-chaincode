@@ -22,5 +22,9 @@ func Upload(data []byte) (handler string, e error) {
 	if err != nil {
 		return "", err
 	}
+
+	print("Uploaded key: %s", key)
+	print("Uploaded val: %s", encodedContent)
+
 	return key, nil
 }

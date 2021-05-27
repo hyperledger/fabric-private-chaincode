@@ -52,7 +52,7 @@ Contract::Dispatcher::Dispatcher(const std::string& functionName,
     if (responseString_.length() == 0 || !errorReport_.isSuccess())
     {
         // an error occurred: fill the response with the error/status message
-        errorReport_.toWrappedStatusJsonString(responseString_);
+        errorReport_.toStatusProtoString(responseString_);
         LOG_DEBUG("Error response string set: %s", responseString_.c_str());
     }
 
@@ -61,7 +61,7 @@ Contract::Dispatcher::Dispatcher(const std::string& functionName,
         LOG_ERROR("Response string too long to be output");
         CUSTOM_ERROR_REPORT(
             errorReport_, EC_SHORT_RESPONSE_BUFFER, "Response string too long to be output");
-        errorReport_.toWrappedStatusJsonString(responseString_);
+        errorReport_.toStatusProtoString(responseString_);
     }
 
     // write response string (if possible)
