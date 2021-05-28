@@ -110,6 +110,7 @@
 <script>
 import Proposal from '@/components/proposal/Proposal.vue';
 import {mapGetters} from 'vuex';
+import axios from 'axios';
 
 const defaultReviewer = {name: 'Alice'};
 
@@ -161,9 +162,16 @@ export default {
       this.$store.dispatch('proposal/approve', {
         proposalId: this.reviewProposalWithId,
         reviewer: this.selectedReviewer,
-      });
+      })
+          .then(() => {
+            axios.post('http://localhost:3002/api/approve-experiment', {
+              experimentId: this.reviewProposalWithId
+            }).then(response => {
+              console.log(response);
+              this.closeReview();
+            });
+          });
 
-      this.closeReview();
     },
 
     onClose() {

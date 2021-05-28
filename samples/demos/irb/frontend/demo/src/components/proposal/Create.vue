@@ -33,6 +33,7 @@ export default {
   data: () => ({
     newProposal: {
       title: 'The Woodman experiment',
+      studyId: '1',
       description: 'The Woodman set to work at once, and so sharp was his axe that the tree was soon chopped to the end. The Woodman set to work at once, and so sharp was his axe that the tree was soon chopped.',
       requestor: 'Fancy Research Corp.',
       checkedAllowedUse: 'Private',

@@ -4,7 +4,7 @@
       max-width="850">
     <v-card-title class="headline font-weight-regular blue white--text">
       <v-icon class="mr-2" large color="white">mdi-account-multiple-check</v-icon>
-      <span class="headline">List Proposals</span>
+      <span class="headline">Experiment Proposals</span>
     </v-card-title>
     <v-card-text>
       <v-data-table

@@ -11,4 +11,8 @@ make run
 
 ## Docker
 
-TODO
+```
+make docker
+make docker-run
+make docker-stop
+```
