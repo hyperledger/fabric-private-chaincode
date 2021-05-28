@@ -16,7 +16,7 @@ terminate() {
     (cd ${BASE}/storage-service && make stop)
 
     echo "Experiment worker: stop"
-    (cd ${BASE}/experimenter/worker && make stop)
+    (cd ${BASE}/experimenter/worker && make stop-docker)
 }
 
 trap terminate EXIT
@@ -27,7 +27,7 @@ echo "Storage Service: start"
 (cd ${BASE}/storage-service && make run)
 
 echo "Experiment worker: start"
-(cd ${BASE}/experimenter/worker && make run)
+(cd ${BASE}/experimenter/worker && make run-docker)
 
 echo "Ledger: start"
 (cd ${BASE}/ledger-helper && make stop && make run)
