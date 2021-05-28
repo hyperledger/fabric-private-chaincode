@@ -181,8 +181,13 @@ RUN apt-get install -y -q \
 	docker-compose\
 	${APT_ADD_PKGS}
 
-#NOTE:the following is only required for the samples/demos/irb build
-RUN apt-get update && apt install -y python3.8 python3.8-dev python3.8-venv virtualenv python3-pip swig npm poppler-utils
+#NOTE:the following is only required for the samples/demos/irb build <<<
+RUN apt-get update && apt install -y python3.8 python3.8-dev python3.8-venv virtualenv python3-pip swig
+#RUN apt-get update && apt install -y nodejs-dev
+#RUN apt-get update && apt install -y node-gyp
+#RUN apt-get update && apt install -y npm
+#RUN apt-get update && apt install -y poppler-utils
+#NOTE>>>
 
 RUN GO111MODULE=on \
     go get github.com/mikefarah/yq/v3
