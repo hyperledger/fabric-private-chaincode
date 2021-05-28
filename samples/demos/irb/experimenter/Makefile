@@ -34,7 +34,7 @@ clean:
 
 .PHONY: docker
 docker: ${PDO_CRYPTO_PY_INSTALL_DIR}
-	DOCKER_BUILDKIT=0 docker build -t fpc/experimenter-worker .
+	DOCKER_BUILDKIT=0 docker build -f Dockerfile -t irb-experimenter-worker ..
 
 build: ${PDO_CRYPTO_PY_INSTALL_DIR} docker
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)
