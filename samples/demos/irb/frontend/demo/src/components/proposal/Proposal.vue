@@ -2,13 +2,37 @@
   <v-container>
 
     <v-row class="mx-0 mt-0">
-      <v-col cols="8" class="px-0">
+      <v-col cols="6" class="px-0">
         <v-text-field
             v-model="proposal.title"
             label="Title"
             outlined
             :readonly="isReadOnly"
         ></v-text-field>
+      </v-col>
+      <v-col cols="3" class="pl-4 pr-8">
+        <v-text-field
+            v-model="proposal.studyId"
+            label="Study ID"
+            outlined
+            hide-details
+            :readonly="isReadOnly"
+        ></v-text-field>
+      </v-col>
+
+      <v-col cols="3" class="px-0">
+        <v-text-field
+            v-model="proposal.requestor"
+            label="Requestor"
+            outlined
+            hide-details
+            :readonly="isReadOnly"
+        ></v-text-field>
+      </v-col>
+    </v-row>
+
+    <v-row class="mx-0 mt-0">
+      <v-col cols="9" class="px-0 pr-8">
         <v-textarea
             v-model="proposal.description"
             label="Description"
@@ -18,21 +42,11 @@
             :readonly="isReadOnly"
             rows="5"
         ></v-textarea>
-
-
       </v-col>
-      <v-spacer></v-spacer>
-      <v-col cols="3">
-        <v-text-field
-            v-model="proposal.requestor"
-            label="Requestor"
-            outlined
-            hide-details
-            :readonly="isReadOnly"
-        ></v-text-field>
 
+      <v-col cols="3" class="px-0 mx-0 pl-4">
         <v-radio-group
-            class="mt-2"
+            class="mt-0"
             label="Organization Type"
             v-model="proposal.checkedAllowedUse"
             :readonly="isReadOnly"

@@ -28,6 +28,12 @@ cd service
 go run .
 ```
 
+Mac hint: To define redis host use
+```
+cd service
+REDIS_HOST=host.docker.internal go run .
+```
+
 By default, it starts listing on port 3000. To change the port use `go run . -port=4000`
 
 ### Dummy patients

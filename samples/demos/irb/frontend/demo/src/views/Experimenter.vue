@@ -66,6 +66,7 @@ import WaitingForApprovals from '@/components/experiment/Waiting.vue';
 import RunExperiment from '@/components/experiment/Run.vue';
 
 import {mapGetters} from 'vuex';
+import axios from 'axios';
 
 export default {
   name: 'Experimenter',
@@ -75,7 +76,8 @@ export default {
     RunExperiment,
   },
   data: () => ({
-    currentProposalId: '1'
+    currentProposalId: '1',
+    currentStudyId: '1',
   }),
   computed: {
     ...mapGetters({
@@ -84,8 +86,17 @@ export default {
   },
   methods: {
     onSubmitProposal: function () {
-      // TODO get proposal ID
-      this.onNextStep();
+      // TODO get study ID
+      // TODO get proposal ID aka experiment ID
+
+      console.log('propose experiment');
+      axios.post('http://localhost:3001/api/new-experiment', {
+        studyId: this.currentProposalId,
+        experimentId: this.currentProposalId,
+      }).then(response => {
+        this.onNextStep();
+        console.log(response);
+      });
     },
     onNextStep: function () {
       this.$store.dispatch('experiment/nextStep');

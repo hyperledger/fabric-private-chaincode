@@ -20,6 +20,10 @@ run:
 		docker run --name irb-storage-service --network host -d redis; \
 	fi
 
+.PHONY: mac-run
+mac-run:
+	docker run --name irb-storage-service -p 6379:6379 -d redis; \
+
 .PHONY: stop
 stop:
 	@if [ ! -z "${RUNNING_CONTAINER}" ]; then \

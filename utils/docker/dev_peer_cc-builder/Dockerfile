@@ -182,7 +182,7 @@ RUN apt-get install -y -q \
 	${APT_ADD_PKGS}
 
 #NOTE:the following is only required for the samples/demos/irb build
-RUN apt-get update && apt install -y python3.8 python3.8-dev python3.8-venv virtualenv python3-pip swig
+RUN apt-get update && apt install -y python3.8 python3.8-dev python3.8-venv virtualenv python3-pip swig npm poppler-utils
 
 RUN GO111MODULE=on \
     go get github.com/mikefarah/yq/v3

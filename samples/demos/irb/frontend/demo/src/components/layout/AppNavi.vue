@@ -32,9 +32,9 @@ export default {
       let items = [];
       let defaultItems = [
         {title: 'About', link: '/', icon: 'mdi-home'},
-        {title: 'Consenter', link: '/consenter', icon: 'mdi-database-arrow-up', color: 'green'},
+        {title: 'Data Provider', link: '/consenter', icon: 'mdi-database-arrow-up', color: 'green'},
         {title: 'Experimenter', link: '/experimenter', icon: 'mdi-rocket-launch', color: 'purple'},
-        {title: 'Approver', link: '/approver', icon: 'mdi-account-multiple-check', color: 'blue'},
+        {title: 'Principle Investigator', link: '/approver', icon: 'mdi-account-multiple-check', color: 'blue'},
       ];
       return items.concat(defaultItems);
     },

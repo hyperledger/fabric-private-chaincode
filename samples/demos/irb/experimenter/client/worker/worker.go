@@ -21,7 +21,20 @@ import (
 	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/protos"
 )
 
-var workerAddress = "http://localhost:5000/"
+func getEnv(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
+
+func getWorkerEndpoint() string {
+	host := getEnv("WORKER_HOST", "localhost")
+	port := getEnv("WORKER_PORT", "5000")
+
+	return fmt.Sprintf("http://%s:%s/", host, port)
+}
 
 func toEvidence(attestation []byte) ([]byte, error) {
 	fpcPath := os.Getenv("FPC_PATH")
@@ -40,7 +53,7 @@ func toEvidence(attestation []byte) ([]byte, error) {
 }
 
 func GetWorkerCredentials() (*pb.WorkerCredentials, error) {
-	resp, err := http.Get(workerAddress + "attestation")
+	resp, err := http.Get(getWorkerEndpoint() + "attestation")
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +80,7 @@ func GetWorkerCredentials() (*pb.WorkerCredentials, error) {
 }
 
 func ExecuteEvaluationPack(encryptedEvaluationPackBytes []byte) ([]byte, error) {
-	resp, err := http.Post(workerAddress+"execute-evaluationpack", "", bytes.NewBuffer(encryptedEvaluationPackBytes))
+	resp, err := http.Post(getWorkerEndpoint()+"execute-evaluationpack", "", bytes.NewBuffer(encryptedEvaluationPackBytes))
 	if err != nil {
 		return nil, err
 	}
