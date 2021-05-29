@@ -164,7 +164,8 @@ export default {
         reviewer: this.selectedReviewer,
       })
           .then(() => {
-            axios.post('http://localhost:3002/api/approve-experiment', {
+            const BASE_URL = process.env.VUE_APP_BASEURL_PRINCIPLE_INVESTIGATOR
+            axios.post(BASE_URL + '/api/approve-experiment', {
               experimentId: this.reviewProposalWithId
             }).then(response => {
               console.log(response);

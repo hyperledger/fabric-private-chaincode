@@ -90,7 +90,8 @@ export default {
       // TODO get proposal ID aka experiment ID
 
       console.log('propose experiment');
-      axios.post('http://localhost:3001/api/new-experiment', {
+      const BASE_URL = process.env.VUE_APP_BASEURL_EXPERIMENTER
+      axios.post(BASE_URL + '/api/new-experiment', {
         studyId: this.currentProposalId,
         experimentId: this.currentProposalId,
       }).then(response => {

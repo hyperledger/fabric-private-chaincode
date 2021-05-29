@@ -123,7 +123,8 @@ export default {
     },
     upload() {
       console.log('upload');
-      axios.post('http://localhost:3000/api/upload', {
+      const BASE_URL = process.env.VUE_APP_BASEURL_DATA_PROVIDER
+      axios.post(BASE_URL + '/api/upload', {
         data: this.imageData,
         dataName: this.file.name,
         domain: this.selectedDataDomain,

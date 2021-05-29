@@ -26,6 +26,11 @@ run-docker:
         docker run --name ${WORKER_DOCKER_IMAGE} --network host -d ${WORKER_DOCKER_IMAGE}; \
 	fi
 
+run-mac:
+	@if [ -z "${RUNNING_CONTAINER}" ]; then \
+        docker run --name ${WORKER_DOCKER_IMAGE} -p 5000:5000 -d ${WORKER_DOCKER_IMAGE}; \
+	fi
+
 .PHONY: stop
 stop-docker:
 	@if [ ! -z "${RUNNING_CONTAINER}" ]; then \
