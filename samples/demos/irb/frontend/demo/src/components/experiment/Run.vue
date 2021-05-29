@@ -156,20 +156,26 @@ export default {
       this.isLaunching = true;
 
       let that = this;
-      axios.post('http://localhost:4000/api/launch', {}).then(response => {
+      const BASE_URL = process.env.VUE_APP_BASEURL_EXPERIMENTER
+      axios.post(BASE_URL + '/api/launch', {
+        experimentId: this.watchProposalWithId
+      }).then(response => {
         console.log('launched');
         that.isLaunched = true;
         that.isLaunching = false;
         console.log(response.data);
-        that.publicKey = response.data.PublicKey;
-        that.attestation = response.data.Attestation;
+        that.publicKey = response.data.publicKey;
+        that.attestation = response.data.attestation;
       });
     },
     startExperiment() {
       this.isExecuting = true;
 
       let that = this;
-      axios.post('http://localhost:4000/api/execute', {}).then(response => {
+      const BASE_URL = process.env.VUE_APP_BASEURL_EXPERIMENTER
+      axios.post(BASE_URL + '/api/execute', {
+        experimentId: this.watchProposalWithId
+      }).then(response => {
         console.log('launched');
         that.isDone = true;
         that.isExecuting = false;

@@ -51,7 +51,7 @@ export default {
     submit() {
       this.$store
           .dispatch('proposal/submit', this.newProposal)
-          .then(() => this.$emit('submit-proposal'))
+          .then(() => this.$emit('submit-proposal', this.newProposal.studyId))
           .catch(err => console.error(err));
     }
   },

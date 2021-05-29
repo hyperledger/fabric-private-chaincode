@@ -85,15 +85,19 @@ export default {
     }),
   },
   methods: {
-    onSubmitProposal: function () {
+    onSubmitProposal: function (studyId) {
       // TODO get study ID
       // TODO get proposal ID aka experiment ID
+
+      this.currentStudyId = studyId
 
       console.log('propose experiment');
       const BASE_URL = process.env.VUE_APP_BASEURL_EXPERIMENTER
       axios.post(BASE_URL + '/api/new-experiment', {
-        studyId: this.currentProposalId,
-        experimentId: this.currentProposalId,
+        // TODO remove this hack
+        studyId: '1',
+        // TODO replace currentStudyId with currentProposalId
+        experimentId: this.currentStudyId,
       }).then(response => {
         this.onNextStep();
         console.log(response);
