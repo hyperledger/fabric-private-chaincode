@@ -70,7 +70,7 @@ const getters = {
 		if (proposal === undefined) {
 			return false;
 		}
-		return proposal.reviews.every(review => review.status === "approved")
+		return proposal.reviews.some(review => review.status === "approved")
 	}
 };
 

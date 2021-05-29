@@ -39,6 +39,7 @@ func startServer() {
 	// controller
 	r.POST("/api/new-experiment", newExperiment)
 	r.POST("/api/execute", executeExperiment)
+	r.POST("/api/launch", launchWorker)
 
 	r.Run(":" + flagPort)
 }
@@ -56,6 +57,8 @@ func newExperiment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	fmt.Printf("register new experiment: %v\n", req)
 
 	workerCredentials, err := worker.GetWorkerCredentials()
 	if err != nil {
@@ -113,4 +116,27 @@ func executeExperiment(c *gin.Context) {
 
 	// return answer
 	c.IndentedJSON(http.StatusOK, string(resultBytes))
+}
+
+// LaunchResponse binding from JSON
+type LaunchResponse struct {
+	PublicKey   string `json:"publicKey" binding:"required"`
+	Attestation []byte `json:"attestation" binding:"required"`
+}
+
+func launchWorker(c *gin.Context) {
+	workerCredentials, err := worker.GetWorkerCredentials()
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp := &LaunchResponse{
+		PublicKey:   string(workerCredentials.GetIdentityBytes()),
+		Attestation: workerCredentials.GetAttestation(),
+	}
+
+	// return answer
+	c.IndentedJSON(http.StatusOK, resp)
 }

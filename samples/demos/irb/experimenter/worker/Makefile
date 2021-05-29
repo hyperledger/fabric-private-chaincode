@@ -8,6 +8,9 @@ PID="$(shell cat ${PID_FILE} 2> /dev/null)"
 
 WORKER_DOCKER_IMAGE="irb-experimenter-worker"
 
+REDIS_HOST ?= "localhost"
+REDIS_PORT ?= "6379"
+
 run:
 	@if [ -z ${PID} ]; then \
 	    PYTHONPATH=../../ python3 workerCLI.py &  echo -n "$$!" > ${PID_FILE} ;\
@@ -23,12 +26,18 @@ RUNNING_CONTAINER="$(shell docker ps --filter name=${WORKER_DOCKER_IMAGE} --quie
 
 run-docker:
 	@if [ -z "${RUNNING_CONTAINER}" ]; then \
-        docker run --name ${WORKER_DOCKER_IMAGE} --network host -d ${WORKER_DOCKER_IMAGE}; \
+        docker run --name ${WORKER_DOCKER_IMAGE} \
+        	--env REDIS_HOST=${REDIS_HOST} --env REDIS_PORT=${REDIS_PORT} \
+        	--network host \
+        	-d ${WORKER_DOCKER_IMAGE}; \
 	fi
 
-run-mac:
+mac-run-docker:
 	@if [ -z "${RUNNING_CONTAINER}" ]; then \
-        docker run --name ${WORKER_DOCKER_IMAGE} -p 5000:5000 -d ${WORKER_DOCKER_IMAGE}; \
+        docker run --name ${WORKER_DOCKER_IMAGE} \
+			--env REDIS_HOST=${REDIS_HOST} --env REDIS_PORT=${REDIS_PORT} \
+        	-p 5000:5000 \
+        	-d ${WORKER_DOCKER_IMAGE}; \
 	fi
 
 .PHONY: stop
