@@ -10,8 +10,8 @@ logger = logging.getLogger()
 
 class StorageClient:
 	def __init__(self):
-	    self.host = os.environ.get('REDIS_HOST', 'localhost')
-	    self.port = os.environ.get('REDIS_PORT', '6379')
+	    self.host = environ.get('REDIS_HOST', 'localhost')
+	    self.port = environ.get('REDIS_PORT', '6379')
 	    self.db = '0'
 
 	    self.r = redis.Redis(self.host, self.port, self.db)

@@ -83,7 +83,6 @@ func upload(c *gin.Context) {
 	}
 
 	// read study id
-	// TODO
 
 	// lookup user
 	uuid, _, vk, err := dp.LoadUser(res.UUID)
@@ -121,7 +120,7 @@ func upload(c *gin.Context) {
 	fmt.Printf("Data stored under key: %s\n", handle)
 
 	// register consent at FPC IRB
-	err = dp.RegisterData(uuid, vk, sk, handle)
+	err = dp.RegisterData(res.StudyId, uuid, vk, sk, handle)
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

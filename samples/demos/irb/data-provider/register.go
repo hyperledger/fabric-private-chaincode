@@ -16,8 +16,7 @@ import (
 	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/protos"
 )
 
-// TODO extend with study ID
-func RegisterData(uuid []byte, publicKey []byte, decryptionKey []byte, dataHandler string) error {
+func RegisterData(studyId string, uuid []byte, publicKey []byte, decryptionKey []byte, dataHandler string) error {
 	ccID := "experiment-approval-service"
 	// get network
 	network, err := testutils.SetupNetwork("mychannel")
@@ -38,6 +37,7 @@ func RegisterData(uuid []byte, publicKey []byte, decryptionKey []byte, dataHandl
 		Participant:   &userIdentity,
 		DecryptionKey: decryptionKey,
 		DataHandler:   dataHandler,
+		StudyId:       studyId,
 	}
 
 	registerDataRequestBytes, err := proto.Marshal(&registerDataRequest)

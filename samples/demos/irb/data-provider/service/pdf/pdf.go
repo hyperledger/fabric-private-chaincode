@@ -63,7 +63,7 @@ func pdfToText(input, output string) {
 }
 
 type PatientInformation struct {
-	StudyID  string
+	StudyId  string
 	UUID     string
 	Name     string
 	Birthday string
@@ -85,7 +85,11 @@ func (a *PatientAnswers) ToString() string {
 
 func parseAnswers(content string) (*PatientInformation, error) {
 
-	// TODO find study ID
+	// find patient Id
+	studyId, err := search(content, "Study Id:")
+	if err != nil {
+		return nil, err
+	}
 
 	// find patient Id
 	uuid, err := search(content, "Patient Id:")
@@ -118,8 +122,8 @@ func parseAnswers(content string) (*PatientInformation, error) {
 		"Urine pushing (continuous need for urination):",
 		"Micturition pains:",
 		"Burning of urethra, itch, swelling of urethra outlet:",
-		"Decision: Inflammation of urinary bladder:",
-		"Decision: Nephritis of renal pelvis origin:",
+		//"Decision: Inflammation of urinary bladder:",
+		//"Decision: Nephritis of renal pelvis origin:",
 	}
 	answers, err := findAnswers(content, questions)
 	if err != nil {
@@ -127,6 +131,7 @@ func parseAnswers(content string) (*PatientInformation, error) {
 	}
 
 	return &PatientInformation{
+		StudyId:  studyId,
 		UUID:     uuid,
 		Name:     name,
 		Birthday: birthdate,
