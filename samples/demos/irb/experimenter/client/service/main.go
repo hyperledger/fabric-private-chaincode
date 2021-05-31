@@ -112,7 +112,7 @@ func executeExperiment(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("Result received:\n%s", string(resultBytes))
+	fmt.Printf("Result received:\n%s\n", string(resultBytes))
 
 	// return answer
 	c.IndentedJSON(http.StatusOK, string(resultBytes))

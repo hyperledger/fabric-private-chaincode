@@ -24,6 +24,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("contents -> %s\n", patientInfo)
+	fmt.Printf("contents -> %v\n", patientInfo)
 	fmt.Printf("patient answers -> %s\n", patientInfo.Answers.ToString())
 }

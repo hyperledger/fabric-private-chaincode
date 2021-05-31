@@ -68,7 +68,7 @@ func main() {
 			panic(err)
 		}
 
-		err = dp.RegisterData(uuid, vk, decryptionKeys[i], dataHandlers[i])
+		err = dp.RegisterData("1", uuid, vk, decryptionKeys[i], dataHandlers[i])
 		if err != nil {
 			panic(err)
 		}
