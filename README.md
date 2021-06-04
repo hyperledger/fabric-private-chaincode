@@ -286,7 +286,7 @@ Note that by default the dev container mounts your local cloned FPC project as a
 This allows you to edit the content of the repository using your favorite editor in your system and the changes inside the docker container. Additionally, you are also not loosing changes inside the container when you reboot or the container gets stopped for other reasons.
 
 Now you are ready to start development *within* the container. Continue with building FPC as described in the [Build Fabric Private Chaincode
-]() Section and then write [your first Private Chaincode](#your-first-private-chaincode).
+](#build-fabric-private-chaincode) Section and then write [your first Private Chaincode](#your-first-private-chaincode).
 
 ### Option 2: Setting up your system to do local development
 
