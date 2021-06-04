@@ -9,6 +9,7 @@ package pi
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 
 	"github.com/golang/protobuf/proto"
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
@@ -79,6 +80,7 @@ func RegisterStudy(studyId string, metadata string, userIdentities []*pb.Identit
 	if err != nil {
 		return err
 	}
+	fmt.Println("Study successfully registered at FPC Experiment Approval Service!")
 
 	//response should be a base64 Status
 	statusBytes, err := base64.StdEncoding.DecodeString(string(response))
@@ -191,6 +193,7 @@ func DecideOnExperiment(experimentId string, experimentBytes []byte, decision st
 	if err != nil {
 		return err
 	}
+	fmt.Println("Experiment approved at FPC Experiment Approval Service!")
 
 	//response should be a base64 Status
 	statusBytes, err := base64.StdEncoding.DecodeString(string(response))

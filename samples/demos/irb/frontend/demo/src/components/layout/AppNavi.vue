@@ -34,7 +34,7 @@ export default {
         {title: 'About', link: '/', icon: 'mdi-home'},
         {title: 'Data Provider', link: '/consenter', icon: 'mdi-database-arrow-up', color: 'green'},
         {title: 'Experimenter', link: '/experimenter', icon: 'mdi-rocket-launch', color: 'purple'},
-        {title: 'Principle Investigator', link: '/approver', icon: 'mdi-account-multiple-check', color: 'blue'},
+        {title: 'Principal Investigator', link: '/approver', icon: 'mdi-account-multiple-check', color: 'blue'},
       ];
       return items.concat(defaultItems);
     },

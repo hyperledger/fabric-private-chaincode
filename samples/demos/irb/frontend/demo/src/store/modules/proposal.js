@@ -97,7 +97,7 @@ const actions = {
 		proposal.reviews[reviewPos].status = "approved"
 
 		// check if we have enough approvals
-		if (proposal.reviews.every(review => review.status === "approved")) {
+		if (proposal.reviews.some(review => review.status === "approved")) {
 			proposal.status = "Reviewed"
 		}
 

@@ -19,7 +19,7 @@
           </v-list-item-avatar>
 
           <v-list-item-content>
-            <v-list-item-subtitle>Reviewer</v-list-item-subtitle>
+            <v-list-item-subtitle>Principal Investigator</v-list-item-subtitle>
             <v-list-item-title class="headline font-weight-regular">{{ item.name }}</v-list-item-title>
           </v-list-item-content>
         </template>
@@ -30,7 +30,7 @@
           </v-list-item-avatar>
 
           <v-list-item-content>
-            <v-list-item-subtitle>Reviewer</v-list-item-subtitle>
+            <v-list-item-subtitle>Principal Investigator</v-list-item-subtitle>
             <v-list-item-title class="headline font-weight-regular">{{ item.name }}</v-list-item-title>
           </v-list-item-content>
         </template>

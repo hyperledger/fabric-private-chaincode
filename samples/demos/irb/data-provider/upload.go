@@ -9,6 +9,7 @@ package data_provider
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 
 	storage "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/storage/go"
 )
@@ -23,8 +24,7 @@ func Upload(data []byte) (handler string, e error) {
 		return "", err
 	}
 
-	print("Uploaded key: %s", key)
-	print("Uploaded val: %s", encodedContent)
+	fmt.Printf("Data successfully uploaded to storage service!\nkey: %s\nvalue: %s\n", key, encodedContent)
 
 	return key, nil
 }

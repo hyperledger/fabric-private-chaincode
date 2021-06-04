@@ -69,7 +69,8 @@
               cols="8"
           >
             <div v-if="!isApproved">
-              Patience, my young Padawan!
+<!--              Patience, my young Padawan!-->
+              Your experiment must be reviewed by an Principal Investigator.
             </div>
             <div v-else>
               Your experiment has been approved!

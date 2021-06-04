@@ -31,5 +31,5 @@ def diagnose(data_bytes):
     input = Variable(torch.tensor(data_list, dtype = torch.float32))
     prediction = model(input).data.numpy()[:, 0]
 
-    return str(prediction[0] * 100) + "%", ""
+    return "Decision: " + str(round(prediction[0] * 100, 5)) + "% of having Nephritis of renal pelvis origin", ""
 

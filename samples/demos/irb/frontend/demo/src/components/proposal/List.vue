@@ -89,8 +89,8 @@ export default {
     headers: [
       {text: 'Title', align: 'start', value: 'title',},
       {text: 'Requestor', value: 'requestor',},
-      {text: 'Approvals', value: 'approvals',},
-      {text: 'Status', value: 'status',},
+      {text: 'Approvals', value: 'approvals', width: '160px'},
+      {text: 'Status', value: 'status'},
       {text: '', value: 'actions', sortable: false},
       // {text: '', align: 'end', value: 'actions', sortable: false},
     ]
