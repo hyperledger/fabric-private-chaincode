@@ -65,13 +65,13 @@ func registerStudy(c *gin.Context) {
 		userIdentities = append(userIdentities, pi.CreateIdentity([]byte(user), nil, nil))
 	}
 
-	fmt.Printf("Registering study...")
 	err := pi.RegisterStudy(req.StudyId, req.Metadata, userIdentities)
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	fmt.Println("Study successfully registered at FPC Experiment Approval Service!")
 
 	// return answer
 	c.IndentedJSON(http.StatusOK, "registered")
@@ -90,7 +90,7 @@ func approveExperiment(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("Approving experiment...")
+	fmt.Printf("Approving experiment...\n")
 	experimentiProto, err := pi.GetExperimentProposal(req.ExperimentId)
 	if err != nil {
 		fmt.Printf("error: %v\n", err)

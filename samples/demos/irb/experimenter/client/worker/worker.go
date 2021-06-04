@@ -80,6 +80,7 @@ func GetWorkerCredentials() (*pb.WorkerCredentials, error) {
 }
 
 func ExecuteEvaluationPack(encryptedEvaluationPackBytes []byte) ([]byte, error) {
+	fmt.Println("Send evaluation pack to worker!")
 	resp, err := http.Post(getWorkerEndpoint()+"execute-evaluationpack", "", bytes.NewBuffer(encryptedEvaluationPackBytes))
 	if err != nil {
 		return nil, err

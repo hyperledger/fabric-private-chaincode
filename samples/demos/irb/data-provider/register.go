@@ -9,6 +9,7 @@ package data_provider
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 
 	"github.com/golang/protobuf/proto"
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
@@ -52,6 +53,7 @@ func RegisterData(studyId string, uuid []byte, publicKey []byte, decryptionKey [
 	if err != nil {
 		return err
 	}
+	fmt.Println("Data successfully registered at FPC Experiment Approval Service!")
 
 	//response should be a base64 Status
 	statusBytes, err := base64.StdEncoding.DecodeString(string(response))

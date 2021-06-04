@@ -32,10 +32,10 @@ export default {
   },
   data: () => ({
     newProposal: {
-      title: 'The Woodman experiment',
+      title: 'Presumptive diagnosis of Nephritis-the renal pelvis origin',
       studyId: '1',
-      description: 'The Woodman set to work at once, and so sharp was his axe that the tree was soon chopped to the end. The Woodman set to work at once, and so sharp was his axe that the tree was soon chopped.',
-      requestor: 'Fancy Research Corp.',
+      description: 'This experiment uses patient data to perform the presumptive diagnosis of Nephritis-the renal pelvis origin using Machine Learning Model.\n\nMore details on: https://archive.ics.uci.edu/ml/datasets/Acute+Inflammations',
+      requestor: 'Sample Research Corp.',
       checkedAllowedUse: 'Private',
       selectedDataDomains: ['Health'],
       files: [],

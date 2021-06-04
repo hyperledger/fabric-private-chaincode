@@ -102,13 +102,14 @@ func upload(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("Encrypting data...\n")
+	fmt.Printf("Encrypting data ... ")
 	encryptedData, err := crypto.EncryptMessage(sk, []byte(answerData))
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	fmt.Printf("done\n")
 
 	// upload encrypted data
 	handle, err := dp.Upload(encryptedData)
@@ -117,7 +118,6 @@ func upload(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	fmt.Printf("Data stored under key: %s\n", handle)
 
 	// register consent at FPC IRB
 	err = dp.RegisterData(res.StudyId, uuid, vk, sk, handle)

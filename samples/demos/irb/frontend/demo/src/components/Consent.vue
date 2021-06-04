@@ -4,7 +4,7 @@
       max-width="400">
     <v-card-title class="headline font-weight-regular green white--text">
       <v-icon class="mr-2" large color="white">mdi-database-arrow-up</v-icon>
-      <span class="headline">Create Consent</span>
+      <span class="headline">Upload Data</span>
     </v-card-title>
     <v-card-text>
 

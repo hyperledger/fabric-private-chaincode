@@ -9,6 +9,7 @@ package eas
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 
 	"github.com/golang/protobuf/proto"
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
@@ -56,6 +57,7 @@ func NewExperiment(studyId string, experimentId string, workerCredentials *pb.Wo
 	if err != nil {
 		return err
 	}
+	fmt.Printf("New experiment with Id=%s proposed at FPC Experiment Approval Service!\n", experimentId)
 
 	//response should be a base64 Status
 	statusBytes, err := base64.StdEncoding.DecodeString(string(response))
@@ -123,5 +125,7 @@ func RequestEvaluationPack(experimentId string) (evaluationPack *pb.EncryptedEva
 		//return error from status
 		return nil, errors.New("Error getExperimentProposal: " + string(status.GetReturnCode()) + string(", ") + status.GetMsg())
 	}
+
+	fmt.Println("Received evaluation pack from FPC Experiment Approval Service!")
 	return encryptedEvaluationPack, nil
 }

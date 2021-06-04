@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"encoding/base64"
 	"flag"
 	"fmt"
 	"net/http"
@@ -57,8 +58,6 @@ func newExperiment(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	fmt.Printf("register new experiment: %v\n", req)
 
 	workerCredentials, err := worker.GetWorkerCredentials()
 	if err != nil {
@@ -112,7 +111,7 @@ func executeExperiment(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("Result received:\n%s\n", string(resultBytes))
+	fmt.Printf("Result received from worker: \"%s\"\n", string(resultBytes))
 
 	// return answer
 	c.IndentedJSON(http.StatusOK, string(resultBytes))
@@ -136,6 +135,9 @@ func launchWorker(c *gin.Context) {
 		PublicKey:   string(workerCredentials.GetIdentityBytes()),
 		Attestation: workerCredentials.GetAttestation(),
 	}
+
+	fmt.Printf("Launched experiment worker with attestation evidence: %s\n",
+		base64.StdEncoding.EncodeToString(workerCredentials.GetAttestation()))
 
 	// return answer
 	c.IndentedJSON(http.StatusOK, resp)
