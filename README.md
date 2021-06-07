@@ -20,23 +20,22 @@ CPUs. It establishes trusted execution contexts called enclaves on a CPU,
 which isolate data and programs from the host operating system in hardware and
 ensure that outputs are correct.
 
-This lab provides a framework to develop and execute Fabric chaincode within
+This project provides a framework to develop and execute Fabric chaincode within
 an enclave.  It allows to write chaincode applications where the data is
 encrypted on the ledger and can only be accessed in clear by authorized
 parties. Furthermore, Fabric extensions for chaincode enclave registration
 and transaction verification are provided.
 
-This lab proposes an architecture to enable private chaincode execution using
-Intel SGX for Hyperledger Fabric as presented and published in the paper:
+Fabric Private Chaicode is based on the work in the paper:
 
 * Marcus Brandenburger, Christian Cachin, Rüdiger Kapitza, Alessandro
   Sorniotti: Blockchain and Trusted Computing: Problems, Pitfalls, and a
   Solution for Hyperledger Fabric. https://arxiv.org/abs/1805.08541
 
+This project was accepted via a Hyperledger Fabric [RFC](https://github.com/hyperledger/fabric-rfcs/blob/main/text/0000-fabric-private-chaincode-1.0.md) and is now under development.
 We provide an initial proof-of-concept implementation of the proposed
-architecture. Note that the code provided in this repository is prototype code
-and not meant for production use! The main goal of this lab is to discuss and
-refine the proposed architecture involving the Hyperledger community.
+architecture. Note that the code provided in this repository is still prototype code
+and not yet meant for production use!
 
 For up to date information about our community meeting schedule, past
 presentations, and info on how to contact us please refer to our
@@ -46,7 +45,7 @@ presentations, and info on how to contact us please refer to our
 
 ### Overview
 
-This lab extends a Fabric peer with the following components: A chaincode
+This project extends a Fabric peer with the following components: A chaincode
 enclave that executes a particular chaincode, running inside SGX.
 In the untrusted part of the peer, an enclave registry maintains
 the identities of all chaincode enclaves and an enclave transaction validator
@@ -94,7 +93,7 @@ The system consists of the following components:
 
 ### Design
 
-More detailed architectural information and overview of the protocols can be found in the [Fabric Private Chaincode RFC](https://github.com/hyperledger/fabric-rfcs/blob/main/text/0000-fabric-private-chaincode-1.0.md)
+More detailed architectural information and overview of the protocols can be found in the [Fabric Private Chaincode RFC](https://github.com/hyperledger/fabric-rfcs/blob/main/text/0000-fabric-private-chaincode-1.0.md).
 
 The full detailed operation of FPC is documented in a series of UML
 Sequence Diagrams. Note that FPC version 1.x corresponds to `FPC Lite`
@@ -162,106 +161,69 @@ Additional Google documents provide details on FPC 1.0:
 The following steps guide you through the build phase and configuration, for
 deploying and running an example private chaincode.
 
-We assume that you are familiar with building Fabric manually; otherwise we highly recommend to spend some time to build
-Fabric and run a simple network with a few peers and a ordering service. We recommend the Fabric documentation as your
-starting point. You should start with
-[installing](https://hyperledger-fabric.readthedocs.io/en/release-2.0/prereqs.html) Fabric dependencies and setting up
-your [development environment](https://hyperledger-fabric.readthedocs.io/en/release-2.0/dev-setup/build.html).
+We assume that you are familiar with Hyperledger Fabric; otherwise we recommend the
+[Fabric documentation](https://hyperledger-fabric.readthedocs.io/en/latest/getting_started.html)
+as your starting point.
+Moreover, we assume that you are familiar with the [Intel SGX SDK](https://github.com/intel/linux-sgx).
+
+
+This README is structure as follows.
+We start by [cloning the FPC repository](#clone-fabric-private-chaincode) and explain how to prepare your development environment for FPC in [Setup your FPC Development Environment](#setup-your-development-environment).
+In [Build Fabric Private Chaincode](#build-fabric-private-chaincode) we guide you through the building process and elaborate on common issues.
+Finally, we give you a starting point for [Developing with Fabric Private Chaincode](#developing-with-fabric-private-chaincode) by introducing the FPC Hello World Tutorial.
 
 ### Clone Fabric Private Chaincode
 
 Clone the code and make sure it is on your `$GOPATH`. (Important: we assume in this documentation and default configuration that your `$GOPATH` has a _single_ root-directoy!)
+We use `$FPC_PATH` to refer to the Fabric Private Chaincode repository in your filesystem.  
 ```bash
-git clone --recursive https://github.com/hyperledger/fabric-private-chaincode.git $GOPATH/src/github.com/hyperledger/fabric-private-chaincode
+export FPC_PATH=$GOPATH/src/github.com/hyperledger/fabric-private-chaincode
+git clone --recursive https://github.com/hyperledger/fabric-private-chaincode.git $FPC_PATH
 ```
 
-Moreover, we assume that you are familiar with the Intel SGX SDK.
+## Setup your Development Environment
 
-### Intel SGX
-
-To run Fabric Private Chaincode in secure mode, you need an SGX-enabled
-hardware as well corresponding OS support.  However, even if you don't
-have SGX hardware available, you still can run FPC in simulation mode by
-setting `SGX_MODE=SIM` in your environment.
-
-Note that the simulation mode is for developing purpose only and does
-not provide any security guarantees.
-
-Notice: by default the project builds in hardware-mode SGX, `SGX_MODE=HW` as defined in `<absolute-project-path>/fabric-private-chaincode/config.mk` and you can
-explicitly opt for building in simulation-mode SGX, `SGX_MODE=SIM`. In order to set non-default values for install
-location, or for building in simulation-mode SGX, you can create the file `<absolute-project-path>/fabric-private-chaincode/config.override.mk` and override the default
-values by defining the corresponding environment variable.
-
-If you run SGX in __simulation mode only__, you can skip below
-sections and jump right away to [Setup your Development
-Environment](#setup-your-development-environment).
-
-Note that you can always come back here when you want a setup with SGX
-hardware-mode later after having tested with simulation mode.
-
-
-#### Install SGX Operation System Support
-
-Install the Intel SGX software stack for Linux (including the SGX
-driver and the SGX Platform Software (PSW)) by following the official
-[documentation](https://software.intel.com/content/www/us/en/develop/topics/software-guard-extensions/sdk.html).
-
-
-#### Register with Intel Attestation Service (IAS)
-
-We currently support EPID-based attestation and  use the Intel's
-Attestation Service to perform attestation with chaincode enclaves.
-
-What you need:
-
-* a Service Provider ID (SPID)
-* the (primary) api-key associated with your SPID
-
-In order to use Intel's Attestation Service (IAS), you need to register
-with Intel. On the [IAS EPID registration page](https://api.portal.trustedservices.intel.com/EPID-attestation)
-you can find more details on how to register and obtain your SPID plus corresponding api-key.
-We currently support both `linkable` and `unlinkable` signatures for the attestation.
-
-Place your ias api key and your SPID in the `ias` folder as follows:
-```bash
-echo 'YOUR_API_KEY' > ${GOPATH}/src/github.com/hyperledger/fabric-private-chaincode/config/ias/api_key.txt
-echo 'YOUR_SPID_TYPE' > ${GOPATH}/src/github.com/hyperledger/fabric-private-chaincode/config/ias/spid_type.txt
-echo 'YOUR_SPID' > ${GOPATH}/src/github.com/hyperledger/fabric-private-chaincode/config/ias/spid.txt
-```
-where `YOUR_SPID_TYPE` must be `epid-linkable` or `epid-unlinkable`, depending on the type of your subscription.
-
-### Setup your Development Environment
-
-There are 2 different ways to develop Fabric Private Chaincode. Using our preconfigured Docker container development environment or setting up your local system with all required software dependencies to build and develop chaincode locally.
+There are two different ways to develop Fabric Private Chaincode. Using our preconfigured Docker container development environment or setting up your local system with all required software dependencies to build and develop chaincode locally.
 
 ### Option 1: Using the Docker-based FPC Development Environment
 
-As standard Fabric, we require docker to run chaincode.  We recommend
-to set privileges to manage docker as a non-root user. See the
+In this section we explain how to set up a Docker-based development environment that allows you to develop and test FPC chaincode.
+The docker images come with all necessary software dependencies and allow you a quick start.
+We recommend to set privileges to manage docker as a non-root user. See the
 official docker [documentation](https://docs.docker.com/install/linux/linux-postinstall/)
 for more details.
-
-We provide instructions to build and run a docker image containing the FPC development environment.
 
 First make sure your host has
 * Docker 18.09 (or higher).
   It also should use `/var/run/docker.sock` as socket to interact with the daemon (or you
-  will have to override in `<absolute-project-path>/fabric-private-chaincode/config.override.mk` the default definition in make of `DOCKER_DAEMON_SOCKET`)
+  will have to override in `$FPC_PATH/config.override.mk` the default definition in make of `DOCKER_DAEMON_SOCKET`)
 * GNU make
 
-A few notes:
-* While we mostly test on 18.04, FPC should work also with Ubuntu 20.04.
-  To build also docker images based on Ubuntu 20.04, add the following to `${FPC_PATH}/config.override.mk`
+Once you have cloned the repository, to build the docker image execute the following:
+```bash
+cd $FPC_PATH
+cd utils/docker; make run
+```
+
+This will open a shell inside the FPC development container, with environment variables like `$FPC_PATH` appropriately defined and all
+dependencies like the Intel SGX SDK, ready to build and run FPC.
+
+Note that by default the dev container mounts your local cloned FPC project as a volume to `/project/src/github.com/hyperledger/fabric-private-chaincode` within the docker container.
+This allows you to edit the content of the repository using your favorite editor in your system and the changes inside the docker container. Additionally, you are also not loosing changes inside the container when you reboot or the container gets stopped for other reasons.
+
+A few more notes:
+* We use Ubuntu 20.04 by default.
+  To build also docker images based on Ubuntu 18.04, add the following to `$FPC_PATH/config.override.mk`.
   ```bash
-  DOCKER_BUILD_OPTS=--build-arg UBUNTU_VERSION=20.04 --build-arg UBUNTU_NAME=focal
+  DOCKER_BUILD_OPTS=--build-arg UBUNTU_VERSION=18.04 --build-arg UBUNTU_NAME=bionic
   ```
-* if you run behind a proxy, you will have to configure the proxy,
+* If you run behind a proxy, you will have to configure the proxy,
   e.g., for docker (`~/.docker/config.json`). See
   [Working from behind a proxy](#working-from-behind-a-proxy) below for more information.
-* if your local host is SGX enabled, i.e., there is a device `/dev/sgx` or
+* If your local host is SGX enabled, i.e., there is a device `/dev/sgx` or
   `/dev/isgx` and your PSW daemon listens to `/var/run/aesmd`, then the docker image will be sgx-enabled and your settings from `./config/ias` will be used. You will have to manually set `SGX_MODE=HW` before building anything to use HW mode.
-* if you want additional apt packages to be automatically added to your
-  container images, you can do so by modifying `<absolute-project-path>/fabric-private-chaincode/config.override.mk` file in the fabric-private-chaincode directory.
+* If you want additional apt packages to be automatically added to your
+  container images, you can do so by modifying `$FPC_PATH/config.override.mk` file in the fabric-private-chaincode directory.
   In that file, define
   `DOCKER_BASE_RT_IMAGE_APT_ADD_PKGS`,
   `DOCKER_BASE_DEV_IMAGE_APT_ADD_PKGS'`and/or
@@ -269,31 +231,21 @@ A few notes:
   all images,
   all images where fabric/fpc is built from source and
   the dev(eloper) container, respectively.
-  They will then be automatically added to the docker image
-* due to the way the peer's port for chaincode connection is managed,
+  They will then be automatically added to the docker image.
+* Due to the way the peer's port for chaincode connection is managed,
   you will be able to run only a single FPC development container on a
   particular host.
-
-Once you have cloned the repository, to build the docker image execute the following:
-```bash
-cd utils/docker; make run
-```
-
-This will open a shell inside the FPC development container, with environment variables like GOPATH appropriately defined and all
-dependencies like fabric built, ready to build and run FPC.
-
-Note that by default the dev container mounts your local cloned FPC project as a volume to `/project/src/github.com/hyperledger/fabric-private-chaincode` within the docker container.
-This allows you to edit the content of the repository using your favorite editor in your system and the changes inside the docker container. Additionally, you are also not loosing changes inside the container when you reboot or the container gets stopped for other reasons.
 
 Now you are ready to start development *within* the container. Continue with building FPC as described in the [Build Fabric Private Chaincode
 ](#build-fabric-private-chaincode) Section and then write [your first Private Chaincode](#your-first-private-chaincode).
 
 ### Option 2: Setting up your system to do local development
 
+As an alternative to the Docker-based FPC development environment you can install and manage all necessary software dependencies which are required to compile and run FPC.  
+
 #### Requirements
 
 Make sure that you have the following required dependencies installed:
-
 * Linux (OS) (we recommend Ubuntu 20.04, see [list](https://github.com/intel/linux-sgx#prerequisites) supported OS)
 
 * CMake v3.5.1 or higher
@@ -369,8 +321,8 @@ compiler with python bindings (e.g. via `apt-get install protobuf-compiler pytho
 For more detailed information consult the official nanopb documentation http://github.com/nanopb/nanopb.
 ```bash
 export NANOPB_PATH=/path-to/install/nanopb/
-git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH}
-cd ${NANOPB_PATH}
+git clone https://github.com/nanopb/nanopb.git $NANOPB_PATH
+cd $NANOPB_PATH
 git checkout nanopb-0.4.3
 cd generator/proto && make
 ```
@@ -396,18 +348,19 @@ cd $FABRIC_PATH; git checkout tags/v2.3.0
 ```
 
 Note that Fabric Private Chaincode may not work with the Fabric `main` branch.
-Therefore make sure you use the Fabric `v2.3.0` tag.
+Therefore, make sure you use the Fabric `v2.3.0` tag.
 Make sure the source of Fabric is in your `$GOPATH`.
 
-### Build Fabric Private Chaincode
+## Build Fabric Private Chaincode
 
 Once you have your development environment up and running (i.e., using our docker-based setup or install all dependencies on your machine) you can build FPC and start developing your own FPC application.
+Note by default we build FPC with SGX simulation mode. For SGX hardware-mode support please also read the [Intel SGX Attestation Support](#intel-sgx-attestation-support) Section below. 
+
+To build all required FPC components and run the integration tests run the following:
 ```bash
-cd $GOPATH/src/github.com/hyperledger/fabric-private-chaincode
+cd $FPC_PATH
 make
  ```
-
-This will build all required components and run the integration tests.
 
 Besides the default target, there are also following make targets:
 - `build`: build all FPC build artifacts
@@ -419,13 +372,55 @@ Besides the default target, there are also following make targets:
 Also note that the file `config.mk` contains various defaults which
 can all be redefined in an optional file `config.override.mk`.
 
-
 See also [below](#building-documentation) on how to build the documentation.
 
 
-#### Trouble shooting
+### Intel SGX Attestation Support
 
-##### Docker
+To run Fabric Private Chaincode in hardware mode (secure mode), you need an SGX-enabled
+hardware as well corresponding OS support.  However, even if you don't
+have SGX hardware available, you still can run FPC in simulation mode by
+setting `SGX_MODE=SIM` in your environment.
+
+Note that the simulation mode is for developing purpose only and does
+not provide any security guarantees.
+
+As mentioned before, by default the project builds in SGX simulation mode, `SGX_MODE=SIM` as defined in `$FPC_PATH/config.mk` and you can
+explicitly opt for building in hardware-mode SGX, `SGX_MODE=HW`. In order to set non-default values for install
+location, or for building in hardware-mode SGX, you can create the file `$FPC_PATH/config.override.mk` and override the default
+values by defining the corresponding environment variable.
+
+Note that you can always come back here when you want a setup with SGX
+hardware-mode later after having tested with simulation mode.
+
+#### Register with Intel Attestation Service (IAS)
+
+If you run SGX in __simulation mode only__, you can skip this section.
+We currently support EPID-based attestation and  use the Intel's
+Attestation Service to perform attestation with chaincode enclaves.
+
+What you need:
+* a Service Provider ID (SPID)
+* the (primary) api-key associated with your SPID
+
+In order to use Intel's Attestation Service (IAS), you need to register
+with Intel. On the [IAS EPID registration page](https://api.portal.trustedservices.intel.com/EPID-attestation)
+you can find more details on how to register and obtain your SPID plus corresponding api-key.
+We currently support both `linkable` and `unlinkable` signatures for the attestation.
+
+Place your ias api key and your SPID in the `ias` folder as follows:
+```bash
+echo 'YOUR_API_KEY' > $FPC_PATH/config/ias/api_key.txt
+echo 'YOUR_SPID_TYPE' > $FPC_PATH/config/ias/spid_type.txt
+echo 'YOUR_SPID' > $FPC_PATH/config/ias/spid.txt
+```
+where `YOUR_SPID_TYPE` must be `epid-linkable` or `epid-unlinkable`, depending on the type of your subscription.
+
+### Trouble shooting
+
+This section elaborate on common issues with building Fabric Private Chaincode.
+
+#### Docker
 
 Building the project requires docker. We do not recommend to run `sudo make`
 to resolve issues with mis-configured docker environments as this also changes your `$GOPATH`. Please see hints on
@@ -439,7 +434,7 @@ download, build or test artifacts are scrubbed from your repo and might
 help overcoming other problems. Be advised that that the rebuild can
 take a fair amount of time.
 
-##### Working from behind a proxy
+#### Working from behind a proxy
 
 The current code should work behind a proxy assuming
   * you have defined the corresponding environment variables (i.e.,
@@ -467,7 +462,7 @@ In that case, you will have to replace the '0.0.0.0' with a concrete
 ip address such as '127.0.0.1'.
 
 
-##### Environment settings
+#### Environment settings
 
 Our build system requires a few variables to be set in your environment. Missing variables may cause `make` to fail.
 Below you find a summary of all variables which you should carefully check and add to your environment.
@@ -490,13 +485,13 @@ The file `config.mk` contains various defaults for some of these, but
 all can be (re)defined also in an optional file `config.override.mk`.
 
 
-##### Clang-format
+#### Clang-format
 
 Some users may experience problems with clang-format. In particular, the error `command not found: clang-format`
 appears even after installing it via `apt-get install clang-format`. See [here](https://askubuntu.com/questions/1034996/vim-clang-format-clang-format-is-not-found)
 for how to fix this.
 
-##### ERCC setup failures
+#### ERCC setup failures
 
 <!-- TODO: check below, this section is probably outdated? -->
 
@@ -530,8 +525,17 @@ make
 
 ## Developing with Fabric Private Chaincode
 
+In the [samples](samples) folder you find a few examples how to develop applications using FPC and run them
+on a Fabric network.
+In particular, [samples/application](samples/application) contains examples of the FPC Client SDK for Go.
+In [samples/chaincode](samples/chaincode) we give illustrate the use of the FPC Chaincode API;
+and in [samples/deployment](samples/deployment) we show how to deploy and run FPC chaincode on the Fabric-samples test network and with K8s (minikube).
+
+More details about FPC APIs in the [Reference Guides](#reference-guides) Section.
+
 ### Your first private chaincode
-Create, build and test your first private chaincode with this [tutorial](samples/chaincode/helloworld/README.md).
+
+Create, build and test your first private chaincode with the [Hello World Tutorial](samples/chaincode/helloworld/README.md).
 
 
 ## Reference Guides
@@ -557,13 +561,14 @@ before designing, implementing and deploying an FPC-based solution.
 -->
 
 
-### FPC Client-side SDK
+### FPC Client SDK
 
-See **[Godocs](https://pkg.go.dev/github.com/hyperledger/fabric-private-chaincode/client_sdk/go/)**
-for Go Client SDK.
-For the command-line invocations, use the **`fabric/bin/peer.sh`** wrapper script.
+In order to interact with a FPC chaincode you can use the FPC Client SDK for Go or use the Peer CLI tool provided with FPC.
 Both make FPC related client-side encryption and decryption transparent to the user, i.e., client-side programming is mostly standard Fabric and agnostic to FPC.
 
+The FPC Client SDK for Go is located in [client_sdk/go](client_sdk/go). See also [Godocs](https://pkg.go.dev/github.com/hyperledger/fabric-private-chaincode/client_sdk/go/).
+
+For the command-line invocations, use the **`$FPC_PATH/fabric/bin/peer.sh`** wrapper script. We refer to our integration tests for usage examples.
 
 ## Getting Help
 
@@ -602,7 +607,8 @@ section.
 
 ## Project Status
 
-Hyperledger Fabric Private Chaincode operates as a Hyperledger Labs project.
+Hyperledger Fabric Private Chaincode was accepted via a Hyperledger Fabric [RFC](https://github.com/hyperledger/fabric-rfcs/blob/main/text/0000-fabric-private-chaincode-1.0.md) and is now under development.
+Before, the project operated as a Hyperledger Labs project.
 This code is provided solely to demonstrate basic Fabric Private Chaincode
 mechanisms and to facilitate collaboration to refine the project architecture
 and define minimum viable product requirements. The code provided in this
