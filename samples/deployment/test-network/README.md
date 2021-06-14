@@ -224,12 +224,12 @@ Next we will copy the crypto material of the network generated
 cd $FPC_PATH/samples/deployment/test-network/blockchain-explorer
 mkdir organizations
 cd $FPC_PATH/samples/deployment/test-network/blockchain-explorer/organizations
-cp $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/ordererOrganizations .
-cp $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations .
+cp -r $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/ordererOrganizations .
+cp -r $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations .
 ```
 You can review the file directory structure and the files copied. You should not need to modify any of them. Now to start the Blockchain Explorer you need to start up the docker image. This docker image will use the docker-compose.yaml that we downloaded.
 ```bash
 cd $FPC_PATH/samples/deployment/test-network/blockchain-explorer/organizations
 docker-compose up -d
 ```
-After it has started as part of the output it will tell you the url you have to use in your browser to access the web interface.
+After it has started as part of the output of the explorer.mynetwork.com docker container it will tell you the url you have to use in your browser to access the web interface. The url is "http://localhost:8080/"
