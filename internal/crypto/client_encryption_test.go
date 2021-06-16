@@ -1,3 +1,10 @@
+/*
+Copyright IBM Corp. All Rights Reserved.
+Copyright 2020 Intel Corporation
+
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package crypto
 
 import (
@@ -13,7 +20,8 @@ import (
 
 func TestNewEncryptionContext(t *testing.T) {
 	provider := &EncryptionProviderImpl{
-		func() ([]byte, error) {
+		CSP: GetDefaultCSP(),
+		GetCcEncryptionKey: func() ([]byte, error) {
 			return nil, fmt.Errorf("some error while fetching key")
 		},
 	}
@@ -23,7 +31,8 @@ func TestNewEncryptionContext(t *testing.T) {
 	assert.Error(t, err, expectedErrorMsg)
 
 	provider = &EncryptionProviderImpl{
-		func() ([]byte, error) {
+		CSP: GetDefaultCSP(),
+		GetCcEncryptionKey: func() ([]byte, error) {
 			return []byte("some invalid base64 encoded key"), nil
 		},
 	}
@@ -32,7 +41,8 @@ func TestNewEncryptionContext(t *testing.T) {
 	assert.Error(t, err)
 
 	provider = &EncryptionProviderImpl{
-		func() ([]byte, error) {
+		CSP: GetDefaultCSP(),
+		GetCcEncryptionKey: func() ([]byte, error) {
 			return []byte(base64.StdEncoding.EncodeToString([]byte("some key"))), nil
 		},
 	}
@@ -47,6 +57,7 @@ func TestConceal(t *testing.T) {
 
 	// test with some invalid request encryption key
 	ctxImpl := &EncryptionContextImpl{
+		csp:                  GetDefaultCSP(),
 		requestEncryptionKey: []byte("invalid request encryption key"),
 	}
 	request, err := ctxImpl.Conceal(f, args)
@@ -54,9 +65,10 @@ func TestConceal(t *testing.T) {
 	assert.Error(t, err)
 
 	// test with some invalid request encryption key
-	symKey, err := NewSymmetricKey()
+	symKey, err := GetDefaultCSP().NewSymmetricKey()
 	assert.NoError(t, err)
 	ctxImpl = &EncryptionContextImpl{
+		csp:                    GetDefaultCSP(),
 		requestEncryptionKey:   symKey,
 		chaincodeEncryptionKey: []byte("invalid chaincode encryption key"),
 	}
@@ -65,12 +77,13 @@ func TestConceal(t *testing.T) {
 	assert.Error(t, err)
 
 	// test with valid rsa key
-	pubKey, privKey, err := NewRSAKeys()
+	pubKey, privKey, err := GetDefaultCSP().NewRSAKeys()
 	assert.NotNil(t, pubKey)
 	assert.NotNil(t, privKey)
 	assert.NoError(t, err)
 	provider := &EncryptionProviderImpl{
-		func() ([]byte, error) {
+		CSP: GetDefaultCSP(),
+		GetCcEncryptionKey: func() ([]byte, error) {
 			return []byte(base64.StdEncoding.EncodeToString(pubKey)), nil
 		},
 	}
@@ -90,18 +103,19 @@ func TestConceal(t *testing.T) {
 func TestReveal(t *testing.T) {
 	msg := []byte("some response")
 
-	pubKey, privKey, err := NewRSAKeys()
+	pubKey, privKey, err := GetDefaultCSP().NewRSAKeys()
 	assert.NotNil(t, pubKey)
 	assert.NotNil(t, privKey)
 	assert.NoError(t, err)
 
-	requestEncryptionKey, err := NewSymmetricKey()
+	requestEncryptionKey, err := GetDefaultCSP().NewSymmetricKey()
 	assert.NoError(t, err)
 
-	responseEncryptionKey, err := NewSymmetricKey()
+	responseEncryptionKey, err := GetDefaultCSP().NewSymmetricKey()
 	assert.NoError(t, err)
 
 	ctx := &EncryptionContextImpl{
+		csp:                    GetDefaultCSP(),
 		requestEncryptionKey:   requestEncryptionKey,
 		responseEncryptionKey:  responseEncryptionKey,
 		chaincodeEncryptionKey: pubKey,
@@ -136,7 +150,7 @@ func TestReveal(t *testing.T) {
 	assert.Error(t, err)
 
 	// msg not base64 encoded
-	encryptedMsg, err := EncryptMessage(responseEncryptionKey, msg)
+	encryptedMsg, err := GetDefaultCSP().EncryptMessage(responseEncryptionKey, msg)
 	response = &protos.ChaincodeResponseMessage{EncryptedResponse: encryptedMsg}
 	responseBytes = protoutil.MarshalOrPanic(response)
 	resp, err = ctx.Reveal([]byte(utils.MarshallProto(&protos.SignedChaincodeResponseMessage{ChaincodeResponseMessage: responseBytes})))
@@ -144,7 +158,7 @@ func TestReveal(t *testing.T) {
 	assert.Error(t, err)
 
 	// should succeed
-	encryptedMsg, err = EncryptMessage(responseEncryptionKey, []byte(base64.StdEncoding.EncodeToString(msg)))
+	encryptedMsg, err = GetDefaultCSP().EncryptMessage(responseEncryptionKey, []byte(base64.StdEncoding.EncodeToString(msg)))
 	response = &protos.ChaincodeResponseMessage{EncryptedResponse: encryptedMsg}
 	responseBytes = protoutil.MarshalOrPanic(response)
 	resp, err = ctx.Reveal([]byte(utils.MarshallProto(&protos.SignedChaincodeResponseMessage{ChaincodeResponseMessage: responseBytes})))

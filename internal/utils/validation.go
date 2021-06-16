@@ -1,3 +1,5 @@
+// +build WITH_PDO_CRYPTO
+
 /*
 Copyright IBM Corp. All Rights Reserved.
 Copyright 2020 Intel Corporation
@@ -19,6 +21,10 @@ import (
 	"github.com/hyperledger/fabric/common/flogging"
 	"google.golang.org/protobuf/proto"
 )
+
+// Note that we use the WITH_PDO_CRYPTO build tag to enable this code.
+// This is necessary as this package is imported by the go client sdk and may lead to issues when used by applications
+// that do not build FPC.
 
 // #cgo CFLAGS: -I${SRCDIR}/../../common/crypto
 // #cgo LDFLAGS: -L${SRCDIR}/../../common/crypto/_build -L${SRCDIR}/../../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++ -lgcov

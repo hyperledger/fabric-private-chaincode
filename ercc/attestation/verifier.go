@@ -1,4 +1,4 @@
-// +build linux
+// +build WITH_PDO_CRYPTO
 
 /*
 Copyright IBM Corp. All Rights Reserved.

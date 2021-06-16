@@ -124,6 +124,7 @@ func handleEncryptedRequestAndResponse(chaincodeEncryptionKey string, resultPipe
 
 	// setup crypto context
 	ep := &crypto.EncryptionProviderImpl{
+		CSP: crypto.GetDefaultCSP(),
 		GetCcEncryptionKey: func() ([]byte, error) {
 			// TODO: might have to do some re-formatting, e.g., de-hex, here?
 			return []byte(chaincodeEncryptionKey), nil

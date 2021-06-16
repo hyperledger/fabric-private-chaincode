@@ -6,6 +6,8 @@
 TOP = ..
 include $(TOP)/build.mk
 
+GOTAGS += -tags WITH_PDO_CRYPTO
+
 CC_NAME ?= ecc
 NET_ID ?=dev
 PEER_ID ?=jdoe
