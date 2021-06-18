@@ -58,7 +58,9 @@ func main() {
 			fmt.Fprintf(os.Stderr, "ERROR: couldn't read stdin: %v\n", err)
 			os.Exit(1)
 		}
-		credentialsStringOut, err := attestation.ConvertCredentials(string(credentialsIn))
+
+		converter := attestation.NewCredentialConverter()
+		credentialsStringOut, err := converter.ConvertCredentials(string(credentialsIn))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: couldn't convert credentials: %v\n", err)
 			os.Exit(1)

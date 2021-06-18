@@ -41,6 +41,25 @@ function orchestrate()
     ./verify_evidence_app
 }
 
+function orchestrate_with_go_conversion()
+{
+    #get attestation
+    ./get_attestation_app
+    define_to_variable "${DEFINES_FILEPATH}" "GET_ATTESTATION_OUTPUT"
+    [ -f ${GET_ATTESTATION_OUTPUT} ] || die "no output from get_attestation"
+
+    #translate attestation (note: attestation_to_evidence defines the EVIDENCE variable)
+    ATTESTATION=$(cat ${GET_ATTESTATION_OUTPUT})
+    GO_CONVERSION_CMD="go run ${FPC_PATH}/internal/attestation/test_cmd/main.go"
+    EVIDENCE=$(${GO_CONVERSION_CMD} "${ATTESTATION}")
+
+    define_to_variable "${DEFINES_FILEPATH}" "EVIDENCE_FILE"
+    echo ${EVIDENCE} > ${EVIDENCE_FILE}
+
+    #verify evidence
+    ./verify_evidence_app
+}
+
 #######################################
 # sim mode test
 #######################################
@@ -101,6 +120,7 @@ if [[ ${SGX_MODE} == "HW" ]]; then
     echo -n "{\"${ATTESTATION_TYPE_TAG}\": \"$SPID_TYPE\", \"${SPID_TAG}\": \"$SPID\", \"${SIG_RL_TAG}\":\"\"}" > ${INIT_DATA_INPUT}
 
     orchestrate
+    orchestrate_with_go_conversion
 else
     say "Skipping actual attestation test"
 fi

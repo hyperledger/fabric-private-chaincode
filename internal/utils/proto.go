@@ -45,7 +45,7 @@ func UnmarshalCredentials(credentialsBase64 string) (*protos.Credentials, error)
 	return credentials, nil
 }
 
-// returns enclave_id as hex-encoded string of SHA256 hash over enclave_vk.
+// GetEnclaveId returns enclave_id as hex-encoded string of SHA256 hash over enclave_vk.
 func GetEnclaveId(attestedData *protos.AttestedData) string {
 	// hash enclave vk
 	h := sha256.Sum256(attestedData.EnclaveVk)

@@ -22,6 +22,7 @@ build: $(BUILD_DIR)
 	$(MAKE) --directory=$<
 
 test: build
+	env CTEST_OUTPUT_ON_FAILURE=1 \
 	$(MAKE) -C $(BUILD_DIR) test || \
 		(echo "PDO crypto tests failed. Define PDO_DEBUG_BUILD=1 environment for enabling logging in tests." && exit 1)
 

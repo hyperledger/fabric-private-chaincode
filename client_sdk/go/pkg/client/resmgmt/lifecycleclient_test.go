@@ -25,6 +25,11 @@ type chClient interface {
 	channelClient
 }
 
+//go:generate counterfeiter -o fakes/credential_converter.go -fake-name CredentialConverter . credentialConverter
+type credConverter interface {
+	credentialConverter
+}
+
 const (
 	channelID           = "mychannel"
 	chaincodeId         = "my-fpc-chaincode"
@@ -33,16 +38,12 @@ const (
 	expectedTxID        = fab.TransactionID("someTxID")
 )
 
-func setupClient(client channelClient, convertCredentials convertCredentialsFunction) *Client {
+func setupClient(client channelClient, converter credentialConverter) *Client {
 	getChannelClient := func(channelId string) (channelClient, error) {
 		return client, nil
 	}
 
-	return &Client{nil, getChannelClient, convertCredentials}
-}
-
-func fakeConvertCredentialsFunction(credentialsOnlyAttestation string) (credentialsWithEvidence string, err error) {
-	return "", nil
+	return &Client{nil, getChannelClient, converter}
 }
 
 func createClientContext(fabCtx context.Client) context.ClientProvider {
@@ -66,7 +67,8 @@ func TestCreateNewClient(t *testing.T) {
 
 func TestLifecycleInitEnclaveFailedWithInvalidRequest(t *testing.T) {
 	fakeChannelClient := &fakes.ChannelClient{}
-	client := setupClient(fakeChannelClient, fakeConvertCredentialsFunction)
+	fakeConverter := &fakes.CredentialConverter{}
+	client := setupClient(fakeChannelClient, fakeConverter)
 
 	var err error
 	var request LifecycleInitEnclaveRequest
@@ -118,8 +120,9 @@ func TestLifecycleInitEnclaveFailedToCreateChannelClient(t *testing.T) {
 func TestLifecycleInitEnclaveFailedToInitEnclave(t *testing.T) {
 	expectedError := fmt.Errorf("someQueryError")
 	fakeChannelClient := &fakes.ChannelClient{}
-	client := setupClient(fakeChannelClient, fakeConvertCredentialsFunction)
 	fakeChannelClient.QueryReturns(channel.Response{}, expectedError)
+	fakeConverter := &fakes.CredentialConverter{}
+	client := setupClient(fakeChannelClient, fakeConverter)
 
 	initReq := LifecycleInitEnclaveRequest{
 		ChaincodeID:         chaincodeId,
@@ -135,13 +138,12 @@ func TestLifecycleInitEnclaveFailedToInitEnclave(t *testing.T) {
 
 func TestLifecycleInitEnclaveFailedToConvertCredentials(t *testing.T) {
 	expectedError := fmt.Errorf("conversionError")
-	failedConvertCredentialsFunction := func(credentialsOnlyAttestation string) (credentialsWithEvidence string, err error) {
-		return "", expectedError
-	}
 
 	fakeChannelClient := &fakes.ChannelClient{}
-	client := setupClient(fakeChannelClient, failedConvertCredentialsFunction)
 	fakeChannelClient.QueryReturns(channel.Response{}, nil)
+	fakeConverter := &fakes.CredentialConverter{}
+	fakeConverter.ConvertCredentialsReturns("", expectedError)
+	client := setupClient(fakeChannelClient, fakeConverter)
 
 	initReq := LifecycleInitEnclaveRequest{
 		ChaincodeID:         chaincodeId,
@@ -158,8 +160,9 @@ func TestLifecycleInitEnclaveFailedToConvertCredentials(t *testing.T) {
 func TestLifecycleInitEnclaveFailedToRegisterEnclave(t *testing.T) {
 	expectedError := fmt.Errorf("someRegisterError")
 	fakeChannelClient := &fakes.ChannelClient{}
-	client := setupClient(fakeChannelClient, fakeConvertCredentialsFunction)
 	fakeChannelClient.ExecuteReturns(channel.Response{}, expectedError)
+	fakeConverter := &fakes.CredentialConverter{}
+	client := setupClient(fakeChannelClient, fakeConverter)
 
 	initReq := LifecycleInitEnclaveRequest{
 		ChaincodeID:         chaincodeId,
@@ -177,8 +180,9 @@ func TestLifecycleInitEnclaveSuccess(t *testing.T) {
 	fakeChannelClient := &fakes.ChannelClient{}
 	fakeChannelClient.QueryReturns(channel.Response{}, nil)
 	fakeChannelClient.ExecuteReturns(channel.Response{TransactionID: expectedTxID}, nil)
+	fakeConverter := &fakes.CredentialConverter{}
 
-	client := setupClient(fakeChannelClient, fakeConvertCredentialsFunction)
+	client := setupClient(fakeChannelClient, fakeConverter)
 
 	initReq := LifecycleInitEnclaveRequest{
 		ChaincodeID:         chaincodeId,
