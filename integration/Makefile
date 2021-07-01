@@ -7,7 +7,7 @@ include $(TOP)/build.mk
 
 all: test
 
-test: auction_test echo_test kv_test deployment_test client_sdk_test
+test: auction_test echo_test kv_test deployment_test client_sdk_test stress_test
 
 auction_test:
 	./auction_test.sh
@@ -24,3 +24,5 @@ deployment_test:
 client_sdk_test:
 	./client_sdk_test.sh
 
+stress_test:
+	./stress_test.sh
