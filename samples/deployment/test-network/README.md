@@ -207,29 +207,18 @@ peer chaincode query -C mychannel -n ercc -c '{"Function": "queryEnclaveCredenti
 ```
 
 
-## Adding Blockchain Explorer
+## Using Blockchain Explorer
 
-Another way to look at the transactions and confirm how they are written to the ledger is adding [Hyperledger Explorer] (https://github.com/hyperledger/blockchain-explorer) to our test-network. To do so we will create a directory under test-network and we will copy some files (per the previous instructions) and directories from the network created.
+Another way to illustrate the use of FPC is using [Hyperledger Blockchain Explorer](https://github.com/hyperledger/blockchain-explorer) with the test network.
+This tool allows you to see the transactions committed to the ledger.
+When you inspect FPC transactions, you will notice that the content of the read/writeset is encrypted.
+We have already integrated Blockchain explorer in the test network using our `setup.sh` script.
 
-```bash
-cd $FPC_PATH/samples/deployment/test-network
-mkdir blockchain-explorer
-wget https://raw.githubusercontent.com/hyperledger/blockchain-explorer/main/examples/net1/config.json
-wget https://raw.githubusercontent.com/hyperledger/blockchain-explorer/main/examples/net1/connection-profile/test-network.json -P connection-profile
-wget https://raw.githubusercontent.com/hyperledger/blockchain-explorer/main/docker-compose.yaml
-
-```
-Next we will copy the crypto material of the network generated
+To start Blockchain Explorer we use docker compose. Just run the following
 ```bash
 cd $FPC_PATH/samples/deployment/test-network/blockchain-explorer
-mkdir organizations
-cd $FPC_PATH/samples/deployment/test-network/blockchain-explorer/organizations
-cp -r $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/ordererOrganizations .
-cp -r $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations .
-```
-You can review the file directory structure and the files copied. You should not need to modify any of them. Now to start the Blockchain Explorer you need to start up the docker image. This docker image will use the docker-compose.yaml that we downloaded.
-```bash
-cd $FPC_PATH/samples/deployment/test-network/blockchain-explorer/organizations
 docker-compose up -d
 ```
-After it has started as part of the output of the explorer.mynetwork.com docker container it will tell you the url you have to use in your browser to access the web interface. The url is "http://localhost:8080/"
+
+Once it is up and running you can access the web interface using your browser.
+The url is `http://localhost:8080/`. To log in, use the username `exploreradmin` and the password `exploreradminpw`.
