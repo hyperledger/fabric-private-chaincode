@@ -6,9 +6,12 @@
 TOP = ../../..
 include $(TOP)/build.mk
 
-
-CC_ID ?= echo
-CC_PATH ?= ${FPC_PATH}/samples/chaincode/${CC_ID}
+ifeq ($(CC_ID),)
+ $(error CC_ID is not set) && exit 1;
+endif
+ifeq ($(CC_PATH),)
+ $(error CC_PATH is not set) && exit 1;
+endif
 
 build: ercc-container ecc-container
 

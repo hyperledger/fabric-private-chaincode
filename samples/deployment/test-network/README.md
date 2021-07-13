@@ -83,8 +83,6 @@ Make sure you have set `CC_ID` to the same chaincode ID as used in the earlier s
 
 ```bash
 # Start FPC container
-export CC_ID=echo
-export CC_PATH=${FPC_PATH}/samples/chaincode/echo
 make ercc-ecc-start
 ```
 You should see two instances of the FPC Echo chaincode and two instances of the FPC Enclave Registry chaincode running such as in the following example:
