@@ -119,7 +119,10 @@ if [[ ${SGX_MODE} == "HW" ]]; then
     define_to_variable "${TAGS_FILEPATH}" "SIG_RL_TAG"
     echo -n "{\"${ATTESTATION_TYPE_TAG}\": \"$SPID_TYPE\", \"${SPID_TAG}\": \"$SPID\", \"${SIG_RL_TAG}\":\"\"}" > ${INIT_DATA_INPUT}
 
+    #run attestation generation/conversion/verification tests
     orchestrate
+
+    #run attestation generation/conversion/verification tests (same as before, though with Go-based conversion)
     orchestrate_with_go_conversion
 else
     say "Skipping actual attestation test"
