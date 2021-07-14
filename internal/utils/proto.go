@@ -23,6 +23,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// MarshallProto returns a serialized protobuf message encoded as base64 string
 func MarshallProto(msg proto.Message) string {
 	return base64.StdEncoding.EncodeToString(protoutil.MarshalOrPanic(msg))
 }

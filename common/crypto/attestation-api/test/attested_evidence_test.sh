@@ -50,7 +50,7 @@ function orchestrate_with_go_conversion()
 
     #translate attestation (note: attestation_to_evidence defines the EVIDENCE variable)
     ATTESTATION=$(cat ${GET_ATTESTATION_OUTPUT})
-    GO_CONVERSION_CMD="go run ${FPC_PATH}/internal/attestation/test_cmd/main.go"
+    GO_CONVERSION_CMD="go run ./conversion_app_go/main.go"
     EVIDENCE=$(${GO_CONVERSION_CMD} "${ATTESTATION}")
 
     define_to_variable "${DEFINES_FILEPATH}" "EVIDENCE_FILE"

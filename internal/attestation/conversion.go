@@ -36,6 +36,7 @@ func NewConverterDispatcher() *ConverterDispatcher {
 	}
 }
 
+// Register adds new converters to the ConverterDispatcher
 func (d *ConverterDispatcher) Register(converter ...*Converter) error {
 	for _, c := range converter {
 		if _, ok := d.converters[c.Type]; ok {
@@ -47,6 +48,9 @@ func (d *ConverterDispatcher) Register(converter ...*Converter) error {
 	return nil
 }
 
+// Convert performs the attestation to evidence conversion with help of the registered Converter.
+// If there is no matching Converter registered for the input attestation, an error is returned;
+// If the invoked ConverterFunction fails, an error is returned; Otherwise an evidence struct is returned.
 func (d *ConverterDispatcher) Convert(attestation *attestation) (*evidence, error) {
 	converter, ok := d.converters[attestation.Type]
 	if !ok {
@@ -106,7 +110,7 @@ func NewCredentialConverter() *CredentialConverter {
 	return &CredentialConverter{dispatcher: dispatcher}
 }
 
-// ConvertCredentials perform attestation evidence conversion (transformation)
+// ConvertCredentials perform attestation evidence conversion (transformation) for a given credentials message (encoded as base64 string)
 func (c *CredentialConverter) ConvertCredentials(credentialsOnlyAttestation string) (credentialsWithEvidence string, err error) {
 	logger.Debugf("Received Credential: '%s'", credentialsOnlyAttestation)
 	credentials, err := utils.UnmarshalCredentials(credentialsOnlyAttestation)

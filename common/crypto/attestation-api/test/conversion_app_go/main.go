@@ -5,8 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 // this tool is meant to be used in `$FPC_PATH/common/crypto/attestation-api/test` to ensure compatibility
-// with the attestation conversion implementation based on PDO crypto.
-// See `orchestrate_with_go_conversion` in `$FPC_PATH/common/crypto/attestation-api/test/attested_evidence_test.sh`
+// with the shell-based attestation conversion implementation in `$FPC_PATH/common/crypto/attestation-api/conversion`.
 package main
 
 import (

@@ -62,18 +62,23 @@ type IASClient struct {
 
 type IASClientOption func(*IASClient)
 
+// WithUrl option allows to override the default IAS endpoint (DefaultIASUrl)
 func WithUrl(url string) IASClientOption {
 	return func(c *IASClient) {
 		c.url = url
 	}
 }
 
+// WithHttpClient option allows to use a custom http client. Mainly used for testing
 func WithHttpClient(client HTTPClient) IASClientOption {
 	return func(c *IASClient) {
 		c.httpClient = client
 	}
 }
 
+// NewIASClient returns a new IASClient instance using DefaultIASUrl as IAS endpoint
+// This method requires an API Key as input in order to authenticate with the IAS.
+// Optionally, IASClientOption can be provided to change the behavior of the IASClient.
 func NewIASClient(apiKey string, opts ...IASClientOption) *IASClient {
 	client := &IASClient{
 		url:    DefaultIASUrl,
@@ -93,6 +98,9 @@ func NewIASClient(apiKey string, opts ...IASClientOption) *IASClient {
 	return client
 }
 
+// RequestAttestationReport submits a quote (provided as base64 encoded string) to the Intel Attestation Service (IAS)
+// in order to verify it and generate an attestation report.
+// The report returned by the attestation service is packaged as a IASReport and serialized as json string.
 func (i *IASClient) RequestAttestationReport(quoteBase64 string) (reportJson string, err error) {
 
 	// build request
