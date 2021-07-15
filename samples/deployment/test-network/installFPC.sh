@@ -15,7 +15,14 @@ if [[ -z "${FPC_PATH}"  ]]; then
     echo "Error: FPC_PATH not set"
     exit 1
 fi
-
+if [[ -z "${CC_ID}"  ]]; then
+    echo "Error: CC_ID not set"
+    exit 1
+fi
+if [[ -z "${CC_PATH}"  ]]; then
+    echo "Error: CC_PATH not set"
+    exit 1
+fi
 CHANNEL_ID=mychannel
 
 PEERS=("peer0.org1.example.com" "peer0.org2.example.com")
@@ -23,8 +30,7 @@ PEERS=("peer0.org1.example.com" "peer0.org2.example.com")
 ERCC_EP="OutOf(2, 'Org1MSP.peer', 'Org2MSP.peer')"
 ECC_EP="OutOf(2, 'Org1MSP.peer', 'Org2MSP.peer')"
 
-CC_ID="echo"
-CC_VER="$(cat ${FPC_PATH}/samples/chaincode/${CC_ID}/_build/lib/mrenclave)"
+CC_VER="$(cat ${CC_PATH}/_build/lib/mrenclave)"
 
 ERCC_ID="ercc"
 ERCC_VER="1.0"

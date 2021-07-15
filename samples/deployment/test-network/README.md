@@ -9,12 +9,12 @@ the FPC Dev docker container.
 ## Prepare FPC Containers and the Test Network
 
 We start with building the FPC components as docker images which are deployed on our test network.
-Use `TEST_CC_ID` and `TEST_CC_PATH` to define the FPC Chaincode you want to build.
+Use `CC_ID` and `CC_PATH` to define the FPC Chaincode you want to build.
 
 ```bash
 cd $FPC_PATH/samples/deployment/test-network
-export TEST_CC_ID=echo
-export TEST_CC_PATH=${FPC_PATH}/samples/chaincode/echo
+export CC_ID=echo
+export CC_PATH=${FPC_PATH}/samples/chaincode/echo
 make build
 ```
 
@@ -79,11 +79,10 @@ cd $FPC_PATH/samples/deployment/test-network
 ```
 
 Now we have the FPC Chaincode installed on the Fabric peers, but we still need to start our chaincode containers.
-Make sure you have set `TEST_CC_ID` to the same chaincode ID as used in the earlier step when building the chaincode.
+Make sure you have set `CC_ID` to the same chaincode ID as used in the earlier step when building the chaincode. Also confirm that `CC_PATH` is set to the location of the FPC chaincode code.
 
 ```bash
 # Start FPC container
-export TEST_CC_ID=echo
 make ercc-ecc-start
 ```
 You should see two instances of the FPC Echo chaincode and two instances of the FPC Enclave Registry chaincode running such as in the following example:
