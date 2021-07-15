@@ -7,10 +7,10 @@ TOP = ../../..
 include $(TOP)/build.mk
 
 ifeq ($(CC_ID),)
- $(error CC_ID is not set);
+ $(error CC_ID is not set)
 endif
 ifeq ($(CC_PATH),)
- $(error CC_PATH is not set);
+ $(error CC_PATH is not set)
 endif
 
 build: ercc-container ecc-container
