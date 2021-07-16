@@ -212,7 +212,10 @@ peer chaincode query -C mychannel -n ercc -c '{"Function": "queryEnclaveCredenti
 Another way to illustrate the use of FPC is using [Hyperledger Blockchain Explorer](https://github.com/hyperledger/blockchain-explorer) with the test network.
 This tool allows you to see the transactions committed to the ledger.
 When you inspect FPC transactions, you will notice that the content of the read/writeset is encrypted.
-We have already integrated Blockchain explorer in the test network using our `setup.sh` script.
+
+We have already integrated Blockchain Explorer in the test network using our `setup.sh` script.
+You can find the Blockchain Explorer configuration files in the `blockchain-explorer` folder after running `setup.sh`.
+Note that `setup.sh` may ask you to override any existing configuration files in `blockchain-explorer` and restore the default configuration.  
 
 To start Blockchain Explorer we use docker compose. Just run the following
 ```bash
