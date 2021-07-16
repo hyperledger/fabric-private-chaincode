@@ -77,8 +77,8 @@ type LifecycleInitEnclaveRequest struct {
 // from the standard Fabric Client SDK with additional FPC-specific functionality.
 type Client struct {
 	*resmgmt.Client
-	getChannelClient   getChannelClientFunction
-	convertCredentials convertCredentialsFunction
+	getChannelClient getChannelClientFunction
+	converter        credentialConverter
 }
 
 // helper interfaces for better testing
@@ -90,7 +90,10 @@ type channelClient interface {
 	UnregisterChaincodeEvent(registration fab.Registration)
 }
 type getChannelClientFunction func(channelId string) (channelClient, error)
-type convertCredentialsFunction func(credentialsOnlyAttestation string) (credentialsWithEvidence string, err error)
+
+type credentialConverter interface {
+	ConvertCredentials(credentialsOnlyAttestation string) (credentialsWithEvidence string, err error)
+}
 
 // New returns a FPC resource management client instance.
 func New(ctxProvider context.ClientProvider, opts ...resmgmt.ClientOption) (*Client, error) {
@@ -109,10 +112,11 @@ func New(ctxProvider context.ClientProvider, opts ...resmgmt.ClientOption) (*Cli
 		return channel.New(channelProvider)
 	}
 
-	// use normal convert credentials function
-	convertCredentials := attestation.ConvertCredentials
+	// use default credentials converter
+	// TODO allow to override credential converter using opts
+	converter := attestation.NewCredentialConverter()
 
-	return &Client{client, getChannelClient, convertCredentials}, nil
+	return &Client{client, getChannelClient, converter}, nil
 }
 
 // LifecycleInitEnclave initializes and registers an enclave for a particular FPC chaincode.
@@ -157,7 +161,7 @@ func (rc *Client) LifecycleInitEnclave(channelId string, req LifecycleInitEnclav
 	}
 
 	// convert credentials received from enclave
-	convertedCredentials, err := rc.convertCredentials(string(initResponse.Payload))
+	convertedCredentials, err := rc.converter.ConvertCredentials(string(initResponse.Payload))
 	if err != nil {
 		return fab.EmptyTransactionID, errors.Wrap(err, "credentials conversion error")
 	}

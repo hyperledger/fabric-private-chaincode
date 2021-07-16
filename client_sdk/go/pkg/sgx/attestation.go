@@ -25,7 +25,7 @@ const (
 	SGXCredentialsPathKey = "SGX_CREDENTIALS_PATH"
 )
 
-// SGXAttestationParams holds additional attestation information that is required to perform LifecycleInitEnclave.
+// AttestationParams holds additional attestation information that is required to perform LifecycleInitEnclave.
 type AttestationParams struct {
 	AttestationType string `json:"attestation_type"`
 	HexSpid         string `json:"hex_spid"`

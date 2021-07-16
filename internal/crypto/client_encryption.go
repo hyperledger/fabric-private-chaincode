@@ -25,18 +25,19 @@ type EncryptionProvider interface {
 }
 
 type EncryptionProviderImpl struct {
+	CSP                CSP
 	GetCcEncryptionKey func() ([]byte, error)
 }
 
 func (p EncryptionProviderImpl) NewEncryptionContext() (EncryptionContext, error) {
 	// pick request encryption key
-	requestEncryptionKey, err := NewSymmetricKey()
+	requestEncryptionKey, err := p.CSP.NewSymmetricKey()
 	if err != nil {
 		return nil, err
 	}
 
 	// pick response encryption key
-	resultEncryptionKey, err := NewSymmetricKey()
+	resultEncryptionKey, err := p.CSP.NewSymmetricKey()
 	if err != nil {
 		return nil, err
 	}
@@ -52,6 +53,7 @@ func (p EncryptionProviderImpl) NewEncryptionContext() (EncryptionContext, error
 	}
 
 	return &EncryptionContextImpl{
+		csp:                    p.CSP,
 		requestEncryptionKey:   requestEncryptionKey,
 		responseEncryptionKey:  resultEncryptionKey,
 		chaincodeEncryptionKey: ccEncryptionKey,
@@ -68,6 +70,7 @@ type EncryptionContext interface {
 }
 
 type EncryptionContextImpl struct {
+	csp                    CSP
 	requestEncryptionKey   []byte
 	responseEncryptionKey  []byte
 	chaincodeEncryptionKey []byte
@@ -96,7 +99,7 @@ func (e *EncryptionContextImpl) Reveal(signedResponseBytesB64 []byte) ([]byte, e
 		return nil, err
 	}
 
-	clearResponseB64, err := DecryptMessage(e.responseEncryptionKey, response.EncryptedResponse)
+	clearResponseB64, err := e.csp.DecryptMessage(e.responseEncryptionKey, response.EncryptedResponse)
 	if err != nil {
 		return nil, errors.Wrap(err, "decryption of response failed")
 	}
@@ -129,7 +132,7 @@ func (e *EncryptionContextImpl) Conceal(function string, args []string) (string,
 		return "", err
 	}
 
-	encryptedKeyTransport, err := PkEncryptMessage(e.chaincodeEncryptionKey, serializedKeyTransport)
+	encryptedKeyTransport, err := e.csp.PkEncryptMessage(e.chaincodeEncryptionKey, serializedKeyTransport)
 	if err != nil {
 		return "", errors.Wrap(err, "encryption of request encryption key failed")
 	}
@@ -145,7 +148,7 @@ func (e *EncryptionContextImpl) Conceal(function string, args []string) (string,
 		return "", err
 	}
 
-	encryptedRequest, err := EncryptMessage(e.requestEncryptionKey, serializedCcRequest)
+	encryptedRequest, err := e.csp.EncryptMessage(e.requestEncryptionKey, serializedCcRequest)
 	if err != nil {
 		return "", errors.Wrap(err, "encryption of request failed")
 	}

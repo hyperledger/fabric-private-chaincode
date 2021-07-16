@@ -58,7 +58,9 @@ func main() {
 			fmt.Fprintf(os.Stderr, "ERROR: couldn't read stdin: %v\n", err)
 			os.Exit(1)
 		}
-		credentialsStringOut, err := attestation.ConvertCredentials(string(credentialsIn))
+
+		converter := attestation.NewCredentialConverter()
+		credentialsStringOut, err := converter.ConvertCredentials(string(credentialsIn))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: couldn't convert credentials: %v\n", err)
 			os.Exit(1)
@@ -124,6 +126,7 @@ func handleEncryptedRequestAndResponse(chaincodeEncryptionKey string, resultPipe
 
 	// setup crypto context
 	ep := &crypto.EncryptionProviderImpl{
+		CSP: crypto.GetDefaultCSP(),
 		GetCcEncryptionKey: func() ([]byte, error) {
 			// TODO: might have to do some re-formatting, e.g., de-hex, here?
 			return []byte(chaincodeEncryptionKey), nil

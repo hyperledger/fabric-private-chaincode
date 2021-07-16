@@ -6,6 +6,8 @@
 TOP = ..
 include $(TOP)/build.mk
 
+GOTAGS += -tags WITH_PDO_CRYPTO
+
 build: ercc
 
 ercc: ercc_dependencies
