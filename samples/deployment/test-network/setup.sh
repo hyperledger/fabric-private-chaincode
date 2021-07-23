@@ -65,7 +65,7 @@ else
 fi
 echo "set FPC_PATH_HOST = ${FPC_PATH_HOST}"
 
-FABRIC_SAMPLES_HOST=${FPC_PATH}/samples/deployment/test-network/fabric-samples
+FABRIC_SAMPLES_HOST=${FPC_PATH_HOST}/samples/deployment/test-network/fabric-samples
 
 echo "Resolving relative docker volume paths in ..."
 
@@ -90,7 +90,7 @@ done
 
 echo "Preparing blockchain explorer"
 BE_PATH="${FPC_PATH}/samples/deployment/test-network/blockchain-explorer"
-BE_PATH_HOST="${FPC_PATH_HOST}/samples/deployment/test-network/${BE_PATH}"
+BE_PATH_HOST="${FPC_PATH_HOST}/samples/deployment/test-network/blockchain-explorer"
 BE_CONFIG=${BE_PATH}/config.json
 BE_CONNECTIONS_PROFILE=${BE_PATH}/connection-profile/test-network.json
 BE_DOCKER_COMPOSE="${BE_PATH}/docker-compose.yaml"

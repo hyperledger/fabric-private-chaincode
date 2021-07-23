@@ -15,6 +15,7 @@ Use `CC_ID` and `CC_PATH` to define the FPC Chaincode you want to build.
 cd $FPC_PATH/samples/deployment/test-network
 export CC_ID=echo
 export CC_PATH=${FPC_PATH}/samples/chaincode/echo
+make -C $FPC_PATH/utils/docker build
 make build
 ```
 
