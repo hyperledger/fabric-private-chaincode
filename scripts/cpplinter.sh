@@ -48,7 +48,7 @@ done
 #if check fails, provide instructions for fixing the format
 if [[ $RET != 0 ]]
 then
-    echo "Format check failed. Run '$0 DO_FORMAT' to fix the format."
+    echo "Format check failed. Run '$0 <top folder> DO_FORMAT' to fix the format."
 fi
 
 exit $RET
