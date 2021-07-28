@@ -150,9 +150,11 @@ bool verify_ias_evidence(
 
     {
         // verify report status
-        const int group_out_of_date_ok = 1;
-        COND2LOGERR(VERIFY_SUCCESS != verify_enclave_quote_status(ias_report.c_str(),
-                                          ias_report.length(), group_out_of_date_ok),
+        const unsigned int flags = QSF_ACCEPT_GROUP_OUT_OF_DATE | QSF_ACCEPT_CONFIGURATION_NEEDED |
+                                   QSF_ACCEPT_SW_HARDENING_NEEDED |
+                                   QSF_ACCEPT_CONFIGURATION_AND_SW_HARDENING_NEEDED;
+        COND2LOGERR(VERIFY_SUCCESS !=
+                        verify_enclave_quote_status(ias_report.c_str(), ias_report.length(), flags),
             "invalid quote status");
     }
 
