@@ -15,7 +15,7 @@
 #  - additional apt pkgs:       APT_ADD_PKGS
 
 
-ARG FPC_VERSION=latest
+ARG FPC_VERSION=main
 
 FROM hyperledger/fabric-private-chaincode-base-rt:${FPC_VERSION} as common
 
@@ -54,6 +54,9 @@ RUN apt-get update -q \
     python-protobuf \
     # docker commands (need as we use docker daemon from "outside")
     docker.io \
+    docker-compose \
+    psmisc \
+    bc \
     ${APT_ADD_PKGS}
 
 

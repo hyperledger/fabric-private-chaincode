@@ -13,7 +13,7 @@
 # expects to be run with the docker context pointed o directory containing chaincode's enclave.so
 
 ARG HW_EXTENSION
-ARG FPC_VERSION=latest
+ARG FPC_VERSION=main
 
 FROM hyperledger/fabric-private-chaincode-boilerplate-ecc${HW_EXTENSION}:${FPC_VERSION}
 
