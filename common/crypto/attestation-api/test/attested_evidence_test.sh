@@ -50,7 +50,7 @@ function orchestrate_with_go_conversion()
 
     #translate attestation (note: attestation_to_evidence defines the EVIDENCE variable)
     ATTESTATION=$(cat ${GET_ATTESTATION_OUTPUT})
-    GO_CONVERSION_CMD="go run ./conversion_app_go/main.go"
+    GO_CONVERSION_CMD="go run ${FPC_PATH}/common/crypto/attestation-api/test/conversion_app_go/main.go"
     EVIDENCE=$(${GO_CONVERSION_CMD} "${ATTESTATION}")
 
     define_to_variable "${DEFINES_FILEPATH}" "EVIDENCE_FILE"
@@ -80,7 +80,11 @@ if [[ ${SGX_MODE} == "SIM" ]]; then
     echo -n "also ignored" > ${STATEMENT_FILE}
     echo -n "{\"${ATTESTATION_TYPE_TAG}\": \"${SIMULATED_TYPE_TAG}\"}" > ${INIT_DATA_INPUT}
 
+    #run attestation generation/conversion/verification tests
     orchestrate
+
+    #run attestation generation/conversion/verification tests (same as before, though with Go-based conversion)
+    orchestrate_with_go_conversion
 
     say "Test simulated attestation success"
 else
