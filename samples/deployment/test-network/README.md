@@ -32,7 +32,7 @@ make build
 Note: If you want to build with [mock-enclave](../../../ecc/chaincode/enclave/mock_enclave.go) rather than the real enclave-based one, build with
 `make build GOTAGS="-tags mock_ecc"` instead.
 
-Next, setup fabric sample network, binaries and docker images. Here we follow the official Fabric [instructions](https://hyperledger-fabric.readthedocs.io/en/latest/install.html).
+Next, setup fabric sample network, binaries and docker images. Here we follow the official Fabric [instructions](https://hyperledger-fabric.readthedocs.io/en/release-2.3/install.html).
 
 ```bash
 cd $FPC_PATH/samples/deployment/test-network

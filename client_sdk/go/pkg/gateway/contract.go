@@ -19,7 +19,7 @@ import (
 // but in addition to the normal FPC operations, it performs FPC specific steps such as encryption/decryption of chaincode requests/responses.
 //
 // A Contract object is created using the GetContract() factory method.
-// For an example of its use, see https://github.com/hyperledger/fabric-private-chaincode/blob/main/client_sdk/go/test/main.go
+// For an example of its use, see `contract_test.go`
 type Contract interface {
 	// Name returns the name of the smart contract
 	Name() string
