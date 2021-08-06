@@ -61,11 +61,10 @@ DOCKER_BUILD_OPTS += --build-arg FPC_VERSION=$(FPC_VERSION)
 docker: docker-fpc-app
 
 docker-boilerplate-ecc: ecc
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_BOILERPLATE_ECC_IMAGE) -f Dockerfile.boilerplate-ecc\
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_BOILERPLATE_ECC_IMAGE):$(FPC_VERSION) -f Dockerfile.boilerplate-ecc\
 		--build-arg SGX_MODE=$(SGX_MODE)\
 		--build-arg CAAS_PORT=$(CAAS_PORT)\
 		..
-	$(DOCKER) tag $(DOCKER_BOILERPLATE_ECC_IMAGE) $(DOCKER_BOILERPLATE_ECC_IMAGE):${FPC_VERSION}
 
 docker-fpc-app: docker-boilerplate-ecc
 	if [ -z "$(DOCKER_IMAGE)" ]; then\
@@ -73,7 +72,7 @@ docker-fpc-app: docker-boilerplate-ecc
 		exit 1;\
 	fi
 	echo "\033[1;33mWARNING: overriding $(DOCKER_IMAGE) docker image\033[0m"
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_IMAGE) -f Dockerfile.fpc-app \
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_IMAGE):$(FPC_VERSION) -f Dockerfile.fpc-app \
                 --build-arg HW_EXTENSION=$(HW_EXTENSION)\
  		$(DOCKER_ENCLAVE_SO_PATH)
 
@@ -90,7 +89,7 @@ docker-run:
 		-e "CORE_CHAINCODE_LOGGING_SHIM=INFO" \
 		-e "CORE_PEER_ADDRESS=172.17.0.1:7051" \
 		-e "CORE_CHAINCODE_ID_NAME=$(CC_NAME):0" \
-		$(DOCKER_IMAGE) \
+		$(DOCKER_IMAGE):$(FPC_VERSION) \
 		chaincode
 
 docker-stop:
