@@ -10,6 +10,7 @@ build:
 
 docker:
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
+		--build-arg FPC_VERSION=$(FPC_VERSION) \
     	--no-cache \
     	-t fpc/fpcclient:latest \
     	-f Dockerfile \

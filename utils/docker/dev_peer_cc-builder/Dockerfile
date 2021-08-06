@@ -29,7 +29,7 @@
 # as we do below for sgxssl ...
 
 # global config params
-ARG FPC_VERSION=latest
+ARG FPC_VERSION=main
 ARG SGX_MODE=SIM
 ARG APT_ADD_PKGS=
 

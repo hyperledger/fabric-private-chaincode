@@ -219,6 +219,7 @@ dev:
          $(DOCKER_DEV_BUILD_OPTS)\
          -f ./utils/docker/dev/Dockerfile\
          --build-arg SGX_MODE=${SGX_MODE}\
+         --build-arg FPC_VERSION=${FPC_VERSION}\
          . )
 	$(DOCKER) tag $(FPC_DOCKER_DEV_NAME) $(FPC_DOCKER_DEV_NAME):${FPC_VERSION}
 
