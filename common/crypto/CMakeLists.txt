@@ -23,6 +23,7 @@ FILE(GLOB PROJECT_SOURCES
     "pdo-crypto-c-wrapper.cpp"
     "$ENV{FPC_PATH}/common/base64/base64.cpp"
     "$ENV{FPC_PATH}/common/json/parson.c"
+    "$ENV{FPC_PATH}/common/utils.c" #for append_string in parson
     "attestation-api/evidence/*.cpp"
     )
 
