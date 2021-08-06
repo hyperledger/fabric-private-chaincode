@@ -149,7 +149,6 @@ clobber:
 	done; \
 	for tag in \
 	    ${FPC_VERSION} \
-	    latest \
 	; do \
 	    for img in \
 	        ${FPC_DOCKER_PEER_NAME} \
@@ -178,16 +177,13 @@ clobber:
 # - building individual docker images
 # ------------------------------------------------------
 base-rt:
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) $(DOCKER_BASE_RT_BUILD_OPTS) -t $(FPC_DOCKER_BASE_RT_NAME) base-rt
-	$(DOCKER) tag $(FPC_DOCKER_BASE_RT_NAME) $(FPC_DOCKER_BASE_RT_NAME):${FPC_VERSION}
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) $(DOCKER_BASE_RT_BUILD_OPTS) -t $(FPC_DOCKER_BASE_RT_NAME):$(FPC_VERSION) base-rt
 
 base-dev: base-rt
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) $(DOCKER_BASE_DEV_BUILD_OPTS) -t $(FPC_DOCKER_BASE_DEV_NAME) base-dev
-	$(DOCKER) tag $(FPC_DOCKER_BASE_DEV_NAME) $(FPC_DOCKER_BASE_DEV_NAME):${FPC_VERSION}
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) $(DOCKER_BASE_DEV_BUILD_OPTS) -t $(FPC_DOCKER_BASE_DEV_NAME):$(FPC_VERSION) base-dev
 
 ccenv: base-rt
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CCENV_NAME) ccenv
-	$(DOCKER) tag $(FPC_DOCKER_CCENV_NAME) $(FPC_DOCKER_CCENV_NAME):${FPC_VERSION}
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CCENV_NAME):$(FPC_VERSION) ccenv
 
 # Note: For all docker images, dependencis will cause docker rebuilds.
 # Docker caching though makes this though fast if nothing has changed.
@@ -203,7 +199,7 @@ ccenv: base-rt
 # before any docker rebuild happens.
 peer: base-dev
 	(cd ${TOP} &&\
-         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t ${FPC_DOCKER_PEER_NAME}\
+         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_PEER_NAME):$(FPC_VERSION)\
          $(DOCKER_DEV_BUILD_OPTS)\
 	 --target peer\
          -f ./utils/docker/dev_peer_cc-builder/Dockerfile\
@@ -211,21 +207,18 @@ peer: base-dev
          --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
          . )
-	$(DOCKER) tag $(FPC_DOCKER_PEER_NAME) $(FPC_DOCKER_PEER_NAME):${FPC_VERSION}
 
 dev:
 	(cd ${TOP} &&\
-         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_DEV_NAME)\
+         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_DEV_NAME):$(FPC_VERSION)\
          $(DOCKER_DEV_BUILD_OPTS)\
          -f ./utils/docker/dev/Dockerfile\
          --build-arg SGX_MODE=${SGX_MODE}\
-         --build-arg FPC_VERSION=${FPC_VERSION}\
          . )
-	$(DOCKER) tag $(FPC_DOCKER_DEV_NAME) $(FPC_DOCKER_DEV_NAME):${FPC_VERSION}
 
 cc-builder: base-dev
 	(cd ${TOP} &&\
-         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CC_BUILDER_NAME)\
+         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CC_BUILDER_NAME):$(FPC_VERSION)\
          $(DOCKER_DEV_BUILD_OPTS)\
          -f ./utils/docker/dev_peer_cc-builder/Dockerfile\
 	 --target cc-builder \
@@ -233,7 +226,6 @@ cc-builder: base-dev
          --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
          . )
-	$(DOCKER) tag $(FPC_DOCKER_CC_BUILDER_NAME) $(FPC_DOCKER_CC_BUILDER_NAME):${FPC_VERSION}
 
 publish:
 	for img in \
