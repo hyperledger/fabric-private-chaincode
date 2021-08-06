@@ -16,11 +16,11 @@ This tutorial illustrates a simple usecase where a FPC chaincode is used to stor
 * Shut down the network
 
 Please refer to [Architecture and
-Components](https://github.com/hyperledger/fabric-private-chaincode#architecture-and-components)
+Components](../../../README.md#architecture-and-components)
 for more details of involved components.
 
 ## Prerequisites
-This tutorial presumes that you have installed FPC on your `$GOPATH` as described in the FPC [README.md](https://github.com/hyperledger/fabric-private-chaincode/blob/main/README.md#requirements) and `$FPC_PATH` is set accordingly.
+This tutorial presumes that you have installed FPC on your `$GOPATH` as described in the FPC [README.md](../../../README.md#requirements) and `$FPC_PATH` is set accordingly.
 
 ## Develop chaincode
 Go to `$FPC_PATH/samples/chaincode/helloworld` and create a file named `helloworld_cc.cpp` where we will place our chaincode.
@@ -247,7 +247,7 @@ int invoke(
 
 ## Build
 
-Make sure you have the [environment variables](https://github.com/hyperledger/fabric-private-chaincode#environment-settings) set.  In addition, set `SGX_BUILD=DEBUG` to enable log messages.
+Make sure you have the [environment variables](../../../README.md#environment-settings) set.  In addition, set `SGX_BUILD=DEBUG` to enable log messages.
 
 To build the helloworld chaincode, we are using CMake. This simplifies the build process and compiles our chaincode using the SGX SDK. Create `CMakeLists.txt` with the following content.
 
