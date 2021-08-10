@@ -170,7 +170,10 @@ export GATEWAY_CONFIG=$FPC_PATH/samples/deployment/test-network/fabric-samples/t
 ```
 
 ## Shutdown network
+Since we opened a new terminal to interact with the FPC Chaincode, to be able to shutdown the FPC chaincode you need to define the environment variables that set the chaincode name and path.
 ```bash
+export CC_ID=echo
+export CC_PATH=${FPC_PATH}/samples/chaincode/echo
 make -C $FPC_PATH/samples/deployment/test-network ercc-ecc-stop
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
 ./network.sh down
