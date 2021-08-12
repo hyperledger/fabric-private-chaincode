@@ -69,10 +69,12 @@ RUN GO_TAR=go${GO_VERSION}.linux-amd64.tar.gz \
   && rm ${GO_TAR} \
   && mkdir -p /project
 ENV PATH=${GOPATH}/bin:${GOROOT}/bin:${PATH}
+
 #  Go tools we need
 RUN  go get golang.org/x/tools/cmd/goimports \
   && go get google.golang.org/protobuf/cmd/protoc-gen-go \
-  && GO111MODULE=off go get github.com/maxbrunsfeld/counterfeiter
+  && GO111MODULE=off go get github.com/maxbrunsfeld/counterfeiter \
+  && GO111MODULE=on go get github.com/mikefarah/yq/v3
 
 # Install SGX SSL
 ENV SGX_SSL /opt/intel/sgxssl

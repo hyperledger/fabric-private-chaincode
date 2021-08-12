@@ -99,6 +99,8 @@ DOCKER_DEV_RUN_OPTS += --net=host
 ifneq ($(SGX_DEVICE_PATH),)
 	DOCKER_DEV_RUN_OPTS += -v "$(DOCKERD_FPC_PATH)/config/ias/":$(DOCKER_FPC_PATH)/config/ias/ -v $(SGX_PSW_SOCKET):$(SGX_PSW_SOCKET) --device $(SGX_DEVICE_PATH)
 endif
+# - pass host sgx mode
+DOCKER_DEV_RUN_OPTS += --env SGX_MODE=$(SGX_MODE)
 
 ifeq (${DOCKER_DEV_CI_MODE},)
 DOCKER_DEV_RUN_OPTS += -i
@@ -134,7 +136,7 @@ run-dev: dev
 	dev_container_id=$$(docker ps -a | grep ${DOCKER_DEV_CONTAINER_NAME} | awk '{ print $$1 }'); \
 	   [ -z  "$${dev_container_id}" ] || ${DOCKER} rm "$${dev_container_id}"
 	# Now run a new instance
-	$(DOCKER) run $(DOCKER_DEV_RUN_OPTS) --name ${DOCKER_DEV_CONTAINER_NAME} -t $(FPC_DOCKER_NAMESPACE)-dev:${FPC_VERSION} ${DOCKER_DEV_OPTIONAL_CMD}
+	$(DOCKER) run $(DOCKER_DEV_RUN_OPTS) --name ${DOCKER_DEV_CONTAINER_NAME} -t $(FPC_DOCKER_DEV_NAME):${FPC_VERSION} ${DOCKER_DEV_OPTIONAL_CMD}
 
 clobber:
 	# first clean-up dangling images as that might prevent some of the later cleans
@@ -213,7 +215,6 @@ dev:
          $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_DEV_NAME):$(FPC_VERSION)\
          $(DOCKER_DEV_BUILD_OPTS)\
          -f ./utils/docker/dev/Dockerfile\
-         --build-arg SGX_MODE=${SGX_MODE}\
          . )
 
 cc-builder: base-dev
