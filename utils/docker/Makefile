@@ -11,7 +11,7 @@ HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
 
 # Names and namespaces
 # ------------------
-DOCKER_REGISTRY ?= ghcr.io/mbrandenburger
+DOCKER_REGISTRY ?= ghcr.io
 
 FPC_DOCKER_NAMESPACE := hyperledger/fabric-private-chaincode
 FPC_DOCKER_CC_BUILDER_NAME = $(FPC_DOCKER_NAMESPACE)-cc-builder$(HW_EXTENSION)
