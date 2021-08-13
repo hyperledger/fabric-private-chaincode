@@ -26,7 +26,7 @@ var logger = flogging.MustGetLogger("cgo")
 func init() {
 	logger.Info("Initializing logger")
 	r := C.logging_set_callback(C.log_callback_f(C.golog_cgo_wrapper))
-	if r == false {
+	if !r {
 		panic("error initializing logging for cgo")
 	}
 }

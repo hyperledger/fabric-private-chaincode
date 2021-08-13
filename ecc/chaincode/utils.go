@@ -16,7 +16,6 @@ import (
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric/protoutil"
-	"google.golang.org/protobuf/proto"
 )
 
 func extractChaincodeParams(stub shim.ChaincodeStubInterface) (*protos.CCParameters, error) {
@@ -42,6 +41,9 @@ func extractChaincodeParams(stub shim.ChaincodeStubInterface) (*protos.CCParamet
 
 	chaincodeId := cis.ChaincodeSpec.ChaincodeId.Name
 	ccDef, err := utils.GetChaincodeDefinition(chaincodeId, stub)
+	if err != nil {
+		return nil, err
+	}
 
 	return &protos.CCParameters{
 		ChaincodeId: chaincodeId,
@@ -74,8 +76,7 @@ func extractInitEnclaveMessage(stub shim.ChaincodeStubInterface) (*protos.InitEn
 		return nil, err
 	}
 
-	initMsg := &protos.InitEnclaveMessage{}
-	err = proto.Unmarshal(serializedInitEnclaveMessage, initMsg)
+	initMsg, err := utils.UnmarshalInitEnclaveMessage(serializedInitEnclaveMessage)
 	if err != nil {
 		return nil, err
 	}
@@ -93,16 +94,12 @@ func extractChaincodeResponseMessages(stub shim.ChaincodeStubInterface) (*protos
 		return nil, nil, err
 	}
 
-	signedResponseMsg := &protos.SignedChaincodeResponseMessage{}
-	err = proto.Unmarshal(serializedSignedChaincodeResponseMessage, signedResponseMsg)
+	signedResponseMsg, err := utils.UnmarshalSignedChaincodeResponseMessage(serializedSignedChaincodeResponseMessage)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	serializedChaincodeResponseMessage := signedResponseMsg.ChaincodeResponseMessage
-
-	responseMsg := &protos.ChaincodeResponseMessage{}
-	err = proto.Unmarshal(serializedChaincodeResponseMessage, responseMsg)
+	responseMsg, err := utils.UnmarshalChaincodeResponseMessage(signedResponseMsg.GetChaincodeResponseMessage())
 	if err != nil {
 		return nil, nil, err
 	}

@@ -12,10 +12,10 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
 )
 
 var logger = flogging.MustGetLogger("fpc-client-crypto")
@@ -82,10 +82,9 @@ func (e *EncryptionContextImpl) Reveal(signedResponseBytesB64 []byte) ([]byte, e
 		return nil, err
 	}
 
-	signedResponse := &protos.SignedChaincodeResponseMessage{}
-	err = proto.Unmarshal(signedResponseBytes, signedResponse)
+	signedResponse, err := utils.UnmarshalSignedChaincodeResponseMessage(signedResponseBytes)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to extract signed response message")
 	}
 
 	responseBytes := signedResponse.GetChaincodeResponseMessage()
@@ -93,10 +92,9 @@ func (e *EncryptionContextImpl) Reveal(signedResponseBytesB64 []byte) ([]byte, e
 		return nil, fmt.Errorf("no chaincode response message")
 	}
 
-	response := &protos.ChaincodeResponseMessage{}
-	err = proto.Unmarshal(responseBytes, response)
+	response, err := utils.UnmarshalChaincodeResponseMessage(responseBytes)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to extract response message")
 	}
 
 	clearResponseB64, err := e.csp.DecryptMessage(e.responseEncryptionKey, response.EncryptedResponse)
@@ -127,7 +125,7 @@ func (e *EncryptionContextImpl) Conceal(function string, args []string) (string,
 		ResponseEncryptionKey: e.responseEncryptionKey,
 	}
 
-	serializedKeyTransport, err := proto.Marshal(keyTransport)
+	serializedKeyTransport, err := utils.MarshallProto(keyTransport)
 	if err != nil {
 		return "", err
 	}
@@ -143,7 +141,7 @@ func (e *EncryptionContextImpl) Conceal(function string, args []string) (string,
 	}
 	logger.Debugf("prepping chaincode params: %s", ccRequest)
 
-	serializedCcRequest, err := proto.Marshal(ccRequest)
+	serializedCcRequest, err := utils.MarshallProto(ccRequest)
 	if err != nil {
 		return "", err
 	}
@@ -159,7 +157,7 @@ func (e *EncryptionContextImpl) Conceal(function string, args []string) (string,
 		EncryptedKeyTransportMessage: encryptedKeyTransport,
 	}
 
-	serializedEncryptedCcRequest, err := proto.Marshal(encryptedCcRequest)
+	serializedEncryptedCcRequest, err := utils.MarshallProto(encryptedCcRequest)
 	if err != nil {
 		return "", err
 	}

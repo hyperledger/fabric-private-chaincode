@@ -146,7 +146,7 @@ func (rc *Client) LifecycleInitEnclave(channelId string, req LifecycleInitEnclav
 	initRequest := channel.Request{
 		ChaincodeID: req.ChaincodeID,
 		Fcn:         initEnclaveCMD,
-		Args:        [][]byte{[]byte(utils.MarshallProto(initMsg))},
+		Args:        [][]byte{[]byte(utils.MarshallProtoBase64(initMsg))},
 	}
 
 	var initOpts []channel.RequestOption

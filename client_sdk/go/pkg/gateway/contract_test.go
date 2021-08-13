@@ -18,26 +18,31 @@ import (
 )
 
 //go:generate counterfeiter -o fakes/network.go -fake-name Network . network
+//lint:ignore U1000 This is just used to generate fake
 type network interface {
 	internal.Network
 }
 
 //go:generate counterfeiter -o fakes/contract.go -fake-name Contract . gatewayContract
+//lint:ignore U1000 This is just used to generate fake
 type gatewayContract interface {
 	internal.Contract
 }
 
 //go:generate counterfeiter -o fakes/transaction.go -fake-name Transaction . transaction
+//lint:ignore U1000 This is just used to generate fake
 type transaction interface {
 	internal.Transaction
 }
 
 //go:generate counterfeiter -o fakes/encryption_provider.go -fake-name EncryptionProvider . encryptionProvider
+//lint:ignore U1000 This is just used to generate fake
 type encryptionProvider interface {
 	crypto.EncryptionProvider
 }
 
 //go:generate counterfeiter -o fakes/encryption_context.go -fake-name EncryptionContext . encryptionContext
+//lint:ignore U1000 This is just used to generate fake
 type encryptionContext interface {
 	crypto.EncryptionContext
 }

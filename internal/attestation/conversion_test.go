@@ -67,7 +67,7 @@ func TestCredentialConverterWithSimulation(t *testing.T) {
 
 	cv := NewCredentialConverter()
 
-	serializedCredentials := utils.MarshallProto(credentials)
+	serializedCredentials := utils.MarshallProtoBase64(credentials)
 	updatedSerializedCredentials, err := cv.ConvertCredentials(serializedCredentials)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, updatedSerializedCredentials)

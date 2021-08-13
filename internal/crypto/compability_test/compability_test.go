@@ -13,7 +13,7 @@ import (
 	"testing"
 
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
-	"github.com/test-go/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 type testCase struct {

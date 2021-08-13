@@ -15,7 +15,7 @@ import (
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric/protoutil"
-	"github.com/test-go/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewEncryptionContext(t *testing.T) {
@@ -134,34 +134,36 @@ func TestReveal(t *testing.T) {
 	assert.Nil(t, resp)
 	assert.Error(t, err)
 
-	resp, err = ctx.Reveal([]byte(utils.MarshallProto(&protos.SignedChaincodeResponseMessage{})))
+	resp, err = ctx.Reveal([]byte(utils.MarshallProtoBase64(&protos.SignedChaincodeResponseMessage{})))
 	assert.Nil(t, resp)
 	assert.Error(t, err)
 
-	resp, err = ctx.Reveal([]byte(utils.MarshallProto(&protos.SignedChaincodeResponseMessage{ChaincodeResponseMessage: []byte("some invalid response")})))
+	resp, err = ctx.Reveal([]byte(utils.MarshallProtoBase64(&protos.SignedChaincodeResponseMessage{ChaincodeResponseMessage: []byte("some invalid response")})))
 	assert.Nil(t, resp)
 	assert.Error(t, err)
 
 	// msg not encrypted
 	response := &protos.ChaincodeResponseMessage{EncryptedResponse: msg}
 	responseBytes := protoutil.MarshalOrPanic(response)
-	resp, err = ctx.Reveal([]byte(utils.MarshallProto(&protos.SignedChaincodeResponseMessage{ChaincodeResponseMessage: responseBytes})))
+	resp, err = ctx.Reveal([]byte(utils.MarshallProtoBase64(&protos.SignedChaincodeResponseMessage{ChaincodeResponseMessage: responseBytes})))
 	assert.Nil(t, resp)
 	assert.Error(t, err)
 
 	// msg not base64 encoded
 	encryptedMsg, err := GetDefaultCSP().EncryptMessage(responseEncryptionKey, msg)
+	assert.NoError(t, err)
 	response = &protos.ChaincodeResponseMessage{EncryptedResponse: encryptedMsg}
 	responseBytes = protoutil.MarshalOrPanic(response)
-	resp, err = ctx.Reveal([]byte(utils.MarshallProto(&protos.SignedChaincodeResponseMessage{ChaincodeResponseMessage: responseBytes})))
+	resp, err = ctx.Reveal([]byte(utils.MarshallProtoBase64(&protos.SignedChaincodeResponseMessage{ChaincodeResponseMessage: responseBytes})))
 	assert.Nil(t, resp)
 	assert.Error(t, err)
 
 	// should succeed
 	encryptedMsg, err = GetDefaultCSP().EncryptMessage(responseEncryptionKey, []byte(base64.StdEncoding.EncodeToString(msg)))
+	assert.NoError(t, err)
 	response = &protos.ChaincodeResponseMessage{EncryptedResponse: encryptedMsg}
 	responseBytes = protoutil.MarshalOrPanic(response)
-	resp, err = ctx.Reveal([]byte(utils.MarshallProto(&protos.SignedChaincodeResponseMessage{ChaincodeResponseMessage: responseBytes})))
+	resp, err = ctx.Reveal([]byte(utils.MarshallProtoBase64(&protos.SignedChaincodeResponseMessage{ChaincodeResponseMessage: responseBytes})))
 	assert.Equal(t, resp, msg)
 	assert.NoError(t, err)
 }

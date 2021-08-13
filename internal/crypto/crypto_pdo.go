@@ -54,7 +54,7 @@ func (c PDOCrypto) NewRSAKeys() (publicKey []byte, privateKey []byte, e error) {
 		serializedPrivateKeyLen,
 		&serializedPrivateKeyActualLen,
 	)
-	if ret == false {
+	if !ret {
 		return nil, nil, fmt.Errorf("cannot create RSA keys")
 	}
 
@@ -84,7 +84,7 @@ func (c PDOCrypto) NewECDSAKeys() (publicKey []byte, privateKey []byte, e error)
 		serializedPrivateKeyLen,
 		&serializedPrivateKeyActualLen,
 	)
-	if ret == false {
+	if !ret {
 		return nil, nil, fmt.Errorf("cannot create ECDSA keys")
 	}
 
@@ -122,7 +122,7 @@ func (c PDOCrypto) VerifyMessage(publicKey []byte, message []byte, signature []b
 		(*C.uint8_t)(signaturePtr),
 		(C.uint32_t)(len(signature)))
 
-	if ret == false {
+	if !ret {
 		return fmt.Errorf("verification failed")
 	}
 
@@ -150,7 +150,7 @@ func (c PDOCrypto) SignMessage(privateKey []byte, message []byte) (signature []b
 		(*C.uint8_t)(signaturePtr),
 		(C.uint32_t)(estimatedSignatureLen),
 		&signatureActualLen)
-	if ret == false {
+	if !ret {
 		return nil, fmt.Errorf("cannot sign message")
 	}
 
@@ -183,7 +183,7 @@ func (c PDOCrypto) PkDecryptMessage(privateKey []byte, encryptedMessage []byte) 
 		(C.uint32_t)(decryptedMessageLen),
 		&decryptedMessageActualLen,
 	)
-	if ret == false {
+	if !ret {
 		return nil, fmt.Errorf("pk decryption failed")
 	}
 
@@ -220,7 +220,7 @@ func (c PDOCrypto) PkEncryptMessage(publicKey []byte, message []byte) ([]byte, e
 		(*C.uint8_t)(encryptedMessagePtr),
 		C.uint32_t(encryptedMessageSize),
 		&encryptedMessageActualSize)
-	if ret == false {
+	if !ret {
 		return nil, fmt.Errorf("encryption failed")
 	}
 
@@ -251,7 +251,7 @@ func (c PDOCrypto) DecryptMessage(key []byte, encryptedMessage []byte) ([]byte, 
 		(*C.uint8_t)(messagePtr),
 		C.uint32_t(messageSize),
 		&messageActualSize)
-	if ret == false {
+	if !ret {
 		return nil, fmt.Errorf("decryption failed")
 	}
 
@@ -283,7 +283,7 @@ func (c PDOCrypto) EncryptMessage(key []byte, message []byte) (encryptedMessage 
 		encryptedMessageLen,
 		&encryptedMessageActualLen,
 	)
-	if ret == false {
+	if !ret {
 		return nil, fmt.Errorf("encryption failed")
 	}
 

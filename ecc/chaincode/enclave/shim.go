@@ -17,10 +17,9 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
-	"github.com/hyperledger/fabric-protos-go/msp"
+	"github.com/hyperledger/fabric/protoutil"
 )
 
 // #cgo CFLAGS: -I${SRCDIR}/../../common/sgxcclib
@@ -95,7 +94,7 @@ func (r *stubRegistry) get(i int) *Stubs {
 	stubs, ok := r.internal[i]
 	r.RUnlock()
 	if !ok {
-		panic(fmt.Errorf("No shim for: %d", i))
+		panic(fmt.Errorf("no shim for: %d", i))
 	}
 	return stubs
 }
@@ -112,8 +111,7 @@ func get_creator_name(msp_id *C.char, max_msp_id_len C.uint32_t, dn *C.char, max
 	if err != nil {
 		panic("error while getting creator")
 	}
-	sId := &msp.SerializedIdentity{}
-	err = proto.Unmarshal(serializedID, sId)
+	sId, err := protoutil.UnmarshalSerializedIdentity(serializedID)
 	if err != nil {
 		panic("Could not deserialize a SerializedIdentity")
 	}

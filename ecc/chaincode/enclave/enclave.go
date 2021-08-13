@@ -14,8 +14,8 @@ import (
 	"fmt"
 	"unsafe"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric/protoutil"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -123,7 +123,7 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, crmProto
 	if err != nil {
 		return nil, fmt.Errorf("cannot get signed proposal: %s", err.Error())
 	}
-	signedProposalBytes, err := proto.Marshal(proposal)
+	signedProposalBytes, err := protoutil.Marshal(proposal)
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal signed proposal: %s", err.Error())
 	}

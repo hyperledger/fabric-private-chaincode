@@ -114,18 +114,18 @@ func SetupNetwork(channel string) (*gateway.Network, error) {
 
 	err := os.Setenv("DISCOVERY_AS_LOCALHOST", "false")
 	if err != nil {
-		return nil, fmt.Errorf("Error setting DISCOVERY_AS_LOCALHOST environemnt variable: %v", err)
+		return nil, fmt.Errorf("error setting DISCOVERY_AS_LOCALHOST environemnt variable: %v", err)
 	}
 
 	wallet, err := gateway.NewFileSystemWallet("wallet")
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create wallet: %v", err)
+		return nil, fmt.Errorf("failed to create wallet: %v", err)
 	}
 
 	if !wallet.Exists("appUser") {
 		err = populateWallet(wallet)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to populate wallet contents: %v", err)
+			return nil, fmt.Errorf("failed to populate wallet contents: %v", err)
 		}
 	}
 
@@ -134,13 +134,13 @@ func SetupNetwork(channel string) (*gateway.Network, error) {
 		gateway.WithIdentity(wallet, "appUser"),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to connect to gateway: %v", err)
+		return nil, fmt.Errorf("failed to connect to gateway: %v", err)
 	}
 	defer gw.Close()
 
 	network, err := gw.GetNetwork(channel)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get network: %v", err)
+		return nil, fmt.Errorf("failed to get network: %v", err)
 	}
 
 	return network, nil

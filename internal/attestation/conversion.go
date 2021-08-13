@@ -124,7 +124,7 @@ func (c *CredentialConverter) ConvertCredentials(credentialsOnlyAttestation stri
 	}
 
 	// marshal "updated" credentials
-	credentialsOnlyAttestation = utils.MarshallProto(credentials)
+	credentialsOnlyAttestation = utils.MarshallProtoBase64(credentials)
 	logger.Debugf("Converted to Credential: '%s'", credentialsOnlyAttestation)
 	return credentialsOnlyAttestation, nil
 }

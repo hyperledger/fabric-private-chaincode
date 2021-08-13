@@ -55,7 +55,7 @@ func convert(input []byte) ([]byte, error) {
 		Attestation:            input,
 		Evidence:               nil,
 	}
-	credentialsOnlyAttestation := utils.MarshallProto(credentials)
+	credentialsOnlyAttestation := utils.MarshallProtoBase64(credentials)
 
 	// conversion
 	converter := attestation.NewCredentialConverter()
