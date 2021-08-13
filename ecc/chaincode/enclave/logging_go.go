@@ -24,7 +24,7 @@ var enclaveLogger = flogging.MustGetLogger("ecc_enclave")
 
 func init() {
 	r := C.logging_set_callback(C.log_callback_f(C.golog_cgo_wrapper))
-	if r == false {
+	if !r {
 		panic("error initializing logging for cgo")
 	}
 }

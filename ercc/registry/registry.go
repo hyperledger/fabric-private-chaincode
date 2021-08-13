@@ -5,15 +5,13 @@ Copyright 2020 Intel Corporation
 SPDX-License-Identifier: Apache-2.0
 */
 
-// this package defines the client-facing interface of ERCC as defined in the ERCC Interface section in [specifications](https://github.com/hyperledger/fabric-private-chaincode/blob/main/docs/design/fabric-v2%2B/interfaces.md)
+// Package registry defines the client-facing interface of ERCC as defined in the ERCC Interface section in [specifications](https://github.com/hyperledger/fabric-private-chaincode/blob/main/docs/design/fabric-v2%2B/interfaces.md)
 package registry
 
 import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 	"github.com/hyperledger/fabric-private-chaincode/ercc/attestation"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
@@ -98,10 +96,16 @@ func (rs *Contract) QueryEnclaveCredentials(ctx contractapi.TransactionContextIn
 func (rs *Contract) QueryListProvisionedEnclaves(ctx contractapi.TransactionContextInterface, chaincodeId string) ([]string, error) {
 
 	iter, err := ctx.GetStub().GetStateByPartialCompositeKey("namespaces/credentials", []string{chaincodeId})
-	defer iter.Close()
 	if err != nil {
 		return nil, err
 	}
+
+	defer func() {
+		cerr := iter.Close()
+		if err == nil {
+			err = cerr
+		}
+	}()
 
 	var enclaveIds []string
 
@@ -134,7 +138,7 @@ func (rs *Contract) QueryListProvisionedEnclaves(ctx contractapi.TransactionCont
 		}
 	}
 
-	return enclaveIds, nil
+	return enclaveIds, err
 }
 
 // QueryChaincodeEndPoints returns the chaincode endpoints for given chaincode id
@@ -223,7 +227,7 @@ func (rs *Contract) QueryChaincodeEncryptionKey(ctx contractapi.TransactionConte
 	}
 
 	var attestedData protos.AttestedData
-	if err := ptypes.UnmarshalAny(credentials.SerializedAttestedData, &attestedData); err != nil {
+	if err := credentials.SerializedAttestedData.UnmarshalTo(&attestedData); err != nil {
 		return "", err
 	}
 
@@ -240,20 +244,9 @@ func (rs *Contract) QueryChaincodeEncryptionKey(ctx contractapi.TransactionConte
 func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface, credentialsBase64 string) error {
 	logger.Debugf("RegisterEnclave")
 
-	credentialBytes, _ := base64.StdEncoding.DecodeString(credentialsBase64)
-
-	var credentials protos.Credentials
-
-	if len(credentialBytes) == 0 {
-		return errors.New("credential message is empty")
-	}
-
-	if err := proto.Unmarshal(credentialBytes, &credentials); err != nil {
+	credentials, err := utils.UnmarshalCredentials(credentialsBase64)
+	if err != nil {
 		return errors.Wrap(err, "invalid credential bytes")
-	}
-
-	if credentials.SerializedAttestedData == nil {
-		return errors.New("attested data is empty")
 	}
 
 	if len(credentials.Evidence) == 0 {
@@ -261,18 +254,18 @@ func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface,
 	}
 
 	// get attested data from credentials
-	var attestedData protos.AttestedData
-	if err := ptypes.UnmarshalAny(credentials.SerializedAttestedData, &attestedData); err != nil {
+	attestedData, err := utils.UnmarshalAttestedData(credentials.SerializedAttestedData)
+	if err != nil {
 		return errors.Wrap(err, "invalid attested data message")
 	}
 
 	logger.Debugf("- verifying attested data (%s) against evidence (%s)", attestedData.String(), string(credentials.Evidence))
-	if err := checkAttestedData(ctx, rs.Verifier, rs.IEvaluator, &attestedData, &credentials); err != nil {
+	if err := checkAttestedData(ctx, rs.Verifier, rs.IEvaluator, attestedData, credentials); err != nil {
 		return err
 	}
 
 	chaincodeId := attestedData.CcParams.ChaincodeId
-	enclaveId := utils.GetEnclaveId(&attestedData)
+	enclaveId := utils.GetEnclaveId(attestedData)
 
 	// try create the needed composite key
 	key, err := ctx.GetStub().CreateCompositeKey("namespaces/credentials", []string{chaincodeId, enclaveId})
@@ -283,7 +276,7 @@ func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface,
 	// check if one enclave is already registered
 	registeredCredentialsList, _ := rs.QueryListEnclaveCredentials(ctx, chaincodeId)
 	if registeredCredentialsList != nil {
-		return fmt.Errorf("An enclave is already registered for chaincode %s", chaincodeId)
+		return fmt.Errorf("an enclave is already registered for chaincode %s", chaincodeId)
 	}
 
 	// TODO perform the (enclave) endorsement policy specific tests (MVP/Post-MVP)

@@ -21,11 +21,13 @@ import (
 )
 
 //go:generate counterfeiter -o fakes/channelclient.go -fake-name ChannelClient . channelClient
+//lint:ignore U1000 This is just used to generate fake
 type chClient interface {
 	channelClient
 }
 
 //go:generate counterfeiter -o fakes/credential_converter.go -fake-name CredentialConverter . credentialConverter
+//lint:ignore U1000 This is just used to generate fake
 type credConverter interface {
 	credentialConverter
 }

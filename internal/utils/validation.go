@@ -19,7 +19,7 @@ import (
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric/common/flogging"
-	"google.golang.org/protobuf/proto"
+	"github.com/pkg/errors"
 )
 
 // Note that we use the WITH_PDO_CRYPTO build tag to enable this code.
@@ -146,15 +146,16 @@ func Validate(signedResponseMessage *protos.SignedChaincodeResponseMessage, atte
 	defer C.free(signaturePtr)
 
 	ret := C.verify_signature((*C.uint8_t)(enclaveVkPtr), C.uint32_t(len(attestedData.EnclaveVk)), (*C.uint8_t)(responseMessagePtr), C.uint32_t(len(signedResponseMessage.ChaincodeResponseMessage)), (*C.uint8_t)(signaturePtr), C.uint32_t(len(signedResponseMessage.Signature)))
-	if ret == false {
+	if !ret {
 		return fmt.Errorf("enclave signature verification failed")
 	}
 
 	// verify signed proposal input hash matches input hash
-	chaincodeResponseMessage := &protos.ChaincodeResponseMessage{}
-	if err := proto.Unmarshal(signedResponseMessage.GetChaincodeResponseMessage(), chaincodeResponseMessage); err != nil {
-		return fmt.Errorf("failed to extract response message: %s", err)
+	chaincodeResponseMessage, err := UnmarshalChaincodeResponseMessage(signedResponseMessage.GetChaincodeResponseMessage())
+	if err != nil {
+		return errors.Wrap(err, "failed to extract response message")
 	}
+
 	originalSignedProposal := chaincodeResponseMessage.GetProposal()
 	if originalSignedProposal == nil {
 		return fmt.Errorf("cannot get the signed proposal that the enclave received")

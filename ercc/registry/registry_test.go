@@ -12,8 +12,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes/any"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 	"github.com/hyperledger/fabric-private-chaincode/ercc/attestation"
@@ -25,29 +23,35 @@ import (
 	"github.com/hyperledger/fabric-protos-go/peer/lifecycle"
 	"github.com/hyperledger/fabric/protoutil"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
 //go:generate counterfeiter -o fakes/transaction.go -fake-name TransactionContext . transactionContext
+//lint:ignore U1000 This is just used to generate fake
 type transactionContext interface {
 	contractapi.TransactionContextInterface
 }
 
 //go:generate counterfeiter -o fakes/chaincodestub.go -fake-name ChaincodeStub . chaincodeStub
+//lint:ignore U1000 This is just used to generate fake
 type chaincodeStub interface {
 	shim.ChaincodeStubInterface
 }
 
 //go:generate counterfeiter -o fakes/statequeryiterator.go -fake-name StateQueryIterator . stateQueryIterator
+//lint:ignore U1000 This is just used to generate fake
 type stateQueryIterator interface {
 	shim.StateQueryIteratorInterface
 }
 
 //go:generate counterfeiter -o fakes/verifier.go -fake-name AttestationVerifier . attestationVerifier
+//lint:ignore U1000 This is just used to generate fake
 type attestationVerifier interface {
 	attestation.VerifierInterface
 }
 
 //go:generate counterfeiter -o fakes/evaluator.go -fake-name IdentityEvaluator . identityEvaluator
+//lint:ignore U1000 This is just used to generate fake
 type identityEvaluator interface {
 	utils.IdentityEvaluatorInterface
 }
@@ -80,7 +84,7 @@ func TestRegisterEnclave(t *testing.T) {
 	ercc.IEvaluator = id
 
 	err := ercc.RegisterEnclave(transactionContext, "")
-	require.EqualError(t, err, "credential message is empty")
+	require.EqualError(t, err, "invalid credential bytes: credential input empty")
 
 	err = ercc.RegisterEnclave(transactionContext, "some bytes")
 	require.Contains(t, err.Error(), "invalid credential bytes")
@@ -93,47 +97,45 @@ func TestRegisterEnclave(t *testing.T) {
 
 	err = ercc.RegisterEnclave(transactionContext, toBase64(
 		&protos.Credentials{
-			SerializedAttestedData: &any.Any{},
+			SerializedAttestedData: &anypb.Any{},
 		}))
 	require.Contains(t, err.Error(), "evidence is empty")
 
 	err = ercc.RegisterEnclave(transactionContext, toBase64(
 		&protos.Credentials{
-			SerializedAttestedData: &any.Any{},
+			SerializedAttestedData: &anypb.Any{},
 			Evidence:               []byte("some bytes"),
 		}))
 	require.Contains(t, err.Error(), "invalid attested data message")
 
 	chaincodeStub.GetChannelIDReturns("ANOTHER_CHANNEL")
+	serializedAttestedData, _ := anypb.New(
+		&protos.AttestedData{
+			EnclaveVk: []byte("enclaveVKString"),
+			CcParams: &protos.CCParameters{
+				ChannelId: "WRONG_CHANNEL",
+			},
+		})
 	err = ercc.RegisterEnclave(transactionContext, toBase64(
 		&protos.Credentials{
-			Evidence: []byte("some mock evidence"),
-			SerializedAttestedData: &any.Any{
-				TypeUrl: proto.MessageName(&protos.AttestedData{}),
-				Value: protoutil.MarshalOrPanic(&protos.AttestedData{
-					EnclaveVk: []byte("enclaveVKString"),
-					CcParams: &protos.CCParameters{
-						ChannelId: "WRONG_CHANNEL",
-					},
-				}),
-			},
+			Evidence:               []byte("some mock evidence"),
+			SerializedAttestedData: serializedAttestedData,
 		}))
 	require.EqualError(t, err, "wrong channel! expected=ANOTHER_CHANNEL, actual=WRONG_CHANNEL")
 
 	chaincodeStub.GetChannelIDReturns(channelId)
 	chaincodeStub.InvokeChaincodeReturns(shim.Error("no chaincode definition exists"))
+	serializedAttestedData, _ = anypb.New(
+		&protos.AttestedData{
+			EnclaveVk: []byte("enclaveVKString"),
+			CcParams: &protos.CCParameters{
+				ChannelId: channelId,
+			},
+		})
 	err = ercc.RegisterEnclave(transactionContext, toBase64(
 		&protos.Credentials{
-			Evidence: []byte("some mock evidence"),
-			SerializedAttestedData: &any.Any{
-				TypeUrl: proto.MessageName(&protos.AttestedData{}),
-				Value: protoutil.MarshalOrPanic(&protos.AttestedData{
-					EnclaveVk: []byte("enclaveVKString"),
-					CcParams: &protos.CCParameters{
-						ChannelId: channelId,
-					},
-				}),
-			},
+			Evidence:               []byte("some mock evidence"),
+			SerializedAttestedData: serializedAttestedData,
 		}))
 	require.Contains(t, err.Error(), "cannot get chaincode definition")
 
@@ -143,19 +145,18 @@ func TestRegisterEnclave(t *testing.T) {
 			Version: mrenclave,
 		})))
 
+	serializedAttestedData, _ = anypb.New(
+		&protos.AttestedData{
+			EnclaveVk: []byte("enclaveVKString"),
+			CcParams: &protos.CCParameters{
+				ChaincodeId: chaincodeId,
+				Version:     "WRONG_MRENCLAVE",
+				ChannelId:   channelId,
+			},
+		})
 	credentialBase64 := toBase64(&protos.Credentials{
-		Evidence: []byte("some mock evidence"),
-		SerializedAttestedData: &any.Any{
-			TypeUrl: proto.MessageName(&protos.AttestedData{}),
-			Value: protoutil.MarshalOrPanic(&protos.AttestedData{
-				EnclaveVk: []byte("enclaveVKString"),
-				CcParams: &protos.CCParameters{
-					ChaincodeId: chaincodeId,
-					Version:     "WRONG_MRENCLAVE",
-					ChannelId:   channelId,
-				},
-			}),
-		},
+		Evidence:               []byte("some mock evidence"),
+		SerializedAttestedData: serializedAttestedData,
 	})
 	err = ercc.RegisterEnclave(transactionContext, credentialBase64)
 	require.EqualError(t, err, "mrenclave does not match chaincode definition")
@@ -166,20 +167,19 @@ func TestRegisterEnclave(t *testing.T) {
 			Sequence: 1,
 		})))
 
+	serializedAttestedData, _ = anypb.New(
+		&protos.AttestedData{
+			EnclaveVk: []byte("enclaveVKString"),
+			CcParams: &protos.CCParameters{
+				ChaincodeId: chaincodeId,
+				Version:     mrenclave,
+				ChannelId:   channelId,
+				Sequence:    666,
+			},
+		})
 	credentialBase64 = toBase64(&protos.Credentials{
-		Evidence: []byte("some mock evidence"),
-		SerializedAttestedData: &any.Any{
-			TypeUrl: proto.MessageName(&protos.AttestedData{}),
-			Value: protoutil.MarshalOrPanic(&protos.AttestedData{
-				EnclaveVk: []byte("enclaveVKString"),
-				CcParams: &protos.CCParameters{
-					ChaincodeId: chaincodeId,
-					Version:     mrenclave,
-					ChannelId:   channelId,
-					Sequence:    666,
-				},
-			}),
-		},
+		Evidence:               []byte("some mock evidence"),
+		SerializedAttestedData: serializedAttestedData,
 	})
 	err = ercc.RegisterEnclave(transactionContext, credentialBase64)
 	require.EqualError(t, err, "sequence does not match chaincode definition")
@@ -191,20 +191,19 @@ func TestRegisterEnclave(t *testing.T) {
 		})))
 	verifier.VerifyEvidenceReturns(fmt.Errorf("evidence invalid"))
 
+	serializedAttestedData, _ = anypb.New(
+		&protos.AttestedData{
+			EnclaveVk: []byte("enclaveVKString"),
+			CcParams: &protos.CCParameters{
+				ChaincodeId: chaincodeId,
+				Version:     mrenclave,
+				ChannelId:   channelId,
+				Sequence:    1,
+			},
+		})
 	credentialBase64 = toBase64(&protos.Credentials{
-		Evidence: []byte("some mock evidence"),
-		SerializedAttestedData: &any.Any{
-			TypeUrl: proto.MessageName(&protos.AttestedData{}),
-			Value: protoutil.MarshalOrPanic(&protos.AttestedData{
-				EnclaveVk: []byte("enclaveVKString"),
-				CcParams: &protos.CCParameters{
-					ChaincodeId: chaincodeId,
-					Version:     mrenclave,
-					ChannelId:   channelId,
-					Sequence:    1,
-				},
-			}),
-		},
+		Evidence:               []byte("some mock evidence"),
+		SerializedAttestedData: serializedAttestedData,
 	})
 	err = ercc.RegisterEnclave(transactionContext, credentialBase64)
 	require.EqualError(t, err, "evidence verification failed: evidence invalid")
@@ -213,23 +212,22 @@ func TestRegisterEnclave(t *testing.T) {
 	err = ercc.RegisterEnclave(transactionContext, credentialBase64)
 	require.EqualError(t, err, "host params are empty")
 
+	serializedAttestedData, _ = anypb.New(
+		&protos.AttestedData{
+			EnclaveVk: []byte("enclaveVKString"),
+			CcParams: &protos.CCParameters{
+				ChaincodeId: chaincodeId,
+				Version:     mrenclave,
+				ChannelId:   channelId,
+				Sequence:    1,
+			},
+			HostParams: &protos.HostParameters{
+				PeerMspId: someMspId,
+			},
+		})
 	credentialBase64 = toBase64(&protos.Credentials{
-		Evidence: []byte("some mock evidence"),
-		SerializedAttestedData: &any.Any{
-			TypeUrl: proto.MessageName(&protos.AttestedData{}),
-			Value: protoutil.MarshalOrPanic(&protos.AttestedData{
-				EnclaveVk: []byte("enclaveVKString"),
-				CcParams: &protos.CCParameters{
-					ChaincodeId: chaincodeId,
-					Version:     mrenclave,
-					ChannelId:   channelId,
-					Sequence:    1,
-				},
-				HostParams: &protos.HostParameters{
-					PeerMspId: someMspId,
-				},
-			}),
-		},
+		Evidence:               []byte("some mock evidence"),
+		SerializedAttestedData: serializedAttestedData,
 	})
 	//id.EvaluateIdentityReturns(fmt.Errorf("peer not a valid endorser"))
 	//err = ercc.RegisterEnclave(transactionContext, credentialBase64)

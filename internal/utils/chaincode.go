@@ -10,7 +10,6 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-protos-go/peer/lifecycle"
 	"github.com/hyperledger/fabric/protoutil"
@@ -25,6 +24,7 @@ func GetChaincodeDefinition(chaincodeId string, stub shim.ChaincodeStubInterface
 	args := &lifecycle.QueryChaincodeDefinitionArgs{
 		Name: chaincodeId,
 	}
+	// note that we use Fabric's MarshalOrPanic as it still uses protobuf V1
 	argsBytes := protoutil.MarshalOrPanic(args)
 
 	resp := stub.InvokeChaincode("_lifecycle", [][]byte{[]byte(function), argsBytes}, channelId)
@@ -34,11 +34,7 @@ func GetChaincodeDefinition(chaincodeId string, stub shim.ChaincodeStubInterface
 		return nil, fmt.Errorf("no chaincode definition found for chaincode='%s'", chaincodeId)
 	}
 
-	df := &lifecycle.QueryChaincodeDefinitionResult{}
-	if err := proto.Unmarshal(resp.Payload, df); err != nil {
-		return nil, err
-	}
-	return df, nil
+	return UnmarshalQueryChaincodeDefinitionResult(resp.Payload)
 }
 
 func GetMrEnclave(chaincodeId string, stub shim.ChaincodeStubInterface) (string, error) {

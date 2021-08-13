@@ -19,6 +19,7 @@ import (
 )
 
 //go:generate counterfeiter -o fakes/httpclient.go -fake-name HTTPClient . httpClient
+//lint:ignore U1000 This is just used to generate fake
 type httpClient interface {
 	HTTPClient
 }

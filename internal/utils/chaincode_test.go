@@ -9,34 +9,30 @@ package utils_test
 import (
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
-	"github.com/hyperledger/fabric-chaincode-go/shimtest"
-	"github.com/hyperledger/fabric-chaincode-go/shimtest/mock"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
+	"github.com/hyperledger/fabric-private-chaincode/internal/utils/fakes"
 	"github.com/hyperledger/fabric-protos-go/peer/lifecycle"
-
+	"github.com/hyperledger/fabric/protoutil"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
+//go:generate counterfeiter -o fakes/chaincodestub.go -fake-name ChaincodeStub . chaincodeStub
+//lint:ignore U1000 This is just used to generate fake
+type chaincodeStub interface {
+	shim.ChaincodeStubInterface
+}
+
 var _ = Describe("Chaincode utils", func() {
 
 	var (
-		stub              *shimtest.MockStub
-		lscc              *mock.Chaincode
+		stub              *fakes.ChaincodeStub
 		expectedMrEnclave string
 	)
 
 	BeforeEach(func() {
-		// create mock err
-		stub = shimtest.NewMockStub("ercc", &mock.Chaincode{})
-		stub.ChannelID = "mockChannel"
-
-		lscc = &mock.Chaincode{}
-		lifecycleStub := shimtest.NewMockStub("_lifecycle", lscc)
-		stub.MockPeerChaincode("_lifecycle", lifecycleStub, stub.ChannelID)
-
+		stub = &fakes.ChaincodeStub{}
 		expectedMrEnclave = "98aed61c91f258a37c68ed4943297695647ec7bbe6008cc111b0a12650ebeb91"
 	})
 
@@ -45,9 +41,9 @@ var _ = Describe("Chaincode utils", func() {
 			BeforeEach(func() {
 				// register chaincode definition at _lifecycle
 				df := &lifecycle.QueryChaincodeDefinitionResult{}
-				dfBytes, err := proto.Marshal(df)
+				dfBytes, err := protoutil.Marshal(df)
 				Expect(err).ShouldNot(HaveOccurred())
-				lscc.InvokeReturns(shim.Success(dfBytes))
+				stub.InvokeChaincodeReturns(shim.Success(dfBytes))
 			})
 
 			It("should return chaincode definition", func() {
@@ -69,7 +65,7 @@ var _ = Describe("Chaincode utils", func() {
 			BeforeEach(func() {
 				// register chaincode definition at _lifecycle
 				dfBytes := []byte{0x00, 0x12}
-				lscc.InvokeReturns(shim.Success(dfBytes))
+				stub.InvokeChaincodeReturns(shim.Success(dfBytes))
 			})
 
 			It("should return QueryChaincodeDefinitionResult object", func() {
@@ -87,9 +83,9 @@ var _ = Describe("Chaincode utils", func() {
 					Version: expectedMrEnclave,
 				}
 
-				dfBytes, err := proto.Marshal(df)
+				dfBytes, err := protoutil.Marshal(df)
 				Expect(err).ShouldNot(HaveOccurred())
-				lscc.InvokeReturns(shim.Success(dfBytes))
+				stub.InvokeChaincodeReturns(shim.Success(dfBytes))
 			})
 
 			It("should return error", func() {
@@ -105,9 +101,9 @@ var _ = Describe("Chaincode utils", func() {
 					Version: "",
 				}
 
-				dfBytes, err := proto.Marshal(df)
+				dfBytes, err := protoutil.Marshal(df)
 				Expect(err).ShouldNot(HaveOccurred())
-				lscc.InvokeReturns(shim.Success(dfBytes))
+				stub.InvokeChaincodeReturns(shim.Success(dfBytes))
 			})
 
 			It("should return error", func() {
@@ -123,9 +119,9 @@ var _ = Describe("Chaincode utils", func() {
 					Version: "mK7WHJHyWKN8aO1JQyl2lWR+x7vmAIzBEbChJlDr65E=",
 				}
 
-				dfBytes, err := proto.Marshal(df)
+				dfBytes, err := protoutil.Marshal(df)
 				Expect(err).ShouldNot(HaveOccurred())
-				lscc.InvokeReturns(shim.Success(dfBytes))
+				stub.InvokeChaincodeReturns(shim.Success(dfBytes))
 			})
 
 			It("should return error", func() {

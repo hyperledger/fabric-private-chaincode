@@ -10,8 +10,6 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/hyperledger/fabric/protoutil"
-
 	"github.com/golang/protobuf/ptypes"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/enclave"
@@ -20,6 +18,7 @@ import (
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/common/flogging"
+	"github.com/hyperledger/fabric/protoutil"
 )
 
 var logger = flogging.MustGetLogger("ecc")

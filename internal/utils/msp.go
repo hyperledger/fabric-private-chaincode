@@ -9,8 +9,7 @@ package utils
 import (
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric-protos-go/msp"
+	"github.com/hyperledger/fabric/protoutil"
 )
 
 type IdentityEvaluatorInterface interface {
@@ -36,8 +35,7 @@ func (id *IdentityEvaluator) EvaluateCreatorIdentity(creatorIdentityBytes []byte
 }
 
 func ExtractMSPID(serializedIdentityRaw []byte) (string, error) {
-	sID := &msp.SerializedIdentity{}
-	err := proto.Unmarshal(serializedIdentityRaw, sID)
+	sID, err := protoutil.UnmarshalSerializedIdentity(serializedIdentityRaw)
 	if err != nil {
 		return "", err
 	}

@@ -44,8 +44,13 @@ mkdir -p $BUILD_DIR
 FABRIC_BUILD_DIR=${BUILD_DIR}/fabric
 mkdir -p $FABRIC_BUILD_DIR
 
+# create go proto folder and exclude it from staticcheck
 GO_BUILD_DIR=${FPC_PATH}/internal/protos
 mkdir -p $GO_BUILD_DIR
+cat <<EOT > "${GO_BUILD_DIR}/staticcheck.conf"
+# ignore all checks in this package
+checks = ["-all"]
+EOT
 
 PROTOC_OPTS="--plugin=protoc-gen-nanopb=$NANOPB_PATH/generator/protoc-gen-nanopb-py2"
 
