@@ -33,7 +33,10 @@ generate:
 DOCKER_IMAGE?=fpc/ercc
 
 docker: ercc
-	$(DOCKER) build -t $(DOCKER_IMAGE) .
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
+		--build-arg FPC_VERSION=$(FPC_VERSION) \
+		-t $(DOCKER_IMAGE):$(FPC_VERSION) \
+		.
 
 docker-clean:
 	$(DOCKER) rmi -f $(DOCKER_IMAGE)

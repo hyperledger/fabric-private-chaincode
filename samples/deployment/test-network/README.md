@@ -8,14 +8,24 @@ the FPC Dev docker container.
 
 ## Prepare FPC Containers and the Test Network
 
-We start with building the FPC components as docker images which are deployed on our test network.
+FPC requires a special docker container to execute a FPC chaincode, similar to Fabric's `ccenv` container image but with additional support for Intel SGX.  
+You can pull the FPC chaincode environment image (`fabric-private-chaincode-ccenv`) from our Github repository or build them manually as follows:
+
+```bash
+# pulls the fabric-private-chaincode-ccenv image from github
+make -C $FPC_PATH/utils/docker pull
+
+# building fabric-private-chaincode-ccenv image from scratch
+make -C $FPC_PATH/utils/docker build
+```
+
+Next, we package the FPC components as docker images (building on top of `fabric-private-chaincode-ccenv`) which are deployed on our test network.
 Use `CC_ID` and `CC_PATH` to define the FPC Chaincode you want to build.
 
 ```bash
 cd $FPC_PATH/samples/deployment/test-network
 export CC_ID=echo
 export CC_PATH=${FPC_PATH}/samples/chaincode/echo
-make -C $FPC_PATH/utils/docker build
 make build
 ```
 

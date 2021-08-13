@@ -15,7 +15,7 @@ endif
 GO := $(GO_CMD) $(GOFLAGS)
 
 .PHONY: all
-all: build test docker ci_report checks # keep checks last as license test is brittle ...
+all: build test ci_report checks # keep checks last as license test is brittle ...
 
 .PHONY: ci_report
 

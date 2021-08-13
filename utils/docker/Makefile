@@ -11,6 +11,8 @@ HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
 
 # Names and namespaces
 # ------------------
+DOCKER_REGISTRY ?= ghcr.io
+
 FPC_DOCKER_NAMESPACE := hyperledger/fabric-private-chaincode
 FPC_DOCKER_CC_BUILDER_NAME = $(FPC_DOCKER_NAMESPACE)-cc-builder$(HW_EXTENSION)
 FPC_DOCKER_DEV_NAME = $(FPC_DOCKER_NAMESPACE)-dev
@@ -97,6 +99,8 @@ DOCKER_DEV_RUN_OPTS += --net=host
 ifneq ($(SGX_DEVICE_PATH),)
 	DOCKER_DEV_RUN_OPTS += -v "$(DOCKERD_FPC_PATH)/config/ias/":$(DOCKER_FPC_PATH)/config/ias/ -v $(SGX_PSW_SOCKET):$(SGX_PSW_SOCKET) --device $(SGX_DEVICE_PATH)
 endif
+# - pass host sgx mode
+DOCKER_DEV_RUN_OPTS += --env SGX_MODE=$(SGX_MODE)
 
 ifeq (${DOCKER_DEV_CI_MODE},)
 DOCKER_DEV_RUN_OPTS += -i
@@ -110,7 +114,7 @@ DOCKER_DEV_RUN_OPTS += `curl -s https://codecov.io/env | bash`
 endif
 endif
 
-# Run a specific command (rather than bash) with 'make run' by defining
+# Run a specific command (rather than bash) with 'make run-dev' by defining
 # the variable DOCKER_DEV_OPTIONAL_CMD
 DOCKER_DEV_OPTIONAL_CMD=
 
@@ -125,12 +129,14 @@ build: ccenv
 # a rebuild could cause trouble for a dev container user.
 # Note 2: we removed "cc-builder peer" as dependencies since they are currenty unused (but might be helpful).
 
-run: dev
+build-dev: base-dev
+
+run-dev: dev
 	# Cleanup existing but non-running (note absence of --force in rm!) old dev containers
 	dev_container_id=$$(docker ps -a | grep ${DOCKER_DEV_CONTAINER_NAME} | awk '{ print $$1 }'); \
 	   [ -z  "$${dev_container_id}" ] || ${DOCKER} rm "$${dev_container_id}"
 	# Now run a new instance
-	$(DOCKER) run $(DOCKER_DEV_RUN_OPTS) --name ${DOCKER_DEV_CONTAINER_NAME} -t $(FPC_DOCKER_NAMESPACE)-dev:${FPC_VERSION} ${DOCKER_DEV_OPTIONAL_CMD}
+	$(DOCKER) run $(DOCKER_DEV_RUN_OPTS) --name ${DOCKER_DEV_CONTAINER_NAME} -t $(FPC_DOCKER_DEV_NAME):${FPC_VERSION} ${DOCKER_DEV_OPTIONAL_CMD}
 
 clobber:
 	# first clean-up dangling images as that might prevent some of the later cleans
@@ -145,7 +151,6 @@ clobber:
 	done; \
 	for tag in \
 	    ${FPC_VERSION} \
-	    latest \
 	; do \
 	    for img in \
 	        ${FPC_DOCKER_PEER_NAME} \
@@ -154,6 +159,8 @@ clobber:
 		$(FPC_DOCKER_CCENV_NAME) \
 		$(FPC_DOCKER_BASE_RT_NAME) \
 		$(FPC_DOCKER_BASE_DEV_NAME) \
+		$(DOCKER_REGISTRY)/$(FPC_DOCKER_CCENV_NAME) \
+		$(DOCKER_REGISTRY)/$(FPC_DOCKER_BASE_DEV_NAME) \
 	    ; do \
 		if [ ! -z "$$(docker images -q $${img}:$${tag})" ]; then \
 		    ${DOCKER} rmi $${img}:$${tag}; \
@@ -172,16 +179,13 @@ clobber:
 # - building individual docker images
 # ------------------------------------------------------
 base-rt:
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) $(DOCKER_BASE_RT_BUILD_OPTS) -t $(FPC_DOCKER_BASE_RT_NAME) base-rt
-	$(DOCKER) tag $(FPC_DOCKER_BASE_RT_NAME) $(FPC_DOCKER_BASE_RT_NAME):${FPC_VERSION}
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) $(DOCKER_BASE_RT_BUILD_OPTS) -t $(FPC_DOCKER_BASE_RT_NAME):$(FPC_VERSION) base-rt
 
 base-dev: base-rt
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) $(DOCKER_BASE_DEV_BUILD_OPTS) -t $(FPC_DOCKER_BASE_DEV_NAME) base-dev
-	$(DOCKER) tag $(FPC_DOCKER_BASE_DEV_NAME) $(FPC_DOCKER_BASE_DEV_NAME):${FPC_VERSION}
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) $(DOCKER_BASE_DEV_BUILD_OPTS) -t $(FPC_DOCKER_BASE_DEV_NAME):$(FPC_VERSION) base-dev
 
 ccenv: base-rt
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CCENV_NAME) ccenv
-	$(DOCKER) tag $(FPC_DOCKER_CCENV_NAME) $(FPC_DOCKER_CCENV_NAME):${FPC_VERSION}
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CCENV_NAME):$(FPC_VERSION) ccenv
 
 # Note: For all docker images, dependencis will cause docker rebuilds.
 # Docker caching though makes this though fast if nothing has changed.
@@ -197,7 +201,7 @@ ccenv: base-rt
 # before any docker rebuild happens.
 peer: base-dev
 	(cd ${TOP} &&\
-         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t ${FPC_DOCKER_PEER_NAME}\
+         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_PEER_NAME):$(FPC_VERSION)\
          $(DOCKER_DEV_BUILD_OPTS)\
 	 --target peer\
          -f ./utils/docker/dev_peer_cc-builder/Dockerfile\
@@ -205,23 +209,17 @@ peer: base-dev
          --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
          . )
-	$(DOCKER) tag $(FPC_DOCKER_PEER_NAME) $(FPC_DOCKER_PEER_NAME):${FPC_VERSION}
 
-dev: base-dev
+dev:
 	(cd ${TOP} &&\
-         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_DEV_NAME)\
+         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_DEV_NAME):$(FPC_VERSION)\
          $(DOCKER_DEV_BUILD_OPTS)\
-         -f ./utils/docker/dev_peer_cc-builder/Dockerfile\
-	 --target dev \
-         --build-arg FPC_REPO_URL=file:///tmp/cloned-local-fpc-git-repo\
-         --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
-         --build-arg SGX_MODE=${SGX_MODE}\
+         -f ./utils/docker/dev/Dockerfile\
          . )
-	$(DOCKER) tag $(FPC_DOCKER_DEV_NAME) $(FPC_DOCKER_DEV_NAME):${FPC_VERSION}
 
 cc-builder: base-dev
 	(cd ${TOP} &&\
-         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CC_BUILDER_NAME)\
+         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CC_BUILDER_NAME):$(FPC_VERSION)\
          $(DOCKER_DEV_BUILD_OPTS)\
          -f ./utils/docker/dev_peer_cc-builder/Dockerfile\
 	 --target cc-builder \
@@ -229,5 +227,23 @@ cc-builder: base-dev
          --build-arg FPC_REPO_BRANCH_TAG_OR_COMMIT=$$(git rev-parse HEAD)\
          --build-arg SGX_MODE=${SGX_MODE}\
          . )
-	$(DOCKER) tag $(FPC_DOCKER_CC_BUILDER_NAME) $(FPC_DOCKER_CC_BUILDER_NAME):${FPC_VERSION}
 
+publish:
+	for img in \
+		$(FPC_DOCKER_CCENV_NAME) \
+		$(FPC_DOCKER_BASE_DEV_NAME) \
+	; do \
+	  	echo $${img}; \
+		$(DOCKER) tag $${img}:$(FPC_VERSION) $(DOCKER_REGISTRY)/$${img}:$(FPC_VERSION); \
+		$(DOCKER) push $(DOCKER_REGISTRY)/$${img}:$(FPC_VERSION); \
+	done;
+
+pull:
+	# ccenv
+	$(DOCKER) pull $(DOCKER_REGISTRY)/$(FPC_DOCKER_CCENV_NAME):$(FPC_VERSION)
+	$(DOCKER) image tag $(DOCKER_REGISTRY)/$(FPC_DOCKER_CCENV_NAME):$(FPC_VERSION) $(FPC_DOCKER_CCENV_NAME):$(FPC_VERSION)
+
+pull-dev:
+	# base-dev
+	$(DOCKER) pull $(DOCKER_REGISTRY)/$(FPC_DOCKER_BASE_DEV_NAME):$(FPC_VERSION)
+	$(DOCKER) image tag $(DOCKER_REGISTRY)/$(FPC_DOCKER_BASE_DEV_NAME):$(FPC_VERSION) $(FPC_DOCKER_BASE_DEV_NAME):$(FPC_VERSION)

@@ -20,16 +20,21 @@ Many steps of this tutorial can also be invoked by using `just`. See official [i
 
 ## Prepare FPC deployment components
 
-Let's first build the FPC components.
+FPC requires a special docker container to execute a FPC chaincode, similar to Fabric's `ccenv` container image but with additional support for Intel SGX.  
+You can pull the FPC chaincode environment image (`fabric-private-chaincode-ccenv`) from our Github repository or build them manually as follows:
+
 ```bash
-cd $FPC_PATH
-make build
+# pulls the fabric-private-chaincode-ccenv image from github
+make -C $FPC_PATH/utils/docker pull
+
+# builds fabric-private-chaincode-ccenv image from scratch
+make -C $FPC_PATH/utils/docker build
 ```
 
-Next create the FPC Enclave Registry docker image
+Then we build the FPC components including the FPC Enclave Registry docker image.
 ```bash
-cd $FPC_PATH/ercc
-make docker
+make -C $FPC_PATH build
+make -C $FPC_PATH/ercc docker
 ```
 
 ### Build your FPC Chaincode

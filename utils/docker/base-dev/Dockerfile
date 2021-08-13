@@ -15,7 +15,7 @@
 #  - additional apt pkgs:       APT_ADD_PKGS
 
 
-ARG FPC_VERSION=latest
+ARG FPC_VERSION=main
 
 FROM hyperledger/fabric-private-chaincode-base-rt:${FPC_VERSION} as common
 
@@ -54,6 +54,9 @@ RUN apt-get update -q \
     python-protobuf \
     # docker commands (need as we use docker daemon from "outside")
     docker.io \
+    docker-compose \
+    psmisc \
+    bc \
     ${APT_ADD_PKGS}
 
 
@@ -66,10 +69,12 @@ RUN GO_TAR=go${GO_VERSION}.linux-amd64.tar.gz \
   && rm ${GO_TAR} \
   && mkdir -p /project
 ENV PATH=${GOPATH}/bin:${GOROOT}/bin:${PATH}
+
 #  Go tools we need
 RUN  go get golang.org/x/tools/cmd/goimports \
   && go get google.golang.org/protobuf/cmd/protoc-gen-go \
-  && GO111MODULE=off go get github.com/maxbrunsfeld/counterfeiter
+  && GO111MODULE=off go get github.com/maxbrunsfeld/counterfeiter \
+  && GO111MODULE=on go get github.com/mikefarah/yq/v3
 
 # Install SGX SSL
 ENV SGX_SSL /opt/intel/sgxssl

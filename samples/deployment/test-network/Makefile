@@ -36,7 +36,7 @@ ercc-ecc-start:
 		    SGX_DEVICE_PATH=$$(if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx" ]; then echo "/dev/sgx"; else echo "none"; fi) && \
 		[ "$${SGX_DEVICE_PATH}" != "none" ] || ( echo "ERROR: SGX_MODE is HW but no sgx device found"; exit 1; ) \
 	fi && \
-	env CC_ID=${CC_ID} docker-compose up
+	env CC_ID=${CC_ID} FPC_VERSION=${FPC_VERSION} docker-compose up
 
 ercc-ecc-stop:
-	env CC_ID=${CC_ID} docker-compose down
+	env CC_ID=${CC_ID} FPC_VERSION=${FPC_VERSION} docker-compose down

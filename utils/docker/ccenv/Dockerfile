@@ -9,6 +9,6 @@
 #  Configuration (build) paramaters (for defaults, see below section with ARGs)
 #  - fpc image version:		FPC_VERSION
 
-ARG FPC_VERSION=latest
+ARG FPC_VERSION=main
 
 FROM hyperledger/fabric-private-chaincode-base-rt:${FPC_VERSION}

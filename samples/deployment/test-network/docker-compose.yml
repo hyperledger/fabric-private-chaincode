@@ -10,7 +10,7 @@ services:
   ecc.peer0.org1.example.com:
     container_name: ${CC_ID}.peer0.org1.example.com
     hostname: ${CC_ID}.peer0.org1.example.com
-    image: fpc/fpc-${CC_ID}${HW_EXTENSION:-}
+    image: fpc/fpc-${CC_ID}${HW_EXTENSION:-}:${FPC_VERSION}
     entrypoint: /usr/local/bin/chaincode
     environment:
       - CHAINCODE_SERVER_ADDRESS=${CC_ID}.peer0.org1.example.com:9999
@@ -28,7 +28,7 @@ services:
   ercc.peer0.org1.example.com:
     container_name: ercc.peer0.org1.example.com
     hostname: ercc.peer0.org1.example.com
-    image: fpc/ercc
+    image: fpc/ercc:${FPC_VERSION}
     environment:
       - CHAINCODE_SERVER_ADDRESS=ercc.peer0.org1.example.com:9999
       - CHAINCODE_PKG_ID=${ORG1_ERCC_PKG_ID}
@@ -41,7 +41,7 @@ services:
   ecc.peer0.org2.example.com:
     container_name: ${CC_ID}.peer0.org2.example.com
     hostname: ${CC_ID}.peer0.org2.example.com
-    image: fpc/fpc-${CC_ID}${HW_EXTENSION:-}
+    image: fpc/fpc-${CC_ID}${HW_EXTENSION:-}:${FPC_VERSION}
     entrypoint: /usr/local/bin/chaincode
     environment:
       - CHAINCODE_SERVER_ADDRESS=${CC_ID}.peer0.org2.example.com:9999
@@ -59,7 +59,7 @@ services:
   ercc.peer0.org2.example.com:
     container_name: ercc.peer0.org2.example.com
     hostname: ercc.peer0.org2.example.com
-    image: fpc/ercc
+    image: fpc/ercc:${FPC_VERSION}
     environment:
       - CHAINCODE_SERVER_ADDRESS=ercc.peer0.org2.example.com:9999
       - CHAINCODE_PKG_ID=${ORG2_ERCC_PKG_ID}
