@@ -6,7 +6,7 @@
 # Description:
 #   Sets up the template of a docker environment to run FPC chaincode, just missing the chaincode's enclave.so*
 #
-#  Configuration (build) paramaters (for defaults, see below section with ARGs)
+#  Configuration (build) parameters (for defaults, see below section with ARGs)
 #  - fpc image version:          FPC_VERSION
 #  - sgxmode:                    SGX_MODE
 #  - Chaincode as a Server Port: CAAS_PORT

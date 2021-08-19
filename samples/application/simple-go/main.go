@@ -82,7 +82,7 @@ func getEnvWithPanic(key string) string {
 func setEnvWithPanic(key, value string) {
 	err := os.Setenv(key, value)
 	if err != nil {
-		panic(fmt.Sprintf("Error setting %s environemnt variable: %v", key, err))
+		panic(fmt.Sprintf("Error setting %s environment variable: %v", key, err))
 	}
 }
 

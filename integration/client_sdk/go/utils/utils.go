@@ -114,7 +114,7 @@ func SetupNetwork(channel string) (*gateway.Network, error) {
 
 	err := os.Setenv("DISCOVERY_AS_LOCALHOST", "false")
 	if err != nil {
-		return nil, fmt.Errorf("error setting DISCOVERY_AS_LOCALHOST environemnt variable: %v", err)
+		return nil, fmt.Errorf("error setting DISCOVERY_AS_LOCALHOST environment variable: %v", err)
 	}
 
 	wallet, err := gateway.NewFileSystemWallet("wallet")

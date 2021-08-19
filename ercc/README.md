@@ -7,7 +7,7 @@ https://creativecommons.org/licenses/by/4.0/
 The enclave registry is a chaincode that runs outside SGX and
 maintains a list of registered FPC chaincodes and related artifacts,
 e.g., associated validated enclaves and public keys. It performs
-verfication of the chaincode enclave's attestation whic demonstrates
+verification of the chaincode enclave's attestation which demonstrates
 that a specific chaincode executes in an actual enclave. This enables
 the peers and the clients to inspect the attestation of a chaincode
 enclave before invoking chaincode operations or committing state changes.

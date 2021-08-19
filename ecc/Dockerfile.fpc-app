@@ -6,7 +6,7 @@
 # Description:
 #   Docker image for a particular fpc chaincode
 #
-#  Configuration (build) paramaters (for defaults, see below section with ARGs)
+#  Configuration (build) parameters (for defaults, see below section with ARGs)
 #  - extension identifying sgx mode:       HW_EXTENSION
 #  - fpc image version:                    FPC_VERSION
 #
