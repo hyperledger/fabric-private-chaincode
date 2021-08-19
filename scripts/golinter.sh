@@ -78,3 +78,12 @@ if [ -n "$OUTPUT" ]; then
     echo "$OUTPUT"
     exit 1
 fi
+
+echo "Checking with misspell"
+OUTPUT="$(misspell $(go list -f '{{.Dir}}' ./...))"
+if [ -n "$OUTPUT" ]; then
+    echo "The following files are have spelling errors:"
+    echo "$OUTPUT"
+    exit 1
+fi
+
