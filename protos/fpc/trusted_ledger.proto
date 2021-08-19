@@ -75,9 +75,9 @@ message CanEndorseResponse {
 // - wrapper type which is passed to `tl_session_request` and the handler registered with `tl_session_register`
 message Request {
     bytes tx_context = 1;
-    // tx_context is used by TLCC to enforce concsistency across separate requests of
+    // tx_context is used by TLCC to enforce consistency across separate requests of
     // a single chaincode transaction (including potential subtransactions) and is
-    // an arbitrary identifier choosen by ECC_Enclave with following constraints:
+    // an arbitrary identifier chosen by ECC_Enclave with following constraints:
     // - for a given single (top-level) chaincode invocation, it must be the same for any tlcc requests
     //   triggered by it (whether directly the top-level or from sub-transactions invoked via cc2cc)
     // - different (top-level) invocations (of same chaincode) must provide different identifiers

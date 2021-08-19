@@ -184,7 +184,7 @@ func getTarGzBytes(desc *Descriptor, writeBytesToPackage writer) ([]byte, error)
 			return nil, errors.Wrap(err, "error getting chaincode bytes")
 		}
 	default:
-		return nil, errors.Errorf("cannot build code.tar.gz, unknwon package type = %s", desc.Type)
+		return nil, errors.Errorf("cannot build code.tar.gz, unknown package type = %s", desc.Type)
 	}
 
 	// write code.tar.gz to package
