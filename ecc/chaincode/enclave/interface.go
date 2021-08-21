@@ -26,7 +26,7 @@ type StubInterface interface {
 
 	// key distribution (Post-MVP Feature)
 
-	// GenerateCCKeys, key generation
+	// GenerateCCKeys returns a signed CCKeyRegistration Message including
 	// The output parameters is a serialized protobuf
 	GenerateCCKeys() (signedCCKeyRegistrationMessage []byte, err error)
 

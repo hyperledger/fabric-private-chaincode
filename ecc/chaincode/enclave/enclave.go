@@ -28,14 +28,14 @@ import "C"
 
 const enclaveLibFile = "enclave/lib/enclave.signed.so"
 
+// EnclaveStub translates invocations into an enclave using cgo
 type EnclaveStub struct {
 	eid           C.enclave_id_t
 	sem           *semaphore.Weighted
 	isInitialized bool
 }
 
-// NewEnclave starts a new enclave
-func NewEnclaveStub() StubInterface {
+func NewEnclaveStub() *EnclaveStub {
 	return &EnclaveStub{sem: semaphore.NewWeighted(8)}
 }
 

@@ -54,7 +54,7 @@ import (
 //
 import "C"
 
-// just a container struct used for the callbacks
+// Stubs is a container struct used for the callbacks
 type Stubs struct {
 	shimStub shim.ChaincodeStubInterface
 }
