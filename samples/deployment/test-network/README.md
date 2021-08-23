@@ -25,7 +25,7 @@ Use `CC_ID` and `CC_PATH` to define the FPC Chaincode you want to build.
 ```bash
 cd $FPC_PATH/samples/deployment/test-network
 export CC_ID=echo
-export CC_PATH=${FPC_PATH}/samples/chaincode/echo
+export CC_PATH=$FPC_PATH/samples/chaincode/echo
 make build
 ```
 
@@ -189,6 +189,19 @@ cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
 ./network.sh down
 ```
 
+## Using HelloWorld chaincode on the test-network
+In this section we show how you can run a different FPC chaincode on the test network. For example, you can use the [HelloWorld](../../chaincode/helloworld/README.md) code instead of the echo code. To do so you have to change the values of the environment variables set at the beginning `CC_ID` and `CC_PATH`.
+```bash
+export CC_ID=helloworld
+export CC_PATH=$FPC_PATH/samples/chaincode/helloworld
+```
+Afterwards to test you would use [simple-cli-go](###How-to-use-simple-cli-go). You would need to verify that the `CC_NAME` variable is set to helloworld and then to interact you would execute the chaincode as follows:
+```bash
+# interact with the FPC Chaincode
+./fpcclient invoke storeAsset asset1 100
+./fpcclient query retrieveAsset asset1
+```
+
 ## Debugging
 
 For diagnostics, you can run the following to see logs for `peer0.org1.example.com`.
@@ -219,7 +232,10 @@ peer chaincode query -C mychannel -n ercc -c '{"Function": "queryListEnclaveCred
 E_ID=$(peer chaincode query -C mychannel -n ercc -c '{"Function": "queryListProvisionedEnclaves", "Args" : ["echo"]}' 2> /dev/null  | jq -r '.[0]')
 peer chaincode query -C mychannel -n ercc -c '{"Function": "queryEnclaveCredentials", "Args" : ["echo", "'${E_ID}'"]}'
 ```
+<<<<<<< HEAD
 
+=======
+>>>>>>> db8976c... Update test-network sample to enable chaincode change
 
 ## Using Blockchain Explorer
 
