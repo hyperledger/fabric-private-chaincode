@@ -232,10 +232,6 @@ peer chaincode query -C mychannel -n ercc -c '{"Function": "queryListEnclaveCred
 E_ID=$(peer chaincode query -C mychannel -n ercc -c '{"Function": "queryListProvisionedEnclaves", "Args" : ["echo"]}' 2> /dev/null  | jq -r '.[0]')
 peer chaincode query -C mychannel -n ercc -c '{"Function": "queryEnclaveCredentials", "Args" : ["echo", "'${E_ID}'"]}'
 ```
-<<<<<<< HEAD
-
-=======
->>>>>>> db8976c... Update test-network sample to enable chaincode change
 
 ## Using Blockchain Explorer
 
