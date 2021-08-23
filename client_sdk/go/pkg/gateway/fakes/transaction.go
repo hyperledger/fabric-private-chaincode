@@ -6,10 +6,10 @@ import (
 )
 
 type Transaction struct {
-	EvaluateStub        func(...string) ([]byte, error)
+	EvaluateStub        func(args ...string) ([]byte, error)
 	evaluateMutex       sync.RWMutex
 	evaluateArgsForCall []struct {
-		arg1 []string
+		args []string
 	}
 	evaluateReturns struct {
 		result1 []byte
@@ -23,23 +23,21 @@ type Transaction struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Transaction) Evaluate(arg1 ...string) ([]byte, error) {
+func (fake *Transaction) Evaluate(args ...string) ([]byte, error) {
 	fake.evaluateMutex.Lock()
 	ret, specificReturn := fake.evaluateReturnsOnCall[len(fake.evaluateArgsForCall)]
 	fake.evaluateArgsForCall = append(fake.evaluateArgsForCall, struct {
-		arg1 []string
-	}{arg1})
-	stub := fake.EvaluateStub
-	fakeReturns := fake.evaluateReturns
-	fake.recordInvocation("Evaluate", []interface{}{arg1})
+		args []string
+	}{args})
+	fake.recordInvocation("Evaluate", []interface{}{args})
 	fake.evaluateMutex.Unlock()
-	if stub != nil {
-		return stub(arg1...)
+	if fake.EvaluateStub != nil {
+		return fake.EvaluateStub(args...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fakeReturns.result1, fakeReturns.result2
+	return fake.evaluateReturns.result1, fake.evaluateReturns.result2
 }
 
 func (fake *Transaction) EvaluateCallCount() int {
@@ -48,22 +46,13 @@ func (fake *Transaction) EvaluateCallCount() int {
 	return len(fake.evaluateArgsForCall)
 }
 
-func (fake *Transaction) EvaluateCalls(stub func(...string) ([]byte, error)) {
-	fake.evaluateMutex.Lock()
-	defer fake.evaluateMutex.Unlock()
-	fake.EvaluateStub = stub
-}
-
 func (fake *Transaction) EvaluateArgsForCall(i int) []string {
 	fake.evaluateMutex.RLock()
 	defer fake.evaluateMutex.RUnlock()
-	argsForCall := fake.evaluateArgsForCall[i]
-	return argsForCall.arg1
+	return fake.evaluateArgsForCall[i].args
 }
 
 func (fake *Transaction) EvaluateReturns(result1 []byte, result2 error) {
-	fake.evaluateMutex.Lock()
-	defer fake.evaluateMutex.Unlock()
 	fake.EvaluateStub = nil
 	fake.evaluateReturns = struct {
 		result1 []byte
@@ -72,8 +61,6 @@ func (fake *Transaction) EvaluateReturns(result1 []byte, result2 error) {
 }
 
 func (fake *Transaction) EvaluateReturnsOnCall(i int, result1 []byte, result2 error) {
-	fake.evaluateMutex.Lock()
-	defer fake.evaluateMutex.Unlock()
 	fake.EvaluateStub = nil
 	if fake.evaluateReturnsOnCall == nil {
 		fake.evaluateReturnsOnCall = make(map[int]struct {

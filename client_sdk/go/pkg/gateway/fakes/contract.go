@@ -4,31 +4,24 @@ package fakes
 import (
 	"sync"
 
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway/internal"
-	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
-	gatewaya "github.com/hyperledger/fabric-sdk-go/pkg/gateway"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
 )
 
 type Contract struct {
-	CreateTransactionStub        func(string, ...func(*gatewaya.Transaction) error) (internal.Transaction, error)
-	createTransactionMutex       sync.RWMutex
-	createTransactionArgsForCall []struct {
-		arg1 string
-		arg2 []func(*gatewaya.Transaction) error
+	NameStub        func() string
+	nameMutex       sync.RWMutex
+	nameArgsForCall []struct{}
+	nameReturns     struct {
+		result1 string
 	}
-	createTransactionReturns struct {
-		result1 internal.Transaction
-		result2 error
+	nameReturnsOnCall map[int]struct {
+		result1 string
 	}
-	createTransactionReturnsOnCall map[int]struct {
-		result1 internal.Transaction
-		result2 error
-	}
-	EvaluateTransactionStub        func(string, ...string) ([]byte, error)
+	EvaluateTransactionStub        func(name string, args ...string) ([]byte, error)
 	evaluateTransactionMutex       sync.RWMutex
 	evaluateTransactionArgsForCall []struct {
-		arg1 string
-		arg2 []string
+		name string
+		args []string
 	}
 	evaluateTransactionReturns struct {
 		result1 []byte
@@ -38,36 +31,11 @@ type Contract struct {
 		result1 []byte
 		result2 error
 	}
-	NameStub        func() string
-	nameMutex       sync.RWMutex
-	nameArgsForCall []struct {
-	}
-	nameReturns struct {
-		result1 string
-	}
-	nameReturnsOnCall map[int]struct {
-		result1 string
-	}
-	RegisterEventStub        func(string) (fab.Registration, <-chan *fab.CCEvent, error)
-	registerEventMutex       sync.RWMutex
-	registerEventArgsForCall []struct {
-		arg1 string
-	}
-	registerEventReturns struct {
-		result1 fab.Registration
-		result2 <-chan *fab.CCEvent
-		result3 error
-	}
-	registerEventReturnsOnCall map[int]struct {
-		result1 fab.Registration
-		result2 <-chan *fab.CCEvent
-		result3 error
-	}
-	SubmitTransactionStub        func(string, ...string) ([]byte, error)
+	SubmitTransactionStub        func(name string, args ...string) ([]byte, error)
 	submitTransactionMutex       sync.RWMutex
 	submitTransactionArgsForCall []struct {
-		arg1 string
-		arg2 []string
+		name string
+		args []string
 	}
 	submitTransactionReturns struct {
 		result1 []byte
@@ -77,98 +45,80 @@ type Contract struct {
 		result1 []byte
 		result2 error
 	}
-	UnregisterStub        func(fab.Registration)
-	unregisterMutex       sync.RWMutex
-	unregisterArgsForCall []struct {
-		arg1 fab.Registration
+	CreateTransactionStub        func(name string, peerEndpoints ...string) (gateway.Transaction, error)
+	createTransactionMutex       sync.RWMutex
+	createTransactionArgsForCall []struct {
+		name          string
+		peerEndpoints []string
+	}
+	createTransactionReturns struct {
+		result1 gateway.Transaction
+		result2 error
+	}
+	createTransactionReturnsOnCall map[int]struct {
+		result1 gateway.Transaction
+		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Contract) CreateTransaction(arg1 string, arg2 ...func(*gatewaya.Transaction) error) (internal.Transaction, error) {
-	fake.createTransactionMutex.Lock()
-	ret, specificReturn := fake.createTransactionReturnsOnCall[len(fake.createTransactionArgsForCall)]
-	fake.createTransactionArgsForCall = append(fake.createTransactionArgsForCall, struct {
-		arg1 string
-		arg2 []func(*gatewaya.Transaction) error
-	}{arg1, arg2})
-	stub := fake.CreateTransactionStub
-	fakeReturns := fake.createTransactionReturns
-	fake.recordInvocation("CreateTransaction", []interface{}{arg1, arg2})
-	fake.createTransactionMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2...)
+func (fake *Contract) Name() string {
+	fake.nameMutex.Lock()
+	ret, specificReturn := fake.nameReturnsOnCall[len(fake.nameArgsForCall)]
+	fake.nameArgsForCall = append(fake.nameArgsForCall, struct{}{})
+	fake.recordInvocation("Name", []interface{}{})
+	fake.nameMutex.Unlock()
+	if fake.NameStub != nil {
+		return fake.NameStub()
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1
 	}
-	return fakeReturns.result1, fakeReturns.result2
+	return fake.nameReturns.result1
 }
 
-func (fake *Contract) CreateTransactionCallCount() int {
-	fake.createTransactionMutex.RLock()
-	defer fake.createTransactionMutex.RUnlock()
-	return len(fake.createTransactionArgsForCall)
+func (fake *Contract) NameCallCount() int {
+	fake.nameMutex.RLock()
+	defer fake.nameMutex.RUnlock()
+	return len(fake.nameArgsForCall)
 }
 
-func (fake *Contract) CreateTransactionCalls(stub func(string, ...func(*gatewaya.Transaction) error) (internal.Transaction, error)) {
-	fake.createTransactionMutex.Lock()
-	defer fake.createTransactionMutex.Unlock()
-	fake.CreateTransactionStub = stub
+func (fake *Contract) NameReturns(result1 string) {
+	fake.NameStub = nil
+	fake.nameReturns = struct {
+		result1 string
+	}{result1}
 }
 
-func (fake *Contract) CreateTransactionArgsForCall(i int) (string, []func(*gatewaya.Transaction) error) {
-	fake.createTransactionMutex.RLock()
-	defer fake.createTransactionMutex.RUnlock()
-	argsForCall := fake.createTransactionArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *Contract) CreateTransactionReturns(result1 internal.Transaction, result2 error) {
-	fake.createTransactionMutex.Lock()
-	defer fake.createTransactionMutex.Unlock()
-	fake.CreateTransactionStub = nil
-	fake.createTransactionReturns = struct {
-		result1 internal.Transaction
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *Contract) CreateTransactionReturnsOnCall(i int, result1 internal.Transaction, result2 error) {
-	fake.createTransactionMutex.Lock()
-	defer fake.createTransactionMutex.Unlock()
-	fake.CreateTransactionStub = nil
-	if fake.createTransactionReturnsOnCall == nil {
-		fake.createTransactionReturnsOnCall = make(map[int]struct {
-			result1 internal.Transaction
-			result2 error
+func (fake *Contract) NameReturnsOnCall(i int, result1 string) {
+	fake.NameStub = nil
+	if fake.nameReturnsOnCall == nil {
+		fake.nameReturnsOnCall = make(map[int]struct {
+			result1 string
 		})
 	}
-	fake.createTransactionReturnsOnCall[i] = struct {
-		result1 internal.Transaction
-		result2 error
-	}{result1, result2}
+	fake.nameReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
 }
 
-func (fake *Contract) EvaluateTransaction(arg1 string, arg2 ...string) ([]byte, error) {
+func (fake *Contract) EvaluateTransaction(name string, args ...string) ([]byte, error) {
 	fake.evaluateTransactionMutex.Lock()
 	ret, specificReturn := fake.evaluateTransactionReturnsOnCall[len(fake.evaluateTransactionArgsForCall)]
 	fake.evaluateTransactionArgsForCall = append(fake.evaluateTransactionArgsForCall, struct {
-		arg1 string
-		arg2 []string
-	}{arg1, arg2})
-	stub := fake.EvaluateTransactionStub
-	fakeReturns := fake.evaluateTransactionReturns
-	fake.recordInvocation("EvaluateTransaction", []interface{}{arg1, arg2})
+		name string
+		args []string
+	}{name, args})
+	fake.recordInvocation("EvaluateTransaction", []interface{}{name, args})
 	fake.evaluateTransactionMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2...)
+	if fake.EvaluateTransactionStub != nil {
+		return fake.EvaluateTransactionStub(name, args...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fakeReturns.result1, fakeReturns.result2
+	return fake.evaluateTransactionReturns.result1, fake.evaluateTransactionReturns.result2
 }
 
 func (fake *Contract) EvaluateTransactionCallCount() int {
@@ -177,22 +127,13 @@ func (fake *Contract) EvaluateTransactionCallCount() int {
 	return len(fake.evaluateTransactionArgsForCall)
 }
 
-func (fake *Contract) EvaluateTransactionCalls(stub func(string, ...string) ([]byte, error)) {
-	fake.evaluateTransactionMutex.Lock()
-	defer fake.evaluateTransactionMutex.Unlock()
-	fake.EvaluateTransactionStub = stub
-}
-
 func (fake *Contract) EvaluateTransactionArgsForCall(i int) (string, []string) {
 	fake.evaluateTransactionMutex.RLock()
 	defer fake.evaluateTransactionMutex.RUnlock()
-	argsForCall := fake.evaluateTransactionArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return fake.evaluateTransactionArgsForCall[i].name, fake.evaluateTransactionArgsForCall[i].args
 }
 
 func (fake *Contract) EvaluateTransactionReturns(result1 []byte, result2 error) {
-	fake.evaluateTransactionMutex.Lock()
-	defer fake.evaluateTransactionMutex.Unlock()
 	fake.EvaluateTransactionStub = nil
 	fake.evaluateTransactionReturns = struct {
 		result1 []byte
@@ -201,8 +142,6 @@ func (fake *Contract) EvaluateTransactionReturns(result1 []byte, result2 error) 
 }
 
 func (fake *Contract) EvaluateTransactionReturnsOnCall(i int, result1 []byte, result2 error) {
-	fake.evaluateTransactionMutex.Lock()
-	defer fake.evaluateTransactionMutex.Unlock()
 	fake.EvaluateTransactionStub = nil
 	if fake.evaluateTransactionReturnsOnCall == nil {
 		fake.evaluateTransactionReturnsOnCall = make(map[int]struct {
@@ -216,144 +155,22 @@ func (fake *Contract) EvaluateTransactionReturnsOnCall(i int, result1 []byte, re
 	}{result1, result2}
 }
 
-func (fake *Contract) Name() string {
-	fake.nameMutex.Lock()
-	ret, specificReturn := fake.nameReturnsOnCall[len(fake.nameArgsForCall)]
-	fake.nameArgsForCall = append(fake.nameArgsForCall, struct {
-	}{})
-	stub := fake.NameStub
-	fakeReturns := fake.nameReturns
-	fake.recordInvocation("Name", []interface{}{})
-	fake.nameMutex.Unlock()
-	if stub != nil {
-		return stub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *Contract) NameCallCount() int {
-	fake.nameMutex.RLock()
-	defer fake.nameMutex.RUnlock()
-	return len(fake.nameArgsForCall)
-}
-
-func (fake *Contract) NameCalls(stub func() string) {
-	fake.nameMutex.Lock()
-	defer fake.nameMutex.Unlock()
-	fake.NameStub = stub
-}
-
-func (fake *Contract) NameReturns(result1 string) {
-	fake.nameMutex.Lock()
-	defer fake.nameMutex.Unlock()
-	fake.NameStub = nil
-	fake.nameReturns = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *Contract) NameReturnsOnCall(i int, result1 string) {
-	fake.nameMutex.Lock()
-	defer fake.nameMutex.Unlock()
-	fake.NameStub = nil
-	if fake.nameReturnsOnCall == nil {
-		fake.nameReturnsOnCall = make(map[int]struct {
-			result1 string
-		})
-	}
-	fake.nameReturnsOnCall[i] = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *Contract) RegisterEvent(arg1 string) (fab.Registration, <-chan *fab.CCEvent, error) {
-	fake.registerEventMutex.Lock()
-	ret, specificReturn := fake.registerEventReturnsOnCall[len(fake.registerEventArgsForCall)]
-	fake.registerEventArgsForCall = append(fake.registerEventArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	stub := fake.RegisterEventStub
-	fakeReturns := fake.registerEventReturns
-	fake.recordInvocation("RegisterEvent", []interface{}{arg1})
-	fake.registerEventMutex.Unlock()
-	if stub != nil {
-		return stub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2, ret.result3
-	}
-	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
-}
-
-func (fake *Contract) RegisterEventCallCount() int {
-	fake.registerEventMutex.RLock()
-	defer fake.registerEventMutex.RUnlock()
-	return len(fake.registerEventArgsForCall)
-}
-
-func (fake *Contract) RegisterEventCalls(stub func(string) (fab.Registration, <-chan *fab.CCEvent, error)) {
-	fake.registerEventMutex.Lock()
-	defer fake.registerEventMutex.Unlock()
-	fake.RegisterEventStub = stub
-}
-
-func (fake *Contract) RegisterEventArgsForCall(i int) string {
-	fake.registerEventMutex.RLock()
-	defer fake.registerEventMutex.RUnlock()
-	argsForCall := fake.registerEventArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *Contract) RegisterEventReturns(result1 fab.Registration, result2 <-chan *fab.CCEvent, result3 error) {
-	fake.registerEventMutex.Lock()
-	defer fake.registerEventMutex.Unlock()
-	fake.RegisterEventStub = nil
-	fake.registerEventReturns = struct {
-		result1 fab.Registration
-		result2 <-chan *fab.CCEvent
-		result3 error
-	}{result1, result2, result3}
-}
-
-func (fake *Contract) RegisterEventReturnsOnCall(i int, result1 fab.Registration, result2 <-chan *fab.CCEvent, result3 error) {
-	fake.registerEventMutex.Lock()
-	defer fake.registerEventMutex.Unlock()
-	fake.RegisterEventStub = nil
-	if fake.registerEventReturnsOnCall == nil {
-		fake.registerEventReturnsOnCall = make(map[int]struct {
-			result1 fab.Registration
-			result2 <-chan *fab.CCEvent
-			result3 error
-		})
-	}
-	fake.registerEventReturnsOnCall[i] = struct {
-		result1 fab.Registration
-		result2 <-chan *fab.CCEvent
-		result3 error
-	}{result1, result2, result3}
-}
-
-func (fake *Contract) SubmitTransaction(arg1 string, arg2 ...string) ([]byte, error) {
+func (fake *Contract) SubmitTransaction(name string, args ...string) ([]byte, error) {
 	fake.submitTransactionMutex.Lock()
 	ret, specificReturn := fake.submitTransactionReturnsOnCall[len(fake.submitTransactionArgsForCall)]
 	fake.submitTransactionArgsForCall = append(fake.submitTransactionArgsForCall, struct {
-		arg1 string
-		arg2 []string
-	}{arg1, arg2})
-	stub := fake.SubmitTransactionStub
-	fakeReturns := fake.submitTransactionReturns
-	fake.recordInvocation("SubmitTransaction", []interface{}{arg1, arg2})
+		name string
+		args []string
+	}{name, args})
+	fake.recordInvocation("SubmitTransaction", []interface{}{name, args})
 	fake.submitTransactionMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2...)
+	if fake.SubmitTransactionStub != nil {
+		return fake.SubmitTransactionStub(name, args...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fakeReturns.result1, fakeReturns.result2
+	return fake.submitTransactionReturns.result1, fake.submitTransactionReturns.result2
 }
 
 func (fake *Contract) SubmitTransactionCallCount() int {
@@ -362,22 +179,13 @@ func (fake *Contract) SubmitTransactionCallCount() int {
 	return len(fake.submitTransactionArgsForCall)
 }
 
-func (fake *Contract) SubmitTransactionCalls(stub func(string, ...string) ([]byte, error)) {
-	fake.submitTransactionMutex.Lock()
-	defer fake.submitTransactionMutex.Unlock()
-	fake.SubmitTransactionStub = stub
-}
-
 func (fake *Contract) SubmitTransactionArgsForCall(i int) (string, []string) {
 	fake.submitTransactionMutex.RLock()
 	defer fake.submitTransactionMutex.RUnlock()
-	argsForCall := fake.submitTransactionArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return fake.submitTransactionArgsForCall[i].name, fake.submitTransactionArgsForCall[i].args
 }
 
 func (fake *Contract) SubmitTransactionReturns(result1 []byte, result2 error) {
-	fake.submitTransactionMutex.Lock()
-	defer fake.submitTransactionMutex.Unlock()
 	fake.SubmitTransactionStub = nil
 	fake.submitTransactionReturns = struct {
 		result1 []byte
@@ -386,8 +194,6 @@ func (fake *Contract) SubmitTransactionReturns(result1 []byte, result2 error) {
 }
 
 func (fake *Contract) SubmitTransactionReturnsOnCall(i int, result1 []byte, result2 error) {
-	fake.submitTransactionMutex.Lock()
-	defer fake.submitTransactionMutex.Unlock()
 	fake.SubmitTransactionStub = nil
 	if fake.submitTransactionReturnsOnCall == nil {
 		fake.submitTransactionReturnsOnCall = make(map[int]struct {
@@ -401,53 +207,69 @@ func (fake *Contract) SubmitTransactionReturnsOnCall(i int, result1 []byte, resu
 	}{result1, result2}
 }
 
-func (fake *Contract) Unregister(arg1 fab.Registration) {
-	fake.unregisterMutex.Lock()
-	fake.unregisterArgsForCall = append(fake.unregisterArgsForCall, struct {
-		arg1 fab.Registration
-	}{arg1})
-	stub := fake.UnregisterStub
-	fake.recordInvocation("Unregister", []interface{}{arg1})
-	fake.unregisterMutex.Unlock()
-	if stub != nil {
-		fake.UnregisterStub(arg1)
+func (fake *Contract) CreateTransaction(name string, peerEndpoints ...string) (gateway.Transaction, error) {
+	fake.createTransactionMutex.Lock()
+	ret, specificReturn := fake.createTransactionReturnsOnCall[len(fake.createTransactionArgsForCall)]
+	fake.createTransactionArgsForCall = append(fake.createTransactionArgsForCall, struct {
+		name          string
+		peerEndpoints []string
+	}{name, peerEndpoints})
+	fake.recordInvocation("CreateTransaction", []interface{}{name, peerEndpoints})
+	fake.createTransactionMutex.Unlock()
+	if fake.CreateTransactionStub != nil {
+		return fake.CreateTransactionStub(name, peerEndpoints...)
 	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.createTransactionReturns.result1, fake.createTransactionReturns.result2
 }
 
-func (fake *Contract) UnregisterCallCount() int {
-	fake.unregisterMutex.RLock()
-	defer fake.unregisterMutex.RUnlock()
-	return len(fake.unregisterArgsForCall)
+func (fake *Contract) CreateTransactionCallCount() int {
+	fake.createTransactionMutex.RLock()
+	defer fake.createTransactionMutex.RUnlock()
+	return len(fake.createTransactionArgsForCall)
 }
 
-func (fake *Contract) UnregisterCalls(stub func(fab.Registration)) {
-	fake.unregisterMutex.Lock()
-	defer fake.unregisterMutex.Unlock()
-	fake.UnregisterStub = stub
+func (fake *Contract) CreateTransactionArgsForCall(i int) (string, []string) {
+	fake.createTransactionMutex.RLock()
+	defer fake.createTransactionMutex.RUnlock()
+	return fake.createTransactionArgsForCall[i].name, fake.createTransactionArgsForCall[i].peerEndpoints
 }
 
-func (fake *Contract) UnregisterArgsForCall(i int) fab.Registration {
-	fake.unregisterMutex.RLock()
-	defer fake.unregisterMutex.RUnlock()
-	argsForCall := fake.unregisterArgsForCall[i]
-	return argsForCall.arg1
+func (fake *Contract) CreateTransactionReturns(result1 gateway.Transaction, result2 error) {
+	fake.CreateTransactionStub = nil
+	fake.createTransactionReturns = struct {
+		result1 gateway.Transaction
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *Contract) CreateTransactionReturnsOnCall(i int, result1 gateway.Transaction, result2 error) {
+	fake.CreateTransactionStub = nil
+	if fake.createTransactionReturnsOnCall == nil {
+		fake.createTransactionReturnsOnCall = make(map[int]struct {
+			result1 gateway.Transaction
+			result2 error
+		})
+	}
+	fake.createTransactionReturnsOnCall[i] = struct {
+		result1 gateway.Transaction
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *Contract) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.createTransactionMutex.RLock()
-	defer fake.createTransactionMutex.RUnlock()
-	fake.evaluateTransactionMutex.RLock()
-	defer fake.evaluateTransactionMutex.RUnlock()
 	fake.nameMutex.RLock()
 	defer fake.nameMutex.RUnlock()
-	fake.registerEventMutex.RLock()
-	defer fake.registerEventMutex.RUnlock()
+	fake.evaluateTransactionMutex.RLock()
+	defer fake.evaluateTransactionMutex.RUnlock()
 	fake.submitTransactionMutex.RLock()
 	defer fake.submitTransactionMutex.RUnlock()
-	fake.unregisterMutex.RLock()
-	defer fake.unregisterMutex.RUnlock()
+	fake.createTransactionMutex.RLock()
+	defer fake.createTransactionMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

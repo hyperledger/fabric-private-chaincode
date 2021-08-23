@@ -11,61 +11,28 @@ package gateway
 import (
 	"strings"
 
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway/internal"
-	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
-	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
-	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	"github.com/hyperledger/fabric/common/flogging"
+
+	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 )
 
 var logger = flogging.MustGetLogger("fpc-client-gateway")
 
-// Contract provides functions to query/invoke FPC chaincodes based on the Gateway API.
-//
-// Contract is modeled after the Contract object of the gateway package in the standard Fabric Go SDK (https://godoc.org/github.com/hyperledger/fabric-sdk-go/pkg/gateway#Contract),
-// but in addition to the normal FPC operations, it performs FPC specific steps such as encryption/decryption of chaincode requests/responses.
-//
-// A Contract object is created using the GetContract() factory method.
-// For an example of its use, see https://github.com/hyperledger/fabric-private-chaincode/blob/main/client_sdk/go/test/main.go
+// Transaction interface that is needed by the FPC contract implementation
+type Transaction interface {
+	Evaluate(args ...string) ([]byte, error)
+}
+
+// Contract interface
 type Contract interface {
-	// Name returns the name of the smart contract
 	Name() string
-
-	// EvaluateTransaction will evaluate a transaction function and return its results.
-	// The transaction function 'name'
-	// will be evaluated on the endorsing peers but the responses will not be sent to
-	// the ordering service and hence will not be committed to the ledger.
-	// This can be used for querying the world state.
-	//  Parameters:
-	//  name is the name of the transaction function to be invoked in the smart contract.
-	//  args are the arguments to be sent to the transaction function.
-	//
-	//  Returns:
 	EvaluateTransaction(name string, args ...string) ([]byte, error)
-
-	// SubmitTransaction will submit a transaction to the ledger. The transaction function 'name'
-	// will be evaluated on the endorsing peers and then submitted to the ordering service
-	// for committing to the ledger.
-	//  Parameters:
-	//  name is the name of the transaction function to be invoked in the smart contract.
-	//  args are the arguments to be sent to the transaction function.
-	//
-	//  Returns:
-	//  The return value of the transaction function in the smart contract.
 	SubmitTransaction(name string, args ...string) ([]byte, error)
+	CreateTransaction(name string, peerEndpoints ...string) (Transaction, error)
+}
 
-	// RegisterEvent registers for chaincode events. Unregister must be called when the registration is no longer needed.
-	//  Parameters:
-	//  eventFilter is the chaincode event filter (regular expression) for which events are to be received
-	//
-	//  Returns:
-	//  the registration and a channel that is used to receive events. The channel is closed when Unregister is called.
-	RegisterEvent(eventFilter string) (fab.Registration, <-chan *fab.CCEvent, error)
-
-	// Unregister removes the given registration and closes the event channel.
-	//  Parameters:
-	//  registration is the registration handle that was returned from RegisterContractEvent method
-	Unregister(registration fab.Registration)
+type ContractProvider interface {
+	GetContract(id string) Contract
 }
 
 // GetContract is the factory method for creating FPC Contract objects.
@@ -75,15 +42,15 @@ type Contract interface {
 //
 //  Returns:
 //  The contract object
-func GetContract(network internal.Network, chaincodeID string) Contract {
-
+func GetContract(network ContractProvider, chaincodeID string) *ContractState {
 	contract := network.GetContract(chaincodeID)
 	ercc := network.GetContract("ercc")
-	return &contractState{
-		contract:      &internal.ContractAdapter{Contract: contract},
-		ercc:          &internal.ContractAdapter{Contract: ercc},
+
+	return &ContractState{
+		Contract:      contract,
+		ERCC:          ercc,
 		peerEndpoints: nil,
-		ep: &crypto.EncryptionProviderImpl{
+		EP: &crypto.EncryptionProviderImpl{
 			CSP: crypto.GetDefaultCSP(),
 			GetCcEncryptionKey: func() ([]byte, error) {
 				// Note that this function is called during EncryptionProvider.NewEncryptionContext()
@@ -91,36 +58,23 @@ func GetContract(network internal.Network, chaincodeID string) Contract {
 			}}}
 }
 
-type contractState struct {
+type ContractState struct {
 	// note that we wrap the target chaincode and ercc with an adapter that
 	// implements the internal.Contract interface. This removes the direct
 	// dependency to gateway.Contract struct as provided by the Fabric Go SDK,
 	// and therefore allows better of this component.
-	contract      internal.Contract
-	ercc          internal.Contract
+	Contract      Contract
+	ERCC          Contract
 	peerEndpoints []string
-	ep            crypto.EncryptionProvider
+	EP            crypto.EncryptionProvider
 }
 
-func (c *contractState) Name() string {
-	return c.contract.Name()
+func (c *ContractState) Name() string {
+	return c.Contract.Name()
 }
 
-// getPeerEndpoints returns an array of peer endpoints that host the FPC chaincode enclave
-// An endpoint is a simple string with the format `host:port`
-func (c *contractState) getPeerEndpoints() ([]string, error) {
-	if len(c.peerEndpoints) == 0 {
-		resp, err := c.ercc.EvaluateTransaction("queryChaincodeEndPoints", c.Name())
-		if err != nil {
-			return nil, err
-		}
-		c.peerEndpoints = strings.Split(string(resp), ",")
-	}
-	return c.peerEndpoints, nil
-}
-
-func (c *contractState) EvaluateTransaction(name string, args ...string) ([]byte, error) {
-	ctx, err := c.ep.NewEncryptionContext()
+func (c *ContractState) EvaluateTransaction(name string, args ...string) ([]byte, error) {
+	ctx, err := c.EP.NewEncryptionContext()
 	if err != nil {
 		return nil, err
 	}
@@ -139,26 +93,8 @@ func (c *contractState) EvaluateTransaction(name string, args ...string) ([]byte
 	return ctx.Reveal(encryptedResponse)
 }
 
-func (c *contractState) evaluateTransaction(args ...string) ([]byte, error) {
-	peers, err := c.getPeerEndpoints()
-	if err != nil {
-		return nil, err
-	}
-
-	txn, err := c.contract.CreateTransaction(
-		"__invoke",
-		gateway.WithEndorsingPeers(peers...),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	logger.Debugf("calling __invoke!")
-	return txn.Evaluate(args...)
-}
-
-func (c *contractState) SubmitTransaction(name string, args ...string) ([]byte, error) {
-	ctx, err := c.ep.NewEncryptionContext()
+func (c *ContractState) SubmitTransaction(name string, args ...string) ([]byte, error) {
+	ctx, err := c.EP.NewEncryptionContext()
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +111,7 @@ func (c *contractState) SubmitTransaction(name string, args ...string) ([]byte, 
 	}
 
 	logger.Debugf("calling __endorse!")
-	_, err = c.contract.SubmitTransaction("__endorse", string(encryptedResponse))
+	_, err = c.Contract.SubmitTransaction("__endorse", string(encryptedResponse))
 	if err != nil {
 		return nil, err
 	}
@@ -183,10 +119,33 @@ func (c *contractState) SubmitTransaction(name string, args ...string) ([]byte, 
 	return ctx.Reveal(encryptedResponse)
 }
 
-func (c *contractState) RegisterEvent(eventFilter string) (fab.Registration, <-chan *fab.CCEvent, error) {
-	return c.contract.RegisterEvent(eventFilter)
+// getPeerEndpoints returns an array of peer endpoints that host the FPC chaincode enclave
+// An endpoint is a simple string with the format `host:port`
+func (c *ContractState) getPeerEndpoints() ([]string, error) {
+	if len(c.peerEndpoints) == 0 {
+		resp, err := c.ERCC.EvaluateTransaction("queryChaincodeEndPoints", c.Name())
+		if err != nil {
+			return nil, err
+		}
+		c.peerEndpoints = strings.Split(string(resp), ",")
+	}
+	return c.peerEndpoints, nil
 }
 
-func (c *contractState) Unregister(registration fab.Registration) {
-	c.contract.Unregister(registration)
+func (c *ContractState) evaluateTransaction(args ...string) ([]byte, error) {
+	peers, err := c.getPeerEndpoints()
+	if err != nil {
+		return nil, err
+	}
+
+	txn, err := c.Contract.CreateTransaction(
+		"__invoke",
+		peers...,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Debugf("calling __invoke!")
+	return txn.Evaluate(args...)
 }

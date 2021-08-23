@@ -14,13 +14,15 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
-	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	"github.com/hyperledger/fabric/common/flogging"
+
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/fgosdkresmgmt"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway/fgosdkgateway"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 )
 
 var logger = flogging.MustGetLogger("sdk-test")
@@ -144,7 +146,7 @@ func main() {
 		orgAdmin := "Admin"
 
 		adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
-		adminClient, err := resmgmt.New(adminContext)
+		adminClient, err := fgosdkresmgmt.NewClient(adminContext)
 		if err != nil {
 			logger.Fatal(err)
 		}
@@ -196,7 +198,7 @@ func main() {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Get FPC Contract
-	contract := fpc.GetContract(network, ccID)
+	contract := fgosdkgateway.GetContract(network, ccID)
 
 	// Invoke FPC Chaincode
 	logger.Infof("--> Invoke FPC chaincode: %s", contract.Name())

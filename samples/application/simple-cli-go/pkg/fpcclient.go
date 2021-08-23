@@ -12,7 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway/fgosdkgateway"
+
 	cfg "github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	"github.com/hyperledger/fabric/common/flogging"
@@ -21,8 +22,14 @@ import (
 
 var logger = flogging.MustGetLogger("sdk-test")
 
+type Contract interface {
+	Name() string
+	EvaluateTransaction(name string, args ...string) ([]byte, error)
+	SubmitTransaction(name string, args ...string) ([]byte, error)
+}
+
 type Client struct {
-	contract fpc.Contract
+	contract Contract
 }
 
 func NewClient(config *Config) *Client {
@@ -79,7 +86,7 @@ func populateWallet(wallet *gateway.Wallet, config *Config) error {
 	return wallet.Put("appUser", identity)
 }
 
-func newContract(config *Config) fpc.Contract {
+func newContract(config *Config) Contract {
 
 	wallet := gateway.NewInMemoryWallet()
 	err := populateWallet(wallet, config)
@@ -102,7 +109,7 @@ func newContract(config *Config) fpc.Contract {
 	}
 
 	// Get FPC Contract
-	contract := fpc.GetContract(network, config.ChaincodeId)
+	contract := fgosdkgateway.GetContract(network, config.ChaincodeId)
 	return contract
 }
 

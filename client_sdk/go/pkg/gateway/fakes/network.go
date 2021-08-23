@@ -4,42 +4,40 @@ package fakes
 import (
 	"sync"
 
-	gatewaya "github.com/hyperledger/fabric-sdk-go/pkg/gateway"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
 )
 
 type Network struct {
-	GetContractStub        func(string) *gatewaya.Contract
+	GetContractStub        func(id string) gateway.Contract
 	getContractMutex       sync.RWMutex
 	getContractArgsForCall []struct {
-		arg1 string
+		id string
 	}
 	getContractReturns struct {
-		result1 *gatewaya.Contract
+		result1 gateway.Contract
 	}
 	getContractReturnsOnCall map[int]struct {
-		result1 *gatewaya.Contract
+		result1 gateway.Contract
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Network) GetContract(arg1 string) *gatewaya.Contract {
+func (fake *Network) GetContract(id string) gateway.Contract {
 	fake.getContractMutex.Lock()
 	ret, specificReturn := fake.getContractReturnsOnCall[len(fake.getContractArgsForCall)]
 	fake.getContractArgsForCall = append(fake.getContractArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	stub := fake.GetContractStub
-	fakeReturns := fake.getContractReturns
-	fake.recordInvocation("GetContract", []interface{}{arg1})
+		id string
+	}{id})
+	fake.recordInvocation("GetContract", []interface{}{id})
 	fake.getContractMutex.Unlock()
-	if stub != nil {
-		return stub(arg1)
+	if fake.GetContractStub != nil {
+		return fake.GetContractStub(id)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fakeReturns.result1
+	return fake.getContractReturns.result1
 }
 
 func (fake *Network) GetContractCallCount() int {
@@ -48,39 +46,28 @@ func (fake *Network) GetContractCallCount() int {
 	return len(fake.getContractArgsForCall)
 }
 
-func (fake *Network) GetContractCalls(stub func(string) *gatewaya.Contract) {
-	fake.getContractMutex.Lock()
-	defer fake.getContractMutex.Unlock()
-	fake.GetContractStub = stub
-}
-
 func (fake *Network) GetContractArgsForCall(i int) string {
 	fake.getContractMutex.RLock()
 	defer fake.getContractMutex.RUnlock()
-	argsForCall := fake.getContractArgsForCall[i]
-	return argsForCall.arg1
+	return fake.getContractArgsForCall[i].id
 }
 
-func (fake *Network) GetContractReturns(result1 *gatewaya.Contract) {
-	fake.getContractMutex.Lock()
-	defer fake.getContractMutex.Unlock()
+func (fake *Network) GetContractReturns(result1 gateway.Contract) {
 	fake.GetContractStub = nil
 	fake.getContractReturns = struct {
-		result1 *gatewaya.Contract
+		result1 gateway.Contract
 	}{result1}
 }
 
-func (fake *Network) GetContractReturnsOnCall(i int, result1 *gatewaya.Contract) {
-	fake.getContractMutex.Lock()
-	defer fake.getContractMutex.Unlock()
+func (fake *Network) GetContractReturnsOnCall(i int, result1 gateway.Contract) {
 	fake.GetContractStub = nil
 	if fake.getContractReturnsOnCall == nil {
 		fake.getContractReturnsOnCall = make(map[int]struct {
-			result1 *gatewaya.Contract
+			result1 gateway.Contract
 		})
 	}
 	fake.getContractReturnsOnCall[i] = struct {
-		result1 *gatewaya.Contract
+		result1 gateway.Contract
 	}{result1}
 }
 

@@ -12,12 +12,13 @@ import (
 	"path/filepath"
 	"testing"
 
-	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
-	"github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
-	testutils "github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway/fgosdkgateway"
+	"github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
+	testutils "github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
 )
 
 func TestGoClientSDK(t *testing.T) {
@@ -25,9 +26,15 @@ func TestGoClientSDK(t *testing.T) {
 	RunSpecs(t, "Chaincode Suite")
 }
 
+type Contract interface {
+	Name() string
+	EvaluateTransaction(name string, args ...string) ([]byte, error)
+	SubmitTransaction(name string, args ...string) ([]byte, error)
+}
+
 var (
 	network        *gateway.Network
-	contract       fpc.Contract
+	contract       Contract
 	auctionCounter int
 	auctionName    string
 	numClients     int
@@ -52,7 +59,7 @@ var _ = BeforeSuite(func() {
 	Expect(network).ShouldNot(BeNil())
 
 	// Get FPC Contract (auction)
-	contract = fpc.GetContract(network, ccID)
+	contract = fgosdkgateway.GetContract(network, ccID)
 	Expect(contract).ShouldNot(BeNil())
 })
 
@@ -205,7 +212,7 @@ var _ = Describe("Go Client SDK Test", func() {
 	Context("Base SDK Tests with Auction and Echo", func() {
 		When("invoking/querying a non-existing fpc chaincode", func() {
 			It("should return error", func() {
-				contract := fpc.GetContract(network, "not_installed")
+				contract := fgosdkgateway.GetContract(network, "not_installed")
 				Expect(contract).ShouldNot(BeNil())
 
 				res, err := contract.EvaluateTransaction("do", "something")
@@ -220,7 +227,7 @@ var _ = Describe("Go Client SDK Test", func() {
 
 		When("invoking/querying a non-registered fpc chaincode (echo test)", func() {
 			It("should return error", func() {
-				contract := fpc.GetContract(network, "echo_test")
+				contract := fgosdkgateway.GetContract(network, "echo_test")
 				Expect(contract).ShouldNot(BeNil())
 
 				res, err := contract.EvaluateTransaction("do", "something")

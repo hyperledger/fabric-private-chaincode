@@ -13,10 +13,6 @@ import (
 	"os"
 	"path/filepath"
 
-	fpcmgmt "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/fab/ccpackager"
-	fpcpackager "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/fab/ccpackager"
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
@@ -25,6 +21,12 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	"github.com/hyperledger/fabric/common/flogging"
+
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/fgosdkresmgmt"
+	fpcmgmt "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/fab/ccpackager"
+	fpcpackager "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/fab/ccpackager"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 )
 
 var (
@@ -189,7 +191,7 @@ func Setup(ccID, ccPath string, initEnclave bool) error {
 
 	adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
 
-	client, err := fpcmgmt.New(adminContext)
+	client, err := fgosdkresmgmt.NewClient(adminContext)
 	if err != nil {
 		return fmt.Errorf("failed to create context: %v", err)
 	}
@@ -203,7 +205,7 @@ func Setup(ccID, ccPath string, initEnclave bool) error {
 	return nil
 }
 
-func installChaincode(client *fpcmgmt.Client, cc *chaincodeDetails, nw *networkDetails) error {
+func installChaincode(client *fgosdkresmgmt.Client, cc *chaincodeDetails, nw *networkDetails) error {
 	// TODO promote this install function to a test suite for the FPC Admin API
 	// Right now this is used by the auction test to setup the "environment"; additional testing
 	// of the FPC Admin API would be good here.
@@ -313,12 +315,7 @@ func installChaincode(client *fpcmgmt.Client, cc *chaincodeDetails, nw *networkD
 			AttestationParams:   attestationParams,
 		}
 
-		initTxId, err := client.LifecycleInitEnclave(nw.ChannelID, initReq,
-			// Note that these options are currently ignored by our implementation
-			resmgmt.WithRetry(retry.DefaultResMgmtOpts),
-			resmgmt.WithTargetEndpoints(nw.Peers...), // peers that are responsible for enclave registration
-			resmgmt.WithOrdererEndpoint(nw.Orderers[0]),
-		)
+		initTxId, err := client.LifecycleInitEnclave(nw.ChannelID, initReq)
 		if err != nil {
 			return fmt.Errorf("failed to init enclave: %v", err)
 		}

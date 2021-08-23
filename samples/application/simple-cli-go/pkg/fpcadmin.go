@@ -10,17 +10,17 @@ import (
 	"fmt"
 	"path/filepath"
 
-	fpcmgmt "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
-	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
-	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
 	cfg "github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
+
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/fgosdkresmgmt"
+	fpcmgmt "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 )
 
 type Admin struct {
 	sdk         *fabsdk.FabricSDK
-	client      *fpcmgmt.Client
+	client      *fgosdkresmgmt.Client
 	config      *Config
 	connections *Connections
 }
@@ -45,7 +45,7 @@ func NewAdmin(config *Config) *Admin {
 	orgName := "org1"
 	adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
 
-	client, err := fpcmgmt.New(adminContext)
+	client, err := fgosdkresmgmt.NewClient(adminContext)
 	if err != nil {
 		logger.Fatalf("failed to create context: %v", err)
 	}
@@ -67,16 +67,8 @@ func (a *Admin) InitEnclave(targetPeer string) error {
 		AttestationParams:   attestationParams,
 	}
 
-	peers := []string{"peer0-org1", "peer0-org2", "peer0-org3"}
-	orderer := "orderer0"
-
 	logger.Infof("--> LifecycleInitEnclave ")
-	_, err = a.client.LifecycleInitEnclave(a.config.ChannelId, initReq,
-		// Note that these options are currently ignored by our implementation
-		resmgmt.WithRetry(retry.DefaultResMgmtOpts),
-		resmgmt.WithTargetEndpoints(peers...), // peers that are responsible for enclave registration
-		resmgmt.WithOrdererEndpoint(orderer),
-	)
+	_, err = a.client.LifecycleInitEnclave(a.config.ChannelId, initReq)
 
 	if err != nil {
 		return err
