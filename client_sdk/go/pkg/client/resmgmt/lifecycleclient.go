@@ -43,13 +43,10 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
-	"github.com/hyperledger/fabric/common/flogging"
 
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/lifecycle"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 )
-
-var logger = flogging.MustGetLogger("fpc-client-resmgmt")
 
 // LifecycleInitEnclaveRequest contains init enclave request parameters.
 // In particular, it contains the FPC chaincode ID, the endpoint of the target peer to spawn the enclave, and

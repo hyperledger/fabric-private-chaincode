@@ -10,13 +10,10 @@ package gateway
 
 import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
-	"github.com/hyperledger/fabric/common/flogging"
 
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/contract"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway/internal"
 )
-
-var logger = flogging.MustGetLogger("fpc-client-gateway")
 
 // Contract provides functions to query/invoke FPC chaincodes based on the Gateway API.
 //

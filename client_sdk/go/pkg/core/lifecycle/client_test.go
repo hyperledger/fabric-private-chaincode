@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/lifecycle"
@@ -44,12 +43,6 @@ func setupClient(client lifecycle.ChannelClient, converter lifecycle.CredentialC
 	}
 
 	return &lifecycle.Client{GetChannelClient: getChannelClient, Converter: converter}
-}
-
-func createClientContext(fabCtx context.Client) context.ClientProvider {
-	return func() (context.Client, error) {
-		return fabCtx, nil
-	}
 }
 
 func TestCreateNewClient(t *testing.T) {
