@@ -13,6 +13,7 @@ import (
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils/fakes"
+	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric-protos-go/peer/lifecycle"
 	"github.com/hyperledger/fabric/protoutil"
 	. "github.com/onsi/ginkgo"
@@ -64,6 +65,7 @@ var _ = Describe("Chaincode utils", func() {
 
 		When("committed chaincode definition does not exist at _lifecycle", func() {
 			It("should return error", func() {
+				stub.InvokeChaincodeReturns(peer.Response{Payload: nil, Status: shim.OK})
 				df, err := utils.GetChaincodeDefinition("myFPCChaincode", stub)
 				Expect(err).Should(MatchError(fmt.Errorf("no chaincode definition found for chaincode='myFPCChaincode'")))
 				Expect(df).Should(BeNil())

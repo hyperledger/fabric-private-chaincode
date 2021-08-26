@@ -23,7 +23,7 @@ var _ = Describe("Chaincode utils", func() {
 			It("should return an error", func() {
 				sid := []byte("someGarbageBytes")
 				err := eval.EvaluateCreatorIdentity(sid, "dummyMsp")
-				Expect(err).ShouldNot(HaveOccurred())
+				Expect(err).Should(HaveOccurred())
 			})
 		})
 
@@ -39,7 +39,7 @@ var _ = Describe("Chaincode utils", func() {
 			It("should return no error", func() {
 				sid := protoutil.MarshalOrPanic(&msp.SerializedIdentity{Mspid: "dummyMsp"})
 				err := eval.EvaluateCreatorIdentity(sid, "dummyMsp")
-				Expect(err).Should(HaveOccurred())
+				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})
 	})
