@@ -8,3 +8,4 @@ cscope.*
 # generate protos
 common/protos
 internal/protos
+coverage.out

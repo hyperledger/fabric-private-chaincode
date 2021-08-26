@@ -21,7 +21,7 @@ ercc_dependencies:
 	# which forces ecc to always be built
 
 test: build
-	$(GO) test $(GOTAGS) -v ./...
+	$(GO) test $(GOTAGS) $(GOTESTFLAGS) ./...
 
 clean: docker-clean
 	$(GO) clean

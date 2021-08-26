@@ -14,6 +14,8 @@ ifeq (${SGX_MODE}, HW)
 endif
 GO := $(GO_CMD) $(GOFLAGS)
 
+GOTESTFLAGS := -v -race -covermode=atomic -coverprofile=coverage.out
+
 .PHONY: all
 all: build test ci_report checks # keep checks last as license test is brittle ...
 
