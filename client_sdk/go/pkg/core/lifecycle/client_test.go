@@ -4,32 +4,30 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package resmgmt
+package lifecycle_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt/fakes"
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
-	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
-	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
-	fcmocks "github.com/hyperledger/fabric-sdk-go/pkg/fab/mocks"
-	mspmocks "github.com/hyperledger/fabric-sdk-go/pkg/msp/test/mockmsp"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/lifecycle"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/lifecycle/fakes"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 )
 
-//go:generate counterfeiter -o fakes/channelclient.go -fake-name ChannelClient . channelClient
+//go:generate counterfeiter -o fakes/channelclient.go -fake-name ChannelClient . chClient
 //lint:ignore U1000 This is just used to generate fake
 type chClient interface {
-	channelClient
+	lifecycle.ChannelClient
 }
 
-//go:generate counterfeiter -o fakes/credential_converter.go -fake-name CredentialConverter . credentialConverter
+//go:generate counterfeiter -o fakes/credential_converter.go -fake-name CredentialConverter . credConverter
 //lint:ignore U1000 This is just used to generate fake
 type credConverter interface {
-	credentialConverter
+	lifecycle.CredentialConverter
 }
 
 const (
@@ -37,15 +35,15 @@ const (
 	chaincodeId         = "my-fpc-chaincode"
 	enclavePeerEndpoint = "mypeer.myorg.example.com"
 	attestationType     = "simulation"
-	expectedTxID        = fab.TransactionID("someTxID")
+	expectedTxID        = "someTxID"
 )
 
-func setupClient(client channelClient, converter credentialConverter) *Client {
-	getChannelClient := func(channelId string) (channelClient, error) {
+func setupClient(client lifecycle.ChannelClient, converter lifecycle.CredentialConverter) *lifecycle.Client {
+	getChannelClient := func(channelId string) (lifecycle.ChannelClient, error) {
 		return client, nil
 	}
 
-	return &Client{nil, getChannelClient, converter}
+	return &lifecycle.Client{GetChannelClient: getChannelClient, Converter: converter}
 }
 
 func createClientContext(fabCtx context.Client) context.ClientProvider {
@@ -55,16 +53,9 @@ func createClientContext(fabCtx context.Client) context.ClientProvider {
 }
 
 func TestCreateNewClient(t *testing.T) {
-	clientCtx := fcmocks.NewMockContext(mspmocks.NewMockSigningIdentity("test", "Org1MSP"))
-	client, err := New(createClientContext(clientCtx))
-	assert.NotNil(t, client)
-	assert.NoError(t, err)
-
-	// MSP is missing
-	invalidClientCtx := fcmocks.NewMockContext(mspmocks.NewMockSigningIdentity("test", ""))
-	client, err = New(createClientContext(invalidClientCtx))
+	client, err := lifecycle.New(nil)
 	assert.Nil(t, client)
-	assert.Error(t, err)
+	assert.Error(t, err, "invalid arguments, channel client loader is nil")
 }
 
 func TestLifecycleInitEnclaveFailedWithInvalidRequest(t *testing.T) {
@@ -73,20 +64,20 @@ func TestLifecycleInitEnclaveFailedWithInvalidRequest(t *testing.T) {
 	client := setupClient(fakeChannelClient, fakeConverter)
 
 	var err error
-	var request LifecycleInitEnclaveRequest
+	var request lifecycle.LifecycleInitEnclaveRequest
 
 	// empty (no ChaincodeID)
-	request = LifecycleInitEnclaveRequest{}
+	request = lifecycle.LifecycleInitEnclaveRequest{}
 	_, err = client.LifecycleInitEnclave(channelID, request)
 	assert.Error(t, err)
 
 	// no EnclavePeerEndpoint
-	request = LifecycleInitEnclaveRequest{ChaincodeID: chaincodeId}
+	request = lifecycle.LifecycleInitEnclaveRequest{ChaincodeID: chaincodeId}
 	_, err = client.LifecycleInitEnclave(channelID, request)
 	assert.Error(t, err)
 
 	// no AttestationParams
-	request = LifecycleInitEnclaveRequest{ChaincodeID: chaincodeId, EnclavePeerEndpoint: enclavePeerEndpoint}
+	request = lifecycle.LifecycleInitEnclaveRequest{ChaincodeID: chaincodeId, EnclavePeerEndpoint: enclavePeerEndpoint}
 	_, err = client.LifecycleInitEnclave(channelID, request)
 	assert.Error(t, err)
 
@@ -101,13 +92,13 @@ func TestLifecycleInitEnclaveFailedWithInvalidRequest(t *testing.T) {
 
 func TestLifecycleInitEnclaveFailedToCreateChannelClient(t *testing.T) {
 	expectedError := fmt.Errorf("ChannelClientError")
-	getChannelClient := func(channelId string) (channelClient, error) {
+	getChannelClient := func(channelId string) (lifecycle.ChannelClient, error) {
 		return nil, expectedError
 	}
 
-	client := &Client{nil, getChannelClient, nil}
+	client := &lifecycle.Client{getChannelClient, nil}
 
-	initReq := LifecycleInitEnclaveRequest{
+	initReq := lifecycle.LifecycleInitEnclaveRequest{
 		ChaincodeID:         chaincodeId,
 		EnclavePeerEndpoint: enclavePeerEndpoint, // define the peer where we wanna init our enclave
 		AttestationParams: &sgx.AttestationParams{
@@ -122,11 +113,11 @@ func TestLifecycleInitEnclaveFailedToCreateChannelClient(t *testing.T) {
 func TestLifecycleInitEnclaveFailedToInitEnclave(t *testing.T) {
 	expectedError := fmt.Errorf("someQueryError")
 	fakeChannelClient := &fakes.ChannelClient{}
-	fakeChannelClient.QueryReturns(channel.Response{}, expectedError)
+	fakeChannelClient.QueryReturns(nil, expectedError)
 	fakeConverter := &fakes.CredentialConverter{}
 	client := setupClient(fakeChannelClient, fakeConverter)
 
-	initReq := LifecycleInitEnclaveRequest{
+	initReq := lifecycle.LifecycleInitEnclaveRequest{
 		ChaincodeID:         chaincodeId,
 		EnclavePeerEndpoint: enclavePeerEndpoint, // define the peer where we wanna init our enclave
 		AttestationParams: &sgx.AttestationParams{
@@ -142,12 +133,12 @@ func TestLifecycleInitEnclaveFailedToConvertCredentials(t *testing.T) {
 	expectedError := fmt.Errorf("conversionError")
 
 	fakeChannelClient := &fakes.ChannelClient{}
-	fakeChannelClient.QueryReturns(channel.Response{}, nil)
+	fakeChannelClient.QueryReturns(nil, nil)
 	fakeConverter := &fakes.CredentialConverter{}
 	fakeConverter.ConvertCredentialsReturns("", expectedError)
 	client := setupClient(fakeChannelClient, fakeConverter)
 
-	initReq := LifecycleInitEnclaveRequest{
+	initReq := lifecycle.LifecycleInitEnclaveRequest{
 		ChaincodeID:         chaincodeId,
 		EnclavePeerEndpoint: enclavePeerEndpoint,
 		AttestationParams: &sgx.AttestationParams{
@@ -162,11 +153,11 @@ func TestLifecycleInitEnclaveFailedToConvertCredentials(t *testing.T) {
 func TestLifecycleInitEnclaveFailedToRegisterEnclave(t *testing.T) {
 	expectedError := fmt.Errorf("someRegisterError")
 	fakeChannelClient := &fakes.ChannelClient{}
-	fakeChannelClient.ExecuteReturns(channel.Response{}, expectedError)
+	fakeChannelClient.ExecuteReturns("", expectedError)
 	fakeConverter := &fakes.CredentialConverter{}
 	client := setupClient(fakeChannelClient, fakeConverter)
 
-	initReq := LifecycleInitEnclaveRequest{
+	initReq := lifecycle.LifecycleInitEnclaveRequest{
 		ChaincodeID:         chaincodeId,
 		EnclavePeerEndpoint: enclavePeerEndpoint,
 		AttestationParams: &sgx.AttestationParams{
@@ -180,13 +171,13 @@ func TestLifecycleInitEnclaveFailedToRegisterEnclave(t *testing.T) {
 
 func TestLifecycleInitEnclaveSuccess(t *testing.T) {
 	fakeChannelClient := &fakes.ChannelClient{}
-	fakeChannelClient.QueryReturns(channel.Response{}, nil)
-	fakeChannelClient.ExecuteReturns(channel.Response{TransactionID: expectedTxID}, nil)
+	fakeChannelClient.QueryReturns(nil, nil)
+	fakeChannelClient.ExecuteReturns(expectedTxID, nil)
 	fakeConverter := &fakes.CredentialConverter{}
 
 	client := setupClient(fakeChannelClient, fakeConverter)
 
-	initReq := LifecycleInitEnclaveRequest{
+	initReq := lifecycle.LifecycleInitEnclaveRequest{
 		ChaincodeID:         chaincodeId,
 		EnclavePeerEndpoint: enclavePeerEndpoint, // define the peer where we wanna init our enclave
 		AttestationParams: &sgx.AttestationParams{
@@ -201,13 +192,13 @@ func TestLifecycleInitEnclaveSuccess(t *testing.T) {
 	assert.Equal(t, 1, fakeChannelClient.QueryCallCount())
 	assert.Equal(t, 1, fakeChannelClient.ExecuteCallCount())
 
-	initResponse, _ := fakeChannelClient.QueryArgsForCall(0)
-	assert.Equal(t, chaincodeId, initResponse.ChaincodeID)
-	assert.Equal(t, initEnclaveCMD, initResponse.Fcn)
-	assert.Len(t, initResponse.Args, 1)
+	chaincodeID, Fcn, Args, _ := fakeChannelClient.QueryArgsForCall(0)
+	assert.Equal(t, chaincodeId, chaincodeID)
+	assert.Equal(t, lifecycle.InitEnclaveCMD, Fcn)
+	assert.Len(t, Args, 1)
 
-	registerResponse, _ := fakeChannelClient.ExecuteArgsForCall(0)
-	assert.Equal(t, ercc, registerResponse.ChaincodeID)
-	assert.Equal(t, registerEnclaveCMD, registerResponse.Fcn)
-	assert.Len(t, registerResponse.Args, 1)
+	chaincodeID, Fcn, Args = fakeChannelClient.ExecuteArgsForCall(0)
+	assert.Equal(t, lifecycle.ERCC, chaincodeID)
+	assert.Equal(t, lifecycle.RegisterEnclaveCMD, Fcn)
+	assert.Len(t, Args, 1)
 }

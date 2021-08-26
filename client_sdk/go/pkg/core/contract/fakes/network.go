@@ -4,26 +4,26 @@ package fakes
 import (
 	"sync"
 
-	gatewaya "github.com/hyperledger/fabric-sdk-go/pkg/gateway"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/contract"
 )
 
 type Network struct {
-	GetContractStub        func(string) *gatewaya.Contract
+	GetContractStub        func(string) contract.Contract
 	getContractMutex       sync.RWMutex
 	getContractArgsForCall []struct {
 		arg1 string
 	}
 	getContractReturns struct {
-		result1 *gatewaya.Contract
+		result1 contract.Contract
 	}
 	getContractReturnsOnCall map[int]struct {
-		result1 *gatewaya.Contract
+		result1 contract.Contract
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Network) GetContract(arg1 string) *gatewaya.Contract {
+func (fake *Network) GetContract(arg1 string) contract.Contract {
 	fake.getContractMutex.Lock()
 	ret, specificReturn := fake.getContractReturnsOnCall[len(fake.getContractArgsForCall)]
 	fake.getContractArgsForCall = append(fake.getContractArgsForCall, struct {
@@ -48,7 +48,7 @@ func (fake *Network) GetContractCallCount() int {
 	return len(fake.getContractArgsForCall)
 }
 
-func (fake *Network) GetContractCalls(stub func(string) *gatewaya.Contract) {
+func (fake *Network) GetContractCalls(stub func(string) contract.Contract) {
 	fake.getContractMutex.Lock()
 	defer fake.getContractMutex.Unlock()
 	fake.GetContractStub = stub
@@ -61,26 +61,26 @@ func (fake *Network) GetContractArgsForCall(i int) string {
 	return argsForCall.arg1
 }
 
-func (fake *Network) GetContractReturns(result1 *gatewaya.Contract) {
+func (fake *Network) GetContractReturns(result1 contract.Contract) {
 	fake.getContractMutex.Lock()
 	defer fake.getContractMutex.Unlock()
 	fake.GetContractStub = nil
 	fake.getContractReturns = struct {
-		result1 *gatewaya.Contract
+		result1 contract.Contract
 	}{result1}
 }
 
-func (fake *Network) GetContractReturnsOnCall(i int, result1 *gatewaya.Contract) {
+func (fake *Network) GetContractReturnsOnCall(i int, result1 contract.Contract) {
 	fake.getContractMutex.Lock()
 	defer fake.getContractMutex.Unlock()
 	fake.GetContractStub = nil
 	if fake.getContractReturnsOnCall == nil {
 		fake.getContractReturnsOnCall = make(map[int]struct {
-			result1 *gatewaya.Contract
+			result1 contract.Contract
 		})
 	}
 	fake.getContractReturnsOnCall[i] = struct {
-		result1 *gatewaya.Contract
+		result1 contract.Contract
 	}{result1}
 }
 
