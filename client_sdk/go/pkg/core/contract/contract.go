@@ -67,6 +67,16 @@ type contract struct {
 	EP            crypto.EncryptionProvider
 }
 
+func NewContract(c Contract, ERCC Contract, peerEndpoints []string, EP crypto.EncryptionProvider) *contract {
+	return &contract{
+		Contract: c,
+		ERCC: ERCC,
+		peerEndpoints: peerEndpoints,
+		EP: EP,
+	}
+}
+
+
 func (c *contract) Name() string {
 	return c.Contract.Name()
 }
