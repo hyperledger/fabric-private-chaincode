@@ -40,7 +40,7 @@ ecc_dependencies:
 	# which forces ecc to always be built
 
 test: build
-	$(GO) test $(GOTAGS) -v ./...
+	$(GO) test $(GOTAGS) $(GOTESTFLAGS) ./...
 
 # Note:
 # - docker images are not necessarily rebuild if they exist but are outdated.

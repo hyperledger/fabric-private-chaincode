@@ -104,6 +104,7 @@ DOCKER_DEV_RUN_OPTS += --env SGX_MODE=$(SGX_MODE)
 
 ifeq (${DOCKER_DEV_CI_MODE},)
 DOCKER_DEV_RUN_OPTS += -i
+DOCKER_DEV_RUN_OPTS += -e CI=true
 endif
 
 # In CI build, pass the required coverage variable to the docker container.
