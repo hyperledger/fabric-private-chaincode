@@ -4,7 +4,7 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-// Package resmgmt provides FPC specific chaincode management functionality.
+// Package lifecycle provides FPC specific chaincode management functionality.
 //
 // For more information on the FPC management commands and related constraints on chaincode versions and endorsement policies,
 // see https://github.com/hyperledger/fabric-private-chaincode/blob/main/docs/design/fabric-v2+/fpc-management.md
@@ -55,7 +55,7 @@ const (
 	RegisterEnclaveCMD = "registerEnclave"
 )
 
-var logger = flogging.MustGetLogger("fpc-client-resmgmt")
+var logger = flogging.MustGetLogger("fpc-client-lifecycle")
 
 // LifecycleInitEnclaveRequest contains init enclave request parameters.
 // In particular, it contains the FPC chaincode ID, the endpoint of the target peer to spawn the enclave, and
@@ -72,11 +72,11 @@ type CredentialConverter interface {
 
 // ChannelClient models an interface to query and execute chaincodes
 type ChannelClient interface {
-	Query(ChaincodeID string, Fcn string, Args [][]byte, targetEndpoints ...string) ([]byte, error)
-	Execute(ChaincodeID string, Fcn string, Args [][]byte) (string, error)
+	Query(chaincodeID string, fcn string, args [][]byte, targetEndpoints ...string) ([]byte, error)
+	Execute(chaincodeID string, fcn string, args [][]byte) (string, error)
 }
 
-type GetChannelClientFunction func(channelId string) (ChannelClient, error)
+type GetChannelClientFunction func(channelID string) (ChannelClient, error)
 
 // Client enables managing resources in Fabric network.
 // It extends lifecycle.Client (https://pkg.go.dev/github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt#Client)
@@ -99,13 +99,13 @@ func New(getChannelClient GetChannelClientFunction) (*Client, error) {
 }
 
 // LifecycleInitEnclave initializes and registers an enclave for a particular FPC chaincode.
-func (rc *Client) LifecycleInitEnclave(channelId string, req LifecycleInitEnclaveRequest) (string, error) {
+func (rc *Client) LifecycleInitEnclave(channelID string, req LifecycleInitEnclaveRequest) (string, error) {
 	err := rc.verifyInitEnclaveRequest(req)
 	if err != nil {
 		return "", err
 	}
 
-	channelClient, err := rc.GetChannelClient(channelId)
+	channelClient, err := rc.GetChannelClient(channelID)
 	if err != nil {
 		return "", errors.Wrap(err, "Failed to create new channel client")
 	}

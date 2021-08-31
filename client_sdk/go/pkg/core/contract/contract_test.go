@@ -10,29 +10,28 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/contract"
+	fpccontract "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/contract"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/contract/fakes"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
+	"github.com/stretchr/testify/assert"
 )
 
-//go:generate counterfeiter -o fakes/network.go -fake-name Network . network
+//go:generate counterfeiter -o fakes/contract_provider.go -fake-name ContractProvider . contractProvider
 //lint:ignore U1000 This is just used to generate fake
-type network interface {
-	contract.Provider
+type contractProvider interface {
+	fpccontract.Provider
 }
 
-//go:generate counterfeiter -o fakes/contract.go -fake-name Contract . gatewayContract
+//go:generate counterfeiter -o fakes/contract.go -fake-name Contract . contract
 //lint:ignore U1000 This is just used to generate fake
-type gatewayContract interface {
-	contract.Contract
+type contract interface {
+	fpccontract.Contract
 }
 
 //go:generate counterfeiter -o fakes/transaction.go -fake-name Transaction . transaction
 //lint:ignore U1000 This is just used to generate fake
 type transaction interface {
-	contract.Transaction
+	fpccontract.Transaction
 }
 
 //go:generate counterfeiter -o fakes/encryption_provider.go -fake-name EncryptionProvider . encryptionProvider
@@ -50,14 +49,14 @@ type encryptionContext interface {
 func TestNewContract(t *testing.T) {
 	chaincodeID := "myChaincode"
 
-	mockNetwork := &fakes.Network{}
-	mockNetwork.GetContractReturns(&fakes.Contract{})
+	mockProvider := &fakes.ContractProvider{}
+	mockProvider.GetContractReturns(&fakes.Contract{})
 
 	// should try to get chaincode and ercc contracts
-	contract := contract.GetContract(mockNetwork, chaincodeID)
+	contract := fpccontract.GetContract(mockProvider, chaincodeID)
 	assert.NotNil(t, contract)
-	assert.Equal(t, "ercc", mockNetwork.GetContractArgsForCall(0))
-	assert.Equal(t, chaincodeID, mockNetwork.GetContractArgsForCall(1))
+	assert.Equal(t, "ercc", mockProvider.GetContractArgsForCall(0))
+	assert.Equal(t, chaincodeID, mockProvider.GetContractArgsForCall(1))
 }
 
 func TestContractName(t *testing.T) {
@@ -67,7 +66,7 @@ func TestContractName(t *testing.T) {
 	mockContract := &fakes.Contract{}
 	mockContract.NameReturns(chaincodeID)
 
-	contract := contract.NewContract(mockContract, nil, nil, nil)
+	contract := fpccontract.New(mockContract, nil, nil, nil)
 
 	// should return chaincodeId
 	name := contract.Name()
@@ -102,7 +101,7 @@ func TestContractEvaluateTransactionSuccess(t *testing.T) {
 	mockEncryptionProvider := &fakes.EncryptionProvider{}
 	mockEncryptionProvider.NewEncryptionContextReturns(mockEncryptionContext, nil)
 
-	contract := contract.NewContract(mockContract, mockERCC, nil, mockEncryptionProvider)
+	contract := fpccontract.New(mockContract, mockERCC, nil, mockEncryptionProvider)
 
 	// success
 	resp, err := contract.EvaluateTransaction("someFunction", "arg1", "arg2")
@@ -134,13 +133,13 @@ func TestContractEvaluateAndSubmitTransactionFail(t *testing.T) {
 	// see what happens if creation of encryption context returns error
 	mockEncryptionProvider := &fakes.EncryptionProvider{}
 	mockEncryptionProvider.NewEncryptionContextReturns(nil, fmt.Errorf("encryption Context Creation failed"))
-	aContract := contract.NewContract(nil, nil, nil, mockEncryptionProvider)
+	contract := fpccontract.New(nil, nil, nil, mockEncryptionProvider)
 
 	// failed
-	resp, err := aContract.EvaluateTransaction("someFunction", "arg1", "arg2")
+	resp, err := contract.EvaluateTransaction("someFunction", "arg1", "arg2")
 	assert.Nil(t, resp)
 	assert.Error(t, err)
-	resp, err = aContract.SubmitTransaction("someFunction", "arg1", "arg2")
+	resp, err = contract.SubmitTransaction("someFunction", "arg1", "arg2")
 	assert.Nil(t, resp)
 	assert.Error(t, err)
 
@@ -153,10 +152,10 @@ func TestContractEvaluateAndSubmitTransactionFail(t *testing.T) {
 	mockEncryptionProvider.NewEncryptionContextReturns(mockEncryptionContext, nil)
 
 	// failed
-	resp, err = aContract.EvaluateTransaction("someFunction", "arg1", "arg2")
+	resp, err = contract.EvaluateTransaction("someFunction", "arg1", "arg2")
 	assert.Nil(t, resp)
 	assert.Error(t, err)
-	resp, err = aContract.SubmitTransaction("someFunction", "arg1", "arg2")
+	resp, err = contract.SubmitTransaction("someFunction", "arg1", "arg2")
 	assert.Nil(t, resp)
 	assert.Error(t, err)
 
@@ -169,13 +168,13 @@ func TestContractEvaluateAndSubmitTransactionFail(t *testing.T) {
 		return "", nil
 	})
 
-	aContract = contract.NewContract(mockContract, mockERCC, nil, mockEncryptionProvider)
+	contract = fpccontract.New(mockContract, mockERCC, nil, mockEncryptionProvider)
 
 	// failed
-	resp, err = aContract.EvaluateTransaction("someFunction", "arg1", "arg2")
+	resp, err = contract.EvaluateTransaction("someFunction", "arg1", "arg2")
 	assert.Nil(t, resp)
 	assert.Error(t, err)
-	resp, err = aContract.SubmitTransaction("someFunction", "arg1", "arg2")
+	resp, err = contract.SubmitTransaction("someFunction", "arg1", "arg2")
 	assert.Nil(t, resp)
 	assert.Error(t, err)
 
@@ -184,10 +183,10 @@ func TestContractEvaluateAndSubmitTransactionFail(t *testing.T) {
 	mockERCC.EvaluateTransactionReturns(nil, nil)
 
 	// failed
-	resp, err = aContract.EvaluateTransaction("someFunction", "arg1", "arg2")
+	resp, err = contract.EvaluateTransaction("someFunction", "arg1", "arg2")
 	assert.Nil(t, resp)
 	assert.Error(t, err)
-	resp, err = aContract.SubmitTransaction("someFunction", "arg1", "arg2")
+	resp, err = contract.SubmitTransaction("someFunction", "arg1", "arg2")
 	assert.Nil(t, resp)
 	assert.Error(t, err)
 
@@ -197,7 +196,7 @@ func TestContractEvaluateAndSubmitTransactionFail(t *testing.T) {
 	mockContract.SubmitTransactionReturns(nil, fmt.Errorf("endorse failed"))
 
 	// failed
-	resp, err = aContract.SubmitTransaction("someFunction", "arg1", "arg2")
+	resp, err = contract.SubmitTransaction("someFunction", "arg1", "arg2")
 	assert.Nil(t, resp)
 	assert.Error(t, err)
 }
@@ -228,7 +227,7 @@ func TestContractSubmitTransaction(t *testing.T) {
 	mockEncryptionProvider := &fakes.EncryptionProvider{}
 	mockEncryptionProvider.NewEncryptionContextReturns(mockEncryptionContext, nil)
 
-	contract := contract.NewContract(mockContract, mockERCC, nil, mockEncryptionProvider)
+	contract := fpccontract.New(mockContract, mockERCC, nil, mockEncryptionProvider)
 
 	// success
 	resp, err := contract.SubmitTransaction("someFunction", "arg1", "arg2")

@@ -89,7 +89,7 @@ func TestLifecycleInitEnclaveFailedToCreateChannelClient(t *testing.T) {
 		return nil, expectedError
 	}
 
-	client := &lifecycle.Client{getChannelClient, nil}
+	client := &lifecycle.Client{GetChannelClient: getChannelClient}
 
 	initReq := lifecycle.LifecycleInitEnclaveRequest{
 		ChaincodeID:         chaincodeId,

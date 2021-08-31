@@ -5,15 +5,14 @@ Copyright 2020 Intel Corporation
 SPDX-License-Identifier: Apache-2.0
 */
 
-// Package contract enables interaction with a FPC chaincode.
+// Package contract implements the client-side FPC protocol
 package contract
 
 import (
 	"strings"
 
-	"github.com/hyperledger/fabric/common/flogging"
-
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
+	"github.com/hyperledger/fabric/common/flogging"
 )
 
 var logger = flogging.MustGetLogger("fpc-client-contract")
@@ -41,47 +40,40 @@ type Provider interface {
 //  chaincodeID is the ID of the target chaincode
 //
 //  Returns:
-//  The contract object
-func GetContract(network Provider, chaincodeID string) *contract {
-	ercc := network.GetContract("ercc")
-	return &contract{
-		Contract:      network.GetContract(chaincodeID),
-		ERCC:          ercc,
-		peerEndpoints: nil,
-		EP: &crypto.EncryptionProviderImpl{
-			CSP: crypto.GetDefaultCSP(),
-			GetCcEncryptionKey: func() ([]byte, error) {
-				// Note that this function is called during EncryptionProvider.NewEncryptionContext()
-				return ercc.EvaluateTransaction("queryChaincodeEncryptionKey", chaincodeID)
-			}}}
+//  The contractImpl object
+func GetContract(p Provider, chaincodeID string) *contractImpl {
+	ercc := p.GetContract("ercc")
+	return New(p.GetContract(chaincodeID), ercc, nil, &crypto.EncryptionProviderImpl{
+		CSP: crypto.GetDefaultCSP(),
+		GetCcEncryptionKey: func() ([]byte, error) {
+			// Note that this function is called during EncryptionProvider.NewEncryptionContext()
+			return ercc.EvaluateTransaction("queryChaincodeEncryptionKey", chaincodeID)
+		}})
 }
 
-type contract struct {
-	// note that we wrap the target chaincode and ercc with an adapter that
-	// implements the internal.Contract interface. This removes the direct
-	// dependency to contract.Contract struct as provided by the Fabric Go SDK,
-	// and therefore allows better of this component.
-	Contract      Contract
-	ERCC          Contract
+// contractImpl implements the client-side FPC protocol
+type contractImpl struct {
+	target        Contract
+	ercc          Contract
 	peerEndpoints []string
-	EP            crypto.EncryptionProvider
+	ep            crypto.EncryptionProvider
 }
 
-func NewContract(c Contract, ERCC Contract, peerEndpoints []string, EP crypto.EncryptionProvider) *contract {
-	return &contract{
-		Contract:      c,
-		ERCC:          ERCC,
+func New(fpc Contract, ercc Contract, peerEndpoints []string, ep crypto.EncryptionProvider) *contractImpl {
+	return &contractImpl{
+		target:        fpc,
+		ercc:          ercc,
 		peerEndpoints: peerEndpoints,
-		EP:            EP,
+		ep:            ep,
 	}
 }
 
-func (c *contract) Name() string {
-	return c.Contract.Name()
+func (c *contractImpl) Name() string {
+	return c.target.Name()
 }
 
-func (c *contract) EvaluateTransaction(name string, args ...string) ([]byte, error) {
-	ctx, err := c.EP.NewEncryptionContext()
+func (c *contractImpl) EvaluateTransaction(name string, args ...string) ([]byte, error) {
+	ctx, err := c.ep.NewEncryptionContext()
 	if err != nil {
 		return nil, err
 	}
@@ -100,8 +92,8 @@ func (c *contract) EvaluateTransaction(name string, args ...string) ([]byte, err
 	return ctx.Reveal(encryptedResponse)
 }
 
-func (c *contract) SubmitTransaction(name string, args ...string) ([]byte, error) {
-	ctx, err := c.EP.NewEncryptionContext()
+func (c *contractImpl) SubmitTransaction(name string, args ...string) ([]byte, error) {
+	ctx, err := c.ep.NewEncryptionContext()
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +110,7 @@ func (c *contract) SubmitTransaction(name string, args ...string) ([]byte, error
 	}
 
 	logger.Debugf("calling __endorse!")
-	_, err = c.Contract.SubmitTransaction("__endorse", string(encryptedResponse))
+	_, err = c.target.SubmitTransaction("__endorse", string(encryptedResponse))
 	if err != nil {
 		return nil, err
 	}
@@ -128,9 +120,9 @@ func (c *contract) SubmitTransaction(name string, args ...string) ([]byte, error
 
 // getPeerEndpoints returns an array of peer endpoints that host the FPC chaincode enclave
 // An endpoint is a simple string with the format `host:port`
-func (c *contract) getPeerEndpoints() ([]string, error) {
+func (c *contractImpl) getPeerEndpoints() ([]string, error) {
 	if len(c.peerEndpoints) == 0 {
-		resp, err := c.ERCC.EvaluateTransaction("queryChaincodeEndPoints", c.Name())
+		resp, err := c.ercc.EvaluateTransaction("queryChaincodeEndPoints", c.Name())
 		if err != nil {
 			return nil, err
 		}
@@ -139,13 +131,13 @@ func (c *contract) getPeerEndpoints() ([]string, error) {
 	return c.peerEndpoints, nil
 }
 
-func (c *contract) evaluateTransaction(args ...string) ([]byte, error) {
+func (c *contractImpl) evaluateTransaction(args ...string) ([]byte, error) {
 	peers, err := c.getPeerEndpoints()
 	if err != nil {
 		return nil, err
 	}
 
-	txn, err := c.Contract.CreateTransaction(
+	txn, err := c.target.CreateTransaction(
 		"__invoke",
 		peers...,
 	)

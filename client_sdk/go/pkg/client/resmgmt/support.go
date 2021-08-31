@@ -1,14 +1,13 @@
 package resmgmt
 
 import (
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/lifecycle"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel/invoke"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	contextImpl "github.com/hyperledger/fabric-sdk-go/pkg/context"
-
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/lifecycle"
 )
 
 type GoSDKChannelClient interface {
@@ -23,15 +22,11 @@ type channelClient struct {
 	goSDKChannelClient GoSDKChannelClient
 }
 
-func NewChannelClient(goSDKChannelClient GoSDKChannelClient) *channelClient {
-	return &channelClient{goSDKChannelClient: goSDKChannelClient}
-}
-
-func (c *channelClient) Query(ChaincodeID string, Fcn string, Args [][]byte, targetEndpoints ...string) ([]byte, error) {
+func (c *channelClient) Query(chaincodeID string, fcn string, args [][]byte, targetEndpoints ...string) ([]byte, error) {
 	initRequest := channel.Request{
-		ChaincodeID: ChaincodeID,
-		Fcn:         Fcn,
-		Args:        Args,
+		ChaincodeID: chaincodeID,
+		Fcn:         fcn,
+		Args:        args,
 	}
 
 	var initOpts []channel.RequestOption
@@ -46,11 +41,11 @@ func (c *channelClient) Query(ChaincodeID string, Fcn string, Args [][]byte, tar
 	return initResponse.Payload, nil
 }
 
-func (c *channelClient) Execute(ChaincodeID string, Fcn string, Args [][]byte) (string, error) {
+func (c *channelClient) Execute(chaincodeID string, fcn string, args [][]byte) (string, error) {
 	request := channel.Request{
-		ChaincodeID: ChaincodeID,
-		Fcn:         Fcn,
-		Args:        Args,
+		ChaincodeID: chaincodeID,
+		Fcn:         fcn,
+		Args:        args,
 	}
 
 	var opts []channel.RequestOption
@@ -78,9 +73,9 @@ func (c *ChannelClientProvider) ChannelClient(id string) (lifecycle.ChannelClien
 	channelProvider := func() (context.Channel, error) {
 		return contextImpl.NewChannel(c.ctxProvider, id)
 	}
-	channelClient, err := channel.New(channelProvider)
+	client, err := channel.New(channelProvider)
 	if err != nil {
 		return nil, err
 	}
-	return NewChannelClient(channelClient), nil
+	return &channelClient{goSDKChannelClient: client}, nil
 }

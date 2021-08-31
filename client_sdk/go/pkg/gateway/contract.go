@@ -9,10 +9,8 @@ SPDX-License-Identifier: Apache-2.0
 package gateway
 
 import (
-	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
-
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/contract"
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway/internal"
+	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 )
 
 // Contract provides functions to query/invoke FPC chaincodes based on the Gateway API.
@@ -55,23 +53,23 @@ type Network interface {
 	GetContract(chaincodeID string) *gateway.Contract
 }
 
-type gatawayContract struct {
+type gatewayContract struct {
 	c *gateway.Contract
 }
 
-func (c *gatawayContract) Name() string {
+func (c *gatewayContract) Name() string {
 	return c.c.Name()
 }
 
-func (c *gatawayContract) EvaluateTransaction(name string, args ...string) ([]byte, error) {
+func (c *gatewayContract) EvaluateTransaction(name string, args ...string) ([]byte, error) {
 	return c.c.EvaluateTransaction(name, args...)
 }
 
-func (c *gatawayContract) SubmitTransaction(name string, args ...string) ([]byte, error) {
+func (c *gatewayContract) SubmitTransaction(name string, args ...string) ([]byte, error) {
 	return c.c.SubmitTransaction(name, args...)
 }
 
-func (c *gatawayContract) CreateTransaction(name string, peerEndpoints ...string) (contract.Transaction, error) {
+func (c *gatewayContract) CreateTransaction(name string, peerEndpoints ...string) (contract.Transaction, error) {
 	return c.c.CreateTransaction(name, gateway.WithEndorsingPeers(peerEndpoints...))
 }
 
@@ -79,8 +77,8 @@ type contractProvider struct {
 	network Network
 }
 
-func (c *contractProvider) GetContract(id string) contract.Contract {
-	return &gatawayContract{c.network.GetContract(id)}
+func (cp *contractProvider) GetContract(id string) contract.Contract {
+	return &gatewayContract{cp.network.GetContract(id)}
 }
 
 // GetContract is the factory method for creating FPC Contract objects.
@@ -90,9 +88,6 @@ func (c *contractProvider) GetContract(id string) contract.Contract {
 //
 //  Returns:
 //  The contract object
-func GetContract(network internal.Network, chaincodeID string) Contract {
-	return contract.GetContract(
-		&contractProvider{network: network},
-		chaincodeID,
-	)
+func GetContract(network Network, chaincodeID string) Contract {
+	return contract.GetContract(&contractProvider{network: network}, chaincodeID)
 }

@@ -40,12 +40,11 @@ SPDX-License-Identifier: Apache-2.0
 package resmgmt
 
 import (
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/lifecycle"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
-
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/lifecycle"
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 )
 
 // LifecycleInitEnclaveRequest contains init enclave request parameters.
