@@ -115,13 +115,20 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         // the dynamic memory in the message is released at the end
     }
 
-    invoke_ret = invoke(response, response_len, &response_len_out, &ctx);
-    // invoke_ret is not checked
+    try
+    {
+        invoke_ret = invoke(response, response_len, &response_len_out, &ctx);
+        // invoke_ret is not checked
 
-    // TODO double check or rethink if it is appropriate for a chaincode
-    // to return an error and still forward the response
-    // in particular: should the enclave sign a response? and the rwset? could the tx be committed
-    // though it failed?
+        // TODO double check or rethink if it is appropriate for a chaincode
+        // to return an error and still forward the response
+        // in particular: should the enclave sign a response? and the rwset? could the tx be
+        // committed though it failed?
+    }
+    catch (std::exception& e)
+    {
+        COND2LOGERR(true, e.what());
+    }
 
     b64_response = base64_encode((const unsigned char*)response, response_len_out);
 
