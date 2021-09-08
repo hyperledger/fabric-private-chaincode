@@ -9,16 +9,9 @@ SPDX-License-Identifier: Apache-2.0
 package gateway
 
 import (
-	"strings"
-
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway/internal"
-	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
-	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/contract"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
-	"github.com/hyperledger/fabric/common/flogging"
 )
-
-var logger = flogging.MustGetLogger("fpc-client-gateway")
 
 // Contract provides functions to query/invoke FPC chaincodes based on the Gateway API.
 //
@@ -53,19 +46,39 @@ type Contract interface {
 	//  Returns:
 	//  The return value of the transaction function in the smart contract.
 	SubmitTransaction(name string, args ...string) ([]byte, error)
+}
 
-	// RegisterEvent registers for chaincode events. Unregister must be called when the registration is no longer needed.
-	//  Parameters:
-	//  eventFilter is the chaincode event filter (regular expression) for which events are to be received
-	//
-	//  Returns:
-	//  the registration and a channel that is used to receive events. The channel is closed when Unregister is called.
-	RegisterEvent(eventFilter string) (fab.Registration, <-chan *fab.CCEvent, error)
+// Network interface that is needed by the FPC contract implementation
+type Network interface {
+	GetContract(chaincodeID string) *gateway.Contract
+}
 
-	// Unregister removes the given registration and closes the event channel.
-	//  Parameters:
-	//  registration is the registration handle that was returned from RegisterContractEvent method
-	Unregister(registration fab.Registration)
+type gatewayContract struct {
+	c *gateway.Contract
+}
+
+func (c *gatewayContract) Name() string {
+	return c.c.Name()
+}
+
+func (c *gatewayContract) EvaluateTransaction(name string, args ...string) ([]byte, error) {
+	return c.c.EvaluateTransaction(name, args...)
+}
+
+func (c *gatewayContract) SubmitTransaction(name string, args ...string) ([]byte, error) {
+	return c.c.SubmitTransaction(name, args...)
+}
+
+func (c *gatewayContract) CreateTransaction(name string, peerEndpoints ...string) (contract.Transaction, error) {
+	return c.c.CreateTransaction(name, gateway.WithEndorsingPeers(peerEndpoints...))
+}
+
+type contractProvider struct {
+	network Network
+}
+
+func (cp *contractProvider) GetContract(id string) contract.Contract {
+	return &gatewayContract{cp.network.GetContract(id)}
 }
 
 // GetContract is the factory method for creating FPC Contract objects.
@@ -75,118 +88,6 @@ type Contract interface {
 //
 //  Returns:
 //  The contract object
-func GetContract(network internal.Network, chaincodeID string) Contract {
-
-	contract := network.GetContract(chaincodeID)
-	ercc := network.GetContract("ercc")
-	return &contractState{
-		contract:      &internal.ContractAdapter{Contract: contract},
-		ercc:          &internal.ContractAdapter{Contract: ercc},
-		peerEndpoints: nil,
-		ep: &crypto.EncryptionProviderImpl{
-			CSP: crypto.GetDefaultCSP(),
-			GetCcEncryptionKey: func() ([]byte, error) {
-				// Note that this function is called during EncryptionProvider.NewEncryptionContext()
-				return ercc.EvaluateTransaction("queryChaincodeEncryptionKey", chaincodeID)
-			}}}
-}
-
-type contractState struct {
-	// note that we wrap the target chaincode and ercc with an adapter that
-	// implements the internal.Contract interface. This removes the direct
-	// dependency to gateway.Contract struct as provided by the Fabric Go SDK,
-	// and therefore allows better of this component.
-	contract      internal.Contract
-	ercc          internal.Contract
-	peerEndpoints []string
-	ep            crypto.EncryptionProvider
-}
-
-func (c *contractState) Name() string {
-	return c.contract.Name()
-}
-
-// getPeerEndpoints returns an array of peer endpoints that host the FPC chaincode enclave
-// An endpoint is a simple string with the format `host:port`
-func (c *contractState) getPeerEndpoints() ([]string, error) {
-	if len(c.peerEndpoints) == 0 {
-		resp, err := c.ercc.EvaluateTransaction("queryChaincodeEndPoints", c.Name())
-		if err != nil {
-			return nil, err
-		}
-		c.peerEndpoints = strings.Split(string(resp), ",")
-	}
-	return c.peerEndpoints, nil
-}
-
-func (c *contractState) EvaluateTransaction(name string, args ...string) ([]byte, error) {
-	ctx, err := c.ep.NewEncryptionContext()
-	if err != nil {
-		return nil, err
-	}
-
-	encryptedRequest, err := ctx.Conceal(name, args)
-	if err != nil {
-		return nil, err
-	}
-
-	// call __invoke
-	encryptedResponse, err := c.evaluateTransaction(encryptedRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	return ctx.Reveal(encryptedResponse)
-}
-
-func (c *contractState) evaluateTransaction(args ...string) ([]byte, error) {
-	peers, err := c.getPeerEndpoints()
-	if err != nil {
-		return nil, err
-	}
-
-	txn, err := c.contract.CreateTransaction(
-		"__invoke",
-		gateway.WithEndorsingPeers(peers...),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	logger.Debugf("calling __invoke!")
-	return txn.Evaluate(args...)
-}
-
-func (c *contractState) SubmitTransaction(name string, args ...string) ([]byte, error) {
-	ctx, err := c.ep.NewEncryptionContext()
-	if err != nil {
-		return nil, err
-	}
-
-	encryptedRequest, err := ctx.Conceal(name, args)
-	if err != nil {
-		return nil, err
-	}
-
-	// call __invoke
-	encryptedResponse, err := c.evaluateTransaction(encryptedRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	logger.Debugf("calling __endorse!")
-	_, err = c.contract.SubmitTransaction("__endorse", string(encryptedResponse))
-	if err != nil {
-		return nil, err
-	}
-
-	return ctx.Reveal(encryptedResponse)
-}
-
-func (c *contractState) RegisterEvent(eventFilter string) (fab.Registration, <-chan *fab.CCEvent, error) {
-	return c.contract.RegisterEvent(eventFilter)
-}
-
-func (c *contractState) Unregister(registration fab.Registration) {
-	c.contract.Unregister(registration)
+func GetContract(network Network, chaincodeID string) Contract {
+	return contract.GetContract(&contractProvider{network: network}, chaincodeID)
 }
