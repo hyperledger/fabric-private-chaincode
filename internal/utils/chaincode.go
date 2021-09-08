@@ -24,10 +24,16 @@ func GetChaincodeDefinition(chaincodeId string, stub shim.ChaincodeStubInterface
 	args := &lifecycle.QueryChaincodeDefinitionArgs{
 		Name: chaincodeId,
 	}
-	// note that we use Fabric's MarshalOrPanic as it still uses protobuf V1
-	argsBytes := protoutil.MarshalOrPanic(args)
+	// note that we use Fabric's Marshall as it still uses protobuf V1
+	argsBytes, err := protoutil.Marshal(args)
+	if err != nil {
+		return nil, err
+	}
 
 	resp := stub.InvokeChaincode("_lifecycle", [][]byte{[]byte(function), argsBytes}, channelId)
+	if resp.Status != shim.OK {
+		return nil, fmt.Errorf("error while retrieving chaincode definition: [%d] %s", resp.Status, resp.Message)
+	}
 
 	if resp.Payload == nil {
 		// no chaincode definition found

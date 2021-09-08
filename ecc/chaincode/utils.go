@@ -18,7 +18,72 @@ import (
 	"github.com/hyperledger/fabric/protoutil"
 )
 
-func extractChaincodeParams(stub shim.ChaincodeStubInterface) (*protos.CCParameters, error) {
+type Extractors interface {
+	GetInitEnclaveMessage(stub shim.ChaincodeStubInterface) (*protos.InitEnclaveMessage, error)
+	GetSerializedChaincodeRequest(stub shim.ChaincodeStubInterface) ([]byte, error)
+	GetChaincodeResponseMessages(stub shim.ChaincodeStubInterface) (*protos.SignedChaincodeResponseMessage, *protos.ChaincodeResponseMessage, error)
+	GetChaincodeParams(stub shim.ChaincodeStubInterface) (*protos.CCParameters, error)
+	GetHostParams(stub shim.ChaincodeStubInterface) (*protos.HostParameters, error)
+}
+
+type ExtractorImpl struct {
+}
+
+func (s *ExtractorImpl) GetInitEnclaveMessage(stub shim.ChaincodeStubInterface) (*protos.InitEnclaveMessage, error) {
+	if len(stub.GetStringArgs()) < 2 {
+		return nil, fmt.Errorf("initEnclaveMessage missing")
+	}
+
+	serializedInitEnclaveMessage, err := base64.StdEncoding.DecodeString(stub.GetStringArgs()[1])
+	if err != nil {
+		return nil, err
+	}
+
+	initMsg, err := utils.UnmarshalInitEnclaveMessage(serializedInitEnclaveMessage)
+	if err != nil {
+		return nil, err
+	}
+
+	return initMsg, err
+}
+
+func (s *ExtractorImpl) GetSerializedChaincodeRequest(stub shim.ChaincodeStubInterface) ([]byte, error) {
+	if len(stub.GetStringArgs()) < 2 {
+		return nil, fmt.Errorf("chaincodeRequestMessage missing")
+	}
+
+	chaincodeRequestMessage, err := base64.StdEncoding.DecodeString(stub.GetStringArgs()[1])
+	if err != nil {
+		return nil, err
+	}
+
+	return chaincodeRequestMessage, nil
+}
+
+func (s *ExtractorImpl) GetChaincodeResponseMessages(stub shim.ChaincodeStubInterface) (*protos.SignedChaincodeResponseMessage, *protos.ChaincodeResponseMessage, error) {
+	if len(stub.GetStringArgs()) < 2 {
+		return nil, nil, fmt.Errorf("initEnclaveMessage missing")
+	}
+
+	serializedSignedChaincodeResponseMessage, err := base64.StdEncoding.DecodeString(stub.GetStringArgs()[1])
+	if err != nil {
+		return nil, nil, err
+	}
+
+	signedResponseMsg, err := utils.UnmarshalSignedChaincodeResponseMessage(serializedSignedChaincodeResponseMessage)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	responseMsg, err := utils.UnmarshalChaincodeResponseMessage(signedResponseMsg.GetChaincodeResponseMessage())
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return signedResponseMsg, responseMsg, err
+}
+
+func (s *ExtractorImpl) GetChaincodeParams(stub shim.ChaincodeStubInterface) (*protos.CCParameters, error) {
 	signedProposal, err := stub.GetSignedProposal()
 	if err != nil {
 		return nil, err
@@ -53,10 +118,19 @@ func extractChaincodeParams(stub shim.ChaincodeStubInterface) (*protos.CCParamet
 	}, nil
 }
 
-func extractHostParams(stub shim.ChaincodeStubInterface, initMsg *protos.InitEnclaveMessage) (*protos.HostParameters, error) {
+func (s *ExtractorImpl) GetHostParams(stub shim.ChaincodeStubInterface) (*protos.HostParameters, error) {
+	initMsg, err := s.GetInitEnclaveMessage(stub)
+	if err != nil {
+		return nil, err
+	}
+
 	mspid, err := cid.GetMSPID(stub)
 	if err != nil {
 		return nil, err
+	}
+
+	if initMsg == nil {
+		return nil, fmt.Errorf("initEnclaveMessage is nil")
 	}
 
 	return &protos.HostParameters{
@@ -64,45 +138,4 @@ func extractHostParams(stub shim.ChaincodeStubInterface, initMsg *protos.InitEnc
 		PeerEndpoint: initMsg.PeerEndpoint,
 		Certificate:  nil, // todo
 	}, nil
-}
-
-func extractInitEnclaveMessage(stub shim.ChaincodeStubInterface) (*protos.InitEnclaveMessage, error) {
-	if len(stub.GetStringArgs()) < 2 {
-		return nil, fmt.Errorf("initEnclaveMessage missing")
-	}
-
-	serializedInitEnclaveMessage, err := base64.StdEncoding.DecodeString(stub.GetStringArgs()[1])
-	if err != nil {
-		return nil, err
-	}
-
-	initMsg, err := utils.UnmarshalInitEnclaveMessage(serializedInitEnclaveMessage)
-	if err != nil {
-		return nil, err
-	}
-
-	return initMsg, err
-}
-
-func extractChaincodeResponseMessages(stub shim.ChaincodeStubInterface) (*protos.SignedChaincodeResponseMessage, *protos.ChaincodeResponseMessage, error) {
-	if len(stub.GetStringArgs()) < 2 {
-		return nil, nil, fmt.Errorf("initEnclaveMessage missing")
-	}
-
-	serializedSignedChaincodeResponseMessage, err := base64.StdEncoding.DecodeString(stub.GetStringArgs()[1])
-	if err != nil {
-		return nil, nil, err
-	}
-
-	signedResponseMsg, err := utils.UnmarshalSignedChaincodeResponseMessage(serializedSignedChaincodeResponseMessage)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	responseMsg, err := utils.UnmarshalChaincodeResponseMessage(signedResponseMsg.GetChaincodeResponseMessage())
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return signedResponseMsg, responseMsg, err
 }

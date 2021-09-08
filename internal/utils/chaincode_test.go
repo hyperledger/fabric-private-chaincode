@@ -8,10 +8,12 @@ package utils_test
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils/fakes"
+	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric-protos-go/peer/lifecycle"
 	"github.com/hyperledger/fabric/protoutil"
 	. "github.com/onsi/ginkgo"
@@ -22,6 +24,11 @@ import (
 //lint:ignore U1000 This is just used to generate fake
 type chaincodeStub interface {
 	shim.ChaincodeStubInterface
+}
+
+func TestChaincode(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "utils test suite")
 }
 
 var _ = Describe("Chaincode utils", func() {
@@ -40,7 +47,10 @@ var _ = Describe("Chaincode utils", func() {
 		When("committed chaincode definition exists at _lifecycle", func() {
 			BeforeEach(func() {
 				// register chaincode definition at _lifecycle
-				df := &lifecycle.QueryChaincodeDefinitionResult{}
+				df := &lifecycle.QueryChaincodeDefinitionResult{
+					Sequence: 666,
+					Version:  "someVersion",
+				}
 				dfBytes, err := protoutil.Marshal(df)
 				Expect(err).ShouldNot(HaveOccurred())
 				stub.InvokeChaincodeReturns(shim.Success(dfBytes))
@@ -55,6 +65,7 @@ var _ = Describe("Chaincode utils", func() {
 
 		When("committed chaincode definition does not exist at _lifecycle", func() {
 			It("should return error", func() {
+				stub.InvokeChaincodeReturns(peer.Response{Payload: nil, Status: shim.OK})
 				df, err := utils.GetChaincodeDefinition("myFPCChaincode", stub)
 				Expect(err).Should(MatchError(fmt.Errorf("no chaincode definition found for chaincode='myFPCChaincode'")))
 				Expect(df).Should(BeNil())
@@ -98,7 +109,8 @@ var _ = Describe("Chaincode utils", func() {
 		When("mrenclave is empty", func() {
 			BeforeEach(func() {
 				df := &lifecycle.QueryChaincodeDefinitionResult{
-					Version: "",
+					Sequence: 666,
+					Version:  "",
 				}
 
 				dfBytes, err := protoutil.Marshal(df)

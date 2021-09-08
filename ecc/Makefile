@@ -40,7 +40,8 @@ ecc_dependencies:
 	# which forces ecc to always be built
 
 test: build
-	$(GO) test $(GOTAGS) $(GOTESTFLAGS) ./...
+	# note that we run unit test with a mock enclave
+	$(GO) test $(GOTAGS) -tags mock_ecc $(GOTESTFLAGS) ./...
 
 # Note:
 # - docker images are not necessarily rebuild if they exist but are outdated.

@@ -1,5 +1,3 @@
-// +build WITH_PDO_CRYPTO
-
 /*
 Copyright IBM Corp. All Rights Reserved.
 Copyright 2020 Intel Corporation
@@ -7,7 +5,7 @@ Copyright 2020 Intel Corporation
 SPDX-License-Identifier: Apache-2.0
 */
 
-package utils
+package endorsement
 
 import (
 	"bytes"
@@ -17,29 +15,29 @@ import (
 	"strings"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/pkg/errors"
 )
 
-// Note that we use the WITH_PDO_CRYPTO build tag to enable this code.
-// This is necessary as this package is imported by the go client sdk and may lead to issues when used by applications
-// that do not build FPC.
-
-// #cgo CFLAGS: -I${SRCDIR}/../../common/crypto
-// #cgo LDFLAGS: -L${SRCDIR}/../../common/crypto/_build -L${SRCDIR}/../../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++ -lgcov
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include <stdbool.h>
-// #include <stdint.h>
-// #include "pdo-crypto-c-wrapper.h"
-import "C"
-
 var logger = flogging.MustGetLogger("validate")
 
-func ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSet) (err error) {
-	//TODO error checking
+type Validation interface {
+	ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSet) error
+	Validate(signedResponseMessage *protos.SignedChaincodeResponseMessage, attestedData *protos.AttestedData) error
+}
 
+func NewValidator() *ValidatorImpl {
+	return &ValidatorImpl{csp: crypto.GetDefaultCSP()}
+}
+
+type ValidatorImpl struct {
+	csp crypto.CSP
+}
+
+func (v *ValidatorImpl) ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSet) (err error) {
 	// nil rwset => nothing to do
 	if fpcrwset == nil {
 		return nil
@@ -61,7 +59,7 @@ func ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSe
 		}
 
 		for i := 0; i < len(rwset.Reads); i++ {
-			k := TransformToFPCKey(rwset.Reads[i].Key)
+			k := utils.TransformToFPCKey(rwset.Reads[i].Key)
 			v, err := stub.GetState(k)
 			if err != nil {
 				return fmt.Errorf("error (%s) reading key %s", err, k)
@@ -70,7 +68,7 @@ func ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSe
 			logger.Debugf("read key %s value(hex) %s", k, hex.EncodeToString(v))
 
 			// compute value hash
-			// TODO: use pdo hash for consistency
+			// TODO: use CSP hash for consistency
 			h := sha256.New()
 			h.Write(v)
 			valueHash := h.Sum(nil)
@@ -87,34 +85,36 @@ func ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSe
 
 	// range query reads
 	if rwset.GetRangeQueriesInfo() != nil {
-		logger.Debugf("Replaying range queries")
-		for _, rqi := range rwset.RangeQueriesInfo {
-			if rqi.GetRawReads() == nil {
-				// no raw reads available in this range query
-				continue
-			}
-			for _, qr := range rqi.GetRawReads().KvReads {
-				k := TransformToFPCKey(qr.Key)
-				v, err := stub.GetState(k)
-				if err != nil {
-					return fmt.Errorf("error (%s) reading key %s", err, k)
-				}
-
-				_ = v
-				return fmt.Errorf("TODO: not implemented, missing hash check")
-			}
-		}
+		return fmt.Errorf("RangeQuery support not implemented, missing hash check")
+		// TODO implement me when enabling support for range queries
+		//logger.Debugf("Replaying range queries")
+		//for _, rqi := range rwset.RangeQueriesInfo {
+		//	if rqi.GetRawReads() == nil {
+		//		// no raw reads available in this range query
+		//		continue
+		//	}
+		//	for _, qr := range rqi.GetRawReads().KvReads {
+		//		k := utils.TransformToFPCKey(qr.Key)
+		//		v, err := stub.GetState(k)
+		//		if err != nil {
+		//			return fmt.Errorf("error (%s) reading key %s", err, k)
+		//		}
+		//
+		//		_ = v
+		//		return fmt.Errorf("TODO: not implemented, missing hash check")
+		//	}
+		//}
 	}
 
 	// writes
 	if rwset.GetWrites() != nil {
 		logger.Debugf("Replaying writes")
 		for _, w := range rwset.Writes {
-			k := TransformToFPCKey(w.Key)
+			k := utils.TransformToFPCKey(w.Key)
 
 			// check if composite key, if so, derive Fabric key
-			if IsFPCCompositeKey(k) {
-				comp := SplitFPCCompositeKey(k)
+			if utils.IsFPCCompositeKey(k) {
+				comp := utils.SplitFPCCompositeKey(k)
 				k, _ = stub.CreateCompositeKey(comp[0], comp[1:])
 			}
 
@@ -130,28 +130,27 @@ func ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrwset *protos.FPCKVSe
 	return nil
 }
 
-func Validate(signedResponseMessage *protos.SignedChaincodeResponseMessage, attestedData *protos.AttestedData) error {
-	if signedResponseMessage.Signature == nil {
-		return fmt.Errorf("absent enclave signature")
+func (v *ValidatorImpl) Validate(signedResponseMessage *protos.SignedChaincodeResponseMessage, attestedData *protos.AttestedData) error {
+	if signedResponseMessage.GetSignature() == nil {
+		return fmt.Errorf("no enclave signature")
 	}
 
-	// prepare and do signature verification
-	enclaveVkPtr := C.CBytes(attestedData.EnclaveVk)
-	defer C.free(enclaveVkPtr)
+	if signedResponseMessage.GetChaincodeResponseMessage() == nil {
+		return fmt.Errorf("no chaincode response")
+	}
 
-	responseMessagePtr := C.CBytes(signedResponseMessage.ChaincodeResponseMessage)
-	defer C.free(responseMessagePtr)
+	if attestedData.GetEnclaveVk() == nil {
+		return fmt.Errorf("no enclave verification key")
+	}
 
-	signaturePtr := C.CBytes(signedResponseMessage.Signature)
-	defer C.free(signaturePtr)
-
-	ret := C.verify_signature((*C.uint8_t)(enclaveVkPtr), C.uint32_t(len(attestedData.EnclaveVk)), (*C.uint8_t)(responseMessagePtr), C.uint32_t(len(signedResponseMessage.ChaincodeResponseMessage)), (*C.uint8_t)(signaturePtr), C.uint32_t(len(signedResponseMessage.Signature)))
-	if !ret {
+	// verify enclave signature
+	err := v.csp.VerifyMessage(attestedData.EnclaveVk, signedResponseMessage.ChaincodeResponseMessage, signedResponseMessage.Signature)
+	if err != nil {
 		return fmt.Errorf("enclave signature verification failed")
 	}
 
 	// verify signed proposal input hash matches input hash
-	chaincodeResponseMessage, err := UnmarshalChaincodeResponseMessage(signedResponseMessage.GetChaincodeResponseMessage())
+	chaincodeResponseMessage, err := utils.UnmarshalChaincodeResponseMessage(signedResponseMessage.GetChaincodeResponseMessage())
 	if err != nil {
 		return errors.Wrap(err, "failed to extract response message")
 	}
@@ -160,9 +159,9 @@ func Validate(signedResponseMessage *protos.SignedChaincodeResponseMessage, atte
 	if originalSignedProposal == nil {
 		return fmt.Errorf("cannot get the signed proposal that the enclave received")
 	}
-	chaincodeRequestMessageBytes, err := GetChaincodeRequestMessageFromSignedProposal(originalSignedProposal)
+	chaincodeRequestMessageBytes, err := utils.GetChaincodeRequestMessageFromSignedProposal(originalSignedProposal)
 	if err != nil {
-		return fmt.Errorf("failed to extract chaincode request message: %s", err)
+		return errors.Wrap(err, "failed to extract chaincode request message")
 	}
 	expectedChaincodeRequestMessageHash := sha256.Sum256(chaincodeRequestMessageBytes)
 	chaincodeRequestMessageHash := chaincodeResponseMessage.GetChaincodeRequestMessageHash()

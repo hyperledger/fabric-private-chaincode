@@ -15,7 +15,14 @@ import (
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 )
 
-func QueryEnclaveCredentials(stub shim.ChaincodeStubInterface, channelId, chaincodeId, enclaveId string) (*protos.Credentials, error) {
+type Stub interface {
+	QueryEnclaveCredentials(stub shim.ChaincodeStubInterface, channelId, chaincodeId, enclaveId string) (*protos.Credentials, error)
+}
+
+type StubImpl struct {
+}
+
+func (ercc *StubImpl) QueryEnclaveCredentials(stub shim.ChaincodeStubInterface, channelId, chaincodeId, enclaveId string) (*protos.Credentials, error) {
 	args := [][]byte{[]byte("queryEnclaveCredentials"), []byte(chaincodeId), []byte(enclaveId)}
 
 	// check again chaincode definition and enclave registry

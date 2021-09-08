@@ -16,26 +16,27 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes/any"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
-	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
 type MockEnclaveStub struct {
+	csp          crypto.CSP
 	privateKey   []byte
 	publicKey    []byte
 	enclaveId    string
 	ccPrivateKey []byte
 }
 
-// NewEnclave starts a new enclave
-func NewEnclaveStub() StubInterface {
-	return &MockEnclaveStub{}
+func NewEnclaveStub() *MockEnclaveStub {
+	return &MockEnclaveStub{
+		csp: crypto.GetDefaultCSP(),
+	}
 }
 
 func (m *MockEnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBytes, serializedAttestationParams []byte) ([]byte, error) {
@@ -53,7 +54,7 @@ func (m *MockEnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBy
 	}
 
 	// create enclave keys
-	publicKey, privateKey, err := crypto.NewECDSAKeys()
+	publicKey, privateKey, err := m.csp.NewECDSAKeys()
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +62,7 @@ func (m *MockEnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBy
 	m.publicKey = publicKey
 
 	// create chaincode encryption keys keys
-	ccPublicKey, ccPrivateKey, err := crypto.NewRSAKeys()
+	ccPublicKey, ccPrivateKey, err := m.csp.NewRSAKeys()
 	if err != nil {
 		return nil, err
 	}
@@ -71,17 +72,16 @@ func (m *MockEnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBy
 	m.enclaveId, _ = m.GetEnclaveId()
 
 	logger.Debug("Init")
+
+	serializedAttestedData, _ := anypb.New(&protos.AttestedData{
+		EnclaveVk:   publicKey,
+		CcParams:    chaincodeParams,
+		HostParams:  hostParams,
+		ChaincodeEk: ccPublicKey,
+	})
 	credentials := &protos.Credentials{
-		Attestation: []byte("{\"attestation_type\":\"simulated\",\"attestation\":\"MA==\"}"),
-		SerializedAttestedData: &any.Any{
-			TypeUrl: proto.MessageName(&protos.AttestedData{}),
-			Value: protoutil.MarshalOrPanic(&protos.AttestedData{
-				EnclaveVk:   publicKey,
-				CcParams:    chaincodeParams,
-				HostParams:  hostParams,
-				ChaincodeEk: ccPublicKey,
-			}),
-		},
+		Attestation:            []byte("{\"attestation_type\":\"simulated\",\"attestation\":\"MA==\"}"),
+		SerializedAttestedData: serializedAttestedData,
 	}
 	logger.Infof("Create credentials: %s", credentials)
 
@@ -132,7 +132,7 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 	}
 
 	// decrypt key transport message with chaincode decryption key
-	keyTransportMessageBytes, err := crypto.PkDecryptMessage(m.ccPrivateKey, chaincodeRequestMessage.GetEncryptedKeyTransportMessage())
+	keyTransportMessageBytes, err := m.csp.PkDecryptMessage(m.ccPrivateKey, chaincodeRequestMessage.GetEncryptedKeyTransportMessage())
 	if err != nil {
 		return nil, errors.Wrap(err, "decryption of key transport message failed")
 	}
@@ -153,7 +153,7 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 	}
 
 	// decrypt request
-	clearChaincodeRequestBytes, err := crypto.DecryptMessage(keyTransportMessage.GetRequestEncryptionKey(), chaincodeRequestMessage.GetEncryptedRequest())
+	clearChaincodeRequestBytes, err := m.csp.DecryptMessage(keyTransportMessage.GetRequestEncryptionKey(), chaincodeRequestMessage.GetEncryptedRequest())
 	if err != nil {
 		return nil, errors.Wrap(err, "decryption of request failed")
 	}
@@ -168,7 +168,7 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 	_ = stub.PutState("SomeOtherKey", []byte("some value"))
 	v, _ := stub.GetState("helloKey")
 	v_hash := sha256.Sum256(v)
-	logger.Debug("get state: %s with hash %s", v, v_hash)
+	logger.Debugf("get state: %s with hash %s", v, v_hash)
 
 	// construct rwset for validation
 	rwset := &kvrwset.KVRWSet{
@@ -197,7 +197,7 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 	b64ResponseData := base64.StdEncoding.EncodeToString(responseData)
 
 	//encrypt response
-	encryptedResponse, err := crypto.EncryptMessage(keyTransportMessage.GetResponseEncryptionKey(), []byte(b64ResponseData))
+	encryptedResponse, err := m.csp.EncryptMessage(keyTransportMessage.GetResponseEncryptionKey(), []byte(b64ResponseData))
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +216,7 @@ func (m *MockEnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chai
 	}
 
 	// create signature
-	sig, err := crypto.SignMessage(m.privateKey, responseBytes)
+	sig, err := m.csp.SignMessage(m.privateKey, responseBytes)
 	if err != nil {
 		return nil, err
 	}

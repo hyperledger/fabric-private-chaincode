@@ -12,6 +12,9 @@ import (
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode"
+	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/enclave"
+	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/ercc"
+	"github.com/hyperledger/fabric-private-chaincode/internal/endorsement"
 	"github.com/hyperledger/fabric/common/flogging"
 )
 
@@ -24,7 +27,12 @@ func main() {
 	// For example: FABRIC_LOGGING_SPEC=ecc=DEBUG:ecc_enclave=ERROR
 
 	// create enclave chaincode
-	ecc := chaincode.NewChaincodeEnclave()
+	ecc := &chaincode.EnclaveChaincode{
+		Enclave:   enclave.NewEnclaveStub(),
+		Validator: endorsement.NewValidator(),
+		Extractor: &chaincode.ExtractorImpl{},
+		Ercc:      &ercc.StubImpl{},
+	}
 
 	ccid := os.Getenv("CHAINCODE_PKG_ID")
 	addr := os.Getenv("CHAINCODE_SERVER_ADDRESS")
