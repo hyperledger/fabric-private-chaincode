@@ -1,3 +1,79 @@
+## v1.0.0-rc2
+Thu Sep  9 09:57:18 CEST 2021
+
+* [ef710b2](https://github.com/hyperledger/fabric-private-chaincode/commit/ef710b2) Release v1.0-rc2
+* [c0e1dfb](https://github.com/hyperledger/fabric-private-chaincode/commit/c0e1dfb) Remove explicit FPC version from docu
+* [a007320](https://github.com/hyperledger/fabric-private-chaincode/commit/a007320) catch all chaincode exceptions and fail gracefully with log (#625)
+* [d0f2eec](https://github.com/hyperledger/fabric-private-chaincode/commit/d0f2eec) Unittest for ECC (#618)
+* [d564662](https://github.com/hyperledger/fabric-private-chaincode/commit/d564662) Separate the FPC go SDK from the Fabric Client SDK Go (#621)
+* [6c13943](https://github.com/hyperledger/fabric-private-chaincode/commit/6c13943) Add FPC go protos (#624)
+* [dadbd25](https://github.com/hyperledger/fabric-private-chaincode/commit/dadbd25) Fixing Codecov reporting (#622)
+* [61fdcb1](https://github.com/hyperledger/fabric-private-chaincode/commit/61fdcb1) HelloWorld on the sample test-network (#619)
+* [22ab0dc](https://github.com/hyperledger/fabric-private-chaincode/commit/22ab0dc) Add missing license
+* [75653bc](https://github.com/hyperledger/fabric-private-chaincode/commit/75653bc) Fix indentation
+* [7e3f242](https://github.com/hyperledger/fabric-private-chaincode/commit/7e3f242) Fix spelling
+* [045c329](https://github.com/hyperledger/fabric-private-chaincode/commit/045c329) Add spellchecking for go files
+* [7388ac5](https://github.com/hyperledger/fabric-private-chaincode/commit/7388ac5) Fix staticcheck results
+* [0ab8501](https://github.com/hyperledger/fabric-private-chaincode/commit/0ab8501) Add go staticchecks
+* [84e26db](https://github.com/hyperledger/fabric-private-chaincode/commit/84e26db) New docker flow including pulling images (#612)
+* [eb77fbf](https://github.com/hyperledger/fabric-private-chaincode/commit/eb77fbf) Fix Test-Network Readme to shutdown without errors (#615)
+* [7c2a146](https://github.com/hyperledger/fabric-private-chaincode/commit/7c2a146) Update attestation verification with additional quote statuses (#610)
+* [f9c5a88](https://github.com/hyperledger/fabric-private-chaincode/commit/f9c5a88) Fix path in attestation conversion test
+* [f755cec](https://github.com/hyperledger/fabric-private-chaincode/commit/f755cec) Fix build fail and blockchain explorer changes (#609)
+* [950cca3](https://github.com/hyperledger/fabric-private-chaincode/commit/950cca3) Adding blockchain explorer to test network (#602)
+* [65c021f](https://github.com/hyperledger/fabric-private-chaincode/commit/65c021f) Create pure go crypto impl (#604)
+* [eb2b85f](https://github.com/hyperledger/fabric-private-chaincode/commit/eb2b85f) Improve test-network sample to accept any chaincode (#607)
+* [a2f6b05](https://github.com/hyperledger/fabric-private-chaincode/commit/a2f6b05) Enable stress tests (#586)
+* [66f33b4](https://github.com/hyperledger/fabric-private-chaincode/commit/66f33b4) Revisit Readme
+* [51039f1](https://github.com/hyperledger/fabric-private-chaincode/commit/51039f1) Fixed broken links in main readme and helloworld readme
+* [dc81cd5](https://github.com/hyperledger/fabric-private-chaincode/commit/dc81cd5) Refactor use of PDO crypto
+* [e2dcd7a](https://github.com/hyperledger/fabric-private-chaincode/commit/e2dcd7a) Add hybrid request encryption
+* [f97f8dc](https://github.com/hyperledger/fabric-private-chaincode/commit/f97f8dc) Add stress test harness including larger tx parms
+* [7522920](https://github.com/hyperledger/fabric-private-chaincode/commit/7522920) Add the usage of fpcclient to the README of test-network deployment.
+* [f260421](https://github.com/hyperledger/fabric-private-chaincode/commit/f260421) Fix k8s deployment README
+* [aa4bd01](https://github.com/hyperledger/fabric-private-chaincode/commit/aa4bd01) Fix k8s deployment path setting
+* [0c8d7d5](https://github.com/hyperledger/fabric-private-chaincode/commit/0c8d7d5) Fix test-network path in simple-go (#580)
+* [35c26a6](https://github.com/hyperledger/fabric-private-chaincode/commit/35c26a6) fix linter folders
+* [aa732eb](https://github.com/hyperledger/fabric-private-chaincode/commit/aa732eb) update hl-labs -> hl refs
+* [a46b759](https://github.com/hyperledger/fabric-private-chaincode/commit/a46b759) Fix test-network setting and README (#573)
+* [ec11b8a](https://github.com/hyperledger/fabric-private-chaincode/commit/ec11b8a) Update CODEOWNERS group (#574)
+* [28fe6f4](https://github.com/hyperledger/fabric-private-chaincode/commit/28fe6f4) fixup! Remove some make dependencies
+* [4ce1854](https://github.com/hyperledger/fabric-private-chaincode/commit/4ce1854) fixup! Remove some make dependencies
+* [5bdfe79](https://github.com/hyperledger/fabric-private-chaincode/commit/5bdfe79) Remove some make dependencies
+* [4bf0f50](https://github.com/hyperledger/fabric-private-chaincode/commit/4bf0f50) Updates
+* [5bd0ddd](https://github.com/hyperledger/fabric-private-chaincode/commit/5bd0ddd) fixup! Make fabric patch optional
+* [f210670](https://github.com/hyperledger/fabric-private-chaincode/commit/f210670) Make fabric patch optional
+* [97d2caf](https://github.com/hyperledger/fabric-private-chaincode/commit/97d2caf) fixup! New samples structure
+* [a2f9dbf](https://github.com/hyperledger/fabric-private-chaincode/commit/a2f9dbf) fixup! New samples structure
+* [dd756cf](https://github.com/hyperledger/fabric-private-chaincode/commit/dd756cf) fixup! New samples structure
+* [a27adc1](https://github.com/hyperledger/fabric-private-chaincode/commit/a27adc1) fixup! New samples structure
+* [34c83ed](https://github.com/hyperledger/fabric-private-chaincode/commit/34c83ed) New samples structure
+* [06f59bf](https://github.com/hyperledger/fabric-private-chaincode/commit/06f59bf) Extending HelloWorld tutorial with FPC Client SDK
+* [9674b90](https://github.com/hyperledger/fabric-private-chaincode/commit/9674b90) remove unused docker build dependencies
+* [9a37217](https://github.com/hyperledger/fabric-private-chaincode/commit/9a37217) Add k8s-based demo network
+* [a50c9e1](https://github.com/hyperledger/fabric-private-chaincode/commit/a50c9e1) upgrade pdo
+* [7b02fe8](https://github.com/hyperledger/fabric-private-chaincode/commit/7b02fe8) Update Client SDK example with multi-org support
+* [b5a75a1](https://github.com/hyperledger/fabric-private-chaincode/commit/b5a75a1) Redoing corrections to solve #540
+* [ab52860](https://github.com/hyperledger/fabric-private-chaincode/commit/ab52860) Update "master" branch references to "main"
+* [b073fad](https://github.com/hyperledger/fabric-private-chaincode/commit/b073fad) fix
+* [37f7fc1](https://github.com/hyperledger/fabric-private-chaincode/commit/37f7fc1) (breaking commit) add test
+* [37de010](https://github.com/hyperledger/fabric-private-chaincode/commit/37de010) enable coverage report in CI
+* [0dae557](https://github.com/hyperledger/fabric-private-chaincode/commit/0dae557) More Client SDK unit tests
+* [0b14603](https://github.com/hyperledger/fabric-private-chaincode/commit/0b14603) Update integration/test-network/README.md
+* [dbfb57d](https://github.com/hyperledger/fabric-private-chaincode/commit/dbfb57d) Update integration/test-network/README.md
+* [446e978](https://github.com/hyperledger/fabric-private-chaincode/commit/446e978) Revisit test network tutorial
+* [7897b83](https://github.com/hyperledger/fabric-private-chaincode/commit/7897b83) Refactor utils in client sdk integration test
+* [9dc3351](https://github.com/hyperledger/fabric-private-chaincode/commit/9dc3351) Fix tutorial logging
+* [57df801](https://github.com/hyperledger/fabric-private-chaincode/commit/57df801) Add lifecycleclient unit tests
+* [a58a2bd](https://github.com/hyperledger/fabric-private-chaincode/commit/a58a2bd) Update MAINTAINERS.md
+* [36085f3](https://github.com/hyperledger/fabric-private-chaincode/commit/36085f3) Rename github workflow files
+* [db1be5c](https://github.com/hyperledger/fabric-private-chaincode/commit/db1be5c) Repolinter cleanup
+* [5ef0e38](https://github.com/hyperledger/fabric-private-chaincode/commit/5ef0e38) Add changelog
+* [8089672](https://github.com/hyperledger/fabric-private-chaincode/commit/8089672) Update README
+* [6d506e6](https://github.com/hyperledger/fabric-private-chaincode/commit/6d506e6) Update RFC references
+* [ad06f0d](https://github.com/hyperledger/fabric-private-chaincode/commit/ad06f0d) Fix issues #536 related with documentation errors in the initial setu… (#537)
+* [ad1b5d1](https://github.com/hyperledger/fabric-private-chaincode/commit/ad1b5d1) Add missing FPC v1.0-rc1 to release notes
+
 ## v1.0.0-rc1
 6 Feb 2021
 
