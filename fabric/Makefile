@@ -20,7 +20,7 @@ fetch: $(FABS_FETCHED)
 
 $(FABS_FETCHED):
 	mkdir -p $(FABS) && cd $(FABS) \
-	&& curl -sSL https://bit.ly/2ysbOFE | bash -s -- $(FABRIC_VERSION) 1.4.9 -s -d \
+	&& curl -sSL https://bit.ly/2ysbOFE | bash -s -- $(FABRIC_VERSION) 1.4.9 -s \
 	&& touch .fetched
 
 
