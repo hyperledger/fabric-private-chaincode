@@ -294,11 +294,11 @@ make
 Following is a part of expected output.  Please note `[100%] Built target enclave` message in the output.  This suggests that build was successful.
 Output:
 ```bash
-make[3]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger/fabric-private-chaincode/examples/helloworld/_build'
+make[3]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger/fabric-private-chaincode/samples/chaincode/helloworld/_build'
 [100%] Built target enclave
-make[2]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger/fabric-private-chaincode/examples/helloworld/_build'
-/usr/bin/cmake -E cmake_progress_start /home/bcuser/work/src/github.com/hyperledger/fabric-private-chaincode/examples/helloworld/_build/CMakeFiles 0
-make[1]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger/fabric-private-chaincode/examples/helloworld/_build'
+make[2]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger/fabric-private-chaincode/samples/chaincode/helloworld/_build'
+/usr/bin/cmake -E cmake_progress_start /home/bcuser/work/src/github.com/hyperledger/fabric-private-chaincode/samples/chaincode/helloworld/_build/CMakeFiles 0
+make[1]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger/fabric-private-chaincode/samples/chaincode/helloworld/_build'
 ```
 
 
@@ -324,7 +324,7 @@ FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 # this is the path points to FPC chaincode binary
-CC_PATH=${FPC_PATH}/examples/helloworld/_build/lib/
+CC_PATH=${FPC_PATH}/samples/chaincode/helloworld/_build/lib/
 
 CC_ID=helloworld_test
 CC_VER="$(cat ${CC_PATH}/mrenclave)"
@@ -420,7 +420,7 @@ FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
 
 # this is the path points to FPC chaincode binary
-CC_PATH=${FPC_PATH}/examples/helloworld/_build/lib/
+CC_PATH=${FPC_PATH}/samples/chaincode/helloworld/_build/lib/
 
 CC_ID=helloworld_test
 CC_VER="$(cat ${CC_PATH}/mrenclave)"
