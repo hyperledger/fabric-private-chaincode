@@ -1,6 +1,6 @@
 module github.com/hyperledger/fabric-private-chaincode
 
-go 1.15
+go 1.16
 
 // Note:
 // - fabric has a go.mod but the normal tagging, e.g., v2.2.0 does NOT

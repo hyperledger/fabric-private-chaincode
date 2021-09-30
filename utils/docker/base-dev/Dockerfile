@@ -20,7 +20,7 @@ ARG FPC_VERSION=main
 FROM hyperledger/fabric-private-chaincode-base-rt:${FPC_VERSION} as common
 
 # config/build params
-ARG GO_VERSION=1.15.4
+ARG GO_VERSION=1.16.7
 ARG NANOPB_VERSION=0.4.3
 ARG OPENSSL=1.1.1g
 ARG SGXSSL=2.10_1.1.1g
