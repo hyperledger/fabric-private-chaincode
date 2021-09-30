@@ -71,4 +71,4 @@ services:
 networks:
   default:
     external:
-      name: net_test
+      name: fabric_test
