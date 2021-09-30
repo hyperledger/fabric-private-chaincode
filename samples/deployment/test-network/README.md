@@ -36,9 +36,9 @@ Next, setup fabric sample network, binaries and docker images. Here we follow th
 
 ```bash
 cd $FPC_PATH/samples/deployment/test-network
-git clone https://github.com/hyperledger/fabric-samples -b v2.3.0
+git clone https://github.com/hyperledger/fabric-samples -b v2.3.3
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples
-curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.3.0 1.4.9 -s
+curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.3.3 1.4.9 -s
 ```
 
 Before we can start the network, we need to update the Fabric peer configuration to enable FPC support.
@@ -71,7 +71,7 @@ Let's start the Fabric-Samples test network.
 ```bash
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
 ./network.sh up
-./network.sh createChannel -c mychannel -ca -cai 1.4.9 -i 2.3.0
+./network.sh createChannel -c mychannel -ca -cai 1.4.9 -i 2.3.3
 ```
 
 Next, we install the FPC Enclave Registry and our FPC Chaincode on the network by using the standard Lifecycle commands,

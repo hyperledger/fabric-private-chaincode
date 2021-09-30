@@ -66,7 +66,7 @@ PLANTUML_IMG_FORMAT ?= png # pdf / png / svg
 #--------------------------------------------------
 PROJECT_NAME=fabric-private-chaincode
 
-export FABRIC_VERSION ?= 2.3.0
+export FABRIC_VERSION ?= 2.3.3
 
 export FPC_VERSION := main
 

@@ -53,7 +53,7 @@ ARG SGX_MODE
 
 # config/build params
 ARG FABRIC_REPO=https://github.com/hyperledger/fabric.git
-ARG FABRIC_VERSION=2.3.0
+ARG FABRIC_VERSION=2.3.3
 ARG FPC_REPO_URL=https://github.com/hyperledger/fabric-private-chaincode.git
 ARG FPC_REPO_BRANCH_TAG_OR_COMMIT=main
 ARG GIT_USER_NAME=tester
