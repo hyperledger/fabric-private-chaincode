@@ -1,9 +1,16 @@
+/*
+   Copyright IBM Corp. All Rights Reserved.
+
+   SPDX-License-Identifier: Apache-2.0
+*/
+
 package dataprovider
 
 import (
 	"encoding/json"
+	"fmt"
 
-	"github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/chaincode"
+	"github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/fpc"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view/view"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/crypto"
 	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/protos"
@@ -24,6 +31,8 @@ type RegisterView struct {
 }
 
 func (c *RegisterView) Call(context view.Context) (interface{}, error) {
+	fmt.Printf("Register new patient data")
+
 	// encrypt with new random key
 	cp := crypto.NewGoCrypto()
 	sk, err := cp.NewSymmetricKey()
@@ -43,6 +52,8 @@ func (c *RegisterView) Call(context view.Context) (interface{}, error) {
 		return nil, errors.Wrap(err, "cannot upload data to kvs")
 	}
 
+	fmt.Printf("Patient data successfully uploaded to storage (handle = %s)\n", handle)
+
 	userIdentity := pb.Identity{
 		Uuid:      c.PatientUUID,
 		PublicKey: c.PatientVK,
@@ -56,15 +67,15 @@ func (c *RegisterView) Call(context view.Context) (interface{}, error) {
 		StudyId:       c.StudyID,
 	}
 
-	if _, err := context.RunView(
-		chaincode.NewInvokeView(
-			"experimenter-approval-service",
-			"RegisterData",
-			utils.MarshalProtoBase64(registerDataRequest),
-		).WithEndorsersFromMyOrg(),
-	); err != nil {
-		return nil, errors.Wrap(err, "error invoking chaincode")
+	cid := "experimenter-approval-service"
+	f := "registerData"
+	arg := utils.MarshalProtoBase64(registerDataRequest)
+
+	if _, err := fpc.GetDefaultChannel(context).Chaincode(cid).Invoke(f, arg).Call(); err != nil {
+		return nil, errors.Wrapf(err, "error invoking %s", f)
 	}
+
+	fmt.Println("Patient data successfully registered! thanks")
 
 	return nil, nil
 }

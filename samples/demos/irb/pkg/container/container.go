@@ -1,6 +1,13 @@
+/*
+Copyright IBM Corp. All Rights Reserved.
+
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package container
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 
@@ -17,6 +24,8 @@ type Container struct {
 	HostIP      string
 	HostPort    string
 	containerID string
+	Env         []string
+	Network     string
 }
 
 func (c *Container) Start() error {
@@ -30,6 +39,7 @@ func (c *Container) Start() error {
 		&container.Config{
 			Image: c.Image,
 			Cmd:   c.CMD,
+			Env:   c.Env,
 		},
 		&container.HostConfig{
 			PortBindings: nat.PortMap{
@@ -40,12 +50,33 @@ func (c *Container) Start() error {
 		return err
 	}
 
+	if err := cli.NetworkConnect(context.Background(), c.Network, resp.ID, nil); err != nil {
+		return err
+	}
+
 	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
 		return err
 	}
 
+	go func() {
+		reader, err := cli.ContainerLogs(context.Background(), resp.ID, types.ContainerLogsOptions{
+			ShowStdout: true,
+			ShowStderr: true,
+			Follow:     true,
+			Timestamps: false,
+		})
+		defer reader.Close()
+		if err != nil {
+			return
+		}
+
+		scanner := bufio.NewScanner(reader)
+		for scanner.Scan() {
+			fmt.Printf("%s: %s", c.Name, scanner.Text())
+		}
+	}()
 	c.containerID = resp.ID
-	fmt.Printf("Container started: %s\n", resp.ID)
+	fmt.Printf("Container started: %s (%s)\n", c.Name, resp.ID)
 
 	return nil
 }

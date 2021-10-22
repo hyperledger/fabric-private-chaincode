@@ -8,6 +8,8 @@ include $(TOP)/build.mk
 
 BUILD_DIR := _build
 
+all: docker
+
 $(BUILD_DIR):
 	@if [ ! -d $(BUILD_DIR) ]; then \
 		mkdir -p $(BUILD_DIR) && \

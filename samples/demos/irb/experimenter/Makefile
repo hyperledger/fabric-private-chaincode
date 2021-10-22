@@ -5,13 +5,13 @@
 TOP = ../../../..
 include $(TOP)/build.mk
 
-all: build
+all: docker
 
-build:
+docker:
 	DOCKER_BUILDKIT=0 docker build -f Dockerfile -t irb-experimenter-worker ..
 
-run: build
-	make -C worker stop-docker run-docker
+run: docker
+	$(MAKE) -C worker stop-docker run-docker
 
 test:
-	go run test/worker-client.go
+	$(GO) test -v ./...

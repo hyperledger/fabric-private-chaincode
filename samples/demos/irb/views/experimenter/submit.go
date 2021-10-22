@@ -1,3 +1,9 @@
+/*
+   Copyright IBM Corp. All Rights Reserved.
+
+   SPDX-License-Identifier: Apache-2.0
+*/
+
 package experimenter
 
 import (
@@ -5,11 +11,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/chaincode"
+	"github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/fpc"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view/view"
+	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/experiment"
+	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/messages"
 	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/protos"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/utils"
-	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/views"
 	"github.com/pkg/errors"
 )
 
@@ -24,23 +31,25 @@ type SubmissionView struct {
 }
 
 func (c *SubmissionView) Call(context view.Context) (interface{}, error) {
-	// TODO start experimenter container (worker)
-
 	// get worker credentials
-	//workerCredentials, err := worker.GetWorkerCredentials()
-	//if err != nil {
-	//	fmt.Printf("error: %v\n", err)
-	//	return nil, err
-	//}
+	workerCredentials, err := experiment.GetWorkerCredentials()
+	if err != nil {
+		fmt.Printf("error: %v\n", err)
+		return nil, err
+	}
 
 	// submit new experimenter proposal
 	experimentProposal := &pb.ExperimentProposal{
-		StudyId:      c.StudyId,
-		ExperimentId: c.ExperimentId,
-		//WorkerCredentials: workerCredentials,
+		StudyId:           c.StudyId,
+		ExperimentId:      c.ExperimentId,
+		WorkerCredentials: workerCredentials,
 	}
-	if err := c.submitProposal(context, experimentProposal); err != nil {
-		return nil, err
+	cid := "experimenter-approval-service"
+	f := "newExperiment"
+	arg := utils.MarshalProtoBase64(experimentProposal)
+
+	if _, err := fpc.GetDefaultChannel(context).Chaincode(cid).Invoke(f, arg).Call(); err != nil {
+		return nil, errors.Wrap(err, "error invoking "+f)
 	}
 
 	// reach out to investigator to trigger review and approval
@@ -48,22 +57,10 @@ func (c *SubmissionView) Call(context view.Context) (interface{}, error) {
 		return nil, err
 	}
 
+	fmt.Println("It seems I got my approval! Ready to start the real work!")
+
 	// trigger execution flow
 	return context.RunView(NewExecutionView(c.ExperimentId))
-}
-
-func (c *SubmissionView) submitProposal(context view.Context, experimentProposal *pb.ExperimentProposal) error {
-	if _, err := context.RunView(
-		chaincode.NewInvokeView(
-			"experimenter-approval-service",
-			"newExperiment",
-			utils.MarshalProtoBase64(experimentProposal),
-		).WithEndorsersFromMyOrg(),
-	); err != nil {
-		return errors.Wrap(err, "error invoking chaincode")
-	}
-
-	return nil
 }
 
 func (c *SubmissionView) waitForApprovals(context view.Context) error {
@@ -72,7 +69,7 @@ func (c *SubmissionView) waitForApprovals(context view.Context) error {
 		return err
 	}
 
-	msg := &views.ApprovalRequestNotification{
+	msg := &messages.ApprovalRequestNotification{
 		Message:      "Hey my friend, I just submitted a new experimenter! Please review and approve asap; Thanks",
 		Sender:       context.Me().String(),
 		ExperimentID: c.ExperimentId,

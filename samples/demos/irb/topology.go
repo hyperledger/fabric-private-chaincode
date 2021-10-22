@@ -1,3 +1,9 @@
+/*
+Copyright IBM Corp. All Rights Reserved.
+
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package irb
 
 import (
@@ -13,13 +19,6 @@ func Topology() []api.Topology {
 	fabricTopology := fabric.NewDefaultTopology()
 	fabricTopology.AddOrganizationsByName("Org1", "Org2", "Org3")
 	fabricTopology.AddFPC("experimenter-approval-service", "fpc/irb-experiment")
-	//fabricTopology.AddManagedNamespace(
-	//	"experimenter-approval-service",
-	//	`OR('Org1MSP.member','Org2MSP.member','Org3MSP.member')`,
-	//	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/chaincode",
-	//	"",
-	//	"Org1_peer_0", "Org2_peer_0", "Org3_peer_0",
-	//)
 	fscTopology := fsc.NewTopology()
 
 	// data provider
@@ -30,7 +29,7 @@ func Topology() []api.Topology {
 	// investigator
 	investigatorNode := fscTopology.AddNodeByName("investigator")
 	investigatorNode.AddOptions(fabric.WithOrganization("Org2"))
-	investigatorNode.RegisterViewFactory("RegisterStudy", &investigator.RegisterStudyViewFactory{})
+	investigatorNode.RegisterViewFactory("CreateStudy", &investigator.CreateStudyViewFactory{})
 	investigatorNode.RegisterResponder(&investigator.ApprovalView{}, &experimenter.SubmissionView{})
 
 	//experimenter

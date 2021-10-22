@@ -12,11 +12,12 @@
 package protos
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	proto "github.com/golang/protobuf/proto"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (
@@ -1816,7 +1817,7 @@ var file_irb_proto_depIdxs = []int32{
 	22, // 21: State.RegisteredDataEntry.value:type_name -> Data
 	2,  // 22: StudyApprovalService.GetStudyDetails:input_type -> StudyDetailsRequest
 	5,  // 23: ExperimentApprovalService.RegisterData:input_type -> RegisterDataRequest
-	6,  // 24: ExperimentApprovalService.RegisterStudy:input_type -> SubmitStudyRequest
+	6,  // 24: ExperimentApprovalService.CreateStudy:input_type -> SubmitStudyRequest
 	7,  // 25: ExperimentApprovalService.NewExperiment:input_type -> NewExperimentRequest
 	8,  // 26: ExperimentApprovalService.GetExperimentProposal:input_type -> GetExperimentRequest
 	13, // 27: ExperimentApprovalService.ApproveExperiment:input_type -> ApprovalRequest
@@ -1824,7 +1825,7 @@ var file_irb_proto_depIdxs = []int32{
 	23, // 29: Worker.Execute:input_type -> ExecuteRequest
 	4,  // 30: StudyApprovalService.GetStudyDetails:output_type -> StudyDetailsResponse
 	25, // 31: ExperimentApprovalService.RegisterData:output_type -> Status
-	25, // 32: ExperimentApprovalService.RegisterStudy:output_type -> Status
+	25, // 32: ExperimentApprovalService.CreateStudy:output_type -> Status
 	25, // 33: ExperimentApprovalService.NewExperiment:output_type -> Status
 	9,  // 34: ExperimentApprovalService.GetExperimentProposal:output_type -> GetExperimentResponse
 	25, // 35: ExperimentApprovalService.ApproveExperiment:output_type -> Status

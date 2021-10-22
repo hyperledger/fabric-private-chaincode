@@ -1,10 +1,17 @@
-package main
+/*
+Copyright IBM Corp. All Rights Reserved.
+
+SPDX-License-Identifier: Apache-2.0
+*/
+
+package test
 
 import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"testing"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -12,6 +19,7 @@ import (
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/crypto"
 	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/protos"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/storage"
+	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/utils"
 	"github.com/pkg/errors"
 )
 
@@ -137,7 +145,16 @@ func upload() (*pb.RegisterDataRequest, error) {
 	return registerDataRequest, nil
 }
 
-func main() {
+const networkID = "mytestnetwork"
+
+func TestWorker(t *testing.T) {
+
+	network := &container.Network{Name: networkID}
+	err := network.Create()
+	defer network.Remove()
+	if err != nil {
+		panic(err)
+	}
 
 	// setup redis
 	redis := &container.Container{
@@ -145,14 +162,40 @@ func main() {
 		Name:     "redis-container",
 		HostIP:   "localhost",
 		HostPort: "6379",
+		Network:  networkID,
 	}
-	err := redis.Start()
+	err = redis.Start()
+	defer redis.Stop()
 	if err != nil {
 		panic(err)
 	}
-	defer redis.Stop()
 
-	time.Sleep(2 * time.Second)
+	// setup experiment container
+	experiment := &container.Container{
+		Image:    "irb-experimenter-worker",
+		Name:     "experiment-container",
+		HostIP:   "localhost",
+		HostPort: "5000",
+		Env:      []string{"REDIS_HOST=redis-container"},
+		Network:  networkID,
+	}
+	err = experiment.Start()
+	defer experiment.Stop()
+	if err != nil {
+		panic(err)
+	}
+
+	// let's wait until experiment service is up an running
+	err = utils.Retry(func() bool {
+		resp, err := http.Get("http://localhost:5000/info")
+		if err != nil {
+			return false
+		}
+		return resp.StatusCode == 200
+	}, 5, 60*time.Second, 2*time.Second)
+	if err != nil {
+		panic(err)
+	}
 
 	req, err := upload()
 	if err != nil {

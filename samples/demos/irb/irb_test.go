@@ -1,16 +1,21 @@
+/*
+Copyright IBM Corp. All Rights Reserved.
+
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package irb
 
 import (
 	"fmt"
-	"io/ioutil"
-	"net/http"
+	"strconv"
 	"testing"
-	"time"
 
 	"github.com/hyperledger-labs/fabric-smart-client/integration"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/common"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/container"
-	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/pdf"
+	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/protos"
+	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/storage"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/users"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/views/dataprovider"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/views/experimenter"
@@ -18,39 +23,32 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const studyID = "pineapple"
-const experimentID = "exp001"
+const (
+	studyID                 = "pineapple"
+	experimentID            = "exp001"
+	dockerNetwork           = "irb-network"
+	redisImageName          = "redis"
+	redisContainerName      = "redis-container"
+	experimentImageName     = "irb-experimenter-worker"
+	experimentContainerName = "experiment-container"
+	testPatientData         = "29, 0, 0, 1, 0, 0"
+)
 
 func TestFlow(t *testing.T) {
 
-	// create test patients
-	patients := []string{"patient1", "patient2"}
-	fmt.Printf("Creating patients and data...")
-	for i := 0; i < len(patients); i++ {
-		_, _, _, err := users.LoadOrCreateUser(patients[i])
-		assert.NoError(t, err)
-	}
-	fmt.Printf("done.\n")
-
-	// setup network
-	ii, err := integration.Generate(23000, Topology()...)
+	//
+	network := &container.Network{Name: dockerNetwork}
+	err := network.Create()
 	assert.NoError(t, err)
-	ii.Start()
-	defer ii.Stop()
-
-	// register new study
-	_, err = ii.Client("investigator").CallView("RegisterStudy", common.JSONMarshall(&investigator.RegisterStudy{
-		StudyID:  studyID,
-		Metadata: "some fancy study",
-	}))
-	assert.NoError(t, err)
+	defer network.Remove()
 
 	// setup redis
 	redis := &container.Container{
-		Image:    "redis",
-		Name:     "redis-container",
+		Image:    redisImageName,
+		Name:     redisContainerName,
 		HostIP:   "localhost",
-		HostPort: "6379",
+		HostPort: strconv.Itoa(storage.DefaultRedisPort),
+		Network:  dockerNetwork,
 	}
 	err = redis.Start()
 	assert.NoError(t, err)
@@ -58,45 +56,53 @@ func TestFlow(t *testing.T) {
 
 	// setup experiment container
 	experiment := &container.Container{
-		Image:    "irb-experimenter-worker",
-		Name:     "experiment-container",
+		Image:    experimentImageName,
+		Name:     experimentContainerName,
 		HostIP:   "localhost",
 		HostPort: "5000",
+		Network:  dockerNetwork,
+		Env:      []string{fmt.Sprintf("REDIS_HOST=%s", redisContainerName)},
 	}
 	err = experiment.Start()
 	defer experiment.Stop()
 	assert.NoError(t, err)
-	time.Sleep(10 * time.Second)
 
-	resp, err := http.Get("http://localhost:5000/info")
+	// setup fabric network
+	ii, err := integration.Generate(23000, Topology()...)
 	assert.NoError(t, err)
+	ii.Start()
+	defer ii.Stop()
 
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	assert.NoError(t, err)
+	// create test patients participating in our study
+	patients := []string{"patient1"}
+	var patientIdentities []*pb.Identity
+	for _, p := range patients {
+		uuid, _, vk, err := users.LoadOrCreateUser(p)
+		assert.NoError(t, err)
+		patientIdentities = append(patientIdentities, &pb.Identity{Uuid: string(uuid), PublicKey: vk})
+	}
+	assert.Equal(t, len(patients), len(patientIdentities))
 
-	fmt.Printf("got: %s\n", bodyBytes)
-
-	assert.NotEmpty(t, "stop here")
-
-	// data provider flow
-	// parse pdf provided by patient
-	data, err := ioutil.ReadFile("pkg/pdf/patient1.pdf")
-	res, err := pdf.ParseQuestionForm(data)
-	assert.NoError(t, err)
-
-	// load corresponding patientUUID and patientVK
-	patientUUID, _, patientVK, err := users.LoadUser(res.UUID)
-	assert.NoError(t, err)
-
-	_, err = ii.Client("provider").CallView("RegisterData", common.JSONMarshall(&dataprovider.Register{
-		StudyID:     studyID,
-		PatientData: []byte(res.Answers.ToString()),
-		PatientUUID: string(patientUUID),
-		PatientVK:   patientVK,
+	// create new study with our patients
+	_, err = ii.Client("investigator").CallView("CreateStudy", common.JSONMarshall(&investigator.CreateStudy{
+		StudyID:      studyID,
+		Metadata:     "some fancy study",
+		Participants: patientIdentities,
 	}))
 	assert.NoError(t, err)
 
-	// experimenter flow
+	// data provider flow
+	_, err = ii.Client("provider").CallView("RegisterData", common.JSONMarshall(&dataprovider.Register{
+		StudyID:     studyID,
+		PatientData: []byte(testPatientData),
+		PatientUUID: patientIdentities[0].GetUuid(),
+		PatientVK:   patientIdentities[0].GetPublicKey(),
+	}))
+	assert.NoError(t, err)
+
+	// starting experimenter flow
+	// this starts with the submission view which interacts with the investigator approval view
+	// once the new experiment is approved, the execution view is triggered
 	_, err = ii.Client("experimenter").CallView("Submission", common.JSONMarshall(&experimenter.Submission{
 		StudyId:      studyID,
 		ExperimentId: experimentID,

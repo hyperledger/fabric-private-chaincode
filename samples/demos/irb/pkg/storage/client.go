@@ -1,3 +1,9 @@
+/*
+   Copyright IBM Corp. All Rights Reserved.
+
+   SPDX-License-Identifier: Apache-2.0
+*/
+
 package storage
 
 import (
@@ -5,9 +11,12 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/go-redis/redis"
 )
+
+const DefaultRedisPort = 6379
 
 func getEnv(key, defaultValue string) string {
 	value := os.Getenv(key)
@@ -23,7 +32,7 @@ type Client struct {
 
 func NewClient() *Client {
 	host := getEnv("REDIS_HOST", "localhost")
-	port := getEnv("REDIS_PORT", "6379")
+	port := getEnv("REDIS_PORT", strconv.Itoa(DefaultRedisPort))
 	password := getEnv("REDIS_PASSWORD", "")
 
 	return &Client{redis: redis.NewClient(&redis.Options{
