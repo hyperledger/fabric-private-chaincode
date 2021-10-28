@@ -25,8 +25,7 @@ ecc-container:
 	make -C ${CC_PATH} && \
 	make -C ${FPC_PATH}/ecc DOCKER_IMAGE=fpc/fpc-${CC_ID}$${HW_EXTENSION} DOCKER_ENCLAVE_SO_PATH=${CC_PATH}/_build/lib all docker
 
-
-ercc-ecc-start:
+start:
 	if [ ! -z "${DOCKERD_FPC_PATH}" ]; then \
   		export SGX_CREDENTIALS_PATH="${DOCKERD_FPC_PATH}/integration/config/ias"; \
   	fi && \
@@ -35,8 +34,13 @@ ercc-ecc-start:
 		    AESMD_PATH="/var/run/aesmd" \
 		    SGX_DEVICE_PATH=$$(if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx/enclave" ]; then echo "/dev/sgx/enclave"; else echo "none"; fi) && \
 		[ "$${SGX_DEVICE_PATH}" != "none" ] || ( echo "ERROR: SGX_MODE is HW but no sgx device found"; exit 1; ) \
-	fi && \
+	fi
+
+ercc-ecc-start: start 
 	env CC_ID=${CC_ID} FPC_VERSION=${FPC_VERSION} docker-compose up
+
+ercc-ecc-background: start 
+	env CC_ID=${CC_ID} FPC_VERSION=${FPC_VERSION} docker-compose up -d
 
 ercc-ecc-stop:
 	env CC_ID=${CC_ID} FPC_VERSION=${FPC_VERSION} docker-compose down

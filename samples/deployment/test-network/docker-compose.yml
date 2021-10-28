@@ -11,7 +11,6 @@ services:
     container_name: ${CC_ID}.peer0.org1.example.com
     hostname: ${CC_ID}.peer0.org1.example.com
     image: fpc/fpc-${CC_ID}${HW_EXTENSION:-}:${FPC_VERSION}
-    entrypoint: /usr/local/bin/chaincode
     environment:
       - CHAINCODE_SERVER_ADDRESS=${CC_ID}.peer0.org1.example.com:9999
       - CHAINCODE_PKG_ID=${ORG1_ECC_PKG_ID}
@@ -42,7 +41,6 @@ services:
     container_name: ${CC_ID}.peer0.org2.example.com
     hostname: ${CC_ID}.peer0.org2.example.com
     image: fpc/fpc-${CC_ID}${HW_EXTENSION:-}:${FPC_VERSION}
-    entrypoint: /usr/local/bin/chaincode
     environment:
       - CHAINCODE_SERVER_ADDRESS=${CC_ID}.peer0.org2.example.com:9999
       - CHAINCODE_PKG_ID=${ORG2_ECC_PKG_ID}
