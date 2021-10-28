@@ -50,7 +50,7 @@ int invoke(
 
         if (params.size() != 1)
         {
-            result = std::string("put_state needs 1 parameter: key");
+            result = std::string("get_state needs 1 parameter: key");
         }
         else
         {
