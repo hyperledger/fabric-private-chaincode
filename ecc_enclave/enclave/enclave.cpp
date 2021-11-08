@@ -11,6 +11,9 @@
 #include "enclave_t.h"
 #include "error.h"
 #include "fpc/fpc.pb.h"
+#include "fabric/peer/proposal.pb.h"
+#include "fabric/peer/chaincode.pb.h"
+#include "fabric/common/common.pb.h"
 #include "logging.h"
 #include "pb_decode.h"
 #include "pb_encode.h"
@@ -48,6 +51,54 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
     ByteArray response_encryption_key;
 
     ctx.u_shim_ctx = u_shim_ctx;
+    ctx.signed_proposal = ByteArray(signed_proposal_proto_bytes, signed_proposal_proto_bytes + signed_proposal_proto_bytes_len);
+
+    // unmarshall proposal
+    {
+        pb_istream_t istream;
+
+        protos_SignedProposal signed_proposal = {};
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)signed_proposal_proto_bytes, signed_proposal_proto_bytes_len);
+        b = pb_decode(&istream, protos_SignedProposal_fields, &signed_proposal);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        common_Header header = {};
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)signed_proposal.proposal_bytes->bytes, signed_proposal.proposal_bytes->size);
+        b = pb_decode(&istream, common_Header_fields, &header);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        common_ChannelHeader channel_header = {};
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)header.channel_header->bytes, header.channel_header->size);
+        b = pb_decode(&istream, common_ChannelHeader_fields, &channel_header);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        // set tx_id
+        ctx.tx_id = std::string(channel_header.tx_id);
+        ctx.channel_id = std::string(channel_header.channel_id);
+
+
+        protos_Proposal proposal = {};
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)signed_proposal.proposal_bytes->bytes, signed_proposal.proposal_bytes->size);
+        b = pb_decode(&istream, protos_Proposal_fields, &proposal);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        protos_ChaincodeProposalPayload cc_proposal_payload = {};
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)proposal.payload->bytes, proposal.payload->size);
+        b = pb_decode(&istream, protos_ChaincodeProposalPayload_fields, &cc_proposal_payload);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        // TODO transform _protos_ChaincodeProposalPayload_TransientMapEntry to std::map
+//        ctx.transient_data = ;
+    }
+
+
+
+
 
     {
         pb_istream_t istream;

@@ -24,6 +24,10 @@ typedef struct t_shim_ctx
     read_set_t read_set;
     write_set_t write_set;
     std::vector<std::string> string_args;
+    ByteArray signed_proposal;
+    std::string tx_id;
+    std::string channel_id;
+    std::map<std::string, ByteArray> transient_data;
 } t_shim_ctx_t;
 
 #include "fpc.pb.h"
