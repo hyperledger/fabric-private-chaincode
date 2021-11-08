@@ -10,7 +10,7 @@ replace (
 	go.etcd.io/etcd => go.etcd.io/etcd v0.5.0-alpha.5.0.20181228115726-23731bf9ba55
 )
 
-replace github.com/hyperledger-labs/fabric-smart-client => ../../../../../hyperledger-labs/fabric-smart-client
+//replace github.com/hyperledger-labs/fabric-smart-client => ../../../../../hyperledger-labs/fabric-smart-client
 
 require (
 	github.com/Microsoft/go-winio v0.5.0 // indirect
@@ -21,7 +21,6 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/hyperledger-labs/fabric-smart-client v0.0.0-20211015115528-782c5aee50b7
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20210722174351-9815a7a8f0f7
-	github.com/hyperledger/fabric-contract-api-go v1.1.1
 	github.com/libp2p/go-libp2p-core v0.3.0
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
 	github.com/pkg/errors v0.9.1

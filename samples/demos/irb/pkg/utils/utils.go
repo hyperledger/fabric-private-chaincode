@@ -13,7 +13,6 @@ import (
 	"time"
 
 	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/protos"
-
 	"google.golang.org/protobuf/proto"
 )
 

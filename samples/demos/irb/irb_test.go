@@ -103,7 +103,7 @@ func TestFlow(t *testing.T) {
 	// starting experimenter flow
 	// this starts with the submission view which interacts with the investigator approval view
 	// once the new experiment is approved, the execution view is triggered
-	_, err = ii.Client("experimenter").CallView("Submission", common.JSONMarshall(&experimenter.Submission{
+	_, err = ii.Client("experimenter").CallView("SubmitExperiment", common.JSONMarshall(&experimenter.SubmitExperiment{
 		StudyId:      studyID,
 		ExperimentId: experimentID,
 		Investigator: ii.Identity("investigator"),

@@ -20,17 +20,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Submission struct {
+type SubmitExperiment struct {
 	StudyId      string
 	ExperimentId string
 	Investigator view.Identity
 }
 
-type SubmissionView struct {
-	*Submission
+type SubmitExperimentView struct {
+	*SubmitExperiment
 }
 
-func (c *SubmissionView) Call(context view.Context) (interface{}, error) {
+func (c *SubmitExperimentView) Call(context view.Context) (interface{}, error) {
 	// get worker credentials
 	workerCredentials, err := experiment.GetWorkerCredentials()
 	if err != nil {
@@ -63,7 +63,7 @@ func (c *SubmissionView) Call(context view.Context) (interface{}, error) {
 	return context.RunView(NewExecutionView(c.ExperimentId))
 }
 
-func (c *SubmissionView) waitForApprovals(context view.Context) error {
+func (c *SubmitExperimentView) waitForApprovals(context view.Context) error {
 	session, err := context.GetSession(context.Initiator(), c.Investigator)
 	if err != nil {
 		return err
@@ -99,11 +99,11 @@ func (c *SubmissionView) waitForApprovals(context view.Context) error {
 	return nil
 }
 
-type SubmissionViewFactory struct{}
+type SubmitExperimentViewFactory struct{}
 
-func (c *SubmissionViewFactory) NewView(in []byte) (view.View, error) {
-	f := &SubmissionView{Submission: &Submission{}}
-	if err := json.Unmarshal(in, f.Submission); err != nil {
+func (c *SubmitExperimentViewFactory) NewView(in []byte) (view.View, error) {
+	f := &SubmitExperimentView{SubmitExperiment: &SubmitExperiment{}}
+	if err := json.Unmarshal(in, f.SubmitExperiment); err != nil {
 		return nil, err
 	}
 	return f, nil

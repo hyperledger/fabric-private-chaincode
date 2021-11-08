@@ -6,7 +6,7 @@
 TOP = ..
 include $(TOP)/build.mk
 
-SAMPLES = application chaincode #deployment
+SAMPLES = application chaincode demos #deployment
 
 build clean:
 	$(foreach DIR, $(SAMPLES), $(MAKE) -C $(DIR) $@ || exit;)

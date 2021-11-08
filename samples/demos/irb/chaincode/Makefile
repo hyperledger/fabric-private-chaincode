@@ -7,6 +7,7 @@ TOP = ../../../..
 include $(TOP)/build.mk
 
 BUILD_DIR := _build
+DOCKER_IMAGE_NAME := fpc/irb-experiment
 
 all: docker
 
@@ -23,13 +24,11 @@ build: protos $(BUILD_DIR)
 clean: protos-clean
 	rm -rf $(BUILD_DIR)
 
-DOCKER_IMAGE_NAME := fpc/irb-experiment
-
 docker: build
 	if [ "${SGX_MODE}" = "HW" ]; then \
 		export HW_EXTENSION="-hw" ; \
 	fi && \
-	make -C ${FPC_PATH}/ecc DOCKER_IMAGE=${DOCKER_IMAGE_NAME}$${HW_EXTENSION} DOCKER_ENCLAVE_SO_PATH=${FPC_PATH}/samples/demos/irb/experiment-approval-service/${BUILD_DIR}/lib all docker
+	make -C ${FPC_PATH}/ecc DOCKER_IMAGE=${DOCKER_IMAGE_NAME}$${HW_EXTENSION} DOCKER_ENCLAVE_SO_PATH=${FPC_PATH}/samples/demos/irb/chaincode/${BUILD_DIR}/lib all docker
 
 PROTO_BUILD_DIR := _protos
 PROTO_PATH := ../protos

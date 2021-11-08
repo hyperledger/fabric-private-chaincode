@@ -30,12 +30,12 @@ func Topology() []api.Topology {
 	investigatorNode := fscTopology.AddNodeByName("investigator")
 	investigatorNode.AddOptions(fabric.WithOrganization("Org2"))
 	investigatorNode.RegisterViewFactory("CreateStudy", &investigator.CreateStudyViewFactory{})
-	investigatorNode.RegisterResponder(&investigator.ApprovalView{}, &experimenter.SubmissionView{})
+	investigatorNode.RegisterResponder(&investigator.ApprovalView{}, &experimenter.SubmitExperimentView{})
 
 	//experimenter
 	experimenterNode := fscTopology.AddNodeByName("experimenter")
 	experimenterNode.AddOptions(fabric.WithOrganization("Org3"))
-	experimenterNode.RegisterViewFactory("Submission", &experimenter.SubmissionViewFactory{})
+	experimenterNode.RegisterViewFactory("SubmitExperiment", &experimenter.SubmitExperimentViewFactory{})
 
 	return []api.Topology{fabricTopology, fscTopology}
 }

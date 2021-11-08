@@ -1818,7 +1818,7 @@ var file_irb_proto_depIdxs = []int32{
 	2,  // 22: StudyApprovalService.GetStudyDetails:input_type -> StudyDetailsRequest
 	5,  // 23: ExperimentApprovalService.RegisterData:input_type -> RegisterDataRequest
 	6,  // 24: ExperimentApprovalService.CreateStudy:input_type -> SubmitStudyRequest
-	7,  // 25: ExperimentApprovalService.NewExperiment:input_type -> NewExperimentRequest
+	7,  // 25: ExperimentApprovalService.SubmitExperiment:input_type -> NewExperimentRequest
 	8,  // 26: ExperimentApprovalService.GetExperimentProposal:input_type -> GetExperimentRequest
 	13, // 27: ExperimentApprovalService.ApproveExperiment:input_type -> ApprovalRequest
 	16, // 28: ExperimentApprovalService.RequestEvaluationPack:input_type -> EvaluationPackRequest
@@ -1826,7 +1826,7 @@ var file_irb_proto_depIdxs = []int32{
 	4,  // 30: StudyApprovalService.GetStudyDetails:output_type -> StudyDetailsResponse
 	25, // 31: ExperimentApprovalService.RegisterData:output_type -> Status
 	25, // 32: ExperimentApprovalService.CreateStudy:output_type -> Status
-	25, // 33: ExperimentApprovalService.NewExperiment:output_type -> Status
+	25, // 33: ExperimentApprovalService.SubmitExperiment:output_type -> Status
 	9,  // 34: ExperimentApprovalService.GetExperimentProposal:output_type -> GetExperimentResponse
 	25, // 35: ExperimentApprovalService.ApproveExperiment:output_type -> Status
 	17, // 36: ExperimentApprovalService.RequestEvaluationPack:output_type -> EncryptedEvaluationPack
