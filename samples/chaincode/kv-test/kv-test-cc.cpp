@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "shim.h"
 #include "base64.h"
+#include "shim.h"
 
 #include <numeric>
 #include <vector>
@@ -76,7 +76,8 @@ int invoke(
 
     ByteArray signed_proposal;
     get_signed_proposal(signed_proposal, ctx);
-    LOG_DEBUG("Proposal hex: %s", base64_encode((unsigned char*)signed_proposal.data() , signed_proposal.size()).c_str());
+    LOG_DEBUG("Proposal hex: %s",
+        base64_encode((unsigned char*)signed_proposal.data(), signed_proposal.size()).c_str());
 
     // check that result fits into response
     int neededSize = result.size();
