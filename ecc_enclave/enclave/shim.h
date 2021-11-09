@@ -15,6 +15,7 @@
 #include "logging.h"
 
 typedef struct t_shim_ctx* shim_ctx_ptr_t;
+typedef std::vector<uint8_t> ByteArray;
 
 /*
   FPC Lite Constraints
@@ -184,21 +185,10 @@ int get_func_and_params(
 //-------------------------------------------------
 
 // - getChannelID
-// // TOD0 (possible extensions): might be useful to support and should be easy?
-// //     If this is just the name, would it be useful also to have a variant which
-// //     has the unique id ("content-addressable"/genesis-block-hash)?
-// void get_channel_id(char* channel_id,
-//     uint32_t max_channel_id_len,
-//     shim_ctx_ptr_t ctx);
+void get_channel_id(std::string& channel_id, shim_ctx_ptr_t ctx);
 
-// - TxID
-// // TODO (possible extensions): at least coming from a Sawtooth/PDO perspective,
-// //   i would think access to this info might be important for cross-cc transactions?
-// //   - Is it commonly used in fabric?
-// //   - Is this something we can easily support (insecurely short-term / securely long-term)?
-// void get_tx_id(char* tx_id,
-//     uint32_t max_tx_id_len,
-//     shim_ctx_ptr_t ctx);
+// - getTxID
+void get_tx_id(std::string& tx_id, shim_ctx_ptr_t ctx);
 
 // - getTxTimestamp
 // // TODO (possible extensions): enclave has no access to trusted time.  Time
@@ -222,7 +212,9 @@ int get_func_and_params(
 //
 // // TODO: other tx-related apis which exist but probably doesn't make sense to support
 // // - getTransient: if we encrypt everything, then everything is essentially Transient?
-// // - getSignedProposal: should be easy to support but probably not worth?
+
+// - getSignedProposal
+void get_signed_proposal(ByteArray& signed_proposal, shim_ctx_ptr_t ctx);
 
 // - creator
 //   return the distinguished name of the creator as well as the msp_id of the corresponding

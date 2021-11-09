@@ -5,6 +5,7 @@
  */
 
 #include "shim.h"
+#include "base64.h"
 
 #include <numeric>
 #include <vector>
@@ -62,6 +63,20 @@ int invoke(
     {
         result = std::string("BAD FUNCTION");
     }
+
+    // test more fpc shim functions
+
+    std::string channel_id;
+    get_channel_id(channel_id, ctx);
+    LOG_DEBUG("Channel id: %s", channel_id.c_str());
+
+    std::string tx_id;
+    get_tx_id(tx_id, ctx);
+    LOG_DEBUG("Tx id: %s", tx_id.c_str());
+
+    ByteArray signed_proposal;
+    get_signed_proposal(signed_proposal, ctx);
+    LOG_DEBUG("Proposal hex: %s", base64_encode((unsigned char*)signed_proposal.data() , signed_proposal.size()).c_str());
 
     // check that result fits into response
     int neededSize = result.size();

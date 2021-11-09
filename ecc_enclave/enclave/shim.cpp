@@ -274,3 +274,18 @@ int get_func_and_params(
 err:
     return -1;
 }
+
+void get_signed_proposal(ByteArray& signed_proposal, shim_ctx_ptr_t ctx)
+{
+    signed_proposal = ctx->signed_proposal;
+}
+
+void get_channel_id(std::string& channel_id, shim_ctx_ptr_t ctx)
+{
+    channel_id = ctx->channel_id;
+}
+
+void get_tx_id(std::string& tx_id, shim_ctx_ptr_t ctx)
+{
+    tx_id = ctx->tx_id;
+}

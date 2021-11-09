@@ -57,19 +57,28 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
     {
         pb_istream_t istream;
 
-        protos_SignedProposal signed_proposal = {};
+        protos_SignedProposal signed_proposal = protos_SignedProposal_init_zero;
         istream = pb_istream_from_buffer(
             (const unsigned char*)signed_proposal_proto_bytes, signed_proposal_proto_bytes_len);
         b = pb_decode(&istream, protos_SignedProposal_fields, &signed_proposal);
         COND2LOGERR(!b, PB_GET_ERROR(&istream));
 
-        common_Header header = {};
+        protos_Proposal proposal = protos_Proposal_init_zero;
         istream = pb_istream_from_buffer(
             (const unsigned char*)signed_proposal.proposal_bytes->bytes, signed_proposal.proposal_bytes->size);
+        b = pb_decode(&istream, protos_Proposal_fields, &proposal);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        common_Header header = common_Header_init_zero;
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)proposal.header->bytes, proposal.header->size);
         b = pb_decode(&istream, common_Header_fields, &header);
         COND2LOGERR(!b, PB_GET_ERROR(&istream));
 
-        common_ChannelHeader channel_header = {};
+        COND2LOGERR(header.channel_header->size == 0, "channel header has zero size");
+        LOG_DEBUG("channel header size: %d", header.channel_header->size);
+
+        common_ChannelHeader channel_header = common_ChannelHeader_init_zero;
         istream = pb_istream_from_buffer(
             (const unsigned char*)header.channel_header->bytes, header.channel_header->size);
         b = pb_decode(&istream, common_ChannelHeader_fields, &channel_header);
@@ -79,14 +88,7 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         ctx.tx_id = std::string(channel_header.tx_id);
         ctx.channel_id = std::string(channel_header.channel_id);
 
-
-        protos_Proposal proposal = {};
-        istream = pb_istream_from_buffer(
-            (const unsigned char*)signed_proposal.proposal_bytes->bytes, signed_proposal.proposal_bytes->size);
-        b = pb_decode(&istream, protos_Proposal_fields, &proposal);
-        COND2LOGERR(!b, PB_GET_ERROR(&istream));
-
-        protos_ChaincodeProposalPayload cc_proposal_payload = {};
+        protos_ChaincodeProposalPayload cc_proposal_payload = protos_ChaincodeProposalPayload_init_zero;
         istream = pb_istream_from_buffer(
             (const unsigned char*)proposal.payload->bytes, proposal.payload->size);
         b = pb_decode(&istream, protos_ChaincodeProposalPayload_fields, &cc_proposal_payload);

@@ -17,6 +17,7 @@ set(SOURCE_FILES
     ${COMMON_SOURCE_DIR}/utils.c
     ${COMMON_SOURCE_DIR}/json/parson.c
     ${COMMON_SOURCE_DIR}/protos/fpc/fpc.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/common/common.pb.c
     ${COMMON_SOURCE_DIR}/protos/fabric/peer/proposal.pb.c
     ${COMMON_SOURCE_DIR}/protos/fabric/peer/proposal_response.pb.c
     ${COMMON_SOURCE_DIR}/protos/fabric/peer/chaincode.pb.c
