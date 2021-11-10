@@ -76,8 +76,12 @@ int invoke(
 
     ByteArray signed_proposal;
     get_signed_proposal(signed_proposal, ctx);
-    LOG_DEBUG("Proposal hex: %s",
+    LOG_DEBUG("Signed proposal: %s",
         base64_encode((unsigned char*)signed_proposal.data(), signed_proposal.size()).c_str());
+
+    ByteArray creator;
+    get_creator(creator, ctx);
+    LOG_DEBUG("Creator: %s", base64_encode((unsigned char*)creator.data(), creator.size()).c_str());
 
     // check that result fits into response
     int neededSize = result.size();
