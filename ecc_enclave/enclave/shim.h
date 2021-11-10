@@ -213,7 +213,7 @@ void get_tx_id(std::string& tx_id, shim_ctx_ptr_t ctx);
 // // TODO: other tx-related apis which exist but probably doesn't make sense to support
 // // - getTransient: if we encrypt everything, then everything is essentially Transient?
 
-// - getSignedProposal
+// - getSignedProposal - returns a serialized signed proposal
 void get_signed_proposal(ByteArray& signed_proposal, shim_ctx_ptr_t ctx);
 
 // - creator
@@ -227,7 +227,10 @@ void get_creator_name(char* msp_id,  // MSP id of organization to which transact
     char* dn,                        // distinguished name of transaction creator
     uint32_t max_dn_len,             // size of allocated buffer for dn
     shim_ctx_ptr_t ctx);
-//
+
+// - get_creator - returns a serialized identity
+void get_creator(ByteArray& creator, shim_ctx_ptr_t ctx);
+
 // TODO (eventually): The go shim GoCreator returns protobuf serialized identity which (usally)
 // is the pair of msp_id and a (PEM-encoded) certificate. We might eventually add a function
 // also to expose the certificate itself.  However, for most current use-cases the DN should

@@ -289,3 +289,8 @@ void get_tx_id(std::string& tx_id, shim_ctx_ptr_t ctx)
 {
     tx_id = ctx->tx_id;
 }
+
+void get_creator(ByteArray& creator, shim_ctx_ptr_t ctx)
+{
+    creator = ctx->creator;
+}

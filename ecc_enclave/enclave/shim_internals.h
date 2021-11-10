@@ -27,7 +27,10 @@ typedef struct t_shim_ctx
     ByteArray signed_proposal;
     std::string tx_id;
     std::string channel_id;
-    std::map<std::string, ByteArray> transient_data;
+    ByteArray creator;
+    // TODO to be implemented
+    // ByteArray binding;
+    // std::map<std::string, ByteArray> transient_data;
 } t_shim_ctx_t;
 
 #include "fpc.pb.h"

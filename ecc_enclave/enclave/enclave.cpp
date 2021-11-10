@@ -77,28 +77,51 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         b = pb_decode(&istream, common_Header_fields, &header);
         COND2LOGERR(!b, PB_GET_ERROR(&istream));
 
-        COND2LOGERR(header.channel_header->size == 0, "channel header has zero size");
-        LOG_DEBUG("channel header size: %d", header.channel_header->size);
-
+        // set tx_id and channel id
         common_ChannelHeader channel_header = common_ChannelHeader_init_zero;
         istream = pb_istream_from_buffer(
             (const unsigned char*)header.channel_header->bytes, header.channel_header->size);
         b = pb_decode(&istream, common_ChannelHeader_fields, &channel_header);
         COND2LOGERR(!b, PB_GET_ERROR(&istream));
 
-        // set tx_id
         ctx.tx_id = std::string(channel_header.tx_id);
         ctx.channel_id = std::string(channel_header.channel_id);
 
-        protos_ChaincodeProposalPayload cc_proposal_payload =
-            protos_ChaincodeProposalPayload_init_zero;
+        // TODO implement me
+        // transient data
+        // protos_ChaincodeProposalPayload cc_proposal_payload =
+        //     protos_ChaincodeProposalPayload_init_zero;
+        // istream = pb_istream_from_buffer(
+        //     (const unsigned char*)proposal.payload->bytes, proposal.payload->size);
+        // b = pb_decode(&istream, protos_ChaincodeProposalPayload_fields, &cc_proposal_payload);
+        // COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        // transform _protos_ChaincodeProposalPayload_TransientMapEntry to std::map
+        // ctx.transient_data = ;
+
+        // set creator
+        common_SignatureHeader signature_header = common_SignatureHeader_init_zero;
         istream = pb_istream_from_buffer(
-            (const unsigned char*)proposal.payload->bytes, proposal.payload->size);
-        b = pb_decode(&istream, protos_ChaincodeProposalPayload_fields, &cc_proposal_payload);
+            (const unsigned char*)header.signature_header->bytes, header.signature_header->size);
+        b = pb_decode(&istream, common_SignatureHeader_fields, &signature_header);
         COND2LOGERR(!b, PB_GET_ERROR(&istream));
 
-        // TODO transform _protos_ChaincodeProposalPayload_TransientMapEntry to std::map
-        //        ctx.transient_data = ;
+        ctx.creator = ByteArray(signature_header.creator->bytes,
+            signature_header.creator->bytes + signature_header.creator->size);
+
+        // TODO check signed proposal signature
+
+        // TODO unwrap ChaincodeRequestMessage from signed proposal
+        // once this is in place we can remove ChaincodeRequestMessage from ecall
+
+        // TODO implement me
+        // ByteArray binding_data;
+        // binding_data.insert(binding_data.end(), signature_header.nonce->bytes,
+        // signature_header.nonce->size); binding_data.insert(binding_data.end(),
+        // signature_header.creator->bytes, signature_header.creator->size);
+        // TODO add channel_header->epoch (as ByteArray) to binding (enforce little endian)
+        // b = compute_message_hash(binding_data, ctx->binding);
+        // COND2LOGERR(!b, "cannot compute binding");
     }
 
     {
