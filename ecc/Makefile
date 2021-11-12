@@ -79,7 +79,7 @@ docker-fpc-app: docker-boilerplate-ecc
 
 docker-run:
 	if [ "$(SGX_MODE)" = "HW" ]; then \
-		SGX_DEVICE_PATH=$(if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx" ]; then echo "/dev/sgx"; else echo "ERROR: NO SGX DEVICE FOUND"; fi);\
+		SGX_DEVICE_PATH=$(if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx/enclave" ]; then echo "/dev/sgx/enclave"; else echo "ERROR: NO SGX DEVICE FOUND"; fi);\
 		DOCKER_SGX_ARGS="--device $${SGX_DEVICE_PATH} -v /var/run/aesmd:/var/run/aesmd";\
 	fi;\
 	$(DOCKER) run \
