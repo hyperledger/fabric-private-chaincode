@@ -3,11 +3,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-TOP = ..
+TOP = ../..
 include $(TOP)/build.mk
 
-SAMPLES = application chaincode demos #deployment
+DEMOS = irb
 
 build clean:
-	$(foreach DIR, $(SAMPLES), $(MAKE) -C $(DIR) $@ || exit;)
+	$(foreach DIR, $(DEMOS), $(MAKE) -C $(DIR) $@ || exit;)
 

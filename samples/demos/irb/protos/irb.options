@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: Apache-2.0
+
+RegisterDataRequest.decryption_key type:FT_POINTER
+RegisterDataRequest.data_handler type:FT_POINTER
+RegisterDataRequest.study_id type:FT_POINTER
+
+Identity.uuid type:FT_POINTER
+Identity.public_key type:FT_POINTER
+Identity.public_encryption_key type:FT_POINTER
+
+Status.msg type:FT_POINTER
+
+ExperimentProposal.study_id type:FT_POINTER
+ExperimentProposal.experiment_id type:FT_POINTER
+
+WorkerCredentials.identity_bytes type:FT_POINTER
+WorkerCredentials.attestation type:FT_POINTER
+WorkerCredentials.evidence type:FT_POINTER
+
+StudyDetailsMessage.study_id type:FT_POINTER
+StudyDetailsMessage.metadata type:FT_POINTER
+StudyDetailsMessage.user_identities type:FT_POINTER
+
+SignedApprovalMessage.approval type:FT_POINTER
+SignedApprovalMessage.signature type:FT_POINTER
+
+Approval.experiment_id type:FT_POINTER
+Approval.experiment_proposal type:FT_POINTER
+
+GetExperimentRequest.experiment_id type:FT_POINTER
+
+EvaluationPackRequest.experiment_id type:FT_POINTER
+
+EvaluationPackMessage.registered_data type:FT_POINTER
+
+EncryptedEvaluationPack.encrypted_evaluationpack type:FT_POINTER
+EncryptedEvaluationPack.encrypted_encryption_key type:FT_POINTER
+

@@ -1,0 +1,185 @@
+// Copyright IBM Corp. All Rights Reserved.
+// Copyright 2020 Intel Corporation
+//
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+option go_package = "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/protos";
+
+// SAS
+service StudyApprovalService {
+    // Note that only details of approved studies are returned
+    rpc GetStudyDetails (StudyDetailsRequest) returns (StudyDetailsResponse) {}
+}
+
+message StudyDetailsRequest {
+     string study_id = 1;
+}
+
+message StudyDetailsMessage {
+     string study_id = 1;
+     string metadata = 2;
+    repeated Identity user_identities = 3;
+}
+
+message StudyDetailsResponse {
+     bytes study_details_message = 1;
+
+    // signed by Study Approval Service (SAS)
+    // used to be verified by EAS when new study is created
+     bytes signature = 2;
+
+     Status status = 3;
+}
+
+// EAS
+service ExperimentApprovalService {
+    rpc RegisterData (RegisterDataRequest) returns (Status) {}
+
+    rpc RegisterStudy (SubmitStudyRequest) returns (Status) {}
+
+    rpc NewExperiment (NewExperimentRequest) returns (Status) {}
+    rpc GetExperimentProposal (GetExperimentRequest) returns (GetExperimentResponse) {}
+    rpc ApproveExperiment (ApprovalRequest) returns (Status) {}
+
+    rpc RequestEvaluationPack (EvaluationPackRequest) returns (EncryptedEvaluationPack) {}
+
+    // helper functions
+    // rpc GetStudy ... return ... {}
+}
+
+message RegisterDataRequest {
+     Identity participant = 1;
+     bytes decryption_key = 2;
+     string data_handler = 3;
+     string study_id = 4;
+}
+
+message SubmitStudyRequest {
+     StudyDetailsResponse details = 1;
+}
+
+message NewExperimentRequest {
+     Experiment experiment = 1;
+}
+
+message GetExperimentRequest {
+     string experiment_id = 1;
+}
+
+message GetExperimentResponse {
+     ExperimentProposal experiment_proposal = 1;
+     Status status = 2;
+}
+
+message WorkerCredentials {
+    bytes identity_bytes = 1;
+    bytes attestation = 2;
+    bytes evidence = 3;
+}
+
+message ExperimentProposal {
+     string study_id = 1;
+     string experiment_id = 2;
+     string mrenclave = 3;
+     string metadata = 4;
+     WorkerCredentials worker_credentials = 5;
+}
+
+message Experiment {
+    // we keep bytes
+    bytes experiment_proposal = 1;
+    Approval approval = 2;
+}
+
+message ApprovalRequest {
+    Approval approval = 1;
+}
+
+message Approval {
+    string experiment_id = 1;
+    // serialized Experiment Proposal
+    bytes experiment_proposal = 2;
+    enum Decision {
+        UNDEFINED = 0;
+        APPROVED = 1;
+        REJECTED = 2;
+    }
+    Decision decision = 3;
+    Identity approver = 4;
+}
+
+message SignedApprovalMessage {
+    bytes approval = 1;
+    bytes signature = 2;
+}
+
+message EvaluationPackRequest {
+     string study_id = 1;
+     string experiment_id = 2;
+}
+
+message EncryptedEvaluationPack {
+    bytes encrypted_encryption_key = 1;
+    // this is ciphertext of a serialized EvaluationPack msg
+    bytes encrypted_evaluationpack = 2;
+}
+
+message EvaluationPackMessage {
+    repeated EvaluationPackItem item = 1;
+    repeated RegisterDataRequest registered_data = 2;
+}
+
+message EvaluationPackItem {
+     bytes decryption_key = 1;
+     string data_handler = 2;
+}
+
+// EAS State
+
+// note that the State message is just here to represent the KVS accessable via putState and getState functions within FPC
+message State {
+    // as key we use study id
+    map<string, Study> state = 1;
+    // as key we use an identity.uuid
+    map<string, Data> registered_data = 2;
+}
+
+message Study {
+     string study_id = 1;
+    repeated Identity participant = 2;
+    repeated Experiment experiment = 3;
+}
+
+message Data {
+     Identity participant = 1;
+     bytes decryption_key = 2;
+     string data_handler = 3;
+}
+
+// Graphene Worker
+service Worker {
+    rpc Execute (ExecuteRequest) returns (Status) {}
+}
+
+message ExecuteRequest {
+    string experiment_id = 1;
+    bytes encrypted_evaluationPack = 2;
+}
+
+// Common messages
+message Identity {
+    string uuid = 1;
+    bytes public_key = 2;
+    bytes public_encryption_key = 3;
+}
+
+message Status {
+    string msg = 1;
+    enum ReturnCode {
+        ERROR_UNKNOWN = 0;
+        OK = 1;
+    }
+    ReturnCode return_code = 2;
+}
