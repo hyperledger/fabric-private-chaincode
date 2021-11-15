@@ -224,7 +224,7 @@ A few more notes:
 * If you run behind a proxy, you will have to configure the proxy,
   e.g., for docker (`~/.docker/config.json`). See
   [Working from behind a proxy](#working-from-behind-a-proxy) below for more information.
-* If your local host is SGX enabled, i.e., there is a device `/dev/sgx` or
+* If your local host is SGX enabled, i.e., there is a device `/dev/sgx/enclave` or
   `/dev/isgx` and your PSW daemon listens to `/var/run/aesmd`, then the docker image will be sgx-enabled and your settings from `./config/ias` will be used. You will have to manually set `SGX_MODE=HW` before building anything to use HW mode.
 * If you want additional apt packages to be automatically added to your
   container images, you can do so by modifying `$FPC_PATH/config.override.mk` file in the fabric-private-chaincode directory.

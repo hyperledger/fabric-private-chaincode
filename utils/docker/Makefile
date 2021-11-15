@@ -30,7 +30,7 @@ DOCKER_DEV_CONTAINER_NAME = fpc-development-${FPC_VERSION}
 # ------------------------
 DOCKER_DAEMON_SOCKET ?= /var/run/docker.sock
 
-SGX_DEVICE_PATH ?= $(shell if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx" ]; then echo "/dev/sgx"; fi)
+SGX_DEVICE_PATH ?= $(shell if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx/enclave" ]; then echo "/dev/sgx/enclave"; fi)
 SGX_PSW_SOCKET ?= /var/run/aesmd
 
 DOCKER_GOPATH=/project
