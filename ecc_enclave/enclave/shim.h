@@ -184,7 +184,8 @@ int get_func_and_params(
 // transaction APIs
 //-------------------------------------------------
 
-// - getChannelID
+// - getChannelID - returns the channel name (ID) the FPC chaincode enclave
+//   Note that the channel ID is attested during enclave initialization.
 void get_channel_id(std::string& channel_id, shim_ctx_ptr_t ctx);
 
 // - getTxID
@@ -228,7 +229,9 @@ void get_creator_name(char* msp_id,  // MSP id of organization to which transact
     uint32_t max_dn_len,             // size of allocated buffer for dn
     shim_ctx_ptr_t ctx);
 
-// - get_creator - returns a serialized identity
+// - get_creator - returns a serialized identity from the signed proposal
+//   Note that the returned identity is not validated against the MSP/ledger since
+//   the enclave does not have trustworthy data to do so.
 void get_creator(ByteArray& creator, shim_ctx_ptr_t ctx);
 
 // TODO (eventually): The go shim GoCreator returns protobuf serialized identity which (usally)

@@ -21,3 +21,5 @@ bool decrypt_message(const ByteArray key, const ByteArray& encrypted_message, By
 bool encrypt_message(const ByteArray key, const ByteArray& message, ByteArray& encrypted_message);
 
 bool compute_message_hash(const ByteArray message, ByteArray& message_hash);
+
+bool validate_message_signature(const ByteArray signature, const ByteArray message, const ByteArray serialized_signer);

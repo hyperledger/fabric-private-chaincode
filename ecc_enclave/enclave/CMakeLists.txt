@@ -24,6 +24,7 @@ set(SOURCE_FILES
     ${COMMON_SOURCE_DIR}/protos/fabric/common/policies.pb.c
     ${COMMON_SOURCE_DIR}/protos/fabric/ledger/rwset/kvrwset/kv_rwset.pb.c
     ${COMMON_SOURCE_DIR}/protos/fabric/msp/msp_principal.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/msp/identities.pb.c
     ${COMMON_SOURCE_DIR}/protos/google/protobuf/any.pb.c
     ${COMMON_SOURCE_DIR}/protos/google/protobuf/timestamp.pb.c
     ${NANOPB_PATH}/pb_common.c

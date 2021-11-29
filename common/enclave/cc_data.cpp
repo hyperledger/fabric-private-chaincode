@@ -232,6 +232,21 @@ std::string cc_data::get_enclave_id()
     return hex;
 }
 
+std::string cc_data::get_channel_id()
+{
+    fpc_CCParameters cc_params = fpc_CCParameters_init_zero;
+    pb_istream_t istream = pb_istream_from_buffer(
+        (const unsigned char*)cc_parameters_.data(), cc_parameters_.size());
+    bool b = pb_decode(&istream, fpc_CCParameters_fields, &cc_params);
+    COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+    return std::string(cc_params.channel_id);
+
+err:
+    // return empty string in case of error
+    return std::string();
+}
+
 bool cc_data::sign_message(const ByteArray& message, ByteArray& signature) const
 {
     bool b;

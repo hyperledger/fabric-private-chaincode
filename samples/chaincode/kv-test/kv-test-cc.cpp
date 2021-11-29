@@ -83,6 +83,13 @@ int invoke(
     get_creator(creator, ctx);
     LOG_DEBUG("Creator: %s", base64_encode((unsigned char*)creator.data(), creator.size()).c_str());
 
+    char creator_msp_id[1024];
+    char creator_name[1024];
+    get_creator_name(creator_msp_id, sizeof(creator_msp_id),
+        creator_name, sizeof(creator_name), ctx);
+    LOG_DEBUG("Creator msp: %s", creator_msp_id);
+    LOG_DEBUG("Creator name: %s", creator_name);
+
     // check that result fits into response
     int neededSize = result.size();
     if (max_response_len < neededSize)

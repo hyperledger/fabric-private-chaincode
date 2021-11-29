@@ -101,6 +101,7 @@ func (r *stubRegistry) get(i int) *Stubs {
 
 //export get_creator_name
 func get_creator_name(msp_id *C.char, max_msp_id_len C.uint32_t, dn *C.char, max_dn_len C.uint32_t, ctx unsafe.Pointer) {
+	// TODO remove this ocall
 	stubs := registry.get(*(*int)(ctx))
 
 	// TODO (eventually): replace/simplify below via ext.ClientIdentity,

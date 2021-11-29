@@ -27,6 +27,9 @@ static sgx_thread_mutex_t global_mutex = SGX_THREAD_MUTEX_INITIALIZER;
 void get_creator_name(
     char* msp_id, uint32_t max_msp_id_len, char* dn, uint32_t max_dn_len, shim_ctx_ptr_t ctx)
 {
+    // TODO extract from ctx creator
+    // remove ocall
+
     // TODO: right now the implementation is not secure yet as below function is unvalidated
     // from the (untrusted) peer.
     // To securely implement it, we will require the signed proposal to be passed
