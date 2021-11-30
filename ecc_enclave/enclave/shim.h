@@ -217,9 +217,9 @@ void get_tx_id(std::string& tx_id, shim_ctx_ptr_t ctx);
 // - getSignedProposal - returns a serialized signed proposal
 void get_signed_proposal(ByteArray& signed_proposal, shim_ctx_ptr_t ctx);
 
-// - creator
-//   return the distinguished name of the creator as well as the msp_id of the corresponding
-//   organization.
+// - get_creator_name
+//   return the distinguished name of the creator (the subject field of the creator cert)
+//   as well as the msp_id of the corresponding organization.
 //   Note:
 //   - The name might be truncated (but guaranteed to be null-terminated)
 //     if the provided buffer is too small.
@@ -233,11 +233,6 @@ void get_creator_name(char* msp_id,  // MSP id of organization to which transact
 //   Note that the returned identity is not validated against the MSP/ledger since
 //   the enclave does not have trustworthy data to do so.
 void get_creator(ByteArray& creator, shim_ctx_ptr_t ctx);
-
-// TODO (eventually): The go shim GoCreator returns protobuf serialized identity which (usally)
-// is the pair of msp_id and a (PEM-encoded) certificate. We might eventually add a function
-// also to expose the certificate itself.  However, for most current use-cases the DN should
-// be sufficient and makes CC-programming easier.
 
 // Chaincode to Chaincode
 //---------------------------

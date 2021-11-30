@@ -87,8 +87,8 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
 
         ctx.tx_id = std::string(channel_header.tx_id);
         ctx.channel_id = std::string(channel_header.channel_id);
-        LOG_DEBUG("ctx channel: %s; init channel: %s", ctx.channel_id.c_str(), g_cc_data->get_channel_id());
-        COND2LOGERR(ctx.channel_id != g_cc_data->get_channel_id(), "channel id of the tx proposal does not match as initialized with cc_parameters");
+        COND2LOGERR(ctx.channel_id != g_cc_data->get_channel_id(),
+            "channel id of the tx proposal does not match as initialized with cc_parameters");
 
         // TODO implement me
         // transient data
@@ -109,22 +109,27 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         b = pb_decode(&istream, common_SignatureHeader_fields, &signature_header);
         COND2LOGERR(!b, PB_GET_ERROR(&istream));
 
-        ByteArray signature = ByteArray(signed_proposal.signature->bytes, signed_proposal.signature->bytes + signed_proposal.signature->size);
-        ByteArray message = ByteArray(signed_proposal.proposal_bytes->bytes, signed_proposal.proposal_bytes->bytes + signed_proposal.proposal_bytes->size);
+        ByteArray signature = ByteArray(signed_proposal.signature->bytes,
+            signed_proposal.signature->bytes + signed_proposal.signature->size);
+        ByteArray message = ByteArray(signed_proposal.proposal_bytes->bytes,
+            signed_proposal.proposal_bytes->bytes + signed_proposal.proposal_bytes->size);
 
         ctx.creator = ByteArray(signature_header.creator->bytes,
             signature_header.creator->bytes + signature_header.creator->size);
 
         msp_SerializedIdentity identity = msp_SerializedIdentity_init_zero;
-        istream = pb_istream_from_buffer(
-            (const unsigned char*)(signature_header.creator->bytes), signature_header.creator->size);
+        istream = pb_istream_from_buffer((const unsigned char*)(signature_header.creator->bytes),
+            signature_header.creator->size);
         b = pb_decode(&istream, msp_SerializedIdentity_fields, &identity);
         COND2LOGERR(!b, PB_GET_ERROR(&istream));
-        LOG_DEBUG("MSPID: %s", identity.mspid);
 
-        ByteArray encoded_signer_cert = ByteArray(identity.id_bytes->bytes, identity.id_bytes->bytes + identity.id_bytes->size);
+        ByteArray encoded_signer_cert =
+            ByteArray(identity.id_bytes->bytes, identity.id_bytes->bytes + identity.id_bytes->size);
         b = validate_message_signature(signature, message, encoded_signer_cert);
         COND2LOGERR(!b, "signature validation failed");
+
+        ctx.creator_msp_id = std::string(identity.mspid);
+        ctx.creator_name = extract_subject_from_cert(encoded_signer_cert);
 
         // TODO unwrap ChaincodeRequestMessage from signed proposal
         // once this is in place we can remove ChaincodeRequestMessage from ecall

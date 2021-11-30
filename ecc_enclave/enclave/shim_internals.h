@@ -28,6 +28,8 @@ typedef struct t_shim_ctx
     std::string tx_id;
     std::string channel_id;
     ByteArray creator;
+    std::string creator_msp_id;
+    std::string creator_name;
     // TODO to be implemented
     // ByteArray binding;
     // std::map<std::string, ByteArray> transient_data;

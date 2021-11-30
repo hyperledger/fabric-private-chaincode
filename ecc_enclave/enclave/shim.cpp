@@ -27,18 +27,10 @@ static sgx_thread_mutex_t global_mutex = SGX_THREAD_MUTEX_INITIALIZER;
 void get_creator_name(
     char* msp_id, uint32_t max_msp_id_len, char* dn, uint32_t max_dn_len, shim_ctx_ptr_t ctx)
 {
-    // TODO extract from ctx creator
-    // remove ocall
+    strcpy_s(msp_id, max_msp_id_len, ctx->creator_msp_id.c_str());
+    strcpy_s(dn, max_dn_len, ctx->creator_name.c_str());
 
-    // TODO: right now the implementation is not secure yet as below function is unvalidated
-    // from the (untrusted) peer.
-    // To securely implement it, we will require the signed proposal to be passed
-    // from the stub (see, e.g., ChaincodeStub in go shim core/chaincode/shim/stub.go)
-    // and then verified. This in turn will require verification of certificates based
-    // on the MSP info channel.  As TLCC already has to do keep track of MSP and do related
-    // verification , we can off-load some of that to TLCC (as we anyway have to talk to it
-    // to get channel MSP info)
-    ocall_get_creator_name(msp_id, max_msp_id_len, dn, max_dn_len, ctx->u_shim_ctx);
+    return;
 }
 
 void get_state(
