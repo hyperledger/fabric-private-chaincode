@@ -235,8 +235,8 @@ std::string cc_data::get_enclave_id()
 std::string cc_data::get_channel_id()
 {
     fpc_CCParameters cc_params = fpc_CCParameters_init_zero;
-    pb_istream_t istream = pb_istream_from_buffer(
-        (const unsigned char*)cc_parameters_.data(), cc_parameters_.size());
+    pb_istream_t istream =
+        pb_istream_from_buffer((const unsigned char*)cc_parameters_.data(), cc_parameters_.size());
     bool b = pb_decode(&istream, fpc_CCParameters_fields, &cc_params);
     COND2LOGERR(!b, PB_GET_ERROR(&istream));
 
