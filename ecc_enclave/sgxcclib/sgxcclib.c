@@ -12,10 +12,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-// - creator access
-extern void get_creator_name(
-    const char* msp_id, uint32_t max_msp_id_len, const char* dn, uint32_t max_dn_len, void* ctx);
-
 // - for accessing ledger kvs
 extern void get_state(
     const char* key, uint8_t* val, uint32_t max_val_len, uint32_t* val_len, void* ctx);
@@ -42,13 +38,6 @@ int sgxcc_invoke(enclave_id_t eid,
     CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(ret)
     CHECK_SGX_ERROR_AND_RETURN_ON_ERROR(enclave_ret)
     return SGX_SUCCESS;
-}
-
-/* OCall functions */
-void ocall_get_creator_name(
-    char* msp_id, uint32_t max_msp_id_len, char* dn, uint32_t max_dn_len, void* ctx)
-{
-    get_creator_name(msp_id, max_msp_id_len, dn, max_dn_len, ctx);
 }
 
 void ocall_get_state(

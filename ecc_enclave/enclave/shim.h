@@ -15,6 +15,7 @@
 #include "logging.h"
 
 typedef struct t_shim_ctx* shim_ctx_ptr_t;
+typedef std::vector<uint8_t> ByteArray;
 
 /*
   FPC Lite Constraints
@@ -183,22 +184,12 @@ int get_func_and_params(
 // transaction APIs
 //-------------------------------------------------
 
-// - getChannelID
-// // TOD0 (possible extensions): might be useful to support and should be easy?
-// //     If this is just the name, would it be useful also to have a variant which
-// //     has the unique id ("content-addressable"/genesis-block-hash)?
-// void get_channel_id(char* channel_id,
-//     uint32_t max_channel_id_len,
-//     shim_ctx_ptr_t ctx);
+// - getChannelID - returns the channel name (ID) the FPC chaincode enclave
+//   Note that the channel ID is attested during enclave initialization.
+void get_channel_id(std::string& channel_id, shim_ctx_ptr_t ctx);
 
-// - TxID
-// // TODO (possible extensions): at least coming from a Sawtooth/PDO perspective,
-// //   i would think access to this info might be important for cross-cc transactions?
-// //   - Is it commonly used in fabric?
-// //   - Is this something we can easily support (insecurely short-term / securely long-term)?
-// void get_tx_id(char* tx_id,
-//     uint32_t max_tx_id_len,
-//     shim_ctx_ptr_t ctx);
+// - getTxID
+void get_tx_id(std::string& tx_id, shim_ctx_ptr_t ctx);
 
 // - getTxTimestamp
 // // TODO (possible extensions): enclave has no access to trusted time.  Time
@@ -222,11 +213,13 @@ int get_func_and_params(
 //
 // // TODO: other tx-related apis which exist but probably doesn't make sense to support
 // // - getTransient: if we encrypt everything, then everything is essentially Transient?
-// // - getSignedProposal: should be easy to support but probably not worth?
 
-// - creator
-//   return the distinguished name of the creator as well as the msp_id of the corresponding
-//   organization.
+// - getSignedProposal - returns a serialized signed proposal
+void get_signed_proposal(ByteArray& signed_proposal, shim_ctx_ptr_t ctx);
+
+// - get_creator_name
+//   return the distinguished name of the creator (the subject field of the creator cert)
+//   as well as the msp_id of the corresponding organization.
 //   Note:
 //   - The name might be truncated (but guaranteed to be null-terminated)
 //     if the provided buffer is too small.
@@ -235,11 +228,11 @@ void get_creator_name(char* msp_id,  // MSP id of organization to which transact
     char* dn,                        // distinguished name of transaction creator
     uint32_t max_dn_len,             // size of allocated buffer for dn
     shim_ctx_ptr_t ctx);
-//
-// TODO (eventually): The go shim GoCreator returns protobuf serialized identity which (usally)
-// is the pair of msp_id and a (PEM-encoded) certificate. We might eventually add a function
-// also to expose the certificate itself.  However, for most current use-cases the DN should
-// be sufficient and makes CC-programming easier.
+
+// - get_creator - returns a serialized identity from the signed proposal
+//   Note that the returned identity is not validated against the MSP/ledger since
+//   the enclave does not have trustworthy data to do so.
+void get_creator(ByteArray& creator, shim_ctx_ptr_t ctx);
 
 // Chaincode to Chaincode
 //---------------------------

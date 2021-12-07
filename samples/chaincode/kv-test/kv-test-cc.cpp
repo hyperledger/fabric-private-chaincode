@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include "base64.h"
 #include "shim.h"
 
 #include <numeric>
@@ -62,6 +63,32 @@ int invoke(
     {
         result = std::string("BAD FUNCTION");
     }
+
+    // test more fpc shim functions
+
+    std::string channel_id;
+    get_channel_id(channel_id, ctx);
+    LOG_DEBUG("Channel id: %s", channel_id.c_str());
+
+    std::string tx_id;
+    get_tx_id(tx_id, ctx);
+    LOG_DEBUG("Tx id: %s", tx_id.c_str());
+
+    ByteArray signed_proposal;
+    get_signed_proposal(signed_proposal, ctx);
+    LOG_DEBUG("Signed proposal: %s",
+        base64_encode((unsigned char*)signed_proposal.data(), signed_proposal.size()).c_str());
+
+    ByteArray creator;
+    get_creator(creator, ctx);
+    LOG_DEBUG("Creator: %s", base64_encode((unsigned char*)creator.data(), creator.size()).c_str());
+
+    char creator_msp_id[1024];
+    char creator_name[1024];
+    get_creator_name(
+        creator_msp_id, sizeof(creator_msp_id), creator_name, sizeof(creator_name), ctx);
+    LOG_DEBUG("Creator msp: %s", creator_msp_id);
+    LOG_DEBUG("Creator name: %s", creator_name);
 
     // check that result fits into response
     int neededSize = result.size();

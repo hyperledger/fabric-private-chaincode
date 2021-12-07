@@ -11,15 +11,12 @@ package enclave
 
 import (
 	"bytes"
-	"crypto/x509"
-	"encoding/pem"
 	"fmt"
 	"sync"
 	"unsafe"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
-	"github.com/hyperledger/fabric/protoutil"
 )
 
 // #cgo CFLAGS: -I${SRCDIR}/../../common/sgxcclib
@@ -97,40 +94,6 @@ func (r *stubRegistry) get(i int) *Stubs {
 		panic(fmt.Errorf("no shim for: %d", i))
 	}
 	return stubs
-}
-
-//export get_creator_name
-func get_creator_name(msp_id *C.char, max_msp_id_len C.uint32_t, dn *C.char, max_dn_len C.uint32_t, ctx unsafe.Pointer) {
-	stubs := registry.get(*(*int)(ctx))
-
-	// TODO (eventually): replace/simplify below via ext.ClientIdentity,
-	// should also make it easier to eventually return more than only
-	// msp & dn ..
-
-	serializedID, err := stubs.shimStub.GetCreator()
-	if err != nil {
-		panic("error while getting creator")
-	}
-	sId, err := protoutil.UnmarshalSerializedIdentity(serializedID)
-	if err != nil {
-		panic("Could not deserialize a SerializedIdentity")
-	}
-
-	bl, _ := pem.Decode(sId.IdBytes)
-	if bl == nil {
-		panic("Failed to decode PEM structure")
-	}
-	cert, err := x509.ParseCertificate(bl.Bytes)
-	if err != nil {
-		panic("Unable to parse certificate %s")
-	}
-
-	var goMspId = sId.Mspid
-	C._cpy_str(msp_id, goMspId, max_msp_id_len)
-
-	var goDn = cert.Subject.String()
-	C._cpy_str(dn, goDn, max_dn_len)
-	// TODO (eventually): return the eror case of the dn buffer being too small
 }
 
 //export get_state

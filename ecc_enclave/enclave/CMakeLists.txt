@@ -17,12 +17,14 @@ set(SOURCE_FILES
     ${COMMON_SOURCE_DIR}/utils.c
     ${COMMON_SOURCE_DIR}/json/parson.c
     ${COMMON_SOURCE_DIR}/protos/fpc/fpc.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/common/common.pb.c
     ${COMMON_SOURCE_DIR}/protos/fabric/peer/proposal.pb.c
     ${COMMON_SOURCE_DIR}/protos/fabric/peer/proposal_response.pb.c
     ${COMMON_SOURCE_DIR}/protos/fabric/peer/chaincode.pb.c
     ${COMMON_SOURCE_DIR}/protos/fabric/common/policies.pb.c
     ${COMMON_SOURCE_DIR}/protos/fabric/ledger/rwset/kvrwset/kv_rwset.pb.c
     ${COMMON_SOURCE_DIR}/protos/fabric/msp/msp_principal.pb.c
+    ${COMMON_SOURCE_DIR}/protos/fabric/msp/identities.pb.c
     ${COMMON_SOURCE_DIR}/protos/google/protobuf/any.pb.c
     ${COMMON_SOURCE_DIR}/protos/google/protobuf/timestamp.pb.c
     ${NANOPB_PATH}/pb_common.c

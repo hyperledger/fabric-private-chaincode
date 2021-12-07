@@ -43,6 +43,8 @@ public:
         uint32_t* credentials_size);
 
     std::string get_enclave_id();
+    std::string get_channel_id();
+
     bool sign_message(const ByteArray& message, ByteArray& signature) const;
     bool decrypt_key_transport_message(
         const ByteArray& encrypted_key_transport_message, ByteArray& key_transport_message) const;

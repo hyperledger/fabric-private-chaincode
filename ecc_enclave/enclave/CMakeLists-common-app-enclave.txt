@@ -23,6 +23,7 @@ add_library(enclave SHARED ${SOURCE_FILES})
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${COMMON_SOURCE_DIR}
+    ${COMMON_SOURCE_DIR}/base64
     ${COMMON_SOURCE_DIR}/json
     ${COMMON_SOURCE_DIR}/logging/trusted
     ${ECC_ENCLAVE_DIR}/enclave

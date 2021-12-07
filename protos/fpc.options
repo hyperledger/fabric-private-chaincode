@@ -14,3 +14,6 @@ fpc.ChaincodeResponseMessage.enclave_id type:FT_POINTER
 
 fpc.SignedChaincodeResponseMessage.chaincode_response_message type:FT_POINTER
 fpc.SignedChaincodeResponseMessage.signature type:FT_POINTER
+
+fpc.CCParameters.channel_id type:FT_POINTER
+fpc.CCParameters.chaincode_id type:FT_POINTER

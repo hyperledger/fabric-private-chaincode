@@ -10,6 +10,10 @@
 #include "crypto.h"
 #include "enclave_t.h"
 #include "error.h"
+#include "fabric/common/common.pb.h"
+#include "fabric/msp/identities.pb.h"
+#include "fabric/peer/chaincode.pb.h"
+#include "fabric/peer/proposal.pb.h"
 #include "fpc/fpc.pb.h"
 #include "logging.h"
 #include "pb_decode.h"
@@ -48,6 +52,97 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
     ByteArray response_encryption_key;
 
     ctx.u_shim_ctx = u_shim_ctx;
+    ctx.signed_proposal = ByteArray(
+        signed_proposal_proto_bytes, signed_proposal_proto_bytes + signed_proposal_proto_bytes_len);
+
+    // unmarshall proposal
+    {
+        pb_istream_t istream;
+
+        protos_SignedProposal signed_proposal = protos_SignedProposal_init_zero;
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)signed_proposal_proto_bytes, signed_proposal_proto_bytes_len);
+        b = pb_decode(&istream, protos_SignedProposal_fields, &signed_proposal);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        protos_Proposal proposal = protos_Proposal_init_zero;
+        istream =
+            pb_istream_from_buffer((const unsigned char*)signed_proposal.proposal_bytes->bytes,
+                signed_proposal.proposal_bytes->size);
+        b = pb_decode(&istream, protos_Proposal_fields, &proposal);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        common_Header header = common_Header_init_zero;
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)proposal.header->bytes, proposal.header->size);
+        b = pb_decode(&istream, common_Header_fields, &header);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        // set tx_id and channel id
+        common_ChannelHeader channel_header = common_ChannelHeader_init_zero;
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)header.channel_header->bytes, header.channel_header->size);
+        b = pb_decode(&istream, common_ChannelHeader_fields, &channel_header);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        ctx.tx_id = std::string(channel_header.tx_id);
+        ctx.channel_id = std::string(channel_header.channel_id);
+        COND2LOGERR(ctx.channel_id != g_cc_data->get_channel_id(),
+            "channel id of the tx proposal does not match as initialized with cc_parameters");
+
+        // TODO implement me
+        // transient data
+        // protos_ChaincodeProposalPayload cc_proposal_payload =
+        //     protos_ChaincodeProposalPayload_init_zero;
+        // istream = pb_istream_from_buffer(
+        //     (const unsigned char*)proposal.payload->bytes, proposal.payload->size);
+        // b = pb_decode(&istream, protos_ChaincodeProposalPayload_fields, &cc_proposal_payload);
+        // COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        // transform _protos_ChaincodeProposalPayload_TransientMapEntry to std::map
+        // ctx.transient_data = ;
+
+        // set creator
+        common_SignatureHeader signature_header = common_SignatureHeader_init_zero;
+        istream = pb_istream_from_buffer(
+            (const unsigned char*)header.signature_header->bytes, header.signature_header->size);
+        b = pb_decode(&istream, common_SignatureHeader_fields, &signature_header);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        ByteArray signature = ByteArray(signed_proposal.signature->bytes,
+            signed_proposal.signature->bytes + signed_proposal.signature->size);
+        ByteArray message = ByteArray(signed_proposal.proposal_bytes->bytes,
+            signed_proposal.proposal_bytes->bytes + signed_proposal.proposal_bytes->size);
+
+        ctx.creator = ByteArray(signature_header.creator->bytes,
+            signature_header.creator->bytes + signature_header.creator->size);
+
+        msp_SerializedIdentity identity = msp_SerializedIdentity_init_zero;
+        istream = pb_istream_from_buffer((const unsigned char*)(signature_header.creator->bytes),
+            signature_header.creator->size);
+        b = pb_decode(&istream, msp_SerializedIdentity_fields, &identity);
+        COND2LOGERR(!b, PB_GET_ERROR(&istream));
+
+        ByteArray encoded_signer_cert =
+            ByteArray(identity.id_bytes->bytes, identity.id_bytes->bytes + identity.id_bytes->size);
+        b = validate_message_signature(signature, message, encoded_signer_cert);
+        COND2LOGERR(!b, "signature validation failed");
+
+        ctx.creator_msp_id = std::string(identity.mspid);
+        ctx.creator_name = extract_subject_from_cert(encoded_signer_cert);
+
+        // TODO unwrap ChaincodeRequestMessage from signed proposal
+        // once this is in place we can remove ChaincodeRequestMessage from ecall
+
+        // TODO implement me
+        // ByteArray binding_data;
+        // binding_data.insert(binding_data.end(), signature_header.nonce->bytes,
+        // signature_header.nonce->size); binding_data.insert(binding_data.end(),
+        // signature_header.creator->bytes, signature_header.creator->size);
+        // TODO add channel_header->epoch (as ByteArray) to binding (enforce little endian)
+        // b = compute_message_hash(binding_data, ctx->binding);
+        // COND2LOGERR(!b, "cannot compute binding");
+    }
 
     {
         pb_istream_t istream;
