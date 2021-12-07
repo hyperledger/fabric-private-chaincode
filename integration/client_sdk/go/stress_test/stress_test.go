@@ -76,6 +76,7 @@ var _ = Describe("Stress tests", func() {
 
 					_, err = echoContract.EvaluateTransaction("del_state", key)
 					Expect(err).ShouldNot(HaveOccurred())
+					Expect(res).Should(Equal([]byte("OK")))
 				}
 			})
 		})
