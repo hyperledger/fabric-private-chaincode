@@ -59,6 +59,18 @@ int invoke(
                 result = std::string((const char*)value, actual_value_len);
         }
     }
+    else if (function_name == "del_state")
+    {
+        if (params.size() != 1)
+        {
+            result = std::string("del_state needs 1 parameter: key");
+        }
+        else
+        {
+            del_state(params[0].c_str(), ctx);
+            result = std::string("OK");
+        }
+    }
     else
     {
         result = std::string("BAD FUNCTION");

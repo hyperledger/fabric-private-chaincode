@@ -21,7 +21,7 @@ bool rwset_to_proto(t_shim_ctx_t* ctx, fpc_FPCKVSet* fpc_rwset_proto)
 
     COND2LOGERR(ctx == NULL || fpc_rwset_proto == NULL, "invalid input parameters");
 
-    LOG_DEBUG("Prepare rwset serialization");
+    LOG_DEBUG("Prepare Fabric RWSet construction");
 
     // reset structure
     *fpc_rwset_proto = fpc_FPCKVSet_init_default;
@@ -39,12 +39,12 @@ bool rwset_to_proto(t_shim_ctx_t* ctx, fpc_FPCKVSet* fpc_rwset_proto)
     COND2ERR(fpc_rwset_proto->rw_set.reads == NULL);
 
     // initialiaze write sets (i.e., the arrays; later we serialize single items)
-    fpc_rwset_proto->rw_set.writes_count = ctx->write_set.size();
+    fpc_rwset_proto->rw_set.writes_count = ctx->write_set.size() + ctx->del_set.size();
     fpc_rwset_proto->rw_set.writes = (kvrwset_KVWrite*)pb_realloc(
         NULL, fpc_rwset_proto->rw_set.writes_count * sizeof(kvrwset_KVWrite));
     COND2ERR(fpc_rwset_proto->rw_set.writes == NULL);
 
-    LOG_DEBUG("Serializing read set items");
+    LOG_DEBUG("Add read_set items");
     i = 0;
     for (auto it = ctx->read_set.begin(); it != ctx->read_set.end(); it++, i++)
     {
@@ -70,7 +70,7 @@ bool rwset_to_proto(t_shim_ctx_t* ctx, fpc_FPCKVSet* fpc_rwset_proto)
         COND2ERR(ret != 0);
     }
 
-    LOG_DEBUG("Serializing write set items");
+    LOG_DEBUG("Add write_set items");
     i = 0;
     for (auto it = ctx->write_set.begin(); it != ctx->write_set.end(); it++, i++)
     {
@@ -98,7 +98,27 @@ bool rwset_to_proto(t_shim_ctx_t* ctx, fpc_FPCKVSet* fpc_rwset_proto)
         COND2ERR(ret != 0);
     }
 
-    LOG_DEBUG("Serialization successful");
+    LOG_DEBUG("Add del_set items");
+    for (auto it = ctx->del_set.begin(); it != ctx->del_set.end(); it++, i++)
+    {
+        // note that we continue to use i without resetting since we are appending to the rw_set.writes
+        LOG_DEBUG("k=%s", it->c_str());
+
+        // serialize write
+        fpc_rwset_proto->rw_set.writes[i].is_delete = true;
+
+        // serialize key
+        fpc_rwset_proto->rw_set.writes[i].key = (char*)pb_realloc(NULL, it->length() + 1);
+        COND2ERR(fpc_rwset_proto->rw_set.writes[i].key == NULL);
+        ret = memcpy_s(fpc_rwset_proto->rw_set.writes[i].key, it->length(), it->c_str(), it->length());
+        fpc_rwset_proto->rw_set.writes[i].key[it->length()] = '\0';
+        COND2ERR(ret != 0);
+
+        fpc_rwset_proto->rw_set.writes[i].value = (pb_bytes_array_t*)pb_realloc(NULL, PB_BYTES_ARRAY_T_ALLOCSIZE(0));
+        COND2ERR(fpc_rwset_proto->rw_set.writes[i].value == NULL);
+    }
+
+    LOG_DEBUG("Fabric RWSet construction successful");
     return true;
 
 err:

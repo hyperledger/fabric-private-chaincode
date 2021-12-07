@@ -35,6 +35,10 @@ enclave {
                 [in, string] const char *comp_key,
                 [out, size=max_len] uint8_t *values, uint32_t max_len, [out] uint32_t *values_len,
                 [user_check] void *u_shim_ctx);
+
+        void ocall_del_state(
+                [in, string] const char *key,
+                [user_check] void *u_shim_ctx);
     };
 
 };

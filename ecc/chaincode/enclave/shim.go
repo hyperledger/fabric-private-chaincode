@@ -182,3 +182,20 @@ func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max
 	C._cpy_bytes(values, (*C.uint8_t)(C.CBytes(data)), C.uint32_t(len(data)))
 	C._set_int(values_len, C.uint32_t(len(data)))
 }
+
+//export del_state
+func del_state(key *C.char, ctx unsafe.Pointer) {
+	stubs := registry.get(*(*int)(ctx))
+
+	// check if composite key
+	key_str := C.GoString(key)
+	if utils.IsFPCCompositeKey(key_str) {
+		comp := utils.SplitFPCCompositeKey(key_str)
+		key_str, _ = stubs.shimStub.CreateCompositeKey(comp[0], comp[1:])
+	}
+
+	err := stubs.shimStub.DelState(key_str)
+	if err != nil {
+		panic("error while deleting state")
+	}
+}
