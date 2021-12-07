@@ -11,7 +11,9 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
@@ -26,6 +28,11 @@ func TestStress(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Chaincode Suite")
 }
+
+const (
+	defaultInvocationCount = 1000
+	envKeyInvocationCount  = "STRESS_TEST_INVOCATION_COUNT"
+)
 
 var (
 	network      *gateway.Network
@@ -78,5 +85,48 @@ var _ = Describe("Stress tests", func() {
 		})
 	})
 
+	Context("long run", func() {
+		When("submitting many invocations", func() {
+			It("should succeed", func() {
+				invocations := readIntValueFromEnv(envKeyInvocationCount, defaultInvocationCount)
+				key := "some-other-key"
+				size := 1000
+
+				payload := make([]byte, size)
+				n, err := rand.Read(payload)
+
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(n).Should(Equal(size))
+
+				value := base64.StdEncoding.EncodeToString(payload)
+				res, err := echoContract.SubmitTransaction("put_state", key, value)
+				Expect(err).ShouldNot(HaveOccurred())
+				Expect(res).Should(Equal([]byte("OK")))
+
+				fmt.Printf("Running %d get_state invocations\n", invocations)
+				for i := 0; i < invocations; i++ {
+					if i%10 == 0 {
+						fmt.Printf("i=%d\n", i)
+					}
+					res, err = echoContract.EvaluateTransaction("get_state", key)
+					Expect(err).ShouldNot(HaveOccurred())
+					Expect(res).Should(Equal([]byte(value)))
+				}
+			})
+		})
+	})
+
 	// TODO more stress tests added here
 })
+
+func readIntValueFromEnv(key string, defaultValue int) int {
+	invocationCountString := os.Getenv(key)
+	if len(invocationCountString) > 0 {
+		fmt.Printf("set %s to %s\n", key, invocationCountString)
+		i, err := strconv.Atoi(invocationCountString)
+		Expect(err).ShouldNot(HaveOccurred())
+		return i
+	} else {
+		return defaultValue
+	}
+}
