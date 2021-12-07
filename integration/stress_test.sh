@@ -23,7 +23,7 @@ CC_EP="OR('SampleOrg.member')" # note that we use .member as NodeOUs is disabled
 
 run_test() {
     # call sdk test
-    try cd client_sdk/go/stress_test && go test -v
+    try go test -v "${SCRIPTDIR}/client_sdk/go/stress_test"
 
     # cleanup
     rm -rf keystore wallet
