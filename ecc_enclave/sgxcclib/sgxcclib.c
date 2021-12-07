@@ -58,8 +58,7 @@ void ocall_get_state_by_partial_composite_key(
     get_state_by_partial_composite_key(key, bids_bytes, max_len, bids_bytes_len, ctx);
 }
 
-void ocall_del_state(
-    const char* key, void* ctx)
+void ocall_del_state(const char* key, void* ctx)
 {
     del_state(key, ctx);
 }

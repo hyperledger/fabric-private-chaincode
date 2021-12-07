@@ -101,7 +101,8 @@ bool rwset_to_proto(t_shim_ctx_t* ctx, fpc_FPCKVSet* fpc_rwset_proto)
     LOG_DEBUG("Add del_set items");
     for (auto it = ctx->del_set.begin(); it != ctx->del_set.end(); it++, i++)
     {
-        // note that we continue to use i without resetting since we are appending to the rw_set.writes
+        // note that we continue to use i without resetting since we are appending to the
+        // rw_set.writes
         LOG_DEBUG("k=%s", it->c_str());
 
         // serialize write
@@ -110,11 +111,13 @@ bool rwset_to_proto(t_shim_ctx_t* ctx, fpc_FPCKVSet* fpc_rwset_proto)
         // serialize key
         fpc_rwset_proto->rw_set.writes[i].key = (char*)pb_realloc(NULL, it->length() + 1);
         COND2ERR(fpc_rwset_proto->rw_set.writes[i].key == NULL);
-        ret = memcpy_s(fpc_rwset_proto->rw_set.writes[i].key, it->length(), it->c_str(), it->length());
+        ret = memcpy_s(
+            fpc_rwset_proto->rw_set.writes[i].key, it->length(), it->c_str(), it->length());
         fpc_rwset_proto->rw_set.writes[i].key[it->length()] = '\0';
         COND2ERR(ret != 0);
 
-        fpc_rwset_proto->rw_set.writes[i].value = (pb_bytes_array_t*)pb_realloc(NULL, PB_BYTES_ARRAY_T_ALLOCSIZE(0));
+        fpc_rwset_proto->rw_set.writes[i].value =
+            (pb_bytes_array_t*)pb_realloc(NULL, PB_BYTES_ARRAY_T_ALLOCSIZE(0));
         COND2ERR(fpc_rwset_proto->rw_set.writes[i].value == NULL);
     }
 
