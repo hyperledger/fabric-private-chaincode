@@ -16,8 +16,6 @@
 #include "pdo/common/crypto/crypto.h"
 #include "sgx_trts.h"
 
-typedef std::unique_ptr<BIO, void (*)(BIO*)> BIO_ptr;
-
 int get_random_bytes(uint8_t* buffer, size_t length)
 {
     /* WARNING WARNING WARNING */
@@ -98,50 +96,121 @@ err:
 
 std::string extract_encoded_public_key(const ByteArray cert_pem)
 {
-    BIO_ptr certBio(BIO_new(BIO_s_mem()), BIO_free_all);
-    BIO_write(certBio.get(), cert_pem.data(), cert_pem.size());
+    BIO* certBio = BIO_new(BIO_s_mem());
+    if (!certBio)
+    {
+        throw std::runtime_error("cannot create cert bio");
+    }
 
-    X509* cert = PEM_read_bio_X509(certBio.get(), NULL, NULL, NULL);
+    int r = BIO_write(certBio, cert_pem.data(), cert_pem.size());
+    if (r <= 0)
+    {
+        BIO_free_all(certBio);
+        throw std::runtime_error("cannot read pem data");
+    }
+
+    X509* cert = PEM_read_bio_X509(certBio, NULL, NULL, NULL);
     if (!cert)
     {
+        BIO_free_all(certBio);
         throw std::runtime_error("cannot parse cert");
     }
 
     // extract pk from cert and convert it back to pem format since PDO crypto requires encoded pk
     EVP_PKEY* pubkey = X509_get_pubkey(cert);
+    if (!pubkey)
+    {
+        X509_free(cert);
+        BIO_free_all(certBio);
+        throw std::runtime_error("cannot get public key from cert");
+    }
     EC_KEY* eckey = EVP_PKEY_get1_EC_KEY(pubkey);
+    if (!eckey)
+    {
+        EVP_PKEY_free(pubkey);
+        X509_free(cert);
+        BIO_free_all(certBio);
+        throw std::runtime_error("cannot get EC public key");
+    }
 
-    BIO_ptr pkBio(BIO_new(BIO_s_mem()), BIO_free_all);
-    PEM_write_bio_EC_PUBKEY(pkBio.get(), eckey);
-    int keylen = BIO_pending(pkBio.get());
+    BIO* pkBio = BIO_new(BIO_s_mem());
+    if (!pkBio)
+    {
+        EVP_PKEY_free(pubkey);
+        EC_KEY_free(eckey);
+        X509_free(cert);
+        BIO_free_all(certBio);
+        throw std::runtime_error("cannot create cert bio");
+    }
+
+    r = PEM_write_bio_EC_PUBKEY(pkBio, eckey);
+    if (r == 0)
+    {
+        EVP_PKEY_free(pubkey);
+        EC_KEY_free(eckey);
+        X509_free(cert);
+        BIO_free_all(certBio);
+        throw std::runtime_error("cannot create cert bio");
+    }
+    int keylen = BIO_pending(pkBio);
     ByteArray pem_str(keylen + 1);
-    int r = BIO_read(pkBio.get(), pem_str.data(), keylen);
+    r = BIO_read(pkBio, pem_str.data(), keylen);
     if (r <= 0)
     {
+        EVP_PKEY_free(pubkey);
+        EC_KEY_free(eckey);
+        X509_free(cert);
+        BIO_free_all(certBio);
         throw std::runtime_error("cannot serialize public key");
     }
     pem_str[keylen] = '\0';
+    BIO_free_all(pkBio);
 
+    EVP_PKEY_free(pubkey);
+    EC_KEY_free(eckey);
     X509_free(cert);
+    BIO_free_all(certBio);
+
     return std::string((const char*)pem_str.data(), pem_str.size());
 }
 
 std::string extract_subject_from_cert(const ByteArray cert_pem)
 {
-    BIO_ptr certBio(BIO_new(BIO_s_mem()), BIO_free_all);
-    BIO_write(certBio.get(), cert_pem.data(), cert_pem.size());
+    BIO* certBio = BIO_new(BIO_s_mem());
+    if (!certBio)
+    {
+        throw std::runtime_error("cannot create cert bio");
+    }
 
-    X509* cert = PEM_read_bio_X509(certBio.get(), NULL, NULL, NULL);
+    int r = BIO_write(certBio, cert_pem.data(), cert_pem.size());
+    if (r <= 0)
+    {
+        BIO_free_all(certBio);
+        throw std::runtime_error("cannot read pem data");
+    }
+
+    X509* cert = PEM_read_bio_X509(certBio, NULL, NULL, NULL);
     if (!cert)
     {
+        BIO_free_all(certBio);
         throw std::runtime_error("cannot parse cert");
     }
 
     char* subj = X509_NAME_oneline(X509_get_subject_name(cert), NULL, 0);
+    if (!subj)
+    {
+        X509_free(cert);
+        BIO_free_all(certBio);
+        throw std::runtime_error("cert does not contain a subject");
+    }
+    std::string out(subj);
+    free(subj);
+
     X509_free(cert);
+    BIO_free_all(certBio);
 
     // Go: CN=peer0.org1.example.com,OU=COP,L=San Francisco,ST=California,C=US
     // This: /C=US/ST=California/L=San Francisco/OU=COP/CN=peer0.org1.example.com
 
-    return std::string(subj);
+    return out;
 }
