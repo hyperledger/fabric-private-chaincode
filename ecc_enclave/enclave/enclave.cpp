@@ -142,6 +142,13 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         // TODO add channel_header->epoch (as ByteArray) to binding (enforce little endian)
         // b = compute_message_hash(binding_data, ctx->binding);
         // COND2LOGERR(!b, "cannot compute binding");
+
+        pb_release(msp_SerializedIdentity_fields, &identity);
+        pb_release(common_SignatureHeader_fields, &signature_header);
+        pb_release(common_ChannelHeader_fields, &channel_header);
+        pb_release(common_Header_fields, &header);
+        pb_release(protos_Proposal_fields, &proposal);
+        pb_release(protos_SignedProposal_fields, &signed_proposal);
     }
 
     {
@@ -370,6 +377,8 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
 
     // release dynamic allocations (TODO:release in case of error)
     pb_release(fpc_ChaincodeRequestMessage_fields, &cc_request_message);
+    pb_release(fpc_CleartextChaincodeRequest_fields, &cleartext_cc_request);
+    pb_release(fpc_KeyTransportMessage_fields, &key_transport_message);
 
     // TODO: generate signature (as short-cut for now over proposal _and_ args with consistency of
     // proposal and args verified in "__endorse" rather than enclave)
