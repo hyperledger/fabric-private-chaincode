@@ -22,6 +22,8 @@ int invoke(
     std::string result;
     get_func_and_params(function_name, params, ctx);
 
+    LOG_DEBUG("Call function: %s", function_name.c_str());
+
     if (function_name == "put_state")
     {
         if (params.size() != 2)
