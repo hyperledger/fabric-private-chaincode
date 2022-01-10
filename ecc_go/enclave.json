@@ -1,5 +1,5 @@
 {
- "exe": "ecc_go",
+ "exe": "ecc",
  "key": "private.pem",
  "debug": true,
  "heapSize": 512,

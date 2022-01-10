@@ -3,12 +3,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-TOP = ../
+TOP = ../../..
 include $(TOP)/build.mk
 
-CC_NAME ?= simple
+
+CC_NAME ?= auction
 CAAS_PORT ?= 9999
-GOTAGS += -tags $(CC_NAME)
 
 # the following are the required docker build parameters
 HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
@@ -19,10 +19,10 @@ build: ecc
 ecc: ecc_dependencies
 	$(GO) build $(GOTAGS) -o ecc main.go
 
-.PHONY: with_ego
-with_ego: ecc_dependencies
+.PHONY: ecc_go
+ecc_go: ecc_dependencies
 	ego-go build $(GOTAGS) -o ecc main.go
-	ego sign ecc
+	ego sign chaincode
 
 ecc_dependencies:
 	# hard to list explicitly, so just leave empty target,
@@ -51,10 +51,11 @@ DOCKER_BUILD_OPTS += --build-arg SGX_MODE=$(SGX_MODE)
 DOCKER_BUILD_OPTS += --build-arg CAAS_PORT=$(CAAS_PORT)
 
 docker:
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_IMAGE):$(FPC_VERSION) -f Dockerfile\
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_IMAGE):$(FPC_VERSION) -f $(TOP)/ecc_go/Dockerfile\
 		$(shell if [ "${SGX_MODE}" = "SIM" ]; then echo "--build-arg OE_SIMULATION=1"; fi)\
 		. &&\
 	$(DOCKER) tag $(DOCKER_IMAGE):$(FPC_VERSION) $(DOCKER_IMAGE):latest
 
 clean:
 	$(GO) clean
+
