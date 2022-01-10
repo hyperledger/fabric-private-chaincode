@@ -2,61 +2,28 @@
 Licensed under Creative Commons Attribution 4.0 International License
 https://creativecommons.org/licenses/by/4.0/
 --->
-# Chaincode wrapper (ecc)
+# Chaincode wrapper for Go Chaincode (ecc_go)
 
-Before your continue here make sure you have build ``ecc_enclave`` before.
-We refer to [ecc_enclave/README.md](../ecc_enclave). Otherwise, the build
-might fail with the message `ecc_enclave build does not exist!`.
+wget -qO- https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add
+add-apt-repository "deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu `lsb_release -cs` main"
+wget https://github.com/edgelesssys/ego/releases/download/v0.3.4/ego_0.3.4_amd64.deb
+apt install ./ego_0.3.4_amd64.deb build-essential libssl-dev
 
-This is a go chaincode that is used to invoke the enclave (and hence
-FPC chaincode). The chaincode logic is implemented in C++ as enclave
-code and is loaded by by the go chaincode as C library
-(``ecc/enclave/lib/enclave.signed.so``).  For more details on the 
-chaincode implementation see [ecc_enclave](../ecc_enclave).
 
-The FPC chaincode can be run in two modes, as a normal chaincode
-(where the lifecycle of the chaincode is controlled by the peer) and
-as chaincode-as-a-service.
-See more details below.
 
-## Normal mode
+cd $FPC_PATH/ecc_go
+export CC_NAME=auction
+make docker-go-ecc
 
-The chaincode will start in that mode if _neither_ of the environment
-variables `CHAINCODE_PKG_ID` and `CHAINCODE_SERVER_ADDRESS` are
-defined. 
 
-It also requires that the peer's `core.yaml` defines the FPC CaaS
-external builder scripts as follows:
-```yaml
-...
-externalBuilders:
-    - path: ${FPC_PATH}/fabric/externalBuilder/chaincode
-      name: fpc-c
-      propagateEnvironment:
-          - FPC_HOSTING_MODE
-          - FABRIC_LOGGING_SPEC
-          - ftp_proxy
-          - http_proxy
-          - https_proxy
-          - no_proxy
-...
-```
+wget -qO- https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add
+add-apt-repository "deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu `lsb_release -cs` main"
+wget https://github.com/edgelesssys/ego/releases/download/v0.4.0/ego_0.4.0_amd64.deb
+apt install ./ego_0.4.0_amd64.deb build-essential libssl-dev
 
-## Chaincode-as-a-Service mode
 
-The chaincode will start in CaaS mode if the environment variables
-`CHAINCODE_PKG_ID` and `CHAINCODE_SERVER_ADDRESS` are defined.
 
-It also requires that the peer's `core.yaml` defines the FPC CaaS
-external builder scripts as follows:
-```yaml
-...
-externalBuilders:
-- path: ${FPC_PATH}/fabric/externalBuilder/chaincode_server
-  name: fpc-external-launcher
-  propagateEnvironment:
-    - CORE_PEER_ID
-    - FABRIC_LOGGING_SPEC
-...
-```
+# Kill
 
+docker kill $(docker ps -a -q --filter ancestor=fpc/ercc --filter ancestor=fpc/fpc-auction-go)
+docker rm $(docker ps -a -q --filter ancestor=fpc/ercc --filter ancestor=fpc/fpc-auction-go)
