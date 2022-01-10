@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
-	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/enclave"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/ercc"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/fakes"
 	"github.com/hyperledger/fabric-private-chaincode/internal/endorsement"
@@ -19,7 +18,7 @@ import (
 //go:generate counterfeiter -o fakes/enclave.go -fake-name EnclaveStub . enclaveStub
 //lint:ignore U1000 This is just used to generate fake
 type enclaveStub interface {
-	enclave.StubInterface
+	Enclave
 }
 
 //go:generate counterfeiter -o fakes/utils.go -fake-name Extractors . extractors
