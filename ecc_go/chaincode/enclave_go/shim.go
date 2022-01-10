@@ -1,4 +1,11 @@
-package enclave
+/*
+Copyright Riccardo Zappoli (riccardo.zappoli@unifr.ch)
+Copyright IBM Corp. All Rights Reserved.
+
+SPDX-License-Identifier: Apache-2.0
+*/
+
+package enclave_go
 
 import (
 	"crypto/sha256"
@@ -298,11 +305,11 @@ func (f *FpcStubInterface) GetPublicStateByPartialCompositeKey(objectType string
 		fmt.Println(utils.TransformToFPCKey(i.Key), "FPC")
 		fmt.Println(i.Value, "Value")
 		fmt.Println(v_hash)
-		f.fpcKvSet.RwSet.Reads = append(f.fpcKvSet.RwSet.Reads, &kvrwset.KVRead{
-			Key:     utils.TransformToFPCKey(i.Key),
-			Version: nil,
-		})
-		f.fpcKvSet.ReadValueHashes = append(f.fpcKvSet.ReadValueHashes, v_hash[:])
+		//f.fpcKvSet.RwSet.Reads = append(f.fpcKvSet.RwSet.Reads, &kvrwset.KVRead{
+		//	Key:     utils.TransformToFPCKey(i.Key),
+		//	Version: nil,
+		//})
+		//f.fpcKvSet.ReadValueHashes = append(f.fpcKvSet.ReadValueHashes, v_hash[:])
 		b := &queryresult.KV{
 			Namespace: i.Namespace,
 			Key:       utils.TransformToFPCKey(i.Key),

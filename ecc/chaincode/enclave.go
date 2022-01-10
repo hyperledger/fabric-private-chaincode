@@ -5,16 +5,13 @@ Copyright 2020 Intel Corporation
 SPDX-License-Identifier: Apache-2.0
 */
 
-package enclave
+package chaincode
 
 import (
 	"github.com/hyperledger/fabric-chaincode-go/shim"
-	"github.com/hyperledger/fabric/common/flogging"
 )
 
-var logger = flogging.MustGetLogger("enclave")
-
-type StubInterface interface {
+type Enclave interface {
 
 	// Init initializes the chaincode enclave.
 	// The input and output parameters are serialized protobufs

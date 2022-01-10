@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Description:
-#   Sets up the template of a docker environment to run FPC chaincode, just missing the chaincode's enclave.so*
+#   Sets up the template of a docker environment to run FPC go chaincode
 #
 #  Configuration (build) parameters (for defaults, see below section with ARGs)
 #  - fpc image version:          FPC_VERSION
@@ -13,9 +13,7 @@
 
 ARG FPC_VERSION=main
 
-FROM hyperledger/fabric-private-chaincode-ccenv:${FPC_VERSION}
-
-RUN wget https://github.com/edgelesssys/ego/releases/download/v0.3.4/ego_0.3.4_amd64.deb && apt install -y ./ego_0.3.4_amd64.deb
+FROM hyperledger/fabric-private-chaincode-ccenv-go:${FPC_VERSION}
 
 ARG SGX_MODE
 ENV SGX_MODE=${SGX_MODE}
@@ -24,15 +22,11 @@ ENV OE_SIMULATION=${OE_SIMULATION}
 
 ARG CAAS_PORT=9999
 ARG CC_PATH="/usr/local/bin"
-ARG CC_LIB_PATH=${CC_PATH}"/enclave/lib"
-RUN mkdir -p ${CC_LIB_PATH}
 
-ENV SGX_SDK=/opt/intel/sgxsdk
-ENV LD_LIBRARY_PATH=${SGX_SDK}/sdk_libs:${CC_LIB_PATH}
-
-COPY ecc_go/ecc_go ${CC_PATH}/chaincode
+COPY ecc ${CC_PATH}/chaincode
 
 WORKDIR ${CC_PATH}
 EXPOSE ${CAAS_PORT}
 
-CMD ego run chaincode
+# CMD ["ego", "run", "chaincode"]
+CMD ["chaincode"]

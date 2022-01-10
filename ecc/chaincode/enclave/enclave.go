@@ -16,6 +16,7 @@ import (
 	"unsafe"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/protoutil"
 	"golang.org/x/sync/semaphore"
 )
@@ -28,6 +29,8 @@ import (
 import "C"
 
 const enclaveLibFile = "enclave/lib/enclave.signed.so"
+
+var logger = flogging.MustGetLogger("enclave")
 
 // EnclaveStub translates invocations into an enclave using cgo
 type EnclaveStub struct {

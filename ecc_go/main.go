@@ -12,9 +12,7 @@ import (
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
-	"github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode/enclave"
-	"github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode/ercc"
-	"github.com/hyperledger/fabric-private-chaincode/internal/endorsement"
+	auction "github.com/hyperledger/fabric-private-chaincode/samples/chaincode/auction-go/chaincode"
 	"github.com/hyperledger/fabric/common/flogging"
 )
 
@@ -26,13 +24,15 @@ func main() {
 	// For more fine grained logging we could also use different log level for loggers.
 	// For example: FABRIC_LOGGING_SPEC=ecc=DEBUG:ecc_enclave=ERROR
 
-	// create enclave chaincode
-	ecc := &chaincode.EnclaveChaincode{
-		Enclave:   enclave.NewEnclaveStub(),
-		Validator: endorsement.NewValidator(),
-		Extractor: &chaincode.ExtractorImpl{},
-		Ercc:      &ercc.StubImpl{},
-	}
+	// create enclave_go chaincode
+	//ecc := &chaincode.EnclaveChaincode{
+	//	Enclave:   enclave_go.NewEnclaveStub(),
+	//	Validator: endorsement.NewValidator(),
+	//	Extractor: &utils.ExtractorImpl{},
+	//	Ercc:      &ercc.StubImpl{},
+	//}
+
+	ecc := chaincode.NewPrivateChaincode(&auction.Auction{})
 
 	ccid := os.Getenv("CHAINCODE_PKG_ID")
 	addr := os.Getenv("CHAINCODE_SERVER_ADDRESS")
