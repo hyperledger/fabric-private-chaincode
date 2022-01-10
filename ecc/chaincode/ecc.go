@@ -11,7 +11,6 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
-	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/enclave"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/ercc"
 	"github.com/hyperledger/fabric-private-chaincode/internal/endorsement"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
@@ -25,7 +24,7 @@ var logger = flogging.MustGetLogger("ecc")
 
 // EnclaveChaincode struct
 type EnclaveChaincode struct {
-	Enclave   enclave.StubInterface
+	Enclave   Enclave
 	Validator endorsement.Validation
 	Extractor Extractors
 	Ercc      ercc.Stub

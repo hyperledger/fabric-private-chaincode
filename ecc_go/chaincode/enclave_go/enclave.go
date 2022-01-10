@@ -1,11 +1,12 @@
 /*
+Copyright Riccardo Zappoli (riccardo.zappoli@unifr.ch)
 Copyright IBM Corp. All Rights Reserved.
 Copyright 2020 Intel Corporation
 
 SPDX-License-Identifier: Apache-2.0
 */
 
-package enclave
+package enclave_go
 
 import (
 	"crypto/sha256"
@@ -15,14 +16,16 @@ import (
 	"strings"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
-	"github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode/enclave/chaincodes"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
+	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 )
+
+var logger = flogging.MustGetLogger("enclave_go")
 
 type EnclaveStub struct {
 	csp          crypto.CSP
@@ -34,10 +37,10 @@ type EnclaveStub struct {
 	ccRef        shim.Chaincode
 }
 
-func NewEnclaveStub() *EnclaveStub {
+func NewEnclaveStub(cc shim.Chaincode) *EnclaveStub {
 	return &EnclaveStub{
 		csp:   crypto.GetDefaultCSP(),
-		ccRef: chaincodes.New(),
+		ccRef: cc,
 	}
 }
 

@@ -123,9 +123,9 @@ DOCKER_DEV_OPTIONAL_CMD=
 
 # - overall make targets
 # ------------------------------
-.PHONY: base-rt base-dev ccenv dev peer cc-builder
+.PHONY: base-rt base-dev ccenv ccenv-go dev peer cc-builder
 
-build: ccenv
+build: ccenv ccenv-go
 # Note 1: we do _not_ include dev here as this is not needed in integration tests and
 # a rebuild could cause trouble for a dev container user.
 # Note 2: we removed "cc-builder peer" as dependencies since they are currenty unused (but might be helpful).
@@ -158,6 +158,7 @@ clobber:
 		$(FPC_DOCKER_CC_BUILDER_NAME) \
 		$(FPC_DOCKER_DEV_NAME) \
 		$(FPC_DOCKER_CCENV_NAME) \
+		$(FPC_DOCKER_CCENV_NAME)-go \
 		$(FPC_DOCKER_BASE_RT_NAME) \
 		$(FPC_DOCKER_BASE_DEV_NAME) \
 		$(DOCKER_REGISTRY)/$(FPC_DOCKER_CCENV_NAME) \
@@ -187,6 +188,9 @@ base-dev: base-rt
 
 ccenv: base-rt
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CCENV_NAME):$(FPC_VERSION) ccenv
+
+ccenv-go:
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CCENV_NAME)-go:$(FPC_VERSION) ccenv-go
 
 # Note: For all docker images, dependencis will cause docker rebuilds.
 # Docker caching though makes this though fast if nothing has changed.
