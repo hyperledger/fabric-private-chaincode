@@ -60,6 +60,13 @@ func (v *ValidatorImpl) ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrw
 
 		for i := 0; i < len(rwset.Reads); i++ {
 			k := utils.TransformToFPCKey(rwset.Reads[i].Key)
+
+			// check if composite key, if so, derive Fabric key
+			if utils.IsFPCCompositeKey(k) {
+				comp := utils.SplitFPCCompositeKey(k)
+				k, _ = stub.CreateCompositeKey(comp[0], comp[1:])
+			}
+
 			v, err := stub.GetState(k)
 			if err != nil {
 				return fmt.Errorf("error (%s) reading key %s", err, k)
@@ -118,12 +125,17 @@ func (v *ValidatorImpl) ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrw
 				k, _ = stub.CreateCompositeKey(comp[0], comp[1:])
 			}
 
-			err := stub.PutState(k, w.Value)
-			if err != nil {
-				return fmt.Errorf("error (%s) writing key %s value(hex) %s", err, k, hex.EncodeToString(w.Value))
+			if w.IsDelete {
+				if err := stub.DelState(k); err != nil {
+					return fmt.Errorf("error (%s) deleting key %s", err, k)
+				}
+				logger.Debugf("key %s deleted", k)
+			} else {
+				if err := stub.PutState(k, w.Value); err != nil {
+					return fmt.Errorf("error (%s) writing key %s value(hex) %s", err, k, hex.EncodeToString(w.Value))
+				}
+				logger.Debugf("written key %s value(hex) %s", k, hex.EncodeToString(w.Value))
 			}
-
-			logger.Debugf("written key %s value(hex) %s", k, hex.EncodeToString(w.Value))
 		}
 	}
 

@@ -166,6 +166,9 @@ void get_public_state_by_partial_composite_key(
 //
 // - other functions: {get,set}StateValidationParameter, getHistoryForKey. Can/should we ignore?
 
+// - records the given `key` to be deleted in the writeset.
+void del_state(const char* key, shim_ctx_ptr_t ctx);
+
 // retrieval for arguments
 //-------------------------------------------------
 // - retrieve the list of invocation parameters

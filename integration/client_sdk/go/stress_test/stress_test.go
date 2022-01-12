@@ -35,8 +35,8 @@ const (
 )
 
 var (
-	network      *gateway.Network
-	echoContract fpc.Contract
+	network  *gateway.Network
+	contract fpc.Contract
 )
 
 var _ = BeforeSuite(func() {
@@ -53,8 +53,8 @@ var _ = BeforeSuite(func() {
 	Expect(network).ShouldNot(BeNil())
 
 	// Get FPC Contract
-	echoContract = fpc.GetContract(network, ccID)
-	Expect(echoContract).ShouldNot(BeNil())
+	contract = fpc.GetContract(network, ccID)
+	Expect(contract).ShouldNot(BeNil())
 })
 
 var _ = Describe("Stress tests", func() {
@@ -73,13 +73,17 @@ var _ = Describe("Stress tests", func() {
 					key := "some-key"
 					value := base64.StdEncoding.EncodeToString(payload)
 
-					res, err := echoContract.SubmitTransaction("put_state", key, value)
+					res, err := contract.SubmitTransaction("put_state", key, value)
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(res).Should(Equal([]byte("OK")))
 
-					res, err = echoContract.EvaluateTransaction("get_state", key)
+					res, err = contract.EvaluateTransaction("get_state", key)
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(res).Should(Equal([]byte(value)))
+
+					res, err = contract.SubmitTransaction("del_state", key)
+					Expect(err).ShouldNot(HaveOccurred())
+					Expect(res).Should(Equal([]byte("OK")))
 				}
 			})
 		})
@@ -99,7 +103,7 @@ var _ = Describe("Stress tests", func() {
 				Expect(n).Should(Equal(size))
 
 				value := base64.StdEncoding.EncodeToString(payload)
-				res, err := echoContract.SubmitTransaction("put_state", key, value)
+				res, err := contract.SubmitTransaction("put_state", key, value)
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(res).Should(Equal([]byte("OK")))
 
@@ -108,7 +112,7 @@ var _ = Describe("Stress tests", func() {
 					if i%10 == 0 {
 						fmt.Printf("i=%d\n", i)
 					}
-					res, err = echoContract.EvaluateTransaction("get_state", key)
+					res, err = contract.EvaluateTransaction("get_state", key)
 					Expect(err).ShouldNot(HaveOccurred())
 					Expect(res).Should(Equal([]byte(value)))
 				}

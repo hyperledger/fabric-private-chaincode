@@ -170,6 +170,7 @@ void put_public_state(const char* key, uint8_t* val, uint32_t val_len, shim_ctx_
     // save write -- only the last one for the same key
     ctx->write_set.erase(key);
     ctx->write_set.insert({key, ByteArray(val, val + val_len)});
+    ctx->del_set.erase(key);
 
     ocall_put_state(key, val, val_len, ctx->u_shim_ctx);
 }
@@ -248,6 +249,15 @@ void get_public_state_by_partial_composite_key(
     }
 
     unmarshal_values(values, (const char*)json, len);
+}
+
+void del_state(const char* key, shim_ctx_ptr_t ctx)
+{
+    ctx->write_set.erase(key);
+    ctx->del_set.insert(key);
+
+    ocall_del_state(key, ctx->u_shim_ctx);
+    return;
 }
 
 int get_string_args(std::vector<std::string>& argss, shim_ctx_ptr_t ctx)

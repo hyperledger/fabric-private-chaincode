@@ -43,6 +43,10 @@ kv_test() {
 
     try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"put_state", "Args": ["echo-0", "echo-0"]}' --waitForEvent
     check_result "OK"
+    try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"get_state", "Args": ["echo-0"]}' --waitForEvent
+    check_result "echo-0"
+    try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n ${CC_ID} -c '{"Function":"del_state", "Args": ["echo-0"]}' --waitForEvent
+    check_result "OK"
 }
 
 # 1. prepare

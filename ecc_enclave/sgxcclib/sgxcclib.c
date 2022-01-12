@@ -18,6 +18,7 @@ extern void get_state(
 extern void get_state_by_partial_composite_key(
     const char* comp_key, uint8_t* values, uint32_t max_len, uint32_t* values_len, void* ctx);
 extern void put_state(const char* key, uint8_t* val, uint32_t val_len, void* ctx);
+extern void del_state(const char* key, void* ctx);
 
 int sgxcc_invoke(enclave_id_t eid,
     const uint8_t* signed_proposal_proto_bytes,
@@ -55,4 +56,9 @@ void ocall_get_state_by_partial_composite_key(
     const char* key, uint8_t* bids_bytes, uint32_t max_len, uint32_t* bids_bytes_len, void* ctx)
 {
     get_state_by_partial_composite_key(key, bids_bytes, max_len, bids_bytes_len, ctx);
+}
+
+void ocall_del_state(const char* key, void* ctx)
+{
+    del_state(key, ctx);
 }

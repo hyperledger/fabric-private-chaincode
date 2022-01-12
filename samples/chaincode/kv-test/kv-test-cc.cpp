@@ -22,6 +22,8 @@ int invoke(
     std::string result;
     get_func_and_params(function_name, params, ctx);
 
+    LOG_DEBUG("Call function: %s", function_name.c_str());
+
     if (function_name == "put_state")
     {
         if (params.size() != 2)
@@ -57,6 +59,18 @@ int invoke(
                 result = std::string("NOT FOUND");
             else
                 result = std::string((const char*)value, actual_value_len);
+        }
+    }
+    else if (function_name == "del_state")
+    {
+        if (params.size() != 1)
+        {
+            result = std::string("del_state needs 1 parameter: key");
+        }
+        else
+        {
+            del_state(params[0].c_str(), ctx);
+            result = std::string("OK");
         }
     }
     else
