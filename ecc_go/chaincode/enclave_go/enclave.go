@@ -16,7 +16,6 @@ import (
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
-	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
@@ -147,11 +146,11 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincod
 	}
 
 	// create a new instance of a FPC RWSet that we pass to the stub and later return with the response
-	fpcRwSet := NewFpcRwSet()
+	rwset := newReadWriteSet()
 
 	// Invoke chaincode
 	// we wrap the stub with our FpcStubInterface
-	fpcStub := NewFpcStubInterface(stub, cleartextChaincodeRequest.GetInput(), fpcRwSet, e.ccIdentity)
+	fpcStub := NewFpcStubInterface(stub, cleartextChaincodeRequest.GetInput(), rwset, e.ccIdentity)
 	ccResponse := e.ccRef.Invoke(fpcStub)
 
 	// If payload is empty (probably due to a shim.Error), the response will contain the message
@@ -172,7 +171,7 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincod
 
 	response := &protos.ChaincodeResponseMessage{
 		EncryptedResponse:           encryptedResponse,
-		FpcRwSet:                    fpcRwSet,
+		FpcRwSet:                    rwset.toFPCKVSet(),
 		EnclaveId:                   e.identity.GetEnclaveId(),
 		Proposal:                    signedProposal,
 		ChaincodeRequestMessageHash: chaincodeRequestMessageHash[:],
@@ -283,18 +282,6 @@ func (e *EnclaveStub) extractCleartextChaincodeRequest(chaincodeRequestMessage *
 	}
 
 	return cleartextChaincodeRequest, nil
-}
-
-func NewFpcRwSet() *protos.FPCKVSet {
-	rwset := &kvrwset.KVRWSet{
-		Reads:  []*kvrwset.KVRead{},
-		Writes: []*kvrwset.KVWrite{},
-	}
-	fpcRwSet := &protos.FPCKVSet{
-		RwSet:           rwset,
-		ReadValueHashes: [][]byte{},
-	}
-	return fpcRwSet
 }
 
 func createAttestation(attestedData *anypb.Any) ([]byte, error) {
