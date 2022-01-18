@@ -11,15 +11,14 @@ package enclave_go
 import (
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
 	"fmt"
-	"strings"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
 	"github.com/hyperledger/fabric/common/flogging"
+	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -28,13 +27,12 @@ import (
 var logger = flogging.MustGetLogger("enclave_go")
 
 type EnclaveStub struct {
-	csp          crypto.CSP
-	privateKey   []byte
-	publicKey    []byte
-	enclaveId    string
-	ccPrivateKey []byte
-	stateKey     []byte
-	ccRef        shim.Chaincode
+	csp             crypto.CSP
+	ccRef           shim.Chaincode
+	identity        *EnclaveIdentity
+	ccIdentity      *ChaincodeIdentity
+	hostParams      *protos.HostParameters
+	chaincodeParams *protos.CCParameters
 }
 
 func NewEnclaveStub(cc shim.Chaincode) *EnclaveStub {
@@ -45,56 +43,50 @@ func NewEnclaveStub(cc shim.Chaincode) *EnclaveStub {
 }
 
 func (e *EnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBytes, serializedAttestationParams []byte) ([]byte, error) {
+	logger.Debug("Init enclave")
 
-	hostParams := &protos.HostParameters{}
-	err := proto.Unmarshal(serializedHostParamsBytes, hostParams)
+	var err error
+
+	// generate new enclave identity
+	e.identity, err = NewEnclaveIdentity(e.csp)
 	if err != nil {
+		return nil, errors.Wrap(err, "cannot create new enclave identity")
+	}
+
+	// as we currently support a single enclave instance per chaincode, we also generate a new chaincode identity here
+	// this needs to be refactored once multi enclave support will be integrated
+	e.ccIdentity, err = NewChaincodeIdentity(e.csp)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot create new enclave identity")
+	}
+
+	e.hostParams = &protos.HostParameters{}
+	if err := proto.Unmarshal(serializedHostParamsBytes, e.hostParams); err != nil {
 		return nil, err
 	}
 
-	chaincodeParams := &protos.CCParameters{}
-	err = proto.Unmarshal(serializedChaincodeParams, chaincodeParams)
-	if err != nil {
+	e.chaincodeParams = &protos.CCParameters{}
+	if err := proto.Unmarshal(serializedChaincodeParams, e.chaincodeParams); err != nil {
 		return nil, err
 	}
-
-	// create enclave keys
-	publicKey, privateKey, err := e.csp.NewECDSAKeys()
-	if err != nil {
-		return nil, err
-	}
-	e.privateKey = privateKey
-	e.publicKey = publicKey
-
-	// create chaincode encryption keys keys
-	ccPublicKey, ccPrivateKey, err := e.csp.NewRSAKeys()
-	if err != nil {
-		return nil, err
-	}
-	e.ccPrivateKey = ccPrivateKey
-
-	// create state key
-	stateKey, err := e.csp.NewSymmetricKey()
-	if err != nil {
-		return nil, err
-	}
-	e.stateKey = stateKey
-
-	// calculate enclave id
-	e.enclaveId, _ = e.GetEnclaveId()
-
-	logger.Debug("Init")
 
 	serializedAttestedData, _ := anypb.New(&protos.AttestedData{
-		EnclaveVk:   publicKey,
-		CcParams:    chaincodeParams,
-		HostParams:  hostParams,
-		ChaincodeEk: ccPublicKey,
+		EnclaveVk:   e.identity.GetPublicKey(),
+		CcParams:    e.chaincodeParams,
+		HostParams:  e.hostParams,
+		ChaincodeEk: e.ccIdentity.GetPublicKey(),
 	})
+
+	attestation, err := createAttestation(serializedAttestedData)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot create attestation")
+	}
+
 	credentials := &protos.Credentials{
-		Attestation:            []byte("{\"attestation_type\":\"simulated\",\"attestation\":\"MA==\"}"),
+		Attestation:            attestation,
 		SerializedAttestedData: serializedAttestedData,
 	}
+
 	logger.Infof("Create credentials: %s", credentials)
 
 	return proto.Marshal(credentials)
@@ -116,8 +108,11 @@ func (e EnclaveStub) ImportCCKeys() ([]byte, error) {
 }
 
 func (e *EnclaveStub) GetEnclaveId() (string, error) {
-	hash := sha256.Sum256(e.publicKey)
-	return strings.ToUpper(hex.EncodeToString(hash[:])), nil
+	if e.identity == nil {
+		return "", fmt.Errorf("enclave not yet initliazed")
+	}
+
+	return e.identity.GetEnclaveId(), nil
 }
 
 func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincodeRequestMessageBytes []byte) ([]byte, error) {
@@ -127,7 +122,10 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincod
 	if err != nil {
 		shim.Error(err.Error())
 	}
-	chaincodeRequestMessageHash := sha256.Sum256(chaincodeRequestMessageBytes)
+
+	if err := e.verifySignedProposal(stub, chaincodeRequestMessageBytes); err != nil {
+		return nil, errors.Wrap(err, "signed proposal verification failed")
+	}
 
 	// unmarshal chaincodeRequest
 	chaincodeRequestMessage := &protos.ChaincodeRequestMessage{}
@@ -136,23 +134,118 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincod
 		return nil, err
 	}
 
-	if chaincodeRequestMessage.GetEncryptedRequest() == nil {
-		return nil, fmt.Errorf("no encrypted request")
+	// get key transport message including the encryption keys for request and response
+	keyTransportMessage, err := e.extractKeyTransportMessage(chaincodeRequestMessage)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot extract keyTransportMessage")
+	}
+
+	// decrypt request
+	cleartextChaincodeRequest, err := e.extractCleartextChaincodeRequest(chaincodeRequestMessage, keyTransportMessage)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot decrypt chaincode request")
+	}
+
+	// create a new instance of a FPC RWSet that we pass to the stub and later return with the response
+	fpcRwSet := NewFpcRwSet()
+
+	// Invoke chaincode
+	// we wrap the stub with our FpcStubInterface
+	fpcStub := NewFpcStubInterface(stub, cleartextChaincodeRequest.GetInput(), fpcRwSet, e.ccIdentity)
+	ccResponse := e.ccRef.Invoke(fpcStub)
+
+	// If payload is empty (probably due to a shim.Error), the response will contain the message
+	var b64ResponseData string
+	if ccResponse.GetPayload() != nil {
+		b64ResponseData = base64.StdEncoding.EncodeToString(ccResponse.GetPayload())
+	} else {
+		b64ResponseData = base64.StdEncoding.EncodeToString([]byte(ccResponse.GetMessage()))
+	}
+
+	//encrypt response
+	encryptedResponse, err := e.csp.EncryptMessage(keyTransportMessage.GetResponseEncryptionKey(), []byte(b64ResponseData))
+	if err != nil {
+		return nil, err
+	}
+
+	chaincodeRequestMessageHash := sha256.Sum256(chaincodeRequestMessageBytes)
+
+	response := &protos.ChaincodeResponseMessage{
+		EncryptedResponse:           encryptedResponse,
+		FpcRwSet:                    fpcRwSet,
+		EnclaveId:                   e.identity.GetEnclaveId(),
+		Proposal:                    signedProposal,
+		ChaincodeRequestMessageHash: chaincodeRequestMessageHash[:],
+	}
+
+	responseBytes, err := proto.Marshal(response)
+	if err != nil {
+		return nil, err
+	}
+
+	// create signature
+	sig, err := e.identity.Sign(responseBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	signedResponse := &protos.SignedChaincodeResponseMessage{
+		ChaincodeResponseMessage: responseBytes,
+		Signature:                sig,
+	}
+
+	return proto.Marshal(signedResponse)
+}
+
+func (e *EnclaveStub) verifySignedProposal(stub shim.ChaincodeStubInterface, chaincodeRequestMessageBytes []byte) error {
+	signedProposal, err := stub.GetSignedProposal()
+	if err != nil {
+		return err
+	}
+
+	proposal, err := protoutil.UnmarshalProposal(signedProposal.GetProposalBytes())
+	if err != nil {
+		return errors.Wrap(err, "cannot unmarshal proposal")
+	}
+
+	header, err := protoutil.UnmarshalHeader(proposal.GetHeader())
+	if err != nil {
+		return errors.Wrap(err, "cannot unmarshal proposal header")
+	}
+
+	channelHeader, err := protoutil.UnmarshalChannelHeader(header.GetChannelHeader())
+	if err != nil {
+		return errors.Wrap(err, "cannot unmarshal channel header")
+	}
+
+	if channelHeader.GetChannelId() != e.chaincodeParams.ChaincodeId {
+		return fmt.Errorf("channel id of the tx proposal does not match as initialized with cc_parameters")
+	}
+
+	// TODO perform signature check
+	//signature := signedProposal.GetSignature()
+	// our chance to also support Idemix signatures here
+
+	return nil
+}
+
+func (e *EnclaveStub) extractKeyTransportMessage(chaincodeRequestMessage *protos.ChaincodeRequestMessage) (*protos.KeyTransportMessage, error) {
+	if chaincodeRequestMessage == nil {
+		return nil, fmt.Errorf("chaincodeRequestMessage is nil")
 	}
 
 	if chaincodeRequestMessage.GetEncryptedKeyTransportMessage() == nil {
-		return nil, fmt.Errorf("no encrypted key transport message")
+		return nil, fmt.Errorf("chaincodeRequestMessages does not contain a encrypted keyTransportMessage")
 	}
 
 	// decrypt key transport message with chaincode decryption key
-	keyTransportMessageBytes, err := e.csp.PkDecryptMessage(e.ccPrivateKey, chaincodeRequestMessage.GetEncryptedKeyTransportMessage())
+	keyTransportMessageBytes, err := e.ccIdentity.PkDecryptMessage(chaincodeRequestMessage.GetEncryptedKeyTransportMessage())
 	if err != nil {
 		return nil, errors.Wrap(err, "decryption of key transport message failed")
 	}
 
 	keyTransportMessage := &protos.KeyTransportMessage{}
-	err = proto.Unmarshal(keyTransportMessageBytes, keyTransportMessage)
-	if err != nil {
+	if err := proto.Unmarshal(keyTransportMessageBytes, keyTransportMessage); err != nil {
 		return nil, err
 	}
 
@@ -164,6 +257,17 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincod
 	if keyTransportMessage.GetRequestEncryptionKey() == nil {
 		return nil, fmt.Errorf("no response encryption key")
 	}
+	return keyTransportMessage, err
+}
+
+func (e *EnclaveStub) extractCleartextChaincodeRequest(chaincodeRequestMessage *protos.ChaincodeRequestMessage, keyTransportMessage *protos.KeyTransportMessage) (*protos.CleartextChaincodeRequest, error) {
+	if chaincodeRequestMessage.GetEncryptedRequest() == nil {
+		return nil, fmt.Errorf("no encrypted request")
+	}
+
+	if keyTransportMessage.GetRequestEncryptionKey() == nil {
+		return nil, fmt.Errorf("no encryption key")
+	}
 
 	// decrypt request
 	clearChaincodeRequestBytes, err := e.csp.DecryptMessage(keyTransportMessage.GetRequestEncryptionKey(), chaincodeRequestMessage.GetEncryptedRequest())
@@ -171,65 +275,29 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincod
 		return nil, errors.Wrap(err, "decryption of request failed")
 	}
 
+	// unmarshal cleartextChaincodeRequest
 	cleartextChaincodeRequest := &protos.CleartextChaincodeRequest{}
 	err = proto.Unmarshal(clearChaincodeRequestBytes, cleartextChaincodeRequest)
 	if err != nil {
 		return nil, err
 	}
 
-	// construct rwset
+	return cleartextChaincodeRequest, nil
+}
+
+func NewFpcRwSet() *protos.FPCKVSet {
 	rwset := &kvrwset.KVRWSet{
 		Reads:  []*kvrwset.KVRead{},
 		Writes: []*kvrwset.KVWrite{},
 	}
-	fpcKvSet := &protos.FPCKVSet{
+	fpcRwSet := &protos.FPCKVSet{
 		RwSet:           rwset,
 		ReadValueHashes: [][]byte{},
 	}
+	return fpcRwSet
+}
 
-	// Invoke Simple Chaincode
-	fpcStub := NewFpcStubInterface(stub, cleartextChaincodeRequest.GetInput(), fpcKvSet, e.stateKey)
-	peerResponse := e.ccRef.Invoke(fpcStub)
-
-	fmt.Println(fpcKvSet)
-
-	// If payload is empty (probably due to a shim.Error), the response will contain the message
-	var b64ResponseData string
-	if peerResponse.GetPayload() != nil {
-		b64ResponseData = base64.StdEncoding.EncodeToString(peerResponse.GetPayload())
-	} else {
-		b64ResponseData = base64.StdEncoding.EncodeToString([]byte(peerResponse.GetMessage()))
-	}
-
-	//encrypt response
-	encryptedResponse, err := e.csp.EncryptMessage(keyTransportMessage.GetResponseEncryptionKey(), []byte(b64ResponseData))
-	if err != nil {
-		return nil, err
-	}
-
-	response := &protos.ChaincodeResponseMessage{
-		EncryptedResponse:           encryptedResponse,
-		FpcRwSet:                    fpcKvSet,
-		EnclaveId:                   e.enclaveId,
-		Proposal:                    signedProposal,
-		ChaincodeRequestMessageHash: chaincodeRequestMessageHash[:],
-	}
-
-	responseBytes, err := proto.Marshal(response)
-	if err != nil {
-		return nil, err
-	}
-
-	// create signature
-	sig, err := e.csp.SignMessage(e.privateKey, responseBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	signedResponse := &protos.SignedChaincodeResponseMessage{
-		ChaincodeResponseMessage: responseBytes,
-		Signature:                sig,
-	}
-
-	return proto.Marshal(signedResponse)
+func createAttestation(attestedData *anypb.Any) ([]byte, error) {
+	// TODO implement proper attestation, supporting dcap and simulation
+	return []byte("{\"attestation_type\":\"simulated\",\"attestation\":\"MA==\"}"), nil
 }
