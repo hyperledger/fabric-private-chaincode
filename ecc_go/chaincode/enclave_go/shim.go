@@ -21,18 +21,62 @@ import (
 )
 
 type FpcStubInterface struct {
-	stub     shim.ChaincodeStubInterface
-	input    *pb.ChaincodeInput
-	fpcKvSet *protos.FPCKVSet
-	sep      StateEncryptionFunctions
+	stub  shim.ChaincodeStubInterface
+	input *pb.ChaincodeInput
+	rwset *readWriteSet
+	sep   StateEncryptionFunctions
 }
 
-func NewFpcStubInterface(stub shim.ChaincodeStubInterface, input *pb.ChaincodeInput, fpcKvSet *protos.FPCKVSet, sep StateEncryptionFunctions) *FpcStubInterface {
+func NewFpcStubInterface(stub shim.ChaincodeStubInterface, input *pb.ChaincodeInput, rwset *readWriteSet, sep StateEncryptionFunctions) *FpcStubInterface {
 	return &FpcStubInterface{
-		stub:     stub,
-		input:    input,
-		fpcKvSet: fpcKvSet,
-		sep:      sep,
+		stub:  stub,
+		input: input,
+		sep:   sep,
+		rwset: rwset,
+	}
+}
+
+type readWriteSet struct {
+	reads  map[string]read
+	writes map[string]write
+}
+
+type read struct {
+	kvread kvrwset.KVRead
+	hash   []byte
+}
+
+type write struct {
+	kvwrite kvrwset.KVWrite
+}
+
+func (rwset *readWriteSet) toFPCKVSet() *protos.FPCKVSet {
+	fpcKVSet := &protos.FPCKVSet{
+		RwSet: &kvrwset.KVRWSet{
+			Reads:  []*kvrwset.KVRead{},
+			Writes: []*kvrwset.KVWrite{},
+		},
+		ReadValueHashes: [][]byte{},
+	}
+
+	// fill with reads
+	for _, read := range rwset.reads {
+		fpcKVSet.RwSet.Reads = append(fpcKVSet.RwSet.Reads, &read.kvread)
+		fpcKVSet.ReadValueHashes = append(fpcKVSet.ReadValueHashes, read.hash)
+	}
+
+	// fill with writes
+	for _, write := range rwset.writes {
+		fpcKVSet.RwSet.Writes = append(fpcKVSet.RwSet.Writes, &write.kvwrite)
+	}
+
+	return fpcKVSet
+}
+
+func newReadWriteSet() *readWriteSet {
+	return &readWriteSet{
+		reads:  make(map[string]read),
+		writes: make(map[string]write),
 	}
 }
 
@@ -98,11 +142,15 @@ func (f *FpcStubInterface) GetPublicState(key string) ([]byte, error) {
 		return nil, err
 	}
 	hash := sha256.Sum256(value)
-	f.fpcKvSet.RwSet.Reads = append(f.fpcKvSet.RwSet.Reads, &kvrwset.KVRead{
-		Key:     key,
-		Version: nil,
-	})
-	f.fpcKvSet.ReadValueHashes = append(f.fpcKvSet.ReadValueHashes, hash[:])
+
+	f.rwset.reads[key] = read{
+		kvread: kvrwset.KVRead{
+			Key:     key,
+			Version: nil,
+		},
+		hash: hash[:],
+	}
+
 	return value, nil
 }
 
@@ -115,17 +163,30 @@ func (f *FpcStubInterface) PutState(key string, value []byte) error {
 }
 
 func (f *FpcStubInterface) PutPublicState(key string, value []byte) error {
-	f.fpcKvSet.RwSet.Writes = append(f.fpcKvSet.RwSet.Writes, &kvrwset.KVWrite{
-		Key:      key,
-		IsDelete: false,
-		Value:    value,
-	})
-	return f.stub.PutState(key, value)
+	f.rwset.writes[key] = write{
+		kvwrite: kvrwset.KVWrite{
+			Key:      key,
+			IsDelete: false,
+			Value:    value,
+		},
+	}
+
+	// note that since we are not using the fabric proposal response  we can skip the putState call
+	//return f.stub.PutState(key, value)
+	return nil
 }
 
 func (f *FpcStubInterface) DelState(key string) error {
-	// TODO
-	panic("not implemented") // TODO: Implement
+	f.rwset.writes[key] = write{
+		kvwrite: kvrwset.KVWrite{
+			Key:      key,
+			IsDelete: true,
+		},
+	}
+
+	// note that since we are not using the fabric proposal response  we can skip the delState call
+	//return f.stub.DelState(key)
+	return nil
 }
 
 func (f *FpcStubInterface) SetStateValidationParameter(key string, ep []byte) error {
