@@ -217,8 +217,8 @@ func (e *EnclaveStub) verifySignedProposal(stub shim.ChaincodeStubInterface, cha
 		return errors.Wrap(err, "cannot unmarshal channel header")
 	}
 
-	if channelHeader.GetChannelId() != e.chaincodeParams.ChaincodeId {
-		return fmt.Errorf("channel id of the tx proposal does not match as initialized with cc_parameters")
+	if channelHeader.GetChannelId() != e.chaincodeParams.GetChannelId() {
+		return fmt.Errorf("channelId='%s' does not match as initialized with cc_parameters='%s'", channelHeader.GetChannelId(), e.chaincodeParams.GetChannelId())
 	}
 
 	// TODO perform signature check

@@ -8,7 +8,7 @@ include $(TOP)/build.mk
 all: test
 
 test:
-	go test -v -failfast .
+	FABRIC_LOGGING_SPEC=fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info go test -v -failfast .
 
 docker:
 	docker tag fpc/ercc:main fpc/ercc:latest
