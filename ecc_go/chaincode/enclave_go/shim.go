@@ -42,12 +42,12 @@ type readWriteSet struct {
 }
 
 type read struct {
-	kvread kvrwset.KVRead
+	kvread *kvrwset.KVRead
 	hash   []byte
 }
 
 type write struct {
-	kvwrite kvrwset.KVWrite
+	kvwrite *kvrwset.KVWrite
 }
 
 func (rwset *readWriteSet) toFPCKVSet() *protos.FPCKVSet {
@@ -61,13 +61,13 @@ func (rwset *readWriteSet) toFPCKVSet() *protos.FPCKVSet {
 
 	// fill with reads
 	for _, read := range rwset.reads {
-		fpcKVSet.RwSet.Reads = append(fpcKVSet.RwSet.Reads, &read.kvread)
+		fpcKVSet.RwSet.Reads = append(fpcKVSet.RwSet.Reads, read.kvread)
 		fpcKVSet.ReadValueHashes = append(fpcKVSet.ReadValueHashes, read.hash)
 	}
 
 	// fill with writes
 	for _, write := range rwset.writes {
-		fpcKVSet.RwSet.Writes = append(fpcKVSet.RwSet.Writes, &write.kvwrite)
+		fpcKVSet.RwSet.Writes = append(fpcKVSet.RwSet.Writes, write.kvwrite)
 	}
 
 	return fpcKVSet
@@ -141,14 +141,13 @@ func (f *FpcStubInterface) GetPublicState(key string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	hash := sha256.Sum256(value)
 
 	f.rwset.reads[key] = read{
-		kvread: kvrwset.KVRead{
+		kvread: &kvrwset.KVRead{
 			Key:     key,
 			Version: nil,
 		},
-		hash: hash[:],
+		hash: hash(value),
 	}
 
 	return value, nil
@@ -164,7 +163,7 @@ func (f *FpcStubInterface) PutState(key string, value []byte) error {
 
 func (f *FpcStubInterface) PutPublicState(key string, value []byte) error {
 	f.rwset.writes[key] = write{
-		kvwrite: kvrwset.KVWrite{
+		kvwrite: &kvrwset.KVWrite{
 			Key:      key,
 			IsDelete: false,
 			Value:    value,
@@ -178,7 +177,7 @@ func (f *FpcStubInterface) PutPublicState(key string, value []byte) error {
 
 func (f *FpcStubInterface) DelState(key string) error {
 	f.rwset.writes[key] = write{
-		kvwrite: kvrwset.KVWrite{
+		kvwrite: &kvrwset.KVWrite{
 			Key:      key,
 			IsDelete: true,
 		},
@@ -276,7 +275,7 @@ func (f *FpcStubInterface) GetPublicStateByPartialCompositeKey(objectType string
 		if err != nil {
 			return nil, err
 		}
-		v_hash := sha256.Sum256(i.Value)
+		v_hash := hash(i.Value)
 		fmt.Println(i.Key, "Key")
 		fmt.Println(utils.TransformToFPCKey(i.Key), "FPC")
 		fmt.Println(i.Value, "Value")
@@ -390,4 +389,10 @@ func (f *FpcStubInterface) GetTxTimestamp() (*timestamp.Timestamp, error) {
 
 func (f *FpcStubInterface) SetEvent(name string, payload []byte) error {
 	panic("not implemented") // TODO: Implement
+}
+
+func hash(value []byte) []byte {
+	h := sha256.New()
+	h.Write(value)
+	return h.Sum(nil)
 }
