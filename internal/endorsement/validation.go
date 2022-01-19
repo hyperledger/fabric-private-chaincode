@@ -72,7 +72,7 @@ func (v *ValidatorImpl) ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrw
 				return fmt.Errorf("error (%s) reading key %s", err, k)
 			}
 
-			logger.Debugf("read key %s value(hex) %s", k, hex.EncodeToString(v))
+			logger.Debugf("read key='%s' value(hex)='%s'", k, hex.EncodeToString(v))
 
 			// compute value hash
 			// TODO: use CSP hash for consistency

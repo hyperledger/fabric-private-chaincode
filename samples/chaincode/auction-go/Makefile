@@ -14,15 +14,15 @@ CAAS_PORT ?= 9999
 HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
 DOCKER_IMAGE ?= fpc/fpc-$(CC_NAME)-go${HW_EXTENSION}
 
-build: ecc
+build: ecc docker
 
-ecc: ecc_dependencies
+.PHONY: pure_go
+pure_go: ecc_dependencies
 	$(GO) build $(GOTAGS) -o ecc main.go
 
-.PHONY: ecc_go
-ecc_go: ecc_dependencies
+ecc: ecc_dependencies
 	ego-go build $(GOTAGS) -o ecc main.go
-	ego sign chaincode
+	ego sign ecc
 
 ecc_dependencies:
 	# hard to list explicitly, so just leave empty target,
@@ -58,4 +58,5 @@ docker:
 
 clean:
 	$(GO) clean
+	rm ecc
 
