@@ -1,0 +1,24 @@
+{
+ "exe": "ecc",
+ "key": "private.pem",
+ "debug": true,
+ "heapSize": 512,
+ "productID": 1,
+ "securityVersion": 1,
+ "mounts": null,
+ "files": null,
+ "env": [
+    {
+        "name": "CHAINCODE_SERVER_ADDRESS",
+        "fromHost": true
+    },
+    {
+        "name": "CHAINCODE_PKG_ID",
+        "fromHost": true
+    },
+    {
+        "name": "FABRIC_LOGGING_SPEC",
+        "fromHost": true
+    }
+]
+}

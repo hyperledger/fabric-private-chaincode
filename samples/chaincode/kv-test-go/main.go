@@ -13,7 +13,7 @@ import (
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
-	"github.com/hyperledger/fabric-private-chaincode/samples/chaincode/auction-go/chaincode"
+	"github.com/hyperledger/fabric-private-chaincode/samples/chaincode/kv-test-go/chaincode"
 )
 
 func main() {
@@ -26,7 +26,7 @@ func main() {
 	addr := os.Getenv("CHAINCODE_SERVER_ADDRESS")
 
 	// create private chaincode
-	privateChaincode := fpc.NewPrivateChaincode(&chaincode.Auction{})
+	privateChaincode := fpc.NewPrivateChaincode(chaincode.NewKvTest())
 
 	// start chaincode as a service
 	server := &shim.ChaincodeServer{
