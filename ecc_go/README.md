@@ -4,6 +4,11 @@ https://creativecommons.org/licenses/by/4.0/
 --->
 # Chaincode wrapper for Go Chaincode (ecc_go)
 
+The `ecc_go` folder contains the components to enable go support Fabric Private Chaincode.
+In particular, it contains: 
+
+- Go library to be included in a user chaincode application, and
+- Building and packaging utilities
 
 
 # Install Ego inside dev environment
