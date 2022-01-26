@@ -14,9 +14,10 @@ import (
 	"github.com/hyperledger/fabric-private-chaincode/integration/go_chaincode/auction/views/bidder"
 )
 
-const ChaincodeName = "auction"
-
-const ChaincodeImageName = "fpc/fpc-auction-go:main"
+const (
+	ChaincodeName      = "auction"
+	ChaincodeImageName = "fpc/fpc-auction-go:main"
+)
 
 //const ChaincodeImageName = "fpc/auction"
 
