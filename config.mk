@@ -68,7 +68,7 @@ PROJECT_NAME=fabric-private-chaincode
 
 export FABRIC_VERSION ?= 2.3.3
 
-export FPC_VERSION := main
+export FPC_VERSION := v1.0-rc3
 
 export FABRIC_PATH ?= ${GOPATH}/src/github.com/hyperledger/fabric
 

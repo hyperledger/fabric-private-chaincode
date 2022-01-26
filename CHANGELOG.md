@@ -1,3 +1,24 @@
+## v1.0.0-rc3
+Wed Jan 26 18:02:27 CET 2022
+
+* [5d0290d](https://github.com/hyperledger/fabric-private-chaincode/commit/5d0290d) Release v1.0-rc3
+* [0dbf76f](https://github.com/hyperledger/fabric-private-chaincode/commit/0dbf76f) Update IRB readme
+* [d472bca](https://github.com/hyperledger/fabric-private-chaincode/commit/d472bca) Link existing FSC examples
+* [36a60d3](https://github.com/hyperledger/fabric-private-chaincode/commit/36a60d3) Add del_state support (#640)
+* [5febb77](https://github.com/hyperledger/fabric-private-chaincode/commit/5febb77) Fix memory leak in cert decoding
+* [3bfeeb5](https://github.com/hyperledger/fabric-private-chaincode/commit/3bfeeb5) Add missing pb_release calls
+* [2234bb4](https://github.com/hyperledger/fabric-private-chaincode/commit/2234bb4) Add stress test for many invocations
+* [58e58a5](https://github.com/hyperledger/fabric-private-chaincode/commit/58e58a5) Upgrade parson
+* [a949ca9](https://github.com/hyperledger/fabric-private-chaincode/commit/a949ca9) Extend FPC Shim support (#637)
+* [5713269](https://github.com/hyperledger/fabric-private-chaincode/commit/5713269) fix sgx device location for dcap machines (#639)
+* [0aea62d](https://github.com/hyperledger/fabric-private-chaincode/commit/0aea62d) Demo FSC integration using the IRB demo (#635)
+* [d07bc32](https://github.com/hyperledger/fabric-private-chaincode/commit/d07bc32) fixup! Upgrade to Fabric 2.3.3
+* [eadb34c](https://github.com/hyperledger/fabric-private-chaincode/commit/eadb34c) Upgrade to Fabric 2.3.3
+* [079f357](https://github.com/hyperledger/fabric-private-chaincode/commit/079f357) Upgrade to go 1.16.7
+* [22f32d8](https://github.com/hyperledger/fabric-private-chaincode/commit/22f32d8) Updated helloworld readme
+* [29041c8](https://github.com/hyperledger/fabric-private-chaincode/commit/29041c8) Fixed the version of fabric-ccenv to 2.3.0.
+* [b2e72ab](https://github.com/hyperledger/fabric-private-chaincode/commit/b2e72ab) Post-Release: Set version to main
+
 ## v1.0.0-rc2
 Thu Sep  9 09:57:18 CEST 2021
 
