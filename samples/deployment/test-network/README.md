@@ -195,7 +195,7 @@ In this section we show how you can run a different FPC chaincode on the test ne
 export CC_ID=helloworld
 export CC_PATH=$FPC_PATH/samples/chaincode/helloworld
 ```
-Afterwards to test you would use [simple-cli-go](###How-to-use-simple-cli-go). You would need to verify that the `CC_NAME` variable is set to helloworld and then to interact you would execute the chaincode as follows:
+Afterwards to test you would use [simple-cli-go](#How-to-use-simple-cli-go). You would need to verify that the `CC_NAME` variable is set to helloworld and then to interact you would execute the chaincode as follows:
 ```bash
 # interact with the FPC Chaincode
 ./fpcclient invoke storeAsset asset1 100
