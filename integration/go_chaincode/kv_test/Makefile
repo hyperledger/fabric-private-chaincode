@@ -11,7 +11,7 @@ test:
 	FABRIC_LOGGING_SPEC=fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info go test -v -failfast .
 
 build:
-	make -C $(FPC_PATH)/samples/chaincode/auction-go
+	make -C $(FPC_PATH)/samples/chaincode/kv-test-go
 
 docker:
 	docker tag fpc/ercc:main fpc/ercc:latest
