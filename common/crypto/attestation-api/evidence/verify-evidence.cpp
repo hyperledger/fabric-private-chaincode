@@ -64,6 +64,7 @@ void url_decode_ias_certificate(std::string& s)
     replace_all_substrings(s, "%0A", "\n");
     replace_all_substrings(s, "%2B", "+");
     replace_all_substrings(s, "%3D", "=");
+    replace_all_substrings(s, "%2F", "/");
 }
 
 bool split_certificates(
