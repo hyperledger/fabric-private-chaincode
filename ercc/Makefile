@@ -36,7 +36,8 @@ docker: ercc
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
 		--build-arg FPC_VERSION=$(FPC_VERSION) \
 		-t $(DOCKER_IMAGE):$(FPC_VERSION) \
-		.
+		. \
+	&& $(DOCKER) tag $(DOCKER_IMAGE):$(FPC_VERSION) $(DOCKER_IMAGE):latest
 
 docker-clean:
 	$(DOCKER) rmi -f $(DOCKER_IMAGE)
