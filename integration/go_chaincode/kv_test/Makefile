@@ -13,9 +13,5 @@ test:
 build:
 	make -C $(FPC_PATH)/samples/chaincode/kv-test-go
 
-docker:
-	docker tag fpc/ercc:main fpc/ercc:latest
-	docker tag fpc/auction:main fpc/auction:latest
-
 clean:
 	rm -rf cmd

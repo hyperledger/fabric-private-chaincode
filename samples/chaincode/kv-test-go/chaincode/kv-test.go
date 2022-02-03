@@ -43,8 +43,9 @@ func (t *KvTest) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 }
 
 func (t *KvTest) dispatch(stub shim.ChaincodeStubInterface) pb.Response {
-	functionType, _ := stub.GetFunctionAndParameters()
+	functionType, params := stub.GetFunctionAndParameters()
 	if f, exist := t.functionRegister[functionType]; exist {
+		fmt.Printf("call f='%s' with args='%v'\n", functionType, params)
 		return f(stub)
 	}
 
