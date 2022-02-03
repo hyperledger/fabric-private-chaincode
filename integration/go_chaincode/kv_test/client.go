@@ -8,6 +8,7 @@ package kv
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/fpc"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view/view"
@@ -15,9 +16,9 @@ import (
 )
 
 type Client struct {
-	cid      string
-	function string
-	args     []string
+	CID      string
+	Function string
+	Args     []string
 }
 
 type ClientView struct {
@@ -25,9 +26,10 @@ type ClientView struct {
 }
 
 func (c *ClientView) Call(context view.Context) (interface{}, error) {
-	_, err := fpc.GetDefaultChannel(context).Chaincode(c.cid).Invoke(c.function, fpc.StringsToArgs(c.args)...).Call()
+	fmt.Printf("Call FPC (CID='%s') with f='%s' and Args='%v'\n", c.CID, c.Function, c.Args)
+	_, err := fpc.GetDefaultChannel(context).Chaincode(c.CID).Invoke(c.Function, fpc.StringsToArgs(c.Args)...).Call()
 	if err != nil {
-		return nil, errors.Wrapf(err, "error invoking %s", c.function)
+		return nil, errors.Wrapf(err, "error invoking %s", c.Function)
 	}
 
 	return nil, nil
