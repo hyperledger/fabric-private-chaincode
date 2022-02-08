@@ -10,12 +10,16 @@ package enclave_go
 
 import (
 	"crypto/sha256"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
 	"fmt"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger/fabric/bccsp"
+	"github.com/hyperledger/fabric/bccsp/factory"
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
@@ -26,18 +30,25 @@ import (
 var logger = flogging.MustGetLogger("enclave_go")
 
 type EnclaveStub struct {
-	csp             crypto.CSP
-	ccRef           shim.Chaincode
-	identity        *EnclaveIdentity
-	ccIdentity      *ChaincodeIdentity
-	hostParams      *protos.HostParameters
-	chaincodeParams *protos.CCParameters
+	csp                  crypto.CSP
+	ccRef                shim.Chaincode
+	identity             *EnclaveIdentity
+	ccIdentity           *ChaincodeIdentity
+	hostParams           *protos.HostParameters
+	chaincodeParams      *protos.CCParameters
+	fabricCryptoProvider bccsp.BCCSP
 }
 
 func NewEnclaveStub(cc shim.Chaincode) *EnclaveStub {
+	if err := factory.InitFactories(nil); err != nil {
+		panic(err)
+	}
+	cryptoProvider := factory.GetDefault()
+
 	return &EnclaveStub{
-		csp:   crypto.GetDefaultCSP(),
-		ccRef: cc,
+		csp:                  crypto.GetDefaultCSP(),
+		ccRef:                cc,
+		fabricCryptoProvider: cryptoProvider,
 	}
 }
 
@@ -221,9 +232,61 @@ func (e *EnclaveStub) verifySignedProposal(stub shim.ChaincodeStubInterface, cha
 		return fmt.Errorf("channelId='%s' does not match as initialized with cc_parameters='%s'", channelHeader.GetChannelId(), e.chaincodeParams.GetChannelId())
 	}
 
-	// TODO perform signature check
-	//signature := signedProposal.GetSignature()
-	// our chance to also support Idemix signatures here
+	signatureHeader, err := protoutil.UnmarshalSignatureHeader(header.GetSignatureHeader())
+	if err != nil {
+		return errors.Wrap(err, "cannot unmarshal signa header")
+	}
+
+	if err := checkSignatureFromCreator(signatureHeader.GetCreator(), signedProposal.GetSignature(), signedProposal.GetProposalBytes(), e.fabricCryptoProvider); err != nil {
+		return errors.Wrap(err, "signature validation failed")
+	}
+
+	return nil
+}
+
+func checkSignatureFromCreator(creatorBytes, sig, msg []byte, cryptoProvider bccsp.BCCSP) error {
+	// check for nil argument
+	if creatorBytes == nil || sig == nil || msg == nil {
+		return errors.New("nil arguments")
+	}
+
+	// TODO check if serializedIdentity is idemix
+
+	sId, err := protoutil.UnmarshalSerializedIdentity(creatorBytes)
+	if err != nil {
+		return errors.Wrap(err, "could not deserialize a SerializedIdentity; note that idemix is currently not supported")
+	}
+
+	bl, _ := pem.Decode(sId.GetIdBytes())
+	if bl == nil {
+		return errors.New("could not decode the PEM structure!")
+	}
+	cert, err := x509.ParseCertificate(bl.Bytes)
+	if err != nil {
+		return errors.Wrap(err, "parseCertificate failed")
+	}
+
+	pub, err := cryptoProvider.KeyImport(cert, &bccsp.X509PublicKeyImportOpts{Temporary: true})
+	if err != nil {
+		return errors.Wrap(err, "failed to import certificate's public key")
+	}
+
+	hashOpt, err := bccsp.GetHashOpt(bccsp.SHA256)
+	if err != nil {
+		return errors.Wrap(err, "failed getting hash function options")
+	}
+
+	digest, err := cryptoProvider.Hash(msg, hashOpt)
+	if err != nil {
+		return errors.Wrap(err, "failed computing digest")
+	}
+
+	valid, err := cryptoProvider.Verify(pub, sig, digest, nil)
+	if err != nil {
+		return errors.WithMessage(err, "could not determine the validity of the signature")
+	} else if !valid {
+		return errors.New("The signature is invalid")
+	}
 
 	return nil
 }
