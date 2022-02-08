@@ -157,7 +157,7 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincod
 	}
 
 	// create a new instance of a FPC RWSet that we pass to the stub and later return with the response
-	rwset := newReadWriteSet()
+	rwset := NewReadWriteSet()
 
 	// Invoke chaincode
 	// we wrap the stub with our FpcStubInterface
@@ -182,7 +182,7 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincod
 
 	response := &protos.ChaincodeResponseMessage{
 		EncryptedResponse:           encryptedResponse,
-		FpcRwSet:                    rwset.toFPCKVSet(),
+		FpcRwSet:                    rwset.ToFPCKVSet(),
 		EnclaveId:                   e.identity.GetEnclaveId(),
 		Proposal:                    signedProposal,
 		ChaincodeRequestMessageHash: chaincodeRequestMessageHash[:],
