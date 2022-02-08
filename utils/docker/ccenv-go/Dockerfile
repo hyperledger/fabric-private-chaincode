@@ -14,7 +14,7 @@ ARG FPC_VERSION=main
 
 FROM hyperledger/fabric-private-chaincode-base-rt:${FPC_VERSION}
 
-ARG EGO_VERSION=0.4.0
+ARG EGO_VERSION=0.4.1
 
 RUN wget https://github.com/edgelesssys/ego/releases/download/v${EGO_VERSION}/ego_${EGO_VERSION}_amd64.deb \
   && apt install -y ./ego_${EGO_VERSION}_amd64.deb \
