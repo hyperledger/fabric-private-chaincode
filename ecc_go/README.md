@@ -21,7 +21,8 @@ TODO
 This installation assumes a working FPC dev environment.
 You can find all setup information in the getting started section of our [README.md](../README.md).
 
-To start with we need to install the ego compiler in your dev environment.
+To start with we need to install the ego compiler in your dev environment. 
+Note that the FPC dev container comes with ego already installed.
 This is required to build and sign the FPC go chaincode.
 You can find more information about ego installation on the official [documentation](https://docs.edgeless.systems/ego/#/getting-started/install).
 
