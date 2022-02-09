@@ -28,5 +28,5 @@ COPY ecc ${CC_PATH}/chaincode
 WORKDIR ${CC_PATH}
 EXPOSE ${CAAS_PORT}
 
-CMD ["chaincode"]
-#CMD ["ego", "run", "chaincode"]
+#CMD ["chaincode"]
+CMD ["ego", "run", "chaincode"]
