@@ -100,3 +100,7 @@ RUN git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH} \
   && git checkout nanopb-${NANOPB_VERSION} \
   && cd generator/proto \
   && make
+
+# Install ego
+RUN wget https://github.com/edgelesssys/ego/releases/download/v0.4.1/ego_0.4.1_amd64.deb \
+  && apt install -y -q ./ego_0.4.1_amd64.deb \
