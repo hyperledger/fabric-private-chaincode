@@ -30,7 +30,7 @@ PEERS=("peer0.org1.example.com" "peer0.org2.example.com")
 ERCC_EP="OutOf(2, 'Org1MSP.peer', 'Org2MSP.peer')"
 ECC_EP="OutOf(2, 'Org1MSP.peer', 'Org2MSP.peer')"
 
-CC_VER="$(cat ${CC_PATH}/_build/lib/mrenclave)"
+CC_VER="${CC_VER:-$(cat "${CC_PATH}/_build/lib/mrenclave")}"
 
 ERCC_ID="ercc"
 ERCC_VER="1.0"
