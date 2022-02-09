@@ -20,10 +20,12 @@ build: ecc docker
 ecc: ecc_dependencies
 	ego-go build $(GOTAGS) -o ecc main.go
 	ego sign $(EGO_CONFIG_FILE)
+	ego uniqueid ecc > mrenclave
 
 .PHONY: with_go
 with_go: ecc_dependencies
 	$(GO) build $(GOTAGS) -o ecc main.go
+	echo "fake_mrenclave" > mrenclave
 
 ecc_dependencies:
 	# hard to list explicitly, so just leave empty target,
