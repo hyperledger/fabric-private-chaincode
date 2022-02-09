@@ -11,7 +11,7 @@ replace (
 )
 
 require (
-	github.com/hyperledger-labs/fabric-smart-client v0.0.0-20220203111910-89ea48cecb50
+	github.com/hyperledger-labs/fabric-smart-client v0.0.0-20220210081900-629e8cf74856
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20210722174351-9815a7a8f0f7
 	github.com/libp2p/go-libp2p-core v0.3.0
 	github.com/pkg/errors v0.9.1

@@ -5,7 +5,7 @@
 TOP = ../../..
 include $(TOP)/build.mk
 
-all: test
+all: build test clean
 
 test:
 	FABRIC_LOGGING_SPEC=fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info go test -v -failfast .
