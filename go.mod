@@ -18,6 +18,7 @@ go 1.16
 //   not be possible ....)
 
 require (
+	github.com/client9/misspell v0.3.4 // indirect
 	github.com/golang/protobuf v1.4.2
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20201118191903-ec81f3e74fa1
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20201119163726-f8ef75b17719
