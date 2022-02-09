@@ -2,17 +2,30 @@
 Licensed under Creative Commons Attribution 4.0 International License
 https://creativecommons.org/licenses/by/4.0/
 --->
-# Chaincode wrapper for Go Chaincode (ecc_go)
+# Go Chaincode Support for Fabric Private Chaincode
 
-The `ecc_go` folder contains the components to enable go support Fabric Private Chaincode.
-In particular, it contains: 
+This directory contains the components to enable go support Fabric Private Chaincode.
 
-- Go library to be included in a user chaincode application, and
+## Overview
+ TODO
+ 
+In particular, it contains:
+- Go library to be included in a go chaincode
 - Building and packaging utilities
 
+### Architecture
+TODO
 
-# Install Ego inside dev environment
+## Install Ego inside dev environment
 
+This installation assumes a working FPC dev environment.
+You can find all setup information in the getting started section of our [README.md](../README.md).
+
+To start with we need to install the ego compiler in your dev environment.
+This is required to build and sign the FPC go chaincode.
+You can find more information about ego installation on the official [documentation](https://docs.edgeless.systems/ego/#/getting-started/install).
+
+Install ego by running the following:
 ```bash
 wget -qO- https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add
 add-apt-repository "deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu `lsb_release -cs` main"
@@ -20,28 +33,51 @@ wget https://github.com/edgelesssys/ego/releases/download/v0.4.1/ego_0.4.1_amd64
 apt install ./ego_0.4.1_amd64.deb build-essential libssl-dev
 ```
 
-Prepare `ccenv-go` image with
+In order to package and run FPC go chaincode we use the `ccenv-go` docker image.
+Run the following to create the docker image.
+
 ```bash
 cd $FPC_PATH/utils/docker/
 make ccenv-go
 ```
 
-# Example
+Now you have all you need to get started with your first FPC go chaincode. You can 
 
+## Examples
+
+### Simple Asset Tutorial
+
+We provide a quick getting started tutorial that walks you through the process to write, build, deploy, and run FPC go chaincode.
+You can find the tutorial [here](../samples/chaincode/asset-transfer-go).
+
+
+### Auction
+
+We provide a simple sample auction [here](../samples/chaincode/auction-go). You can run it using the integration test suite as follows:
 ```bash
-cd $FPC/samples/chaincode/auction-go
-make 
+cd $FPC_PATH/integration/go_chaincode/auction
+make
 ```
 
-# Developer notes
 
-## Docker container
+### KV-Test
 
+Another example is provided [here](../samples/chaincode/kv-test-go). You can run it using the integration test suite as follows:
 ```bash
-docker tag fpc/ercc:main fpc/ercc:latest
+cd $FPC_PATH/integration/go_chaincode/kv_test/
+make
 ```
 
-## Kill
 
+## Developer notes
+
+Here provide a collection of useful developer notes which may help you while developing.  
+
+
+### Kill hanging containers
+```bash
 docker kill $(docker ps -a -q --filter ancestor=fpc/ercc --filter ancestor=fpc/fpc-auction-go)
 docker rm $(docker ps -a -q --filter ancestor=fpc/ercc --filter ancestor=fpc/fpc-auction-go)
+```
+
+More to come ...
