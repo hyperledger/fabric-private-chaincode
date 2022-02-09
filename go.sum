@@ -185,6 +185,7 @@ github.com/hyperledger/fabric v1.4.0-rc1.0.20201118191903-ec81f3e74fa1 h1:6/BCoI
 github.com/hyperledger/fabric v1.4.0-rc1.0.20201118191903-ec81f3e74fa1/go.mod h1:ppiyrJ+sUSk/rAX9cTd8xwAwSQ7chEbOQMAqtQ3pLG4=
 github.com/hyperledger/fabric-amcl v0.0.0-20200128223036-d1aa2665426a h1:HgdNn3UYz8PdcZrLEk0IsSU4LRHp7yY2rgjIKcSiJaA=
 github.com/hyperledger/fabric-amcl v0.0.0-20200128223036-d1aa2665426a/go.mod h1:X+DIyUsaTmalOpmpQfIvFZjKHQedrURQ5t4YqquX7lE=
+github.com/hyperledger/fabric-chaincode-go v0.0.0-20190823162523-04390e015b85/go.mod h1:HZK6PKLWrvdD/t0oSLiyaRaUM6fZ7qjJuOlb0zrn0mo=
 github.com/hyperledger/fabric-chaincode-go v0.0.0-20200128192331-2d899240a7ed/go.mod h1:N7H3sA7Tx4k/YzFq7U0EPdqJtqvM4Kild0JoCc7C0Dc=
 github.com/hyperledger/fabric-chaincode-go v0.0.0-20200424173110-d7076418f212/go.mod h1:N7H3sA7Tx4k/YzFq7U0EPdqJtqvM4Kild0JoCc7C0Dc=
 github.com/hyperledger/fabric-chaincode-go v0.0.0-20201119163726-f8ef75b17719 h1:FQ9AMLVSFt5QW2YBLraXW5V4Au6aFFpSl4xKFARM58Y=
@@ -197,6 +198,7 @@ github.com/hyperledger/fabric-contract-api-go v1.1.1 h1:gDhOC18gjgElNZ85kFWsbCQq
 github.com/hyperledger/fabric-contract-api-go v1.1.1/go.mod h1:+39cWxbh5py3NtXpRA63rAH7NzXyED+QJx1EZr0tJPo=
 github.com/hyperledger/fabric-lib-go v1.0.0 h1:UL1w7c9LvHZUSkIvHTDGklxFv2kTeva1QI2emOVc324=
 github.com/hyperledger/fabric-lib-go v1.0.0/go.mod h1:H362nMlunurmHwkYqR5uHL2UDWbQdbfz74n8kbCFsqc=
+github.com/hyperledger/fabric-protos-go v0.0.0-20190821214336-621b908d5022/go.mod h1:xVYTjK4DtZRBxZ2D9aE4y6AbLaPwue2o/criQyQbVD0=
 github.com/hyperledger/fabric-protos-go v0.0.0-20190919234611-2a87503ac7c9/go.mod h1:xVYTjK4DtZRBxZ2D9aE4y6AbLaPwue2o/criQyQbVD0=
 github.com/hyperledger/fabric-protos-go v0.0.0-20200424173316-dd554ba3746e/go.mod h1:xVYTjK4DtZRBxZ2D9aE4y6AbLaPwue2o/criQyQbVD0=
 github.com/hyperledger/fabric-protos-go v0.0.0-20200707132912-fee30f3ccd23/go.mod h1:xVYTjK4DtZRBxZ2D9aE4y6AbLaPwue2o/criQyQbVD0=
@@ -204,6 +206,8 @@ github.com/hyperledger/fabric-protos-go v0.0.0-20201028172056-a3136dde2354 h1:6v
 github.com/hyperledger/fabric-protos-go v0.0.0-20201028172056-a3136dde2354/go.mod h1:xVYTjK4DtZRBxZ2D9aE4y6AbLaPwue2o/criQyQbVD0=
 github.com/hyperledger/fabric-samples/asset-transfer-basic/chaincode-go v0.0.0-20220208155102-fee6a44fcd36 h1:Da4u5qitth7c1rzBvHdpHb5v5eANyhQCDI8ljlZgqFo=
 github.com/hyperledger/fabric-samples/asset-transfer-basic/chaincode-go v0.0.0-20220208155102-fee6a44fcd36/go.mod h1:8rb9DzSiWpo1S7qTeYVAv23gebSn1x6Ia/MnhAP3PQA=
+github.com/hyperledger/fabric-samples/chaincode/marbles02/go v0.0.0-20220209095914-58606efc06f3 h1:EvCaJbv1yUh3iYcgyXNqP2rH84gsSGyCPrjunqySoJU=
+github.com/hyperledger/fabric-samples/chaincode/marbles02/go v0.0.0-20220209095914-58606efc06f3/go.mod h1:971RYovzOawJHj2fd9dTvP4Y2SsSGs8ME7mwrPCHRQI=
 github.com/hyperledger/fabric-sdk-go v1.0.0 h1:NRu0iNbHV6u4nd9jgYghAdA1Ll4g0Sri4hwMEGiTbyg=
 github.com/hyperledger/fabric-sdk-go v1.0.0/go.mod h1:qWE9Syfg1KbwNjtILk70bJLilnmCvllIYFCSY/pa1RU=
 github.com/ijc/Gotty v0.0.0-20170406111628-a8b993ba6abd h1:anPrsicrIi2ColgWTVPk+TrN42hJIWlfPHSBP9S0ZkM=
