@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
@@ -38,7 +37,6 @@ func main() {
 		},
 	}
 
-	fmt.Printf("starting fpc chaincode (%s)", ccid)
 	if err := server.Start(); err != nil {
 		panic(err)
 	}

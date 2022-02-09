@@ -348,6 +348,7 @@ func (e *EnclaveStub) extractCleartextChaincodeRequest(chaincodeRequestMessage *
 }
 
 func createAttestation(attestedData *anypb.Any) ([]byte, error) {
+	// Not implemented for preview
 	// TODO implement proper attestation, supporting dcap and simulation
 	return []byte("{\"attestation_type\":\"simulated\",\"attestation\":\"MA==\"}"), nil
 }
