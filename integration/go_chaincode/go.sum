@@ -565,12 +565,15 @@ github.com/huin/goupnp v1.0.0 h1:wg75sLpL6DZqwHQN6E1Cfk6mtfzS45z8OV+ic+DtHRo=
 github.com/huin/goupnp v1.0.0/go.mod h1:n9v9KO1tAxYH82qOn+UTIFQDmx5n1Zxd/ClZDMX7Bnc=
 github.com/huin/goutil v0.0.0-20170803182201-1ca381bf3150/go.mod h1:PpLOETDnJ0o3iZrZfqZzyLl6l7F3c6L1oWn7OICBi6o=
 <<<<<<< HEAD
+<<<<<<< HEAD
 github.com/hyperledger-labs/fabric-smart-client v0.0.0-20220210081900-629e8cf74856 h1:VVL4iU5zpd4L2/ivo+5dE8FkVSi+NroWDuRvmJ1Idp0=
 github.com/hyperledger-labs/fabric-smart-client v0.0.0-20220210081900-629e8cf74856/go.mod h1:Ryqutxiocr6jspkHkd9/UMEQk7vtsL0Tpu5mfHFgjtA=
 =======
 github.com/hyperledger-labs/fabric-smart-client v0.0.0-20220203111910-89ea48cecb50 h1:Y0Jic4X5LSdAHTv2T//LKzqu3qnEGwrjPlEnHwsJPR4=
 github.com/hyperledger-labs/fabric-smart-client v0.0.0-20220203111910-89ea48cecb50/go.mod h1:KfgAVdnQJ/8Ul1aWtpmJvwMw2MEgmXAD6g/219L+jfA=
 >>>>>>> 36553f1 (Add missing go.sum)
+=======
+>>>>>>> 1470cd8 (Try fixes FSC version)
 github.com/hyperledger-labs/weaver-dlt-interoperability/common/protos-go v1.2.3-alpha.1 h1:vBvo0PNm82ht7wpBjlYY4ZHxV3YprCfdVd3T4JG9vBw=
 github.com/hyperledger-labs/weaver-dlt-interoperability/common/protos-go v1.2.3-alpha.1/go.mod h1:POCGO/RK9YDfgdhuyqjoD9tRNtWfK7Rh5AYYmsb1Chc=
 github.com/hyperledger-labs/weaver-dlt-interoperability/sdks/fabric/go-sdk v1.2.3-alpha.1.0.20210812140206-37f430515b8c h1:pKr8VnHlduEgdInwLWykYAw+lpUizjQJaJ8I5fVoRUo=
@@ -836,6 +839,8 @@ github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5
 github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 h1:I0XW9+e1XWDxdcEniV4rQAIOPUGDq67JSCiRCgGCZLI=
 github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369/go.mod h1:BSXmuO+STAnVfrANrmjBb36TMTDstsz7MSK+HVaYKv4=
 github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0/go.mod h1:fcEyUyXZXoV4Abw8DX0t7wyL8mCDxXyU4iAFZfT3IHw=
+github.com/mbrandenburger/fabric-smart-client v0.0.0-20220211135629-8a76cdf89e36 h1:/nndQZyN1ubVaX2NNfPEKSutp80Y7khhQtF6tOPnDCE=
+github.com/mbrandenburger/fabric-smart-client v0.0.0-20220211135629-8a76cdf89e36/go.mod h1:Ryqutxiocr6jspkHkd9/UMEQk7vtsL0Tpu5mfHFgjtA=
 github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b/go.mod h1:01TrycV0kFyexm33Z7vhZRXopbI8J3TDReVlkTgMUxE=
 github.com/miekg/dns v1.0.14/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/miekg/dns v1.1.12/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
