@@ -17,3 +17,5 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.1-0.20210116013205-6990a05d54c2
 )
+
+replace github.com/hyperledger-labs/fabric-smart-client => github.com/mbrandenburger/fabric-smart-client v0.0.0-20220211135629-8a76cdf89e36
