@@ -5,7 +5,10 @@ include $(TOP)/build.mk
 
 GO_TEST_DIRS=auction kv_test
 
-deps: ercc images
+fix_fsc:
+	$(GO) run ./helper/fix_fsc
+
+deps: ercc images fix_fsc
 
 ercc:
 	$(MAKE) -C $(TOP)/ercc docker
