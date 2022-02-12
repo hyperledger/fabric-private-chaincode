@@ -88,7 +88,7 @@ func (t *Auction) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	case "eval":
 		result = t.auctionEval(stub, auctionName)
 	default:
-		return shim.Error("AuctionCC: RECEIVED UNKOWN transaction")
+		return shim.Error("AuctionCC: RECEIVED UNKNOWN transaction")
 	}
 
 	fmt.Println("AuctionCC: Response:", result)
@@ -186,7 +186,7 @@ func (t *Auction) auctionEval(stub shim.ChaincodeStubInterface, auctionName stri
 		high := -1
 		draw := false
 
-		fmt.Println("AuctionCC: All concidered bids:")
+		fmt.Println("AuctionCC: All considered bids:")
 		for iter.HasNext() {
 			var bid bidType
 			bidBytes, _ := iter.Next()
