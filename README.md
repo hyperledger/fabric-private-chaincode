@@ -126,14 +126,15 @@ Additional Google documents provide details on FPC 1.0:
 - [`config`](config/): SGX configuration
 - [`docs`](docs/): Documentation and design documents
 - [`ecc_enclave`](ecc_enclave/): C/C++ code for chaincode enclave
-	(including the trusted code running inside an enclave)
+    (including the trusted code running inside an enclave)
 - [`ecc`](ecc/): Go code for FPC chaincode package, including
-	dispatcher and (high-level code for) enclave endorsement validation.
+    dispatcher and (high-level code for) enclave endorsement validation.
+- [`ecc_go`](ecc/go): Go code for FPC Go Chaincode Support
 - [`ercc`](ercc/): Go code for Enclave Registry Chaincode
 - [`samples`](samples/): FPC Samples
 - [`fabric`](fabric/): FPC wrapper for Fabric peer and utilities to
-	start and stop a simple Fabric test network with FPC enabled, used
-	by integration tests.
+    start and stop a simple Fabric test network with FPC enabled, used
+    by integration tests.
 - [`integration`](integration/): FPC integration tests.
 - [`internal`](internal/): Shared Go code
 - [`protos`](protos/): Protobuf definitions
