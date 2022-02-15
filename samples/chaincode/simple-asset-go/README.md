@@ -20,7 +20,7 @@ TODO UPDATE
 ## Prerequisites
 This tutorial presumes that you have installed FPC on your `$GOPATH` as described in the FPC [README.md](../../../README.md#requirements) and `$FPC_PATH` is set accordingly.
 Additionally, you have already installed the extension to FPC go chaincode.
-See the installation steps [here](../../../ecc_go/).  
+See the installation steps [here](../../../ecc_go/README.md#install).  
 
 We also assume that you are familiar with Fabric chaincode development in go.
 Most of the steps in this tutorial following the normal Fabric chaincode development process, however, there are a few differences we will highlight here.
@@ -195,6 +195,8 @@ However, for completeness let's go through the required steps you need to run on
 cd $FPC_PATH/samples/deployment/test-network
 git clone https://github.com/hyperledger/fabric-samples
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples
+# no we pick a specific version here to have stable experience :)
+git checkout -b "works" 98028c7
 curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.3.3 1.4.9 -s
 cd $FPC_PATH/samples/deployment/test-network
 ./setup.sh
@@ -215,7 +217,7 @@ Once the network is up and running, we install the simple asset chaincode and th
 We provide a small shell script to make this task a bit easier.
 
 ```bash
-export CC_ID=asset-transfer
+export CC_ID=simple-asset-go
 export CC_PATH="$FPC_PATH/samples/chaincode/simple-asset-go/"
 export CC_VER=$(cat "$FPC_PATH/samples/chaincode/simple-asset-go/mrenclave")
 cd $FPC_PATH/samples/deployment/test-network
