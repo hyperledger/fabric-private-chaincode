@@ -11,11 +11,9 @@ replace (
 )
 
 require (
-	github.com/hyperledger-labs/fabric-smart-client v0.0.0-20220210081900-629e8cf74856
-	github.com/hyperledger/fabric v1.4.0-rc1.0.20210722174351-9815a7a8f0f7
+	github.com/hyperledger-labs/fabric-smart-client v0.0.0-20220215154850-4b83927fa15f
+	github.com/hyperledger/fabric v1.4.0-rc1.0.20220128025611-fad7f691a967
 	github.com/libp2p/go-libp2p-core v0.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.1-0.20210116013205-6990a05d54c2
 )
-
-replace github.com/hyperledger-labs/fabric-smart-client => github.com/mbrandenburger/fabric-smart-client v0.0.0-20220211135629-8a76cdf89e36
