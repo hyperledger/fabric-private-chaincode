@@ -1,4 +1,7 @@
 # FPC Go Simple Asset Tutorial
+
+*Note - Go Chaincode support is currently under development and should be considered experimental.*
+
 This tutorial shows how to create, build, install and test go chaincode using the Fabric Private Chaincode (FPC) framework.
 Here we focus on the development of FPC Chaincode in go. There exists a companion [hello world tutorial](../helloworld) illustrating the use of FPC with C++ chaincode.
 
