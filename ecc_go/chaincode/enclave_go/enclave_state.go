@@ -58,7 +58,7 @@ func (e *EnclaveIdentity) GetEnclaveId() string {
 	return e.enclaveId
 }
 
-type ChaincodeIdentity struct {
+type ChaincodeKeys struct {
 	csp          crypto.CSP
 	ccPrivateKey []byte
 	ccPublicKey  []byte
@@ -76,9 +76,9 @@ type StateEncryptionFunctions interface {
 	DecryptState(ciphertext []byte) (plaintext []byte, err error)
 }
 
-func NewChaincodeIdentity(csp crypto.CSP) (*ChaincodeIdentity, error) {
+func NewChaincodeKeys(csp crypto.CSP) (*ChaincodeKeys, error) {
 	var err error
-	c := &ChaincodeIdentity{}
+	c := &ChaincodeKeys{}
 	c.csp = csp
 
 	// create chaincode encryption keys
@@ -96,19 +96,19 @@ func NewChaincodeIdentity(csp crypto.CSP) (*ChaincodeIdentity, error) {
 	return c, nil
 }
 
-func (c *ChaincodeIdentity) GetPublicKey() []byte {
+func (c *ChaincodeKeys) GetPublicKey() []byte {
 	return c.ccPublicKey
 }
 
-func (c *ChaincodeIdentity) PkDecryptMessage(ciphertext []byte) (plaintext []byte, err error) {
+func (c *ChaincodeKeys) PkDecryptMessage(ciphertext []byte) (plaintext []byte, err error) {
 	return c.csp.PkDecryptMessage(c.ccPrivateKey, ciphertext)
 }
 
-func (c *ChaincodeIdentity) EncryptState(plaintext []byte) (ciphertext []byte, err error) {
+func (c *ChaincodeKeys) EncryptState(plaintext []byte) (ciphertext []byte, err error) {
 	return c.csp.EncryptMessage(c.stateKey, plaintext)
 }
 
-func (c *ChaincodeIdentity) DecryptState(ciphertext []byte) (plaintext []byte, err error) {
+func (c *ChaincodeKeys) DecryptState(ciphertext []byte) (plaintext []byte, err error) {
 	return c.csp.DecryptMessage(c.stateKey, ciphertext)
 
 }
