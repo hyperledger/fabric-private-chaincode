@@ -5,22 +5,19 @@
 This tutorial shows how to create, build, install and test go chaincode using the Fabric Private Chaincode (FPC) framework.
 Here we focus on the development of FPC Chaincode in go. There exists a companion [hello world tutorial](../helloworld) illustrating the use of FPC with C++ chaincode.
 
-This tutorial illustrates a simple usecase where a FPC chaincode is used to store a single asset, `asset1` in the ledger and then retrieve the latest value of `asset1`.  Here are the steps to accomplish this:
+This tutorial illustrates a simple usecase where a FPC chaincode is used to store a single asset, `asset1` in the ledger and then retrieve the latest value of `asset1`. 
+Here are the steps to accomplish this:
 
-TODO UPDATE
-
-* Develop chaincode
+* Write your Go Chaincode using the FPC Go Library
+* Build your FPC Go Chaincode
 * Launch Fabric network
-* Install and instantiate chaincode on the peer
-* Invoke transactions (`storeAsset` and `retrieveAsset`)
-    * by using the Peer CLI and
-    * by using the FPC Client SDK for Go
-* Shut down the network
+* Install and instantiate chaincode
+* Invoke transactions by using the FPC simple-cli
 
 ## Prerequisites
 This tutorial presumes that you have installed FPC on your `$GOPATH` as described in the FPC [README.md](../../../README.md#requirements) and `$FPC_PATH` is set accordingly.
 Additionally, you have already installed the extension to FPC go chaincode.
-See the installation steps [here](../../../ecc_go/README.md#install).  
+See the installation steps in [ecc_go/README.md](../../../ecc_go/README.md#install).  
 
 We also assume that you are familiar with Fabric chaincode development in go.
 Most of the steps in this tutorial following the normal Fabric chaincode development process, however, there are a few differences we will highlight here.
@@ -159,7 +156,7 @@ Create a `Makefile` (i.e., `touch $FPC_PATH/samples/chaincode/simple-asset-go/Ma
 TOP = ../../..
 include $(TOP)/ecc_go/build.mk
 
-CC_NAME ?= simple-asset
+CC_NAME ?= simple-asset-go
 ```
 
 Please make sure that in the file above the variable `TOP` points to the FPC root directory (i.e., `$FPC_PATH`).
@@ -171,7 +168,7 @@ make
 
 After building, you can check your local docker registry that the `fpc/fpc-simple-asset-go` image exists using
 ```bash
-docker images | grep simple-asset
+docker images | grep simple-asset-go
 ```
 
 
@@ -225,7 +222,12 @@ cd $FPC_PATH/samples/deployment/test-network
 ```
 
 Note that the `installFPC.sh` script returns an export statement you need now.
-Copy it to your terminal and continue with running `make ercc-ecc-start`.
+Copy it to your terminal and continue with running:
+
+```bash
+make ercc-ecc-start
+```
+
 You should see now four containers running (i.e., `simple-asset.peer0.org1`, `simple-asset.peer0.org2`, `ercc.peer0.org1`, and `ercc.peer0.org2`). 
 
 ### Invoke simple asset
@@ -237,7 +239,7 @@ cd $FPC_PATH/samples/application/simple-cli-go
 make
 
 # export fpcclient settings
-export CC_NAME=simple-asset
+export CC_NAME=simple-asset-go
 export CHANNEL_NAME=mychannel
 export CORE_PEER_ADDRESS=localhost:7051
 export CORE_PEER_ID=peer0.org1.example.com
