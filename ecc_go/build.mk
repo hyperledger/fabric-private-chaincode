@@ -11,7 +11,7 @@ CAAS_PORT ?= 9999
 # the following are the required docker build parameters
 HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
 
-DOCKER_IMAGE ?= fpc/fpc-$(CC_NAME)-go${HW_EXTENSION}
+DOCKER_IMAGE ?= fpc/fpc-$(CC_NAME)${HW_EXTENSION}
 DOCKER_FILE ?= $(FPC_PATH)/ecc_go/Dockerfile
 EGO_CONFIG_FILE ?= $(FPC_PATH)/ecc_go/enclave.json
 
@@ -63,4 +63,4 @@ docker:
 
 clean:
 	$(GO) clean
-	rm -f ecc coverage.out
+	rm -f ecc coverage.out mrenclave public.pem private.pem
