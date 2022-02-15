@@ -33,7 +33,7 @@ type EnclaveStub struct {
 	csp                  crypto.CSP
 	ccRef                shim.Chaincode
 	identity             *EnclaveIdentity
-	ccIdentity           *ChaincodeIdentity
+	ccKeys               *ChaincodeKeys
 	hostParams           *protos.HostParameters
 	chaincodeParams      *protos.CCParameters
 	fabricCryptoProvider bccsp.BCCSP
@@ -65,7 +65,7 @@ func (e *EnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBytes,
 
 	// as we currently support a single enclave instance per chaincode, we also generate a new chaincode identity here
 	// this needs to be refactored once multi enclave support will be integrated
-	e.ccIdentity, err = NewChaincodeIdentity(e.csp)
+	e.ccKeys, err = NewChaincodeKeys(e.csp)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create new enclave identity")
 	}
@@ -84,7 +84,7 @@ func (e *EnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBytes,
 		EnclaveVk:   e.identity.GetPublicKey(),
 		CcParams:    e.chaincodeParams,
 		HostParams:  e.hostParams,
-		ChaincodeEk: e.ccIdentity.GetPublicKey(),
+		ChaincodeEk: e.ccKeys.GetPublicKey(),
 	})
 
 	attestation, err := createAttestation(serializedAttestedData)
@@ -161,7 +161,7 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincod
 
 	// Invoke chaincode
 	// we wrap the stub with our FpcStubInterface
-	fpcStub := NewFpcStubInterface(stub, cleartextChaincodeRequest.GetInput(), rwset, e.ccIdentity)
+	fpcStub := NewFpcStubInterface(stub, cleartextChaincodeRequest.GetInput(), rwset, e.ccKeys)
 	ccResponse := e.ccRef.Invoke(fpcStub)
 
 	// If payload is empty (probably due to a shim.Error), the response will contain the message
@@ -301,7 +301,7 @@ func (e *EnclaveStub) extractKeyTransportMessage(chaincodeRequestMessage *protos
 	}
 
 	// decrypt key transport message with chaincode decryption key
-	keyTransportMessageBytes, err := e.ccIdentity.PkDecryptMessage(chaincodeRequestMessage.GetEncryptedKeyTransportMessage())
+	keyTransportMessageBytes, err := e.ccKeys.PkDecryptMessage(chaincodeRequestMessage.GetEncryptedKeyTransportMessage())
 	if err != nil {
 		return nil, errors.Wrap(err, "decryption of key transport message failed")
 	}
