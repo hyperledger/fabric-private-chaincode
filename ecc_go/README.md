@@ -4,6 +4,8 @@ https://creativecommons.org/licenses/by/4.0/
 --->
 # Go Chaincode Support for Fabric Private Chaincode
 
+*Note - Go Chaincode support is currently under development and should be considered experimental.*
+
 This directory contains the components to enable go support Fabric Private Chaincode.
 
 ## Overview
@@ -82,3 +84,10 @@ docker rm $(docker ps -a -q --filter ancestor=fpc/ercc --filter ancestor=fpc/fpc
 ```
 
 More to come ...
+
+## TODOs
+
+The following components are not yet implemented.
+
+- [ ] HW Attestation support
+- [ ] Fabric contract API
