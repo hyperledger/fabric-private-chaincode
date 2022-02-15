@@ -6,21 +6,64 @@ https://creativecommons.org/licenses/by/4.0/
 
 *Note - Go Chaincode support is currently under development and should be considered experimental.*
 
-This directory contains the components to enable go support Fabric Private Chaincode.
-
-FPC Go Chaincode Support relies on the [Ego project](https://www.ego.dev/) to build and execute go application with Intel SGX.
-
 ## Overview
- TODO
- 
+
+This directory contains the components to enable Go Chaincode support for Fabric Private Chaincode (FPC).
+This feature relies on the [Ego project](https://www.ego.dev/) to build and execute go application with Intel SGX.
+
 In particular, it contains:
-- Go library to be included in a go chaincode
+- FPC Go Library to be used with your Go Chaincode.
 - Building and packaging utilities
 
-### Architecture
-TODO
+### FPC Go Library
 
-## Install
+We aim to support Go Chaincode without the need to refactor existing code but still benefit from the security properties added by FPC.
+However, we currently support only a limited Chaincode API with common functionality to enable a broad set of applications.
+We refer to [shim.go](ecc_go/chaincode/enclave_go/shim.go) for the full list of supported functions.
+Note that calling unsupported shim functions, currently results in a `panic`.
+
+To use FPC, you simply need to wrap your chaincode with the FPC Go Library. Here an example:
+```go
+package main
+
+import (
+	"github.com/hyperledger/fabric-chaincode-go/shim"
+	fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
+	"github.com/your-project/project/chaincode"
+)
+
+func main() {
+
+	... 
+	
+	// create private chaincode
+	privateChaincode := fpc.NewPrivateChaincode(&chaincode.YourChaincode{})
+
+	// start chaincode as a service
+	server := &shim.ChaincodeServer{
+		CC: privateChaincode,
+	}
+
+	if err := server.Start(); err != nil {
+		panic(err)
+	}
+}
+```
+
+### Building and packaging
+
+In contrast to traditional Fabric Go Chaincode, FPC uses the ego compiler to build the chaincode and then package it in a docker image.
+To simplify this process, we provide you a `Dockerfile` and a `build.mk` which you can use in your project.
+Here an example of a `Makefile`:
+```Makefile
+include $(FPC_PATH)/ecc_go/build.mk
+CC_NAME ?= your-chaincode-name
+```
+
+Your make file now comes with standard build targets, such as, `build`, `test`, and `clean`.
+See `build.mk` for a full list of available build targets.
+
+## Installation
 
 ### Install Ego inside dev environment
 
@@ -47,15 +90,16 @@ cd $FPC_PATH/utils/docker/
 make ccenv-go
 ```
 
-Now you have all you need to get started with your first FPC go chaincode. 
+Now you have all you need to get started with your first FPC go chaincode.
 
 ## Examples
 
+So see FPC Go Chaincode Support in action, we provide a few examples in our repository.
+
 ### Simple Asset Tutorial
 
-We provide a quick getting started tutorial that walks you through the process to write, build, deploy, and run FPC go chaincode.
+We provide a quick getting started tutorial that walks you through the process to write, build, deploy, and run FPC Go Chaincode.
 You can find the tutorial [here](../samples/chaincode/asset-transfer-go).
-
 
 ### Auction
 
@@ -65,7 +109,6 @@ cd $FPC_PATH/integration/go_chaincode/auction
 make
 ```
 
-
 ### KV-Test
 
 Another example is provided [here](../samples/chaincode/kv-test-go). You can run it using the integration test suite as follows:
@@ -74,11 +117,9 @@ cd $FPC_PATH/integration/go_chaincode/kv_test/
 make
 ```
 
-
 ## Developer notes
 
 Here provide a collection of useful developer notes which may help you while developing.  
-
 
 ### Kill hanging containers
 ```bash
