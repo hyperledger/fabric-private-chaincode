@@ -5,13 +5,17 @@
 TOP = ../../..
 include $(TOP)/build.mk
 
+CHAINCODE_PATH=$(FPC_PATH)/samples/chaincode/auction-go
+
 all: build test clean
 
 test:
 	FABRIC_LOGGING_SPEC=fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info go test -v -failfast .
 
 build:
-	make -C $(FPC_PATH)/samples/chaincode/auction-go
+	make -C $(CHAINCODE_PATH)
+	cp $(CHAINCODE_PATH)/mrenclave .
 
 clean:
 	rm -rf cmd
+	rm mrenclave
