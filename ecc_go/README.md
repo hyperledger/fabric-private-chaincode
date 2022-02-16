@@ -82,15 +82,19 @@ You can find more information about ego installation on the official [documentat
 
 ### Create ccenv-go
 
-In order to package and run FPC go chaincode we use the `ccenv-go` docker image.
-Run the following to create the docker image.
+In order to package and run FPC Go Chaincode we use the `ccenv-go` docker image.
+You can either pull the image from github or build it manually.
 
 ```bash
 cd $FPC_PATH/utils/docker/
+# pull it from github
+make pull
+
+# or build the docker image manually 
 make ccenv-go
 ```
 
-Now you have all you need to get started with your first FPC go chaincode.
+Now you have all you need to get started with your first FPC Go Ghaincode.
 
 ## Examples
 
@@ -99,11 +103,12 @@ So see FPC Go Chaincode Support in action, we provide a few examples in our repo
 ### Simple Asset Tutorial
 
 We provide a quick getting started tutorial that walks you through the process to write, build, deploy, and run FPC Go Chaincode.
-You can find the tutorial [here](../samples/chaincode/asset-transfer-go).
+You can find the tutorial in [samples/chaincode/simple-asset-go](../samples/chaincode/simple-asset-go).
 
 ### Auction
 
-We provide a simple sample auction [here](../samples/chaincode/auction-go). You can run it using the integration test suite as follows:
+We provide a sample auction [samples/chaincode/auction-go](../samples/chaincode/auction-go).
+You can run it using the integration test suite as follows:
 ```bash
 cd $FPC_PATH/integration/go_chaincode/auction
 make
@@ -111,7 +116,8 @@ make
 
 ### KV-Test
 
-Another example is provided [here](../samples/chaincode/kv-test-go). You can run it using the integration test suite as follows:
+Another example is provided [samples/chaincode/kv-test-go](../samples/chaincode/kv-test-go).
+You can run it using the integration test suite as follows:
 ```bash
 cd $FPC_PATH/integration/go_chaincode/kv_test/
 make
