@@ -20,7 +20,7 @@ This tutorial presumes that you have installed FPC on your `$GOPATH` as describe
 *Note that this preview code currently resides in the `go-chaincode-preview` branch, thus, you need to switch branch (i.e., `git checkout -b "go-chaincode-preview"`).*
 
 We also need a working FPC development environment. As described in the "Setup your Development Environment" Section of the FPC [README.md](../../../README.md#setup-your-development-environment), you can use our docker-based dev environment (Option 1) or setup your local development environment (Option 2).
-We recommend using the docker-based development environment.   
+We recommend using the docker-based development environment and continue this tutorial within the dev container terminal.
 
 Moreover, within your FPC development you have already installed the FPC Go Chaincode Support components.
 See the installation steps in [ecc_go/README.md](../../../ecc_go/README.md#installation).  
