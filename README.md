@@ -129,7 +129,7 @@ Additional Google documents provide details on FPC 1.0:
     (including the trusted code running inside an enclave)
 - [`ecc`](ecc/): Go code for FPC chaincode package, including
     dispatcher and (high-level code for) enclave endorsement validation.
-- [`ecc_go`](ecc/go): Go code for FPC Go Chaincode Support
+- [`ecc_go`](ecc_go/): Go code for FPC Go Chaincode Support
 - [`ercc`](ercc/): Go code for Enclave Registry Chaincode
 - [`samples`](samples/): FPC Samples
 - [`fabric`](fabric/): FPC wrapper for Fabric peer and utilities to
