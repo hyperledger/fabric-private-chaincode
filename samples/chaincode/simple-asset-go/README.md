@@ -238,6 +238,9 @@ You should see now four containers running (i.e., `simple-asset.peer0.org1`, `si
 ### Invoke simple asset
 
 ```bash
+# prepare connections profile
+cd $FPC_PATH/samples/deployment/test-network
+./update-connection.sh
 
 # make fpcclient
 cd $FPC_PATH/samples/application/simple-cli-go
