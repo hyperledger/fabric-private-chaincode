@@ -23,6 +23,7 @@ ARG UBUNTU_NAME=focal
 #   xenial (16.04) has support only PSW but not SDK; 
 
 FROM ubuntu:${UBUNTU_VERSION}
+LABEL org.opencontainers.image.source https://github.com/hyperledger/fabric-private-chaincode
 
 # Dockerfile limitations force a repetition of global args
 ARG UBUNTU_VERSION

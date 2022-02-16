@@ -18,6 +18,7 @@
 ARG FPC_VERSION=main
 
 FROM hyperledger/fabric-private-chaincode-base-rt:${FPC_VERSION} as common
+LABEL org.opencontainers.image.source https://github.com/hyperledger/fabric-private-chaincode
 
 # config/build params
 ARG GO_VERSION=1.17.5
