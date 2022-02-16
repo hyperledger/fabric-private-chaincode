@@ -13,6 +13,7 @@
 ARG FPC_VERSION=main
 
 FROM hyperledger/fabric-private-chaincode-base-rt:${FPC_VERSION}
+LABEL org.opencontainers.image.source https://github.com/hyperledger/fabric-private-chaincode
 
 ARG EGO_VERSION=0.4.1
 
