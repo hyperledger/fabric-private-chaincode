@@ -4,7 +4,8 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.2 FATAL_ERROR)
 
-INCLUDE(../../cmake/ConfigSGX.cmake)
+INCLUDE($ENV{FPC_PATH}/cmake/ConfigSGX.cmake)
+INCLUDE($ENV{FPC_PATH}/cmake/Debug.cmake)
 
 INCLUDE(CMakeVariables.txt)
 
@@ -72,6 +73,7 @@ TARGET_COMPILE_OPTIONS(${U_CRYPTO_ADAPT_LIB_NAME} PRIVATE ${COMMON_CXX_FLAGS} "-
 TARGET_COMPILE_DEFINITIONS(${U_CRYPTO_ADAPT_LIB_NAME} PUBLIC ${PDO_FLAGS})
 
 COND_ENABLE_COVERAGE(${U_CRYPTO_ADAPT_LIB_NAME})
+COND_ENABLE_DEBUG(${U_CRYPTO_ADAPT_LIB_NAME})
 
 ###################################################################################################
 # Trusted crypto adapt library
@@ -93,6 +95,8 @@ TARGET_INCLUDE_DIRECTORIES(${T_CRYPTO_ADAPT_LIB_NAME} PUBLIC "${SGX_SDK}/include
 TARGET_INCLUDE_DIRECTORIES(${T_CRYPTO_ADAPT_LIB_NAME} PUBLIC "${SGX_SDK}/include/tlibc")
 TARGET_COMPILE_OPTIONS(${T_CRYPTO_ADAPT_LIB_NAME} PRIVATE "-DENCLAVE_CODE")
 TARGET_COMPILE_DEFINITIONS(${T_CRYPTO_ADAPT_LIB_NAME} PUBLIC ${PDO_FLAGS})
+
+COND_ENABLE_DEBUG(${T_CRYPTO_ADAPT_LIB_NAME})
 
 ###################################################################################################
 # PDO Crypto library

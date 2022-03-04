@@ -99,3 +99,6 @@ else
         export CODE_COVERAGE_ENABLED ?= false
 endif
 
+#by default, debug is not enabled
+export FPC_DEBUG_ENABLED ?= false
+
