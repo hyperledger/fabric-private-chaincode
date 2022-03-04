@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
@@ -100,8 +101,8 @@ func main() {
 
 	ccID := getEnvWithFallback("CC_ID", "echo")
 	channelID := getEnvWithFallback("CHANNEL_ID", "mychannel")
-	orgName := getEnvWithFallback("ORG_NAME", "org1")
-	orgNameFull := getEnvWithFallback("ORG_NAME_FULL", orgName+".example.com")
+	orgName := getEnvWithFallback("ORG_NAME", "Org1")
+	orgNameFull := getEnvWithFallback("ORG_NAME_FULL", strings.ToLower(orgName)+".example.com")
 	mspId := getEnvWithFallback("MSP_ID", orgName+"MSP")
 	userId := getEnvWithFallback("USER_ID", "User1")
 
@@ -125,7 +126,7 @@ func main() {
 		"organizations",
 		"peerOrganizations",
 		orgNameFull,
-		fmt.Sprintf("connection-%s.yaml", orgName),
+		fmt.Sprintf("connection-%s.yaml", strings.ToLower(orgName)),
 	))
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
