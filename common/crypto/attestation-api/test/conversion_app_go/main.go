@@ -58,7 +58,7 @@ func convert(input []byte) ([]byte, error) {
 	credentialsOnlyAttestation := utils.MarshallProtoBase64(credentials)
 
 	// conversion
-	converter := attestation.NewCredentialConverter()
+	converter := attestation.NewDefaultCredentialConverter()
 	credentialsStringOut, err := converter.ConvertCredentials(credentialsOnlyAttestation)
 	if err != nil {
 		return nil, errors.Wrap(err, "ERROR: couldn't convert credentials")
