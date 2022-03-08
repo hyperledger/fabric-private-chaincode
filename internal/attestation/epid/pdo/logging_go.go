@@ -8,14 +8,14 @@
    SPDX-License-Identifier: Apache-2.0
 */
 
-package attestation
+package pdo
 
 import (
 	"github.com/hyperledger/fabric/common/flogging"
 )
 
-// #cgo CFLAGS: -I${SRCDIR}/../../common/logging/untrusted
-// #cgo LDFLAGS: -L${SRCDIR}/../../common/logging/_build -lulogging
+// #cgo CFLAGS: -I${SRCDIR}/../../../../common/logging/untrusted
+// #cgo LDFLAGS: -L${SRCDIR}/../../../../common/logging/_build -lulogging
 // #include "logging.h"
 //
 // extern int golog_cgo_wrapper(const char* str);

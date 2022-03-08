@@ -11,33 +11,29 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/epid"
+	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/simulation"
+	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/types"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/pkg/errors"
 )
 
-var logger = flogging.MustGetLogger("fpc-client-attest")
+var logger = flogging.MustGetLogger("fpc.attestation")
 
-type ConvertFunction func(attestationBytes []byte) (evidenceBytes []byte, err error)
-
-type Converter struct {
-	Type      string
-	Converter ConvertFunction
+type converterDispatcher struct {
+	converters map[string]types.ConvertFunction
 }
 
-type ConverterDispatcher struct {
-	converters map[string]ConvertFunction
-}
-
-func NewConverterDispatcher() *ConverterDispatcher {
-	return &ConverterDispatcher{
-		converters: make(map[string]ConvertFunction),
+func newConverterDispatcher() *converterDispatcher {
+	return &converterDispatcher{
+		converters: make(map[string]types.ConvertFunction),
 	}
 }
 
-// Register adds new converters to the ConverterDispatcher
-func (d *ConverterDispatcher) Register(converter ...*Converter) error {
+// Register adds new converters to the converterDispatcher
+func (d *converterDispatcher) Register(converter ...*types.Converter) error {
 	for _, c := range converter {
 		if _, ok := d.converters[c.Type]; ok {
 			return fmt.Errorf("'%s' type is already registered", c.Type)
@@ -51,7 +47,7 @@ func (d *ConverterDispatcher) Register(converter ...*Converter) error {
 // Convert performs the attestation to evidence conversion with help of the registered Converter.
 // If there is no matching Converter registered for the input attestation, an error is returned;
 // If the invoked ConverterFunction fails, an error is returned; Otherwise an evidence struct is returned.
-func (d *ConverterDispatcher) Convert(attestation *attestation) (*evidence, error) {
+func (d *converterDispatcher) Convert(attestation *types.Attestation) (*types.Evidence, error) {
 	converter, ok := d.converters[attestation.Type]
 	if !ok {
 		return nil, fmt.Errorf("'%s' type is not registered", attestation.Type)
@@ -63,7 +59,7 @@ func (d *ConverterDispatcher) Convert(attestation *attestation) (*evidence, erro
 		return nil, errors.Wrap(err, "error while converting")
 	}
 
-	out := &evidence{
+	out := &types.Evidence{
 		Type: attestation.Type,
 		Data: string(evidenceBytes),
 	}
@@ -71,37 +67,21 @@ func (d *ConverterDispatcher) Convert(attestation *attestation) (*evidence, erro
 	return out, nil
 }
 
-type attestation struct {
-	Type string `json:"attestation_type"`
-	Data string `json:"attestation"`
-}
-
-func unmarshalAttestation(serializedAttestation []byte) (*attestation, error) {
-	att := &attestation{}
-	err := json.Unmarshal(serializedAttestation, att)
-	if err != nil {
-		return nil, errors.Wrap(err, "cannot unmarshal attestation json")
-	}
-
-	return att, nil
-}
-
-type evidence struct {
-	Type string `json:"attestation_type"`
-	Data string `json:"evidence"`
-}
-
 type CredentialConverter struct {
-	dispatcher *ConverterDispatcher
+	dispatcher *converterDispatcher
 }
 
-func NewCredentialConverter() *CredentialConverter {
-	dispatcher := NewConverterDispatcher()
-	err := dispatcher.Register(
-		NewSimulationConverter(),
-		NewEpidLinkableConverter(),
-		NewEpidUnlinkableConverter(),
+func NewDefaultCredentialConverter() *CredentialConverter {
+	return NewCredentialConverter(
+		simulation.NewSimulationConverter(),
+		epid.NewEpidLinkableConverter(),
+		epid.NewEpidUnlinkableConverter(),
 	)
+}
+
+func NewCredentialConverter(converter ...*types.Converter) *CredentialConverter {
+	dispatcher := newConverterDispatcher()
+	err := dispatcher.Register(converter...)
 	if err != nil {
 		// ouch this should never happen
 		logger.Panicf("cannot create new credential converter! Reason: %s", err.Error())
@@ -142,13 +122,31 @@ func (c *CredentialConverter) convertCredentials(credentials *protos.Credentials
 		return nil, errors.Wrap(err, "cannot convert attestation")
 	}
 
-	evidenceJson, err := json.Marshal(evidence)
+	evidenceBytes, err := marshalEvidence(evidence)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot marshal evidence json")
+		return nil, errors.Wrap(err, "cannot marshal evidence")
 	}
 
 	// update credentials
-	logger.Debugf("evidence: %s\n", evidenceJson)
-	credentials.Evidence = evidenceJson
+	logger.Debugf("evidence: %s\n", evidenceBytes)
+	credentials.Evidence = evidenceBytes
 	return credentials, nil
+}
+
+func unmarshalAttestation(serializedAttestation []byte) (*types.Attestation, error) {
+	att := &types.Attestation{}
+	err := json.Unmarshal(serializedAttestation, att)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot unmarshal attestation json")
+	}
+
+	return att, nil
+}
+
+func marshalEvidence(evidence *types.Evidence) ([]byte, error) {
+	evidenceJson, err := json.Marshal(evidence)
+	if err != nil {
+		return nil, errors.Wrap(err, "json error")
+	}
+	return evidenceJson, nil
 }
