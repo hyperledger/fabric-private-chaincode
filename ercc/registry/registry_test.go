@@ -14,9 +14,9 @@ import (
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	"github.com/hyperledger/fabric-private-chaincode/ercc/attestation"
 	"github.com/hyperledger/fabric-private-chaincode/ercc/registry"
 	"github.com/hyperledger/fabric-private-chaincode/ercc/registry/fakes"
+	"github.com/hyperledger/fabric-private-chaincode/internal/attestation"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-protos-go/ledger/queryresult"
@@ -44,10 +44,10 @@ type stateQueryIterator interface {
 	shim.StateQueryIteratorInterface
 }
 
-//go:generate counterfeiter -o fakes/verifier.go -fake-name AttestationVerifier . attestationVerifier
+//go:generate counterfeiter -o fakes/verifier.go -fake-name CredentialVerifier . credentialVerifier
 //lint:ignore U1000 This is just used to generate fake
-type attestationVerifier interface {
-	attestation.VerifierInterface
+type credentialVerifier interface {
+	attestation.Verifier
 }
 
 //go:generate counterfeiter -o fakes/evaluator.go -fake-name IdentityEvaluator . identityEvaluator
@@ -74,8 +74,8 @@ func TestRegisterEnclave(t *testing.T) {
 	chaincodeStub := &fakes.ChaincodeStub{}
 	transactionContext := &fakes.TransactionContext{}
 	transactionContext.GetStubReturns(chaincodeStub)
-	verifier := &fakes.AttestationVerifier{}
-	verifier.VerifyEvidenceReturns(nil)
+	verifier := &fakes.CredentialVerifier{}
+	verifier.VerifyCredentialsReturns(nil)
 
 	id := &fakes.IdentityEvaluator{}
 
@@ -189,7 +189,7 @@ func TestRegisterEnclave(t *testing.T) {
 			Version:  mrenclave,
 			Sequence: 1,
 		})))
-	verifier.VerifyEvidenceReturns(fmt.Errorf("evidence invalid"))
+	verifier.VerifyCredentialsReturns(fmt.Errorf("evidence invalid"))
 
 	serializedAttestedData, _ = anypb.New(
 		&protos.AttestedData{
@@ -208,7 +208,7 @@ func TestRegisterEnclave(t *testing.T) {
 	err = ercc.RegisterEnclave(transactionContext, credentialBase64)
 	require.EqualError(t, err, "evidence verification failed: evidence invalid")
 
-	verifier.VerifyEvidenceReturns(nil)
+	verifier.VerifyCredentialsReturns(nil)
 	err = ercc.RegisterEnclave(transactionContext, credentialBase64)
 	require.EqualError(t, err, "host params are empty")
 

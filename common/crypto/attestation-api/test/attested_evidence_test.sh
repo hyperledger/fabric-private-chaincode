@@ -60,6 +60,24 @@ function orchestrate_with_go_conversion()
     ./verify_evidence_app
 }
 
+function orchestrate_with_go_verification()
+{
+    #get attestation
+    ./get_attestation_app
+    define_to_variable "${DEFINES_FILEPATH}" "GET_ATTESTATION_OUTPUT"
+    [ -f ${GET_ATTESTATION_OUTPUT} ] || die "no output from get_attestation"
+
+    #translate attestation (note: attestation_to_evidence defines the EVIDENCE variable)
+    ATTESTATION=$(cat ${GET_ATTESTATION_OUTPUT})
+    attestation_to_evidence "${ATTESTATION}"
+
+    define_to_variable "${DEFINES_FILEPATH}" "EVIDENCE_FILE"
+    echo ${EVIDENCE} > ${EVIDENCE_FILE}
+
+    #verify evidence
+    go run -tags WITH_PDO_CRYPTO ${FPC_PATH}/common/crypto/attestation-api/test/verify_evidence_app_go/main.go
+}
+
 #######################################
 # sim mode test
 #######################################
@@ -85,6 +103,9 @@ if [[ ${SGX_MODE} == "SIM" ]]; then
 
     #run attestation generation/conversion/verification tests (same as before, though with Go-based conversion)
     orchestrate_with_go_conversion
+
+    #run attestation generation/conversion/verification tests (same as before, though with Go-based verification)
+    orchestrate_with_go_verification
 
     say "Test simulated attestation success"
 else

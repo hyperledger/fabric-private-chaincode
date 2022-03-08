@@ -8,12 +8,18 @@ Copyright 2020 Intel Corporation
 SPDX-License-Identifier: Apache-2.0
 */
 
-package attestation
+package pdo
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
 
-// #cgo CFLAGS: -I${SRCDIR}/../../common/crypto
-// #cgo LDFLAGS: -L${SRCDIR}/../../common/crypto/_build -L${SRCDIR}/../../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++ -lgcov
+	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/epid"
+	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/types"
+)
+
+// #cgo CFLAGS: -I${SRCDIR}/../../../../common/crypto
+// #cgo LDFLAGS: -L${SRCDIR}/../../../../common/crypto/_build -L${SRCDIR}/../../../../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++ -lgcov
 // #include <stdio.h> /* needed for free */
 // #include <stdlib.h>
 // #include <string.h>
@@ -50,4 +56,30 @@ func (v *VerifierImpl) VerifyEvidence(evidenceBytes []byte, expectedStatementByt
 	}
 
 	return nil
+}
+
+func Verify(evidence *types.Evidence, expectedValidationValues *types.ValidationValues) error {
+
+	// note that the PDO-based verifier implementation requires the "entire" evidence as json
+	evidenceBytes, err := json.Marshal(evidence)
+	if err != nil {
+		return err
+	}
+
+	verifier := &VerifierImpl{}
+	return verifier.VerifyEvidence(evidenceBytes, expectedValidationValues.Statement, expectedValidationValues.Mrenclave)
+}
+
+func NewEpidLinkableVerifier() *types.Verifier {
+	return &types.Verifier{
+		Type:   epid.LinkableType,
+		Verify: Verify,
+	}
+}
+
+func NewEpidUnlinkableVerifier() *types.Verifier {
+	return &types.Verifier{
+		Type:   epid.UnlinkableType,
+		Verify: Verify,
+	}
 }

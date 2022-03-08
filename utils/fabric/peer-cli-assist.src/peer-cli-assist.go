@@ -59,7 +59,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		converter := attestation.NewCredentialConverter()
+		converter := attestation.NewDefaultCredentialConverter()
 		credentialsStringOut, err := converter.ConvertCredentials(string(credentialsIn))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: couldn't convert credentials: %v\n", err)

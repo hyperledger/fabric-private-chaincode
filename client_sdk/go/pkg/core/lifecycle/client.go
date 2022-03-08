@@ -94,7 +94,7 @@ func New(getChannelClient GetChannelClientFunction) (*Client, error) {
 		return nil, errors.Errorf("invalid arguments, channel client loader is nil")
 	}
 
-	converter := attestation.NewCredentialConverter()
+	converter := attestation.NewDefaultCredentialConverter()
 	return &Client{GetChannelClient: getChannelClient, Converter: converter}, nil
 }
 
