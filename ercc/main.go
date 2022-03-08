@@ -11,8 +11,10 @@ import (
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	"github.com/hyperledger/fabric-private-chaincode/ercc/attestation"
 	"github.com/hyperledger/fabric-private-chaincode/ercc/registry"
+	"github.com/hyperledger/fabric-private-chaincode/internal/attestation"
+	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/epid/pdo"
+	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/simulation"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric/common/flogging"
 )
@@ -26,7 +28,11 @@ func main() {
 	// For example: FABRIC_LOGGING_SPEC=ecc=DEBUG:ecc_enclave=ERROR
 
 	c := &registry.Contract{}
-	c.Verifier = attestation.NewVerifier()
+	c.Verifier = attestation.NewCredentialVerifier(
+		simulation.NewSimulationVerifier(),
+		pdo.NewEpidLinkableVerifier(),
+		pdo.NewEpidUnlinkableVerifier(),
+	)
 	c.IEvaluator = &utils.IdentityEvaluator{}
 	c.BeforeTransaction = registry.MyBeforeTransaction
 

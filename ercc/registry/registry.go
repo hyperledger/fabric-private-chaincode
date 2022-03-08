@@ -14,7 +14,7 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	"github.com/hyperledger/fabric-private-chaincode/ercc/attestation"
+	"github.com/hyperledger/fabric-private-chaincode/internal/attestation"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric/common/flogging"
@@ -26,7 +26,7 @@ var logger = flogging.MustGetLogger("ercc")
 type Contract struct {
 	contractapi.Contract
 
-	Verifier   attestation.VerifierInterface
+	Verifier   attestation.Verifier
 	IEvaluator utils.IdentityEvaluatorInterface
 }
 
@@ -306,7 +306,7 @@ func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface,
 	return nil
 }
 
-func checkAttestedData(ctx contractapi.TransactionContextInterface, v attestation.VerifierInterface, ie utils.IdentityEvaluatorInterface, attestedData *protos.AttestedData, credentials *protos.Credentials) error {
+func checkAttestedData(ctx contractapi.TransactionContextInterface, v attestation.Verifier, ie utils.IdentityEvaluatorInterface, attestedData *protos.AttestedData, credentials *protos.Credentials) error {
 
 	// check that the enclave channelId matches ERCC channelId
 	if attestedData.CcParams.ChannelId != ctx.GetStub().GetChannelID() {
@@ -331,7 +331,7 @@ func checkAttestedData(ctx contractapi.TransactionContextInterface, v attestatio
 	}
 
 	// check that attestation evidence contains expectedMrEnclave as defined in chaincode definition
-	if err := v.VerifyEvidence(credentials.Evidence, credentials.SerializedAttestedData.Value, expectedMrEnclave); err != nil {
+	if err := v.VerifyCredentials(credentials, expectedMrEnclave); err != nil {
 		return fmt.Errorf("evidence verification failed: %s", err)
 	}
 
