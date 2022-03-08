@@ -3,104 +3,93 @@ package fakes
 
 import (
 	"sync"
+
+	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 )
 
-type AttestationVerifier struct {
-	VerifyEvidenceStub        func([]byte, []byte, string) error
-	verifyEvidenceMutex       sync.RWMutex
-	verifyEvidenceArgsForCall []struct {
-		arg1 []byte
-		arg2 []byte
-		arg3 string
+type CredentialVerifier struct {
+	VerifyCredentialsStub        func(*protos.Credentials, string) error
+	verifyCredentialsMutex       sync.RWMutex
+	verifyCredentialsArgsForCall []struct {
+		arg1 *protos.Credentials
+		arg2 string
 	}
-	verifyEvidenceReturns struct {
+	verifyCredentialsReturns struct {
 		result1 error
 	}
-	verifyEvidenceReturnsOnCall map[int]struct {
+	verifyCredentialsReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *AttestationVerifier) VerifyEvidence(arg1 []byte, arg2 []byte, arg3 string) error {
-	var arg1Copy []byte
-	if arg1 != nil {
-		arg1Copy = make([]byte, len(arg1))
-		copy(arg1Copy, arg1)
-	}
-	var arg2Copy []byte
-	if arg2 != nil {
-		arg2Copy = make([]byte, len(arg2))
-		copy(arg2Copy, arg2)
-	}
-	fake.verifyEvidenceMutex.Lock()
-	ret, specificReturn := fake.verifyEvidenceReturnsOnCall[len(fake.verifyEvidenceArgsForCall)]
-	fake.verifyEvidenceArgsForCall = append(fake.verifyEvidenceArgsForCall, struct {
-		arg1 []byte
-		arg2 []byte
-		arg3 string
-	}{arg1Copy, arg2Copy, arg3})
-	stub := fake.VerifyEvidenceStub
-	fakeReturns := fake.verifyEvidenceReturns
-	fake.recordInvocation("VerifyEvidence", []interface{}{arg1Copy, arg2Copy, arg3})
-	fake.verifyEvidenceMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2, arg3)
+func (fake *CredentialVerifier) VerifyCredentials(arg1 *protos.Credentials, arg2 string) error {
+	fake.verifyCredentialsMutex.Lock()
+	ret, specificReturn := fake.verifyCredentialsReturnsOnCall[len(fake.verifyCredentialsArgsForCall)]
+	fake.verifyCredentialsArgsForCall = append(fake.verifyCredentialsArgsForCall, struct {
+		arg1 *protos.Credentials
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("VerifyCredentials", []interface{}{arg1, arg2})
+	fake.verifyCredentialsMutex.Unlock()
+	if fake.VerifyCredentialsStub != nil {
+		return fake.VerifyCredentialsStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
+	fakeReturns := fake.verifyCredentialsReturns
 	return fakeReturns.result1
 }
 
-func (fake *AttestationVerifier) VerifyEvidenceCallCount() int {
-	fake.verifyEvidenceMutex.RLock()
-	defer fake.verifyEvidenceMutex.RUnlock()
-	return len(fake.verifyEvidenceArgsForCall)
+func (fake *CredentialVerifier) VerifyCredentialsCallCount() int {
+	fake.verifyCredentialsMutex.RLock()
+	defer fake.verifyCredentialsMutex.RUnlock()
+	return len(fake.verifyCredentialsArgsForCall)
 }
 
-func (fake *AttestationVerifier) VerifyEvidenceCalls(stub func([]byte, []byte, string) error) {
-	fake.verifyEvidenceMutex.Lock()
-	defer fake.verifyEvidenceMutex.Unlock()
-	fake.VerifyEvidenceStub = stub
+func (fake *CredentialVerifier) VerifyCredentialsCalls(stub func(*protos.Credentials, string) error) {
+	fake.verifyCredentialsMutex.Lock()
+	defer fake.verifyCredentialsMutex.Unlock()
+	fake.VerifyCredentialsStub = stub
 }
 
-func (fake *AttestationVerifier) VerifyEvidenceArgsForCall(i int) ([]byte, []byte, string) {
-	fake.verifyEvidenceMutex.RLock()
-	defer fake.verifyEvidenceMutex.RUnlock()
-	argsForCall := fake.verifyEvidenceArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+func (fake *CredentialVerifier) VerifyCredentialsArgsForCall(i int) (*protos.Credentials, string) {
+	fake.verifyCredentialsMutex.RLock()
+	defer fake.verifyCredentialsMutex.RUnlock()
+	argsForCall := fake.verifyCredentialsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *AttestationVerifier) VerifyEvidenceReturns(result1 error) {
-	fake.verifyEvidenceMutex.Lock()
-	defer fake.verifyEvidenceMutex.Unlock()
-	fake.VerifyEvidenceStub = nil
-	fake.verifyEvidenceReturns = struct {
+func (fake *CredentialVerifier) VerifyCredentialsReturns(result1 error) {
+	fake.verifyCredentialsMutex.Lock()
+	defer fake.verifyCredentialsMutex.Unlock()
+	fake.VerifyCredentialsStub = nil
+	fake.verifyCredentialsReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *AttestationVerifier) VerifyEvidenceReturnsOnCall(i int, result1 error) {
-	fake.verifyEvidenceMutex.Lock()
-	defer fake.verifyEvidenceMutex.Unlock()
-	fake.VerifyEvidenceStub = nil
-	if fake.verifyEvidenceReturnsOnCall == nil {
-		fake.verifyEvidenceReturnsOnCall = make(map[int]struct {
+func (fake *CredentialVerifier) VerifyCredentialsReturnsOnCall(i int, result1 error) {
+	fake.verifyCredentialsMutex.Lock()
+	defer fake.verifyCredentialsMutex.Unlock()
+	fake.VerifyCredentialsStub = nil
+	if fake.verifyCredentialsReturnsOnCall == nil {
+		fake.verifyCredentialsReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.verifyEvidenceReturnsOnCall[i] = struct {
+	fake.verifyCredentialsReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *AttestationVerifier) Invocations() map[string][][]interface{} {
+func (fake *CredentialVerifier) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.verifyEvidenceMutex.RLock()
-	defer fake.verifyEvidenceMutex.RUnlock()
+	fake.verifyCredentialsMutex.RLock()
+	defer fake.verifyCredentialsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
@@ -108,7 +97,7 @@ func (fake *AttestationVerifier) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *AttestationVerifier) recordInvocation(key string, args []interface{}) {
+func (fake *CredentialVerifier) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
