@@ -5,7 +5,7 @@ Copyright 2020 Intel Corporation
 SPDX-License-Identifier: Apache-2.0
 */
 
-package attestation
+package epid
 
 import (
 	"fmt"
@@ -16,40 +16,6 @@ import (
 
 	"github.com/pkg/errors"
 )
-
-// NewEpidUnlinkableConverter creates a new attestation converter for Intel SGX EPID (unlinkable) attestation
-func NewEpidUnlinkableConverter() *Converter {
-	return &Converter{
-		Type:      "epid-unlinkable",
-		Converter: newEpidConverter(),
-	}
-}
-
-// NewEpidLinkableConverter creates a new attestation converter for Intel SGX EPID (linkable) attestation
-func NewEpidLinkableConverter() *Converter {
-	return &Converter{
-		Type:      "epid-linkable",
-		Converter: newEpidConverter(),
-	}
-}
-
-func newEpidConverter() ConvertFunction {
-	return func(attestationBytes []byte) (evidenceBytes []byte, err error) {
-
-		apiKey, err := loadApiKey()
-		if err != nil {
-			return nil, errors.Wrap(err, "cannot load IAS API key")
-		}
-
-		ias := NewIASClient(apiKey)
-		evidence, err := ias.RequestAttestationReport(string(attestationBytes))
-		if err != nil {
-			return nil, errors.Wrap(err, "cannot convert epid attestation")
-		}
-
-		return []byte(evidence), nil
-	}
-}
 
 // loadApiKey tries to load the IAS API Key from environment variable.
 // If env var not set, use loadApiKeyFromCredentialsEnvPath and then loadApiKeyFromFPCConfig as fallback

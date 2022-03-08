@@ -16,6 +16,7 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode/enclave_go/attestation"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric/bccsp"
@@ -87,13 +88,13 @@ func (e *EnclaveStub) Init(serializedChaincodeParams, serializedHostParamsBytes,
 		ChaincodeEk: e.ccKeys.GetPublicKey(),
 	})
 
-	attestation, err := createAttestation(serializedAttestedData)
+	att, err := attestation.Issue(serializedAttestedData)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot create attestation")
 	}
 
 	credentials := &protos.Credentials{
-		Attestation:            attestation,
+		Attestation:            att,
 		SerializedAttestedData: serializedAttestedData,
 	}
 
@@ -345,10 +346,4 @@ func (e *EnclaveStub) extractCleartextChaincodeRequest(chaincodeRequestMessage *
 	}
 
 	return cleartextChaincodeRequest, nil
-}
-
-func createAttestation(attestedData *anypb.Any) ([]byte, error) {
-	// Not implemented for preview
-	// TODO implement proper attestation, supporting dcap and simulation
-	return []byte("{\"attestation_type\":\"simulated\",\"attestation\":\"MA==\"}"), nil
 }

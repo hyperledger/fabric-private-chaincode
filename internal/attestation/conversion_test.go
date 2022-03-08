@@ -10,13 +10,17 @@ package attestation
 import (
 	"testing"
 
+	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/types"
+
+	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/simulation"
+
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/stretchr/testify/assert"
 )
 
-func NewDummyConverter() *Converter {
-	return &Converter{
+func NewDummyConverter() *types.Converter {
+	return &types.Converter{
 		Type: "dummy",
 		Converter: func(attestationBytes []byte) (evidenceBytes []byte, err error) {
 			return []byte("dummy evidence"), nil
@@ -26,9 +30,9 @@ func NewDummyConverter() *Converter {
 
 func TestDispatcher(t *testing.T) {
 
-	d := NewConverterDispatcher()
+	d := newConverterDispatcher()
 
-	attestation := &attestation{
+	attestation := &types.Attestation{
 		Type: "dummy",
 	}
 
@@ -52,7 +56,7 @@ func TestDispatcher(t *testing.T) {
 	assert.Error(t, err)
 
 	// but registering another converter should work fine
-	err = d.Register(NewSimulationConverter())
+	err = d.Register(simulation.NewSimulationConverter())
 	assert.NoError(t, err)
 }
 
@@ -65,7 +69,7 @@ func TestCredentialConverterWithSimulation(t *testing.T) {
 		Attestation: att,
 	}
 
-	cv := NewCredentialConverter()
+	cv := NewDefaultCredentialConverter()
 
 	serializedCredentials := utils.MarshallProtoBase64(credentials)
 	updatedSerializedCredentials, err := cv.ConvertCredentials(serializedCredentials)
