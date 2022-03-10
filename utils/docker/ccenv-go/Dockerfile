@@ -15,7 +15,7 @@ ARG FPC_VERSION=main
 FROM hyperledger/fabric-private-chaincode-base-rt:${FPC_VERSION}
 LABEL org.opencontainers.image.source https://github.com/hyperledger/fabric-private-chaincode
 
-ARG EGO_VERSION=0.4.1
+ARG EGO_VERSION=0.4.2
 
 RUN wget https://github.com/edgelesssys/ego/releases/download/v${EGO_VERSION}/ego_${EGO_VERSION}_amd64.deb \
   && apt install -y ./ego_${EGO_VERSION}_amd64.deb \
