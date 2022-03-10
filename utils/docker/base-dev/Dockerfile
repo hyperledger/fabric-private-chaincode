@@ -26,6 +26,7 @@ ARG NANOPB_VERSION=0.4.3
 ARG OPENSSL=1.1.1g
 ARG SGXSSL=2.10_1.1.1g
 ARG APT_ADD_PKGS=
+ARG EGO_VERSION=0.4.2
 
 # for convenience remember all versions as env variables ..
 ENV GO_VERSION=${GO_VERSION}
@@ -103,5 +104,6 @@ RUN git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH} \
   && make
 
 # Install ego
-RUN wget https://github.com/edgelesssys/ego/releases/download/v0.4.1/ego_0.4.1_amd64.deb \
-  && apt install -y -q ./ego_0.4.1_amd64.deb \
+RUN wget https://github.com/edgelesssys/ego/releases/download/v${EGO_VERSION}/ego_${EGO_VERSION}_amd64.deb \
+  && apt install -y -q ./ego_${EGO_VERSION}_amd64.deb \
+  && rm ego_${EGO_VERSION}_amd64.deb
