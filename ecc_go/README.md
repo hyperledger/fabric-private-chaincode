@@ -75,8 +75,8 @@ Install ego by running the following:
 ```bash
 wget -qO- https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add
 add-apt-repository "deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu `lsb_release -cs` main"
-wget https://github.com/edgelesssys/ego/releases/download/v0.4.1/ego_0.4.1_amd64.deb
-apt install ./ego_0.4.1_amd64.deb build-essential libssl-dev
+wget https://github.com/edgelesssys/ego/releases/download/v0.4.2/ego_0.4.2_amd64.deb
+apt install ./ego_0.4.2_amd64.deb build-essential libssl-dev
 ```
 You can find more information about ego installation on the official [documentation](https://docs.edgeless.systems/ego/#/getting-started/install).
 
