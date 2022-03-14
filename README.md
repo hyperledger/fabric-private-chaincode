@@ -541,6 +541,9 @@ More details about FPC APIs in the [Reference Guides](#reference-guides) Section
 
 Create, build and test your first private chaincode with the [Hello World Tutorial](samples/chaincode/helloworld/README.md).
 
+### Deploying FPC on Azure Confidential Computing
+
+Setup a confidential computing instance on Azure which has access to SGX and use [FPC on Azure](docs/deployment/FPC_on_Azure.md)
 
 ## Reference Guides
 
