@@ -100,5 +100,5 @@ else
 endif
 
 #by default, debug is not enabled
-export FPC_DEBUG_ENABLED ?= false
+export FPC_GDB_DEBUG_ENABLED ?= false
 
