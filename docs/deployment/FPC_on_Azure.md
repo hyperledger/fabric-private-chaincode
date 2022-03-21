@@ -1,3 +1,7 @@
+<!---
+Copyright (c) Siemens AG, 2022
+SPDX-License-Identifier: Apache-2.0
+--->
 # How to use an Azure Confidential Computing Instance to run FPC in HW mode
 Date of writing 14.03.2022.
 This guide is based on an article by [Koshi Ikegawa](https://qiita-com.translate.goog/ikegawa-koshi/items/8cf1fef1004fc16beb15?_x_tr_sl=ja&_x_tr_tl=en&_x_tr_hl=de&_x_tr_pto=wapp#fpc%E3%81%AE%E3%83%93%E3%83%AB%E3%83%89).
