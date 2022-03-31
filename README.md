@@ -514,6 +514,23 @@ will create dummy files. In case you switch later to HW mode without
 configuring these files correctly for HW mode, this will result in
 above error.
 
+
+#### no Raft leader
+The following error message sometimes appears when running the integration tests in the folder:
+``$FPC_PATH/integration/Makefile``
+The output contains the following:
+``got unexpected status: SERVICE_UNAVAILABLE -- no Raft leader``
+
+Rerunning the tests usually works.
+If this error appers during the make step of [building FPC](../fabric-private-chaincode/README.md#build-fabric-private-chaincode) than uncommenting some integration tests fixes the issue.
+
+#### Working with the FPC dev container
+
+To make starting and stopping the dev container more reliable it is advised to use the following commands:
+* Start the container: ``docker start fpc-development-main``
+* Open a shell in the container: ``docker exec -i -t fpc-development-main bash``
+* Stop the container: ``docker stop fpc-development-main``
+
 ### Building Documentation
 
 To build documentation (e.g., images from the PlantUML `.puml` files), you will have to install `java` and download `plantuml.jar`. Either put `plantuml.jar` into
@@ -541,6 +558,9 @@ More details about FPC APIs in the [Reference Guides](#reference-guides) Section
 
 Create, build and test your first private chaincode with the [Hello World Tutorial](samples/chaincode/helloworld/README.md).
 
+### Deploying FPC on Azure Confidential Computing
+
+Setup a confidential computing instance on Azure which has access to SGX and use [FPC on Azure](docs/deployment/FPC_on_Azure.md).
 
 ## Reference Guides
 
