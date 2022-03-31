@@ -564,7 +564,7 @@ Create, build and test your first private chaincode with the [Hello World Tutori
 
 ### Developing and deploying on Azure Confidential Computing
 
-We provide a brief [FPC on Azure Tutorial](samples/deployment/azure/FPC_on_Azure.md)) with the required steps to setup a confidential computing instance on Azure to develop and test FPC with SGX hardware mode enabled. 
+We provide a brief [FPC on Azure Tutorial](samples/deployment/azure/FPC_on_Azure.md) with the required steps to set up a confidential computing instance on Azure to develop and test FPC with SGX hardware mode enabled. 
 
 
 ## Reference Guides

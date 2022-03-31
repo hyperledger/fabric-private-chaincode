@@ -90,7 +90,7 @@ export DOCKER_BUILDKIT=1
 
 Now we can start the container as follows:
 ```bash
-cd ${FPC_PATH}/utils/docker
+cd $FPC_PATH/utils/docker
 make pull-dev
 make run-dev
 ```
