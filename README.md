@@ -255,7 +255,7 @@ Make sure that you have the following required dependencies installed:
 
 * CMake v3.5.1 or higher
 
-* [Go](https://golang.org/) 1.16.7 or higher
+* [Go](https://golang.org/) 1.17.5 or higher
 
 * Docker 18.09 (or higher) and docker-compose 1.25.x (or higher)
   Note that version from Ubuntu 18.04 is not recent enough!  To upgrade, install a recent version following the instructions from [docker.com](https://docs.docker.com/compose/install/), e.g., for version 1.25.4 execute	
