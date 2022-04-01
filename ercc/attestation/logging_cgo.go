@@ -1,3 +1,4 @@
+//go:build WITH_PDO_CRYPTO
 // +build WITH_PDO_CRYPTO
 
 /*
