@@ -1,3 +1,4 @@
+//go:build !mock_ecc
 // +build !mock_ecc
 
 /*
