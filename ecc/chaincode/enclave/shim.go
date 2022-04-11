@@ -12,6 +12,7 @@ package enclave
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"sync"
 	"unsafe"
@@ -162,7 +163,7 @@ func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max
 		buf.WriteString("{\"key\":\"")
 		buf.WriteString(utils.TransformToFPCKey(item.Key))
 		buf.WriteString("\",\"value\":\"")
-		buf.Write(item.Value)
+		buf.WriteString(base64.StdEncoding.EncodeToString(item.Value))
 		if iter.HasNext() {
 			buf.WriteString("\"},")
 		} else {
