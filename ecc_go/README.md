@@ -19,7 +19,7 @@ In particular, it contains:
 
 We aim to support Go Chaincode without the need to refactor existing code but still benefit from the security properties added by FPC.
 However, we currently support only a limited Chaincode API with common functionality to enable a broad set of applications.
-We refer to [shim.go](ecc_go/chaincode/enclave_go/shim.go) for the full list of supported functions.
+We refer to [shim.go](chaincode/enclave_go/shim.go) for the full list of supported functions.
 Note that calling unsupported shim functions, currently results in a `panic`.
 
 To use FPC, you simply need to wrap your chaincode with the FPC Go Library. Here an example:
