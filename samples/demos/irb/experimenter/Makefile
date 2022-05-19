@@ -5,9 +5,9 @@
 TOP = ../../../..
 include $(TOP)/build.mk
 
-all: docker
+all: build
 
-docker:
+build:
 	DOCKER_BUILDKIT=0 docker build -f Dockerfile -t irb-experimenter-worker ..
 
 run: docker
