@@ -19,7 +19,7 @@ RUN pip install torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio==0.8.1 -f htt
 RUN pip install pillow twisted
 RUN pip install redis
 RUN pip install protobuf
-RUN pip install tensorflow
+#RUN pip install tensorflow
 RUN pip install matplotlib
 RUN pip install cryptography
 
