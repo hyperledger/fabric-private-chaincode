@@ -7,10 +7,13 @@ include $(TOP)/build.mk
 
 all: build
 
-build:
+protos:
+	$(MAKE) -C ../protos
+
+build: protos
 	DOCKER_BUILDKIT=0 docker build -f Dockerfile -t irb-experimenter-worker ..
 
-run: docker
+run: build
 	$(MAKE) -C worker stop-docker run-docker
 
 test:

@@ -18,8 +18,7 @@ RUN apt-get update -q \
 RUN pip install torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 RUN pip install pillow twisted
 RUN pip install redis
-RUN pip install protobuf
-#RUN pip install tensorflow
+RUN pip install protobuf==3.20.0
 RUN pip install matplotlib
 RUN pip install cryptography
 

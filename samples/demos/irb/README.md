@@ -49,9 +49,12 @@ More details on that, see the HLGF21 presentation.
 
 ## Setup
 
-The demo uses redis to store the data provided by the patients. Get a redis docker image.
+Before you start, make sure you have set up your FPC development environment as described in the FPC [documentation](../../../README.md#setup-your-development-environment).
+
+The demo uses the Fabric Smart Client integration-test suite to run the components of the demo, including a Fabric network, and Redis to store the data provided by the patients.
+Since the integration-test suite leverages docker, we start by getting the required docker images:
 ```bash
-docker pull redis:latest
+make pull-images
 ```
 
 Next, we build the components of the demo by running:
@@ -65,5 +68,5 @@ To run the demo just use the `test` target.
 You will see the output of the interaction between the participants in your terminal.
 
 ```bash
-make test
+make run
 ```

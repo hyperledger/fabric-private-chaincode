@@ -86,8 +86,6 @@ def print_dataset(name, data):
 print_dataset('Train', train_data)
 print_dataset('Test', test_data)
 
-#import tensorflow as tf
-#tf.__version__
 
 import torch
 from torch.autograd import Variable
