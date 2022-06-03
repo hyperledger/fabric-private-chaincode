@@ -64,7 +64,7 @@ make build
 
 ## Run the demo
 
-To run the demo just use the `test` target.
+To run the demo just use the `run` target.
 You will see the output of the interaction between the participants in your terminal.
 
 ```bash

@@ -9,7 +9,7 @@ include $(TOP)/build.mk
 BUILD_DIR := _build
 DOCKER_IMAGE_NAME := fpc/irb-experiment
 
-all: docker
+build: chaincode docker
 
 $(BUILD_DIR):
 	@if [ ! -d $(BUILD_DIR) ]; then \
@@ -18,7 +18,7 @@ $(BUILD_DIR):
 		cmake ./..; \
 	fi
 
-build: protos $(BUILD_DIR)
+chaincode: protos $(BUILD_DIR)
 	$(MAKE) --directory=$(BUILD_DIR)
 
 clean: protos-clean
