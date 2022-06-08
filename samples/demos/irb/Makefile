@@ -7,13 +7,27 @@ include $(TOP)/build.mk
 
 COMPONENTS = chaincode experimenter
 
-all: build test
+all: pull-images ercc build test
 
-build:
+pull-images:
+	$(DOCKER) pull redis:latest
+	$(DOCKER) pull hyperledger/fabric-baseos:2.3
+	$(DOCKER) image tag hyperledger/fabric-baseos:2.3 hyperledger/fabric-baseos:latest
+	$(DOCKER) pull hyperledger/fabric-ccenv:2.3
+	$(DOCKER) image tag hyperledger/fabric-ccenv:2.3 hyperledger/fabric-ccenv:latest
+
+ercc:
+	make -C ${FPC_PATH}/ercc all docker
+	$(DOCKER) image tag fpc/ercc:$(FPC_VERSION) fpc/ercc:latest
+
+build: ercc
 	$(foreach DIR, $(COMPONENTS), $(MAKE) -C $(DIR) $@ || exit;)
 
 test:
 	$(GO) test -v ./...
+
+run:
+	$(GO) test -v .
 
 clean:
 	$(GO) clean

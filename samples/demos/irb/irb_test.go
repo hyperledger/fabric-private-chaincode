@@ -68,7 +68,7 @@ func TestFlow(t *testing.T) {
 	assert.NoError(t, err)
 
 	// setup fabric network
-	ii, err := integration.Generate(23000, Topology()...)
+	ii, err := integration.Generate(23000, false, Topology()...)
 	assert.NoError(t, err)
 	ii.Start()
 	defer ii.Stop()
