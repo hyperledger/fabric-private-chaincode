@@ -17,7 +17,7 @@ Here are the steps to accomplish this:
 ## Prerequisites
 This tutorial presumes that you have installed FPC on your `$GOPATH` as described in the FPC [README.md](../../../README.md#clone-fabric-private-chaincode) and `$FPC_PATH` is set accordingly.
 
-*Note that this preview code currently resides in the `go-chaincode-preview` branch, thus, you need to switch branch (i.e., `git checkout -b "go-chaincode-preview"`).*
+*Note that this preview code currently resides in the `go-support-preview` branch, thus, you need to switch branch (i.e., `git checkout -b "go-support-preview"`).*
 
 We also need a working FPC development environment. As described in the "Setup your Development Environment" Section of the FPC [README.md](../../../README.md#setup-your-development-environment), you can use our docker-based dev environment (Option 1) or setup your local development environment (Option 2).
 We recommend using the docker-based development environment and continue this tutorial within the dev container terminal.
@@ -233,7 +233,7 @@ Continue by running:
 make ercc-ecc-start
 ```
 
-You should see now four containers running (i.e., `simple-asset.peer0.org1`, `simple-asset.peer0.org2`, `ercc.peer0.org1`, and `ercc.peer0.org2`). 
+You should see now four containers running (i.e., `simple-asseti-go.peer0.org1`, `simple-asset-go.peer0.org2`, `ercc.peer0.org1`, and `ercc.peer0.org2`). 
 
 ### Invoke simple asset
 
