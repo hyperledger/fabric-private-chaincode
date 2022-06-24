@@ -236,6 +236,14 @@ make ercc-ecc-start
 You should see now four containers running (i.e., `simple-asset-go.peer0.org1`, `simple-asset-go.peer0.org2`, `ercc.peer0.org1`, and `ercc.peer0.org2`). 
 
 ### Invoke simple asset
+Open a new terminal and show the list of running containers using
+ ```bash
+docker ps
+```
+Identify the container named `fpc-development-go-support` and copy its Container ID. Then connect to the container by running 
+ ```bash
+docker exec -it <Container ID> /bin/bash
+```
 
 ```bash
 # prepare connections profile
