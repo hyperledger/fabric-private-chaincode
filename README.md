@@ -364,11 +364,13 @@ Note by default we build FPC with SGX simulation mode. For SGX hardware-mode sup
 To build all required FPC components and run the integration tests run the following:
 ```bash
 cd $FPC_PATH
+make docker
 make
  ```
 
 Besides the default target, there are also following make targets:
 - `build`: build all FPC build artifacts
+- `docker`: build docker images 
 - `test`: run unit and integration tests
 - `clean`: remove most build artifacts (but no docker images)
 - `clobber`: remove all build artifacts including built docker images
