@@ -3,9 +3,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-ARG FPC_VERSION=main
+ARG FPC_CCENV_IMAGE=hyperledger/fabric-private-chaincode-ccenv:main
 
-FROM hyperledger/fabric-private-chaincode-ccenv:${FPC_VERSION}
+FROM ${FPC_CCENV_IMAGE}
 
 ENV PATH=/opt/ercc:$PATH
 
