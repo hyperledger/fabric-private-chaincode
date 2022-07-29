@@ -17,7 +17,6 @@ FPC_DOCKER_NAMESPACE := hyperledger/fabric-private-chaincode
 FPC_DOCKER_CC_BUILDER_NAME = $(FPC_DOCKER_NAMESPACE)-cc-builder$(HW_EXTENSION)
 FPC_DOCKER_DEV_NAME = $(FPC_DOCKER_NAMESPACE)-dev
 FPC_DOCKER_CCENV_NAME = $(FPC_DOCKER_NAMESPACE)-ccenv
-FPC_DOCKER_CCENV_GO_NAME = $(FPC_DOCKER_NAMESPACE)-ccenv-go
 FPC_DOCKER_BASE_RT_NAME = $(FPC_DOCKER_NAMESPACE)-base-rt
 FPC_DOCKER_BASE_DEV_NAME = $(FPC_DOCKER_NAMESPACE)-base-dev
 
@@ -124,9 +123,9 @@ DOCKER_DEV_OPTIONAL_CMD=
 
 # - overall make targets
 # ------------------------------
-.PHONY: base-rt base-dev ccenv ccenv-go dev peer cc-builder
+.PHONY: base-rt base-dev ccenv dev peer cc-builder
 
-build: ccenv ccenv-go
+build: ccenv
 # Note 1: we do _not_ include dev here as this is not needed in integration tests and
 # a rebuild could cause trouble for a dev container user.
 # Note 2: we removed "cc-builder peer" as dependencies since they are currenty unused (but might be helpful).
@@ -159,7 +158,6 @@ clobber:
 		$(FPC_DOCKER_CC_BUILDER_NAME) \
 		$(FPC_DOCKER_DEV_NAME) \
 		$(FPC_DOCKER_CCENV_NAME) \
-		$(FPC_DOCKER_CCENV_GO_NAME) \
 		$(FPC_DOCKER_BASE_RT_NAME) \
 		$(FPC_DOCKER_BASE_DEV_NAME) \
 		$(DOCKER_REGISTRY)/$(FPC_DOCKER_CCENV_NAME) \
@@ -189,9 +187,6 @@ base-dev: base-rt
 
 ccenv: base-rt
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CCENV_NAME):$(FPC_VERSION) ccenv
-
-ccenv-go:
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CCENV_GO_NAME):$(FPC_VERSION) ccenv-go
 
 # Note: For all docker images, dependencis will cause docker rebuilds.
 # Docker caching though makes this though fast if nothing has changed.
@@ -237,7 +232,6 @@ cc-builder: base-dev
 publish:
 	for img in \
 		$(FPC_DOCKER_CCENV_NAME) \
-		$(FPC_DOCKER_CCENV_GO_NAME) \
 		$(FPC_DOCKER_BASE_DEV_NAME) \
 	; do \
 	  	echo $${img}; \
@@ -249,9 +243,6 @@ pull:
 	# ccenv
 	$(DOCKER) pull $(DOCKER_REGISTRY)/$(FPC_DOCKER_CCENV_NAME):$(FPC_VERSION)
 	$(DOCKER) image tag $(DOCKER_REGISTRY)/$(FPC_DOCKER_CCENV_NAME):$(FPC_VERSION) $(FPC_DOCKER_CCENV_NAME):$(FPC_VERSION)
-	# ccenv-go
-	$(DOCKER) pull $(DOCKER_REGISTRY)/$(FPC_DOCKER_CCENV_GO_NAME):$(FPC_VERSION)
-	$(DOCKER) image tag $(DOCKER_REGISTRY)/$(FPC_DOCKER_CCENV_GO_NAME):$(FPC_VERSION) $(FPC_DOCKER_CCENV_GO_NAME):$(FPC_VERSION)
 
 pull-dev:
 	# base-dev

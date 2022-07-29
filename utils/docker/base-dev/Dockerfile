@@ -26,7 +26,7 @@ ARG NANOPB_VERSION=0.4.3
 ARG OPENSSL=1.1.1g
 ARG SGXSSL=2.10_1.1.1g
 ARG APT_ADD_PKGS=
-ARG EGO_VERSION=0.4.2
+ARG EGO_VERSION=1.0.0
 
 # for convenience remember all versions as env variables ..
 ENV GO_VERSION=${GO_VERSION}

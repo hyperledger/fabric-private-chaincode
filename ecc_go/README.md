@@ -75,26 +75,10 @@ Install ego by running the following:
 ```bash
 wget -qO- https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add
 add-apt-repository "deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu `lsb_release -cs` main"
-wget https://github.com/edgelesssys/ego/releases/download/v0.4.2/ego_0.4.2_amd64.deb
-apt install ./ego_0.4.2_amd64.deb build-essential libssl-dev
+wget https://github.com/edgelesssys/ego/releases/download/v1.0.0/ego_1.0.0_amd64.deb
+apt install ./ego_1.0.0_amd64.deb build-essential libssl-dev
 ```
 You can find more information about ego installation on the official [documentation](https://docs.edgeless.systems/ego/#/getting-started/install).
-
-### Create ccenv-go
-
-In order to package and run FPC Go Chaincode we use the `ccenv-go` docker image.
-You can either pull the image from github or build it manually.
-
-```bash
-cd $FPC_PATH/utils/docker/
-# pull it from github
-make pull
-
-# or build the docker image manually 
-make ccenv-go
-```
-
-Now you have all you need to get started with your first FPC Go Ghaincode.
 
 ## Examples
 
