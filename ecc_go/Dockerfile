@@ -13,7 +13,7 @@
 
 ARG FPC_VERSION=main
 
-FROM hyperledger/fabric-private-chaincode-ccenv-go:${FPC_VERSION}
+FROM hyperledger/fabric-private-chaincode-ccenv:${FPC_VERSION}
 
 ARG SGX_MODE
 ENV SGX_MODE=${SGX_MODE}
@@ -23,10 +23,9 @@ ENV OE_SIMULATION=${OE_SIMULATION}
 ARG CAAS_PORT=9999
 ARG CC_PATH="/usr/local/bin"
 
-COPY ecc ${CC_PATH}/chaincode
+COPY ecc-bundle ${CC_PATH}/chaincode
 
 WORKDIR ${CC_PATH}
 EXPOSE ${CAAS_PORT}
 
-#CMD ["chaincode"]
-CMD ["ego", "run", "chaincode"]
+CMD ["chaincode"]
