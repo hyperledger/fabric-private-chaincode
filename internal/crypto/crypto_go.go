@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 
 package crypto
 
-import "C"
 import (
 	"crypto/aes"
 	"crypto/cipher"

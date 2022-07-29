@@ -6,7 +6,8 @@
 TOP = ..
 include $(TOP)/build.mk
 
-GOTAGS += -tags WITH_PDO_CRYPTO
+ERCC_GOTAGS ?= -tags WITH_PDO_CRYPTO
+GOTAGS += $(ERCC_GOTAGS)
 
 build: ercc
 
@@ -34,7 +35,7 @@ DOCKER_IMAGE?=fpc/ercc
 
 docker: ercc
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
-		--build-arg FPC_VERSION=$(FPC_VERSION) \
+		--build-arg FPC_CCENV_IMAGE=$(FPC_CCENV_IMAGE) \
 		-t $(DOCKER_IMAGE):$(FPC_VERSION) \
 		. \
 	&& $(DOCKER) tag $(DOCKER_IMAGE):$(FPC_VERSION) $(DOCKER_IMAGE):latest
