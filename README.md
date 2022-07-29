@@ -421,7 +421,47 @@ echo 'YOUR_SPID' > $FPC_PATH/config/ias/spid.txt
 ```
 where `YOUR_SPID_TYPE` must be `epid-linkable` or `epid-unlinkable`, depending on the type of your subscription.
 
-### Trouble shooting
+
+### FPC Playground for non-SGX environments
+
+FPC leverages Intel SGX as the Confidential Computing technology to guard Fabric chaincodes.
+Even though the Intel SGX SDK supports a simulation mode, where you can run applications in a simulated enclave, it still requires an x86-based platform to run and compile the enclave code.
+Another limitation comes from the fact that the Intel SGX SDK is only available for Linux and Windows.
+
+To overcome these limitations and allow developers to toy around with the FPC API, we provide two ways to getting started with FPC.
+
+1) Using the [Docker-based FPC Development Environment](#setup-your-development-environment) (works well on x86-based platforms on Linux and Mac).
+2) FPC builds without SGX SDK dependencies (targets x86/arm-based platforms on Linux and Mac).
+
+We now elaborate on how to build the FPC components without the SGX SDK.
+Note that this is indented for developing purpose only and does not provide any protection at all.
+
+In your `config.override.mk` set the following to variables:
+```Makefile
+FPC_CCENV_IMAGE=ubuntu:20.04
+ERCC_GOTAGS=
+```
+This configuration sets a standard Ubuntu image as alternative to our `fabric-private-chaincode-ccenv` image and overrides the default build tags we use to build `ercc`.
+
+Next you can build `ercc` using the following command:
+```bash
+GOOS=linux make -C $FPC_PATH/ercc build docker
+```
+
+For building a chaincode, for instance `$FPC_PATH/samples/chaincode/kv-test-go`, just run: 
+```bash
+GOOS=linux make -C $FPC_PATH/samples/chaincode/kv-test-go with_go docker
+```
+
+You can test your FPC chaincode easily with one of the [sample deployments](samples/deployment) tutorials.
+We recommend to start with [the-simple-testing-network](samples/deployment/fabric-smart-client/the-simple-testing-network).
+
+Notes:
+- On Mac use a recent version of bash (`brew install bash`).
+- TODO more to come
+
+
+### Troubleshooting
 
 This section elaborate on common issues with building Fabric Private Chaincode.
 
