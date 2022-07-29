@@ -53,17 +53,17 @@ endif
 ifdef DOCKER_FORCE_REBUILD
 	DOCKER_BUILD_OPTS += --no-cache
 endif
-DOCKER_BUILD_OPTS += --build-arg FPC_VERSION=$(FPC_VERSION)
+DOCKER_BUILD_OPTS += --build-arg FPC_CCENV_IMAGE=$(FPC_CCENV_IMAGE)
 DOCKER_BUILD_OPTS += --build-arg SGX_MODE=$(SGX_MODE)
 DOCKER_BUILD_OPTS += --build-arg CAAS_PORT=$(CAAS_PORT)
 
-
-
 docker:
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_IMAGE):$(FPC_VERSION) -f $(DOCKER_FILE)\
-		$(shell if [ "${SGX_MODE}" = "SIM" ]; then echo "--build-arg OE_SIMULATION=1"; fi)\
-		. &&\
-	$(DOCKER) tag $(DOCKER_IMAGE):$(FPC_VERSION) $(DOCKER_IMAGE):latest
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
+		$(shell if [ "${SGX_MODE}" = "SIM" ]; then echo "--build-arg OE_SIMULATION=1"; fi) \
+		-t $(DOCKER_IMAGE):$(FPC_VERSION) \
+		-f $(DOCKER_FILE) \
+		. \
+	&& $(DOCKER) tag $(DOCKER_IMAGE):$(FPC_VERSION) $(DOCKER_IMAGE):latest
 
 clean:
 	$(GO) clean

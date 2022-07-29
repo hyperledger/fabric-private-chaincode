@@ -11,9 +11,9 @@
 #  - sgxmode:                    SGX_MODE
 #  - Chaincode as a Server Port: CAAS_PORT
 
-ARG FPC_VERSION=main
+ARG FPC_CCENV_IMAGE=hyperledger/fabric-private-chaincode-ccenv:main
 
-FROM hyperledger/fabric-private-chaincode-ccenv:${FPC_VERSION}
+FROM ${FPC_CCENV_IMAGE}
 
 ARG SGX_MODE
 ENV SGX_MODE=${SGX_MODE}
