@@ -18,7 +18,6 @@ go 1.17
 //   not be possible ....)
 
 require (
-	github.com/edgelesssys/ego v1.0.0
 	github.com/golang/protobuf v1.4.2
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20201118191903-ec81f3e74fa1
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20201119163726-f8ef75b17719
@@ -66,11 +65,13 @@ require (
 	github.com/gogo/protobuf v1.2.1 // indirect
 	github.com/golang/mock v1.4.3 // indirect
 	github.com/google/certificate-transparency-go v1.0.21 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hyperledger/fabric-amcl v0.0.0-20200128223036-d1aa2665426a // indirect
 	github.com/hyperledger/fabric-config v0.0.7 // indirect
 	github.com/hyperledger/fabric-lib-go v1.0.0 // indirect
+	github.com/hyperledger/fabric-samples/chaincode/marbles02/go v0.0.0-20220718075617-41717d76f2cb // indirect
 	github.com/ijc/Gotty v0.0.0-20170406111628-a8b993ba6abd // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/joho/godotenv v1.3.0 // indirect
@@ -116,7 +117,6 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
 	google.golang.org/grpc v1.31.0 // indirect
-	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
