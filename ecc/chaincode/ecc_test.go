@@ -223,7 +223,7 @@ func TestEndorse(t *testing.T) {
 	ex.GetChaincodeResponseMessagesReturns(expectedSignedResp, expectedResp, nil)
 	ercc.QueryEnclaveCredentialsReturns(expectedCred, nil)
 	r = ecc.Invoke(stub)
-	expectError(t, fmt.Sprintf("ccParams don't match"), r)
+	expectError(t, "ccParams don't match", r)
 
 	// validate error
 	serializedAttestedData, _ = anypb.New(
