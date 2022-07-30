@@ -14,7 +14,6 @@ import (
 	"path/filepath"
 
 	fpcmgmt "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
-	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/fab/ccpackager"
 	fpcpackager "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/fab/ccpackager"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 	"github.com/hyperledger/fabric-protos-go/common"
@@ -160,7 +159,7 @@ func Setup(ccID, ccPath string, initEnclave bool) error {
 		EnclavePeers: enclavePeers,
 	}
 
-	mrenclave, err := ccpackager.ReadMrenclave(ccPath)
+	mrenclave, err := fpcpackager.ReadMrenclave(ccPath)
 	if err != nil {
 		return err
 	}
@@ -169,7 +168,7 @@ func Setup(ccID, ccPath string, initEnclave bool) error {
 		Id:           ccID,
 		Path:         ccPath,
 		Version:      mrenclave,
-		Lang:         ccpackager.ChaincodeType,
+		Lang:         fpcpackager.ChaincodeType,
 		Seq:          int64(1),
 		Vscc:         "vscc",
 		Escc:         "escc",
