@@ -13,7 +13,6 @@ import (
 	"testing"
 
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
-	"github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
 	testutils "github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	. "github.com/onsi/ginkgo"
@@ -35,7 +34,7 @@ var (
 
 var _ = BeforeSuite(func() {
 	ccID := "auction_test"
-	ccPath := filepath.Join(utils.FPCPath, "samples", "chaincode", "auction", "_build", "lib")
+	ccPath := filepath.Join(testutils.FPCPath, "samples", "chaincode", "auction", "_build", "lib")
 
 	// setup auction chaincode (install, approve, commit)
 	initEnclave := true
