@@ -8,7 +8,7 @@ import (
 )
 
 func DetectSgxDevicePath() (string, error) {
-	possiblePaths := []string{"/dev/isgx", "dev/sgx/enclave"}
+	possiblePaths := []string{"/dev/isgx", "/dev/sgx/enclave"}
 	for _, p := range possiblePaths {
 		if _, err := os.Stat(p); err != nil {
 			continue
