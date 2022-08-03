@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 INCLUDE ("$ENV{FPC_PATH}/cmake/ConfigSGX.cmake")
+INCLUDE ("$ENV{FPC_PATH}/cmake/Debug.cmake")
 INCLUDE ("$ENV{FPC_PATH}/common/crypto/pdo/common/CMakeVariables.txt")
 
 # Put test artifacts under /tests subdirectory
@@ -38,6 +39,8 @@ TARGET_LINK_LIBRARIES(${VERIFY_EVIDENCE_APP}
     "-Wl,--start-group" ${OPENSSL_LDFLAGS} "-l${U_CRYPTO_ADAPT_LIB_NAME}" "-l${U_CRYPTO_LIB_NAME}" "-Wl,--end-group"
     )
 
+COND_ENABLE_DEBUG(${VERIFY_EVIDENCE_APP})
+
 COND_ENABLE_COVERAGE(${VERIFY_EVIDENCE_APP})
 
 ###################################################################################################
@@ -70,6 +73,8 @@ TARGET_INCLUDE_DIRECTORIES(${GET_ATTESTATION_APP} PRIVATE "${LOGGING_PATH}/untru
 TARGET_INCLUDE_DIRECTORIES(${GET_ATTESTATION_APP} PRIVATE "$ENV{FPC_PATH}/common/crypto/attestation-api/test/common")
 
 TARGET_LINK_LIBRARIES(${GET_ATTESTATION_APP} "${U_LOGGING_LIB_NAME}")
+
+COND_ENABLE_DEBUG(${GET_ATTESTATION_APP})
 
 COND_ENABLE_COVERAGE(${GET_ATTESTATION_APP})
 

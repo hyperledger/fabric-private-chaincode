@@ -364,11 +364,13 @@ Note by default we build FPC with SGX simulation mode. For SGX hardware-mode sup
 To build all required FPC components and run the integration tests run the following:
 ```bash
 cd $FPC_PATH
+make docker
 make
  ```
 
 Besides the default target, there are also following make targets:
 - `build`: build all FPC build artifacts
+- `docker`: build docker images 
 - `test`: run unit and integration tests
 - `clean`: remove most build artifacts (but no docker images)
 - `clobber`: remove all build artifacts including built docker images
@@ -515,6 +517,27 @@ will create dummy files. In case you switch later to HW mode without
 configuring these files correctly for HW mode, this will result in
 above error.
 
+
+#### no Raft leader
+
+The following error message sometimes appears when running the integration tests in the `$FPC_PATH/integration` folder.
+The output contains the following:
+```
+got unexpected status: SERVICE_UNAVAILABLE -- no Raft leader
+```
+
+Rerunning the tests usually works.
+If this error appers during the make step of [building FPC](../fabric-private-chaincode/README.md#build-fabric-private-chaincode) than uncommenting some integration tests fixes the issue.
+
+
+#### Working with the FPC dev container
+
+To make starting and stopping the dev container more reliable it is advised to use the following commands:
+* Start the container and get a shell: `make -C $FPC_PATH/utils/docker run-dev`
+* Get another shell inside the dev container: `docker exec -it fpc-development-main /bin/bash`
+* Stop the container: `docker stop fpc-development-main`
+
+
 ### Building Documentation
 
 To build documentation (e.g., images from the PlantUML `.puml` files), you will have to install `java` and download `plantuml.jar`. Either put `plantuml.jar` into
@@ -541,6 +564,10 @@ More details about FPC APIs in the [Reference Guides](#reference-guides) Section
 ### Your first private chaincode
 
 Create, build and test your first private chaincode with the [Hello World Tutorial](samples/chaincode/helloworld/README.md).
+
+### Developing and deploying on Azure Confidential Computing
+
+We provide a brief [FPC on Azure Tutorial](samples/deployment/azure/FPC_on_Azure.md) with the required steps to set up a confidential computing instance on Azure to develop and test FPC with SGX hardware mode enabled. 
 
 
 ## Reference Guides

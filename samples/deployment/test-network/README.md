@@ -38,6 +38,7 @@ Next, setup fabric sample network, binaries and docker images. Here we follow th
 cd $FPC_PATH/samples/deployment/test-network
 git clone https://github.com/hyperledger/fabric-samples
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples
+git checkout -b "works" 98028c7
 curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.3.3 1.4.9 -s
 ```
 
@@ -135,7 +136,11 @@ cd $FPC_PATH/samples/deployment/test-network
 Now we will use the go app in `$FPC_PATH/samples/application/simple-go` to demonstrate the usage of the FPC Client SDK.
 In order to initiate the FPC Chaincode enclave and register it with the FPC Enclave Registry, run the app with the `-withLifecycleInitEnclave` flag.
 
+
 ```bash
+# for SGX HW mode make sure you set the SGX_CREDENTIALS_PATH path; for simulation mode this is not necessary
+export SGX_CREDENTIALS_PATH=$FPC_PATH/config/ias
+
 cd $FPC_PATH/samples/application/simple-go
 CC_ID=echo ORG_NAME=Org1 go run . -withLifecycleInitEnclave
 ```
@@ -150,7 +155,7 @@ CC_ID=echo ORG_NAME=Org2 go run .
 
 ### How to use simple-cli-go
 
-You can also use `$FPC_PATH/samples/application/simple-cli-go` instead of the simple-go application.
+You can use `$FPC_PATH/samples/application/simple-cli-go` to interact with the chaincode.
 
 ```bash
 # make fpcclient
@@ -170,6 +175,9 @@ export CORE_PEER_TLS_KEY_FILE=$FPC_PATH/samples/deployment/test-network/fabric-s
 export CORE_PEER_TLS_ROOTCERT_FILE=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
 export ORDERER_CA=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
 export GATEWAY_CONFIG=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/connection-org1.yaml
+
+# for SGX HW mode make sure you set the SGX_CREDENTIALS_PATH path; for simulation mode this is not necessary
+export SGX_CREDENTIALS_PATH=$FPC_PATH/config/ias
 
 # init our enclave
 ./fpcclient init $CORE_PEER_ID

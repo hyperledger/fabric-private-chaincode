@@ -192,7 +192,8 @@ int unmarshal_values(
     {
         JSON_Object* pair = json_array_get_object(pairs, i);
         const char* key = json_object_get_string(pair, "key");
-        const char* value = json_object_get_string(pair, "value");
+        const char* b64value = json_object_get_string(pair, "value");
+        std::string value = base64_decode(b64value);
         values.insert({key, value});
     }
     json_value_free(root);
