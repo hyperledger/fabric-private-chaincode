@@ -2,15 +2,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+FABRIC_LOGGING_SPECS="fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info"
+
 build:
 	go build -o tstn
 
 clean:
 	rm -rf testdata
 
-fetch-bins:
-	curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.2.7 1.4.9 -s -d
-
-run-start:
-	./tstn network start --path ./testdata
+run: clean
+	FABRIC_LOGGING_SPECS=$(FABRIC_LOGGING_SPECS) go run . network start --path ./testdata
 

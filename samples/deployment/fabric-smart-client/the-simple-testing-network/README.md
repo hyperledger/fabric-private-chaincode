@@ -1,53 +1,51 @@
 # The simple testing network
 
-This gives an example how to run your FPC Chaincode with a simple testing network build with the Fabric Smart Client.
+This gives an example on how to run your FPC Chaincode with a simple testing network build with the Fabric Smart Client.
 The network is specified in [pkg/topology/fabric.go](pkg/topology/fabric.go).
 
-In this demo we use the demo fpc-echo chaincode.
 
-## Fabric network
+## Preparation
 
-### Prep
+Before we run the network, let's make sure we have built the Enclave Registry (ERCC) Container Images and a FPC Chaincode Container Image.
+In this example we use the FPC [kvs-test-go sample](../../../chaincode/kv-test-go) chaincode.
 
-Let's make sure we have built the Enclave Registry Container Images and a FPC Chaincode Container Image.
-In this example we will run the [echo sample](../../../chaincode/echo). 
-
-Build ERCC image
+Build ERCC image:
 ```bash
 make -C $FPC_PATH/ercc all docker
 ```
 
-Build FPC-Echo image
+Build the kv-test-go chaincode:
 ```bash
-export CC_NAME=echo
-export CC_PATH=$FPC_PATH/samples/chaincode/echo
-make -C $CC_PATH
-make -C $FPC_PATH/ecc DOCKER_IMAGE=fpc/fpc-${CC_NAME}$${HW_EXTENSION} DOCKER_ENCLAVE_SO_PATH=$CC_PATH/_build/lib all docker
+export CC_NAME=kv-test-go
+export CC_PATH=$FPC_PATH/samples/chaincode/kv-test-go
+make -C $CC_PATH build docker
 ``` 
 
-Download fabric binaries:
-
+To run the Fabric network we need the Fabric binaries.
+We will use the following:
 ```bash
-curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.2.7 1.4.9 -s -d
-export FAB_BINS=$(pwd)/bin
+make -C $FPC_PATH/fabric
+export FAB_BINS=$FPC_PATH/fabric/_internal/bin
 ```
 
-### Build
+
+## Run the network
 
 ```bash
-go build -o tstn
+make run
+# OR
+go run . network start --path ./testdata
 ```
+Once the network is up and running, use a second terminal to interact with the network.
+Uou can shut down the network using `CTRL+C`.
 
-### Run the network
+To clean up the network you can run `make clean` or `go run . network clean --path ./testdata`.
 
-```bash
-./tstn network start --path ./testdata
-```
-Use a second terminal to interact with the network
 
 ## Interact with your FPC Chaincode
 
 In this sample we use the simple FPC Cli tool to invoke functions of our FPC Chaincode.
+
 
 ### How to use simple-cli-go
 
@@ -59,30 +57,35 @@ cd $FPC_PATH/samples/application/simple-cli-go
 make
 
 # Run the following script and copy and paste the export statements back into your terminal
+export CC_NAME=kv-test-go
 $FPC_PATH/samples/deployment/fabric-smart-client/the-simple-testing-network/env.sh Org1
 
 # Interact with the FPC Chaincode
-./fpcclient invoke foo
-./fpcclient query foo
+./fpcclient invoke put_state hello world
+./fpcclient query get_state hello
 ```
 
 You can switch the user by running `./env.sh` either with `Org1` or `Org2`.
 
 
-## Launch FPC Chaincode manually
-TODO
+### Hyperledger Explorer
 
-### Build and package
+The test network includes a Hyperledger Blockchain explorer that you can use to see what is happening on the network.
+By default, you can reach the Blockchain Explorer Dashboard via your browser on `http://localhost:8080` with username `admin` and password `admin`.
 
-TODO
-- Build the FPC chaincode as docker image
-- Create chaincode `package.tar.gz` to install at a peer
 
-### Install
+### Troubleshooting
 
-TODO
+Sometimes something goes wrong.
+This is a collection of helpful commands to kill dangling network components.
+```bash
+killall peer
+killall orderer
+docker ps -a | grep fpc
+```
 
-### Launch with Docker
-
-TODO
-- Spawn FPC chaincode container 
+We also provide shortcuts to run and clean the network:
+```bash
+make clean
+make run
+```
