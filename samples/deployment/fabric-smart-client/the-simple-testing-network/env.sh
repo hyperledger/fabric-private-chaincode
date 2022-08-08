@@ -11,6 +11,11 @@ if [[ -z "${FPC_PATH}" ]]; then
   exit 1
 fi
 
+if [[ -z "${CC_NAME}" ]]; then
+  echo "Error: CC_NAME not set"
+  exit 1
+fi
+
 if [[ "$#" -ne 1 ]]; then
   echo "ERROR: incorrect number of parameters" >&2
   echo "Use: ./env.sh <org>" >&2
@@ -35,7 +40,7 @@ echo "export CONF_PATH=$FPC_PATH/samples/deployment/fabric-smart-client/the-simp
 echo "export GATEWAY_CONFIG=\$CONF_PATH/peerOrganizations/${ORG,,}.example.com/connections.yaml"
 echo "export ORG_PATH=\$CONF_PATH/peerOrganizations/org1.example.com"
 echo "export ORDERER_PATH=\$CONF_PATH/ordererOrganizations/example.com"
-echo "export CC_NAME=echo"
+echo "export CC_NAME=${CC_NAME}"
 echo "export CHANNEL_NAME=testchannel"
 echo "export CORE_PEER_ADDRESS=${ADDR}"
 echo "export CORE_PEER_ID=${PEER_ID}"
