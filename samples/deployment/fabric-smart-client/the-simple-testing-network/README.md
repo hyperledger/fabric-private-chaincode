@@ -61,6 +61,7 @@ export CC_NAME=kv-test-go
 $FPC_PATH/samples/deployment/fabric-smart-client/the-simple-testing-network/env.sh Org1
 
 # Interact with the FPC Chaincode
+export FABRIC_LOGGING_SPEC=warning
 ./fpcclient invoke put_state hello world
 ./fpcclient query get_state hello
 ```

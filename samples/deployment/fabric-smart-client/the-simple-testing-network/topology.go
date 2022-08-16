@@ -59,7 +59,7 @@ func setup() *config {
 	config := &config{}
 
 	// export FABRIC_LOGGING_SPECS=info
-	config.loggingSpec = os.Getenv("FABRIC_LOGGING_SPECS")
+	config.loggingSpec = os.Getenv("FABRIC_LOGGING_SPEC")
 	if len(config.loggingSpec) == 0 {
 		config.loggingSpec = defaultLoggingSpec
 	}
