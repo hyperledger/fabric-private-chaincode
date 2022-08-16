@@ -13,6 +13,8 @@ import (
 	fpccontract "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/contract"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/contract/fakes"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
+	"github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric/protoutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -95,7 +97,7 @@ func TestContractEvaluateTransactionSuccess(t *testing.T) {
 		return expectedEvalArgs, nil
 	})
 	mockEncryptionContext.RevealCalls(func(input []byte) ([]byte, error) {
-		return input, nil
+		return asResponseBytes(input), nil
 	})
 
 	mockEncryptionProvider := &fakes.EncryptionProvider{}
@@ -221,7 +223,7 @@ func TestContractSubmitTransaction(t *testing.T) {
 		return expectedEvalArgs, nil
 	})
 	mockEncryptionContext.RevealCalls(func(input []byte) ([]byte, error) {
-		return input, nil
+		return asResponseBytes(input), nil
 	})
 
 	mockEncryptionProvider := &fakes.EncryptionProvider{}
@@ -244,4 +246,8 @@ func TestContractSubmitTransaction(t *testing.T) {
 
 	// check that SubmitTransaction was invoked once
 	assert.Equal(t, 1, mockContract.SubmitTransactionCallCount())
+}
+
+func asResponseBytes(input []byte) []byte {
+	return protoutil.MarshalOrPanic(&peer.Response{Payload: input, Status: 200})
 }
