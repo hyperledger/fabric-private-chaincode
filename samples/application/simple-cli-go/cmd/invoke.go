@@ -23,7 +23,7 @@ var invokeCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		client := pkg.NewClient(config)
-		res := client.Call(args[0], args[1:]...)
+		res := client.Invoke(args[0], args[1:]...)
 		fmt.Println("> " + res)
 	},
 }
