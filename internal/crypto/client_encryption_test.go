@@ -149,17 +149,8 @@ func TestReveal(t *testing.T) {
 	assert.Nil(t, resp)
 	assert.Error(t, err)
 
-	// msg not base64 encoded
-	encryptedMsg, err := GetDefaultCSP().EncryptMessage(responseEncryptionKey, msg)
-	assert.NoError(t, err)
-	response = &protos.ChaincodeResponseMessage{EncryptedResponse: encryptedMsg}
-	responseBytes = protoutil.MarshalOrPanic(response)
-	resp, err = ctx.Reveal([]byte(utils.MarshallProtoBase64(&protos.SignedChaincodeResponseMessage{ChaincodeResponseMessage: responseBytes})))
-	assert.Nil(t, resp)
-	assert.Error(t, err)
-
 	// should succeed
-	encryptedMsg, err = GetDefaultCSP().EncryptMessage(responseEncryptionKey, []byte(base64.StdEncoding.EncodeToString(msg)))
+	encryptedMsg, err := GetDefaultCSP().EncryptMessage(responseEncryptionKey, msg)
 	assert.NoError(t, err)
 	response = &protos.ChaincodeResponseMessage{EncryptedResponse: encryptedMsg}
 	responseBytes = protoutil.MarshalOrPanic(response)
