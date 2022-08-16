@@ -97,19 +97,12 @@ func (e *EncryptionContextImpl) Reveal(signedResponseBytesB64 []byte) ([]byte, e
 		return nil, errors.Wrap(err, "failed to extract response message")
 	}
 
-	clearResponseB64, err := e.csp.DecryptMessage(e.responseEncryptionKey, response.EncryptedResponse)
+	clearResponseBytes, err := e.csp.DecryptMessage(e.responseEncryptionKey, response.EncryptedResponse)
 	if err != nil {
 		return nil, errors.Wrap(err, "decryption of response failed")
 	}
-	// TODO: above should eventually be a (protobuf but not base64 serialized) fabric response object,
-	//   rather than just the (base64-serialized) response string.
-	//   so we also get fpc chaincode return-code/error-message as in for normal fabric
-	clearResponse, err := base64.StdEncoding.DecodeString(string(clearResponseB64))
-	if err != nil {
-		return nil, err
-	}
 
-	return clearResponse, nil
+	return clearResponseBytes, nil
 }
 
 func (e *EncryptionContextImpl) Conceal(function string, args []string) (string, error) {

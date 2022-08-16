@@ -13,6 +13,8 @@ import (
 
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric/common/flogging"
+	"github.com/hyperledger/fabric/protoutil"
+	"github.com/pkg/errors"
 )
 
 var logger = flogging.MustGetLogger("fpc-client-contract")
@@ -89,7 +91,13 @@ func (c *contractImpl) EvaluateTransaction(name string, args ...string) ([]byte,
 		return nil, err
 	}
 
-	return ctx.Reveal(encryptedResponse)
+	clearResponseBytes, err := ctx.Reveal(encryptedResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	// unwrap Response.Payload
+	return unwrap(clearResponseBytes)
 }
 
 func (c *contractImpl) SubmitTransaction(name string, args ...string) ([]byte, error) {
@@ -115,7 +123,28 @@ func (c *contractImpl) SubmitTransaction(name string, args ...string) ([]byte, e
 		return nil, err
 	}
 
-	return ctx.Reveal(encryptedResponse)
+	clearResponseBytes, err := ctx.Reveal(encryptedResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	// unwrap Response.Payload
+	return unwrap(clearResponseBytes)
+}
+
+// unwrap unmarshalls the given serialized peer.Response message and returns the Payload field if Status is 200;
+// otherwise, the Message field is returned as an error
+func unwrap(responseBytes []byte) (payload []byte, err error) {
+	clearResponse, err := protoutil.UnmarshalResponse(responseBytes)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal peer.Response message")
+	}
+
+	if clearResponse.Status != 200 {
+		return nil, errors.New(clearResponse.Message)
+	}
+
+	return clearResponse.Payload, nil
 }
 
 // getPeerEndpoints returns an array of peer endpoints that host the FPC chaincode enclave

@@ -81,6 +81,12 @@ func (f *FpcStubInterface) GetState(key string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// in case the key does not exist, return early
+	if len(encValue) == 0 {
+		return nil, nil
+	}
+
 	return f.sep.DecryptState(encValue)
 }
 

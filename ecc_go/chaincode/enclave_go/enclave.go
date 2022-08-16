@@ -11,7 +11,6 @@ package enclave_go
 import (
 	"crypto/sha256"
 	"crypto/x509"
-	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 
@@ -165,16 +164,14 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincod
 	fpcStub := NewFpcStubInterface(stub, cleartextChaincodeRequest.GetInput(), rwset, e.ccKeys)
 	ccResponse := e.ccRef.Invoke(fpcStub)
 
-	// If payload is empty (probably due to a shim.Error), the response will contain the message
-	var b64ResponseData string
-	if ccResponse.GetPayload() != nil {
-		b64ResponseData = base64.StdEncoding.EncodeToString(ccResponse.GetPayload())
-	} else {
-		b64ResponseData = base64.StdEncoding.EncodeToString([]byte(ccResponse.GetMessage()))
+	// marshal chaincode response
+	ccResponseBytes, err := protoutil.Marshal(&ccResponse)
+	if err != nil {
+		return nil, err
 	}
 
 	//encrypt response
-	encryptedResponse, err := e.csp.EncryptMessage(keyTransportMessage.GetResponseEncryptionKey(), []byte(b64ResponseData))
+	encryptedResponse, err := e.csp.EncryptMessage(keyTransportMessage.GetResponseEncryptionKey(), ccResponseBytes)
 	if err != nil {
 		return nil, err
 	}
