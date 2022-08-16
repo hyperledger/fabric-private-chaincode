@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FABRIC_LOGGING_SPECS="fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info"
+FABRIC_LOGGING_SPEC?="fpc=info:endorser,grpc,comm.grpc,gossip=error:info"
 
 build:
 	go build -o tstn
@@ -11,5 +11,5 @@ clean:
 	rm -rf testdata
 
 run: clean
-	FABRIC_LOGGING_SPECS=$(FABRIC_LOGGING_SPECS) go run . network start --path ./testdata
+	FABRIC_LOGGING_SPEC=$(FABRIC_LOGGING_SPEC) go run . network start --path ./testdata
 
