@@ -15,11 +15,8 @@ import (
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
 	cfg "github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
-	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/pkg/errors"
 )
-
-var logger = flogging.MustGetLogger("sdk-test")
 
 type Client struct {
 	contract fpc.Contract
@@ -106,12 +103,22 @@ func newContract(config *Config) fpc.Contract {
 	return contract
 }
 
-func (c *Client) Call(function string, args ...string) string {
-	logger.Infof("--> Invoke FPC chaincode with %s", args)
+func (c *Client) Invoke(function string, args ...string) string {
+	logger.Debugf("--> Invoke FPC chaincode with %s %s", function, args)
 	result, err := c.contract.SubmitTransaction(function, args...)
 	if err != nil {
 		logger.Fatalf("Failed to Submit transaction: %v", err)
 	}
-	logger.Infof("--> Result: %s", string(result))
+	logger.Debugf("--> Result: %s", string(result))
+	return string(result)
+}
+
+func (c *Client) Query(function string, args ...string) string {
+	logger.Debugf("--> Query FPC chaincode with %s %s", function, args)
+	result, err := c.contract.EvaluateTransaction(function, args...)
+	if err != nil {
+		logger.Fatalf("Failed to evaluate transaction: %v", err)
+	}
+	logger.Debugf("--> Result: %s", string(result))
 	return string(result)
 }
