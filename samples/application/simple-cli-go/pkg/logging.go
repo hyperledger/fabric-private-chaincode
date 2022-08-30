@@ -35,38 +35,38 @@ type extendedFlogger struct {
 }
 
 func (e *extendedFlogger) Fatalln(v ...interface{}) {
-	e.Fatal(v)
+	e.Fatal(v...)
 }
 
 func (e *extendedFlogger) Panicln(v ...interface{}) {
-	e.Panic()
+	e.Panic(v...)
 }
 
 func (e *extendedFlogger) Print(v ...interface{}) {
-	fmt.Print(v)
+	fmt.Print(v...)
 }
 
 func (e *extendedFlogger) Printf(format string, v ...interface{}) {
-	fmt.Printf(format, v)
+	fmt.Printf(format, v...)
 }
 
 func (e *extendedFlogger) Println(v ...interface{}) {
-	fmt.Println(v)
+	fmt.Println(v...)
 
 }
 
 func (e *extendedFlogger) Debugln(args ...interface{}) {
-	e.Debug(args)
+	e.Debug(args...)
 }
 
 func (e *extendedFlogger) Infoln(args ...interface{}) {
-	e.Info(args)
+	e.Info(args...)
 }
 
 func (e *extendedFlogger) Warnln(args ...interface{}) {
-	e.Warn(args)
+	e.Warn(args...)
 }
 
 func (e *extendedFlogger) Errorln(args ...interface{}) {
-	e.Error(args)
+	e.Error(args...)
 }
