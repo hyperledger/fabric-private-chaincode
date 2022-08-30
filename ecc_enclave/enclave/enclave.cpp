@@ -14,6 +14,7 @@
 #include "fabric/msp/identities.pb.h"
 #include "fabric/peer/chaincode.pb.h"
 #include "fabric/peer/proposal.pb.h"
+#include "fabric/peer/proposal_response.pb.h"
 #include "fpc/fpc.pb.h"
 #include "logging.h"
 #include "pb_decode.h"
@@ -46,7 +47,7 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
     uint32_t response_len = signed_cc_response_message_bytes_len_in / 4 * 3 - 1024;
     uint8_t response[signed_cc_response_message_bytes_len_in / 4 * 3];
     uint32_t response_len_out = 0;
-    std::string b64_response;
+    ByteArray proto_response_bytes;
     ByteArray cc_response_message;
     size_t cc_response_message_estimated_size;
     ByteArray response_encryption_key;
@@ -232,25 +233,60 @@ int ecall_cc_invoke(const uint8_t* signed_proposal_proto_bytes,
         COND2LOGERR(true, e.what());
     }
 
-    b64_response = base64_encode((const unsigned char*)response, response_len_out);
+    // wrap invocation response in a peer.Response message
+    {
+        protos_Response protoResponse = {};
+
+        if (invoke_ret == 0)
+        {
+            protoResponse.status = 200;
+
+            // fill in response message
+            protoResponse.payload =
+                (pb_bytes_array_t*)pb_realloc(NULL, PB_BYTES_ARRAY_T_ALLOCSIZE(response_len_out));
+            COND2LOGERR(protoResponse.payload == NULL, "cannot allocate response payload");
+            protoResponse.payload->size = response_len_out;
+
+            ret = memcpy_s(protoResponse.payload->bytes, protoResponse.payload->size, response,
+                response_len_out);
+            COND2LOGERR(ret != 0, "cannot encode field");
+        }
+        else
+        {
+            // set error
+            protoResponse.status = 500;
+            // TODO set response.message with proper error message as reported by user
+        }
+
+        // estimate response message size and resize buffer
+        size_t response_estimated_size;
+        b = pb_get_encoded_size(&response_estimated_size, protos_Response_fields, &protoResponse);
+        COND2LOGERR(!b, "cannot estimate response message size");
+
+        CATCH(b, proto_response_bytes.resize(response_estimated_size));
+
+        // encode proto
+        pb_ostream_t ostream =
+            pb_ostream_from_buffer(proto_response_bytes.data(), proto_response_bytes.size());
+        b = pb_encode(&ostream, protos_Response_fields, &protoResponse);
+        COND2LOGERR(!b, "error encoding response proto");
+        COND2LOGERR(ostream.bytes_written != response_estimated_size,
+            "encoding size different than estimated");
+
+        pb_release(protos_Response_fields, &protoResponse);
+    }
 
     {
-        // TODO put response in protobuf and encode it
-
         ByteArray encrypted_response;
         fpc_ChaincodeResponseMessage crm;
         pb_ostream_t ostream;
         std::string enclave_id;
 
         // create proto struct to encode
-        // TODO: create fabric Response object
-        // TODO: encrypt fabric Response object
         crm = {};
 
         {  // encrypt response
-            ByteArray response =
-                ByteArray(b64_response.c_str(), b64_response.c_str() + b64_response.length());
-            b = encrypt_message(response_encryption_key, response, encrypted_response);
+            b = encrypt_message(response_encryption_key, proto_response_bytes, encrypted_response);
             COND2LOGERR(!b, "cannot encrypt response message");
         }
 
