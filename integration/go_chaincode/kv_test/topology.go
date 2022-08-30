@@ -44,7 +44,7 @@ func Topology() []api.Topology {
 		if err != nil {
 			panic(errors.Wrapf(err, "SGX HW mode set but now sgx device found"))
 		}
-		fpcOptions = append(fpcOptions, topology.WithSGXDevicePath(sgxDevicePath))
+		fpcOptions = append(fpcOptions, topology.WithSGXDevicesPaths(sgxDevicePath))
 	}
 
 	fabricTopology := fabric.NewDefaultTopology()
