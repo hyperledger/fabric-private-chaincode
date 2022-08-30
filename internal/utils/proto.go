@@ -232,3 +232,18 @@ func GetChaincodeRequestMessageFromSignedProposal(signedProposal *pb.SignedPropo
 	}
 	return chaincodeRequestMessageBytes, nil
 }
+
+// UnwrapResponse unmarshalls the given serialized peer.Response message and returns the Payload field if Status is 200;
+// otherwise, the Message field is returned as an error
+func UnwrapResponse(responseBytes []byte) (payload []byte, err error) {
+	clearResponse, err := protoutil.UnmarshalResponse(responseBytes)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal peer.Response message")
+	}
+
+	if clearResponse.Status != 200 {
+		return nil, errors.New(clearResponse.Message)
+	}
+
+	return clearResponse.Payload, nil
+}
