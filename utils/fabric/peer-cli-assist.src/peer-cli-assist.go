@@ -17,6 +17,7 @@ import (
 
 	"github.com/hyperledger/fabric-private-chaincode/internal/attestation"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
+	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric/common/flogging"
 )
 
@@ -168,6 +169,13 @@ func handleEncryptedRequestAndResponse(chaincodeEncryptionKey string, resultPipe
 		os.Exit(1)
 	}
 	// TODO: create a (single-line) json encoding once we get above a proper response object ...
-	logger.Debugf("Transformed response '%s' to '%s' and write to pipe '%s'", encryptedResponse, string(clearResponse), resultPipeName)
-	resultPipeFile.WriteString(fmt.Sprintf("%s\n", clearResponse))
+
+	payload, err := utils.UnwrapResponse(clearResponse)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: %v\n", err)
+		os.Exit(1)
+	}
+
+	logger.Debugf("Transformed response '%s' to '%s' and write to pipe '%s'", encryptedResponse, string(payload), resultPipeName)
+	resultPipeFile.WriteString(fmt.Sprintf("%s\n", payload))
 }
