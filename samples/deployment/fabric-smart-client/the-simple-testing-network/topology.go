@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"strings"
 
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/api"
@@ -24,6 +23,7 @@ const (
 	defaultChaincodeName      = "kv-test-go"
 	defaultChaincodeImageName = "fpc/fpc-kv-test-go"
 	defaultChaincodeImageTag  = "latest"
+	defaultChaincodeMRENCLAVE = "fakeMRENCLAVE"
 	defaultLoggingSpec        = "info"
 )
 
@@ -32,11 +32,11 @@ func Fabric() []api.Topology {
 
 	fabricTopology := fabric.NewDefaultTopology()
 	fabricTopology.AddOrganizationsByName("Org1", "Org2")
-	fabricTopology.EnableFPC()
 	fabricTopology.SetLogging(config.loggingSpec, "")
 
 	// in this example we use the FPC kv-test-go chaincode
 	// we just need to set the docker images
+	fabricTopology.EnableFPC()
 	fabricTopology.AddFPC(config.chaincodeName, config.chaincodeImage, config.fpcOptions...)
 
 	// bring hyperledger explorer into the game
@@ -77,9 +77,10 @@ func setup() *config {
 	}
 
 	// get mrenclave
-	// export CC_PATH=$FPC_PATH/samples/chaincode/kv-test-go
-	ccPath := os.Getenv("CC_PATH")
-	mrenclave := ReadMrenclaveFromFile(path.Join(ccPath, "mrenclave"))
+	mrenclave := os.Getenv("FPC_MRENCLAVE")
+	if len(mrenclave) == 0 {
+		mrenclave = defaultChaincodeMRENCLAVE
+	}
 	config.fpcOptions = append(config.fpcOptions, topology.WithMREnclave(mrenclave))
 
 	// check if we are running in SGX HW mode

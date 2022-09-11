@@ -11,13 +11,13 @@ CAAS_PORT ?= 9999
 # the following are the required docker build parameters
 HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
 
-DOCKER_IMAGE ?= fpc/fpc-$(CC_NAME)${HW_EXTENSION}
+DOCKER_IMAGE ?= fpc/$(CC_NAME)${HW_EXTENSION}
 DOCKER_FILE ?= $(FPC_PATH)/ecc_go/Dockerfile
 EGO_CONFIG_FILE ?= $(FPC_PATH)/ecc_go/enclave.json
 ECC_BINARY ?= ecc
 ECC_BUNDLE ?= $(ECC_BINARY)-bundle
 
-build: ecc docker
+build: ecc docker env
 
 ecc: ecc_dependencies
 	ego-go build $(GOTAGS) -o $(ECC_BINARY) main.go
@@ -35,9 +35,10 @@ ecc_dependencies:
 	# hard to list explicitly, so just leave empty target,
 	# which forces ecc to always be built
 
-test: build
-	# note that we run unit test with a mock enclave
-	$(GO) test $(GOTAGS) $(GOTESTFLAGS) ./...
+env:
+	echo "export CC_NAME=$(CC_NAME)" > details.env
+	echo "export FPC_MRENCLAVE=$(shell cat mrenclave)" >> details.env
+	echo "export FPC_CHAINCODE_IMAGE=$(DOCKER_IMAGE):latest" >> details.env
 
 # Note:
 # - docker images are not necessarily rebuild if they exist but are outdated.
@@ -67,4 +68,4 @@ docker:
 
 clean:
 	$(GO) clean
-	rm -f $(ECC_BINARY) $(ECC_BUNDLE) enclave.json coverage.out mrenclave public.pem private.pem
+	rm -f $(ECC_BINARY) $(ECC_BUNDLE) enclave.json coverage.out mrenclave public.pem private.pem details.env
