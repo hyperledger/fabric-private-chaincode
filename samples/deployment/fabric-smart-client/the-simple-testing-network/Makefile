@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-FABRIC_LOGGING_SPEC?="fpc=info:endorser,grpc,comm.grpc,gossip=error:info"
+FABRIC_LOGGING_SPEC?="fpc=debug:endorser,grpc,comm.grpc,gossip=error:info"
 
 build:
 	go build -o tstn
