@@ -56,9 +56,10 @@ You can also use `$FPC_PATH/samples/application/simple-cli-go` instead of the si
 cd $FPC_PATH/samples/application/simple-cli-go
 make
 
-# Run the following script and copy and paste the export statements back into your terminal
+# Run the following script and source the resulting environment variables
 export CC_NAME=kv-test-go
 $FPC_PATH/samples/deployment/fabric-smart-client/the-simple-testing-network/env.sh Org1
+source Org1.env
 
 # Interact with the FPC Chaincode
 export FABRIC_LOGGING_SPEC=warning
