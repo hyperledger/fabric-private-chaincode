@@ -4,3 +4,4 @@ enclave.json
 private.pem
 public.pem
 mrenclave
+details.env
