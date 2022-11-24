@@ -38,7 +38,7 @@ ADDR=$(yq r $GATEWAY_CONFIG peers.\"${PEER_ID}\".url | sed 's/grpcs:\/\///')
 
 echo "export CONF_PATH=$FPC_PATH/samples/deployment/fabric-smart-client/the-simple-testing-network/testdata/fabric.default/crypto" > ${ORG}.env
 echo "export GATEWAY_CONFIG=\$CONF_PATH/peerOrganizations/${ORG,,}.example.com/connections.yaml" >> ${ORG}.env
-echo "export ORG_PATH=\$CONF_PATH/peerOrganizations/org1.example.com" >> ${ORG}.env
+echo "export ORG_PATH=\$CONF_PATH/peerOrganizations/${ORG,,}.example.com" >> ${ORG}.env
 echo "export ORDERER_PATH=\$CONF_PATH/ordererOrganizations/example.com" >> ${ORG}.env
 #echo "export CC_NAME=${CC_NAME}" >> ${ORG}.env
 echo "export CHANNEL_NAME=testchannel" >> ${ORG}.env
