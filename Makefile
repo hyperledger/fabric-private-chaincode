@@ -41,7 +41,7 @@ gotools:
 	$(GO) install golang.org/x/tools/cmd/goimports
 	$(GO) install google.golang.org/protobuf/cmd/protoc-gen-go
 	GO111MODULE=off $(GO) get github.com/maxbrunsfeld/counterfeiter
-	$(GO) install honnef.co/go/tools/cmd/staticcheck@latest
+	$(GO) install honnef.co/go/tools/cmd/staticcheck@v0.3.3
 	$(GO) get -u github.com/client9/misspell/cmd/misspell
 
 godeps: gotools
