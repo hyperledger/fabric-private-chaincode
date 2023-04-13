@@ -25,11 +25,14 @@ func main() {
 	secretChaincode, _ := contractapi.NewChaincode(&chaincode.SecretKeeper{})
 	chaincode := fpc.NewPrivateChaincode(secretChaincode)
 
+	// single KVS
+	skvsChaincode := &fpc.SingleKVSWrapper{chaincode}
+
 	// start chaincode as a service
 	server := &shim.ChaincodeServer{
 		CCID:    ccid,
 		Address: addr,
-		CC:      chaincode,
+		CC:      skvsChaincode,
 		TLSProps: shim.TLSProperties{
 			Disabled: true, // just for testing good enough
 		},
