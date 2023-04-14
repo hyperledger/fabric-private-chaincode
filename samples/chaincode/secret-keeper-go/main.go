@@ -26,9 +26,6 @@ func main() {
 	// chaincode := fpc.NewPrivateChaincode(secretChaincode)
 	skvsChaincode := fpc.NewSkvsChaincode(secretChaincode)
 
-	// // single KVS
-	// skvsChaincode := &fpc.SKVSWrapper{chaincode}
-
 	// start chaincode as a service
 	server := &shim.ChaincodeServer{
 		CCID:    ccid,
