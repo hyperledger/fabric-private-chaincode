@@ -7,7 +7,6 @@ SPDX-License-Identifier: Apache-2.0
 package enclave_go
 
 import (
-	"encoding/hex"
 	"encoding/json"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
@@ -17,15 +16,15 @@ import (
 
 type SkvsStubInterface struct {
 	*FpcStubInterface
-	allDataOld map[string]string
-	allDataNew map[string]string
+	allDataOld map[string][]byte
+	allDataNew map[string][]byte
 	key        string
 }
 
 func NewSkvsStubInterface(stub shim.ChaincodeStubInterface, input *pb.ChaincodeInput, rwset *readWriteSet, sep StateEncryptionFunctions) *SkvsStubInterface {
 	logger.Warning("==== Get New Skvs Interface =====")
 	fpcStub := NewFpcStubInterface(stub, input, rwset, sep)
-	skvsStub := SkvsStubInterface{fpcStub, map[string]string{}, map[string]string{}, "SKVS"}
+	skvsStub := SkvsStubInterface{fpcStub, map[string][]byte{}, map[string][]byte{}, "SKVS"}
 	err := skvsStub.InitSKVS()
 	if err != nil {
 		logger.Warningf("Error!! Initializing SKVS failed")
@@ -59,39 +58,54 @@ func (s *SkvsStubInterface) InitSKVS() error {
 		}
 	}
 
-	logger.Warningf("SKVS Init finish, allDataOld = %s, allDataNew = %s", s.allDataOld, s.allDataNew)
+	logger.Warningf("SKVS Init finish, allDataOld: %s, allDataNew: %s", s.allDataOld, s.allDataNew)
 	return nil
 }
 
 func (s *SkvsStubInterface) GetState(key string) ([]byte, error) {
-	logger.Warningf("Calling Get State (Start), key = %s, alldataOld = %s", key, s.allDataOld)
-	targetHex, found := s.allDataOld[key]
+	logger.Warningf("Calling Get State (Start), key: %s, alldataOld: %s", key, s.allDataOld)
+	value, found := s.allDataOld[key]
 	if found != true {
 		return nil, errors.New("skvs allDataOld key not found")
 	}
-	targetBytes, err := hex.DecodeString(targetHex)
-	logger.Warningf("Calling Get State (End), TargetHex: %s, TargetBytes: %x, err: %s", targetHex, targetBytes, err)
-	return targetBytes, err
+	logger.Warningf("Calling Get State (End), key: %s, value: %x", key, value)
+	return value, nil
 }
 
 func (s *SkvsStubInterface) PutState(key string, value []byte) error {
-	logger.Warningf("Calling Put State (Start), key = %s, value = %x, alldata = %s", key, value, s.allDataNew)
+	logger.Warningf("Calling Put State (Start), key: %s, value: %x, alldata: %s", key, value, s.allDataNew)
 
-	valueHex := hex.EncodeToString(value)
-	s.allDataNew[key] = valueHex
-	logger.Warningf("Calling Put State (Mid-1), add need data key = %s, valueHex = %s, allData = %s", key, valueHex, s.allDataNew)
-
+	s.allDataNew[key] = value
 	byteAllData, err := json.Marshal(s.allDataNew)
 	if err != nil {
 		return err
 	}
-	logger.Warningf("Calling Put State (Mid-2), successfull marshal allData, byteAlldata = %x", byteAllData)
-
 	encValue, err := s.sep.EncryptState(byteAllData)
 	if err != nil {
 		return err
 	}
-	logger.Warningf("Calling Put State (End), put encValue %x", encValue)
+	logger.Warningf("Calling Put State (End), put encValue: %x", encValue)
 
 	return s.PutPublicState(s.key, encValue)
+}
+
+func (s *SkvsStubInterface) DelState(key string) error {
+	delete(s.allDataNew, key)
+	byteAllData, err := json.Marshal(s.allDataNew)
+	if err != nil {
+		return err
+	}
+	encValue, err := s.sep.EncryptState(byteAllData)
+	if err != nil {
+		return err
+	}
+	return s.PutPublicState(s.key, encValue)
+}
+
+func (s *SkvsStubInterface) GetStateByRange(startKey string, endKey string) (shim.StateQueryIteratorInterface, error) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (s *SkvsStubInterface) GetStateByRangeWithPagination(startKey string, endKey string, pageSize int32, bookmark string) (shim.StateQueryIteratorInterface, *pb.QueryResponseMetadata, error) {
+	panic("not implemented") // TODO: Implement
 }
