@@ -14,13 +14,10 @@ export GO_BUILD_OPT ?= -buildvcs=false
 
 # Docker related settings
 #--------------------------------------------------
-export DOCKER_BUILDKIT ?= 0 
+export DOCKER_BUILDKIT ?= 1
 # Building with build-kit makes multi-stage builds more efficient
-# and also provides nicer output. However, as docker from older
-# versions of ubuntu 18.04 can hang and travis explicitly rejects
-# (rather than ignores) it, we support both and leave the default
-# as a more robust 0. If you prefer the benefits of buildkit,
-# override default in your `config.override.mk`
+# and also provides nicer output. If you experience issues with build-kit,
+# you can disable it by overriding the default in your `config.override.mk`
 DOCKERFLAGS :=
 DOCKER_CMD := docker
 # Note:
