@@ -11,13 +11,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/api"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/topology"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fsc"
+	fabric2 "github.com/hyperledger-labs/fabric-smart-client/platform/fabric/sdk"
 	"github.com/hyperledger/fabric-private-chaincode/integration/go_chaincode/utils"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -57,6 +57,9 @@ func Topology() []api.Topology {
 	clientNode := fscTopology.AddNodeByName("client")
 	clientNode.AddOptions(fabric.WithOrganization("Org1"))
 	clientNode.RegisterViewFactory("invoke", &ClientViewFactory{})
+
+	// Add Fabric SDK to FSC Nodes
+	fscTopology.AddSDK(&fabric2.SDK{})
 
 	return []api.Topology{fabricTopology, fscTopology}
 }

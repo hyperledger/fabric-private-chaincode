@@ -7,7 +7,6 @@
 package users
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -25,7 +24,7 @@ func CreateUser(userName string) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(usersDir, userName, uuidFileName), []byte(userName), 0755)
+	err = os.WriteFile(filepath.Join(usersDir, userName, uuidFileName), []byte(userName), 0755)
 	if err != nil {
 		return err
 	}
@@ -36,11 +35,11 @@ func CreateUser(userName string) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(usersDir, userName, publicKeyFileName), vk, 0755)
+	err = os.WriteFile(filepath.Join(usersDir, userName, publicKeyFileName), vk, 0755)
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile(filepath.Join(usersDir, userName, privateKeyFileName), sk, 0755)
+	err = os.WriteFile(filepath.Join(usersDir, userName, privateKeyFileName), sk, 0755)
 	if err != nil {
 		return err
 	}
@@ -49,17 +48,17 @@ func CreateUser(userName string) error {
 }
 
 func LoadUser(userName string) (uuid []byte, sk []byte, vk []byte, e error) {
-	sk, err := ioutil.ReadFile(filepath.Join(usersDir, userName, privateKeyFileName))
+	sk, err := os.ReadFile(filepath.Join(usersDir, userName, privateKeyFileName))
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	vk, err = ioutil.ReadFile(filepath.Join(usersDir, userName, publicKeyFileName))
+	vk, err = os.ReadFile(filepath.Join(usersDir, userName, publicKeyFileName))
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	uuid, err = ioutil.ReadFile(filepath.Join(usersDir, userName, uuidFileName))
+	uuid, err = os.ReadFile(filepath.Join(usersDir, userName, uuidFileName))
 	if err != nil {
 		return nil, nil, nil, err
 	}

@@ -40,9 +40,8 @@ gotools:
 	#  in 'utils/docker/base-dev/Dockerfile')
 	$(GO) install golang.org/x/tools/cmd/goimports
 	$(GO) install google.golang.org/protobuf/cmd/protoc-gen-go
-	GO111MODULE=off $(GO) get github.com/maxbrunsfeld/counterfeiter
-	$(GO) install honnef.co/go/tools/cmd/staticcheck@v0.3.3
-	$(GO) get -u github.com/client9/misspell/cmd/misspell
+	$(GO) install honnef.co/go/tools/cmd/staticcheck@2023.1.3
+	$(GO) install github.com/client9/misspell/cmd/misspell
 
 godeps: gotools
 	$(GO) mod download

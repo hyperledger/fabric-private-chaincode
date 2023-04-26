@@ -9,7 +9,7 @@ package epid
 import (
 	"encoding/base64"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -47,7 +47,7 @@ func TestIAS(t *testing.T) {
 	fakeHttpClient.DoReturns(&http.Response{
 		StatusCode: 200,
 		Header:     header,
-		Body:       ioutil.NopCloser(strings.NewReader(expectedBody)),
+		Body:       io.NopCloser(strings.NewReader(expectedBody)),
 	}, nil)
 
 	iasClient := NewIASClient(dummyApiKey, WithHttpClient(fakeHttpClient), WithUrl(dummyIASUrl))

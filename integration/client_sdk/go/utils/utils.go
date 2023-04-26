@@ -9,7 +9,6 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -84,14 +83,14 @@ func populateWallet(wallet *gateway.Wallet) error {
 
 	certPath := filepath.Join(credPath, "signcerts", "peer.pem")
 	// read the certificate pem
-	cert, err := ioutil.ReadFile(filepath.Clean(certPath))
+	cert, err := os.ReadFile(filepath.Clean(certPath))
 	if err != nil {
 		return err
 	}
 
 	keyDir := filepath.Join(credPath, "keystore")
 	// there's a single file in this dir containing the private key
-	files, err := ioutil.ReadDir(keyDir)
+	files, err := os.ReadDir(keyDir)
 	if err != nil {
 		return err
 	}
@@ -99,7 +98,7 @@ func populateWallet(wallet *gateway.Wallet) error {
 		return fmt.Errorf("keystore folder should have contain one file")
 	}
 	keyPath := filepath.Join(keyDir, files[0].Name())
-	key, err := ioutil.ReadFile(filepath.Clean(keyPath))
+	key, err := os.ReadFile(filepath.Clean(keyPath))
 	if err != nil {
 		return err
 	}

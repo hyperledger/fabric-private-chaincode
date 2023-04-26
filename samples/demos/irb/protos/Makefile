@@ -10,7 +10,7 @@ $(addsuffix _pb2.py,$(PROTOS)):
 	protoc -I=. --python_out=. $(patsubst %_pb2.py,%.proto,$@)
 
 $(addsuffix .pb.go,$(PROTOS)):
-	protoc -I=. --go_out=${GOPATH}/src $(patsubst %.pb.go,%.proto,$@)
+	protoc -I=. --go_out=. --go_opt=paths=source_relative $(patsubst %.pb.go,%.proto,$@)
 
 build: $(addsuffix _pb2.py,$(PROTOS)) $(addsuffix .pb.go,$(PROTOS))
 #build: $(addsuffix .pb.go,$(PROTOS))

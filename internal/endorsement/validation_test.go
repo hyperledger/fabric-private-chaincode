@@ -18,13 +18,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//go:generate counterfeiter -o fakes/chaincodestub.go -fake-name ChaincodeStub . chaincodeStub
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+
+//counterfeiter:generate -o fakes/chaincodestub.go -fake-name ChaincodeStub . chaincodeStub
 //lint:ignore U1000 This is just used to generate fake
 type chaincodeStub interface {
 	shim.ChaincodeStubInterface
 }
 
-//go:generate counterfeiter -o fakes/crypto.go -fake-name CryptoProvider . cryptoProvider
+//counterfeiter:generate -o fakes/crypto.go -fake-name CryptoProvider . cryptoProvider
 //lint:ignore U1000 This is just used to generate fake
 type cryptoProvider interface {
 	crypto.CSP

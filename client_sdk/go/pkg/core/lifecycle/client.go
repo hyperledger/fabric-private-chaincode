@@ -11,32 +11,31 @@ SPDX-License-Identifier: Apache-2.0
 //
 // Example:
 //
-//  adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
+//	adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
 //
-//  client, err := lifecycle.New(adminContext)
-//  if err != nil {
-//  	log.Fatal(err)
-//  }
+//	client, err := lifecycle.New(adminContext)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
 //
-//  attestationParams, err := sgx.CreateAttestationParamsFromEnvironment()
-//  if err != nil {
-//  	log.Fatal(err)
-//  }
+//	attestationParams, err := sgx.CreateAttestationParamsFromEnvironment()
+//	if err != nil {
+//		log.Fatal(err)
+//	}
 //
-//  initReq := lifecycle.LifecycleInitEnclaveRequest{
-//  	ChaincodeID:         "my-fpc-chaincode",
-//  	EnclavePeerEndpoint: "mypeer.myorg.example.com", // define the peer where we wanna init our enclave
-//  	AttestationParams:   attestationParams,
-//  }
+//	initReq := lifecycle.LifecycleInitEnclaveRequest{
+//		ChaincodeID:         "my-fpc-chaincode",
+//		EnclavePeerEndpoint: "mypeer.myorg.example.com", // define the peer where we wanna init our enclave
+//		AttestationParams:   attestationParams,
+//	}
 //
-//  initTxId, err := client.LifecycleInitEnclave("mychannel", initReq)
-//  if err != nil {
-//  	log.Fatal(err)
-//  }
+//	initTxId, err := client.LifecycleInitEnclave("mychannel", initReq)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
 //
 // See also https://github.com/hyperledger/fabric-private-chaincode/blob/main/integration/client_sdk/go/utils.go
 // for a running example.
-//
 package lifecycle
 
 import (

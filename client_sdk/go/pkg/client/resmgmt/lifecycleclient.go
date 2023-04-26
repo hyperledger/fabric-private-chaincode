@@ -11,32 +11,31 @@ SPDX-License-Identifier: Apache-2.0
 //
 // Example:
 //
-//  adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
+//	adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
 //
-//  client, err := resmgmt.New(adminContext)
-//  if err != nil {
-//  	log.Fatal(err)
-//  }
+//	client, err := resmgmt.New(adminContext)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
 //
-//  attestationParams, err := sgx.CreateAttestationParamsFromEnvironment()
-//  if err != nil {
-//  	log.Fatal(err)
-//  }
+//	attestationParams, err := sgx.CreateAttestationParamsFromEnvironment()
+//	if err != nil {
+//		log.Fatal(err)
+//	}
 //
-//  initReq := resmgmt.LifecycleInitEnclaveRequest{
-//  	ChaincodeID:         "my-fpc-chaincode",
-//  	EnclavePeerEndpoint: "mypeer.myorg.example.com", // define the peer where we wanna init our enclave
-//  	AttestationParams:   attestationParams,
-//  }
+//	initReq := resmgmt.LifecycleInitEnclaveRequest{
+//		ChaincodeID:         "my-fpc-chaincode",
+//		EnclavePeerEndpoint: "mypeer.myorg.example.com", // define the peer where we wanna init our enclave
+//		AttestationParams:   attestationParams,
+//	}
 //
-//  initTxId, err := client.LifecycleInitEnclave("mychannel", initReq)
-//  if err != nil {
-//  	log.Fatal(err)
-//  }
+//	initTxId, err := client.LifecycleInitEnclave("mychannel", initReq)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
 //
 // See also `lifecycle_test.go` and `$FPC_PATH/integration/client_sdk/go/utils/utils.go`
 // for a running example.
-//
 package resmgmt
 
 import (

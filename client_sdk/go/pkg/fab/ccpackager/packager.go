@@ -12,17 +12,17 @@ Notice: This file is based on fabric-sdk-go/pkg/fab/ccpackager/lifecycle/package
 // Package ccpackager provides functionality to package a FPC chaincode.
 //
 // Example:
-//  desc := &ccpackager.Descriptor{
-//  	Path:    "/my_fpc_chaincode/build/_lib",
-//  	Type:    ccpackager.ChaincodeType,
-//  	Label:   "my-fpc-chaincode-v1",
-//  	SGXMode: "SIM",
-//  }
-//  ccPkg, err := ccpackager.NewCCPackage(desc)
-//  if err != nil {
-//  	log.Fatal(err)
-//  }
 //
+//	desc := &ccpackager.Descriptor{
+//		Path:    "/my_fpc_chaincode/build/_lib",
+//		Type:    ccpackager.ChaincodeType,
+//		Label:   "my-fpc-chaincode-v1",
+//		SGXMode: "SIM",
+//	}
+//	ccPkg, err := ccpackager.NewCCPackage(desc)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
 package ccpackager
 
 import (
@@ -31,7 +31,7 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -71,7 +71,7 @@ func NewCCPackage(desc *Descriptor) ([]byte, error) {
 
 // ReadMrenclave returns mrenclave for the given FPC chaincode at ccPath
 func ReadMrenclave(ccPath string) (string, error) {
-	mrenclave, err := ioutil.ReadFile(filepath.Join(ccPath, mrenclaveFileName))
+	mrenclave, err := os.ReadFile(filepath.Join(ccPath, mrenclaveFileName))
 	if err != nil {
 		return "", err
 	}

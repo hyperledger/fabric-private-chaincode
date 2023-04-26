@@ -8,7 +8,7 @@ package pkg
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -28,7 +28,7 @@ func NewClient(config *Config) *Client {
 
 func findSigningCert(mspConfigPath string) (string, error) {
 	p := filepath.Join(mspConfigPath, "signcerts")
-	files, err := ioutil.ReadDir(p)
+	files, err := os.ReadDir(p)
 	if err != nil {
 		return "", errors.Wrapf(err, "error while searching pem in %s", mspConfigPath)
 	}
@@ -51,14 +51,14 @@ func populateWallet(wallet *gateway.Wallet, config *Config) error {
 	}
 
 	// read the certificate pem
-	cert, err := ioutil.ReadFile(filepath.Clean(certPath))
+	cert, err := os.ReadFile(filepath.Clean(certPath))
 	if err != nil {
 		return err
 	}
 
 	keyDir := filepath.Join(config.CorePeerMSPConfigPath, "keystore")
 	// there's a single file in this dir containing the private key
-	files, err := ioutil.ReadDir(keyDir)
+	files, err := os.ReadDir(keyDir)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func populateWallet(wallet *gateway.Wallet, config *Config) error {
 		return fmt.Errorf("keystore folder should have contain one file")
 	}
 	keyPath := filepath.Join(keyDir, files[0].Name())
-	key, err := ioutil.ReadFile(filepath.Clean(keyPath))
+	key, err := os.ReadFile(filepath.Clean(keyPath))
 	if err != nil {
 		return err
 	}

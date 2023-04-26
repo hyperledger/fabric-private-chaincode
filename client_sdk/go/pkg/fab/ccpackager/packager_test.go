@@ -7,7 +7,6 @@ SPDX-License-Identifier: Apache-2.0
 package ccpackager_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -173,7 +172,7 @@ var _ = Describe("Go Client SDK Test", func() {
 				Expect(err).ShouldNot(HaveOccurred())
 				Expect(payload).ShouldNot(BeNil())
 
-				err = ioutil.WriteFile("/tmp/pack.tar.gz", payload, 0644)
+				err = os.WriteFile("/tmp/pack.tar.gz", payload, 0644)
 				Expect(err).ShouldNot(HaveOccurred())
 			})
 		})

@@ -10,7 +10,7 @@
 #--------------------------------------------------
 GOFLAGS :=
 GO_CMD := go
-
+export GO_BUILD_OPT ?= -buildvcs=false
 
 # Docker related settings
 #--------------------------------------------------
@@ -83,6 +83,9 @@ export DOCKERD_FPC_PATH ?= $(FPC_PATH)
 # env variable. By default we fetch the binaries into $(FPC_PATH)/fabric/_internal/bin
 # In case you want to use your custom fabric bins, for instance: $(FABRIC_PATH)/build/bin
 export FABRIC_BIN_DIR ?= $(FPC_PATH)/fabric/_internal/bin
+
+# another link to the fabric binaries as required by the fabric smart client
+export FAB_BINS ?= $(FABRIC_BIN_DIR)
 
 # Additional SGX related settings
 #--------------------------------------------------

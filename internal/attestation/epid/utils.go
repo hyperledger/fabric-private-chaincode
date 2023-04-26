@@ -9,7 +9,6 @@ package epid
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,7 +59,7 @@ func loadApiKeyFromFPCConfig() (string, error) {
 func loadApiKeyFromPath(path string) (string, error) {
 	path = filepath.Join(path, "api_key.txt")
 
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return "", errors.Wrapf(err, "could not read %s", path)
 	}

@@ -7,7 +7,6 @@ SPDX-License-Identifier: Apache-2.0
 package sgx_test
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -62,7 +61,7 @@ func TestCreateAttestationParamsFromEnvironment(t *testing.T) {
 
 func TestCreateAttestationParamsFromCredentialsPath(t *testing.T) {
 	// success
-	testPath, err := ioutil.TempDir("/tmp/", "attestation")
+	testPath, err := os.MkdirTemp("/tmp/", "attestation")
 	assert.NoError(t, err)
 	defer os.RemoveAll(testPath)
 
@@ -71,7 +70,7 @@ func TestCreateAttestationParamsFromCredentialsPath(t *testing.T) {
 	assert.Nil(t, attestationParams)
 	assert.Error(t, err)
 
-	err = ioutil.WriteFile(filepath.Join(testPath, "spid_type.txt"), []byte("simulation"), 0644)
+	err = os.WriteFile(filepath.Join(testPath, "spid_type.txt"), []byte("simulation"), 0644)
 	assert.NoError(t, err)
 
 	// no spid available
@@ -79,7 +78,7 @@ func TestCreateAttestationParamsFromCredentialsPath(t *testing.T) {
 	assert.Nil(t, attestationParams)
 	assert.Error(t, err)
 
-	err = ioutil.WriteFile(filepath.Join(testPath, "spid.txt"), []byte("EEEEAAAABBBBAAAEEEEAAAABBBBAAAA"), 0644)
+	err = os.WriteFile(filepath.Join(testPath, "spid.txt"), []byte("EEEEAAAABBBBAAAEEEEAAAABBBBAAAA"), 0644)
 	assert.NoError(t, err)
 
 	// TODO once ReadSigRL is implemented
@@ -95,7 +94,7 @@ func TestCreateAttestationParamsFromCredentialsPath(t *testing.T) {
 }
 
 func TestReadSPIDType(t *testing.T) {
-	testPath, err := ioutil.TempDir("/tmp/", "attestation")
+	testPath, err := os.MkdirTemp("/tmp/", "attestation")
 	assert.NoError(t, err)
 	defer os.RemoveAll(testPath)
 
@@ -105,14 +104,14 @@ func TestReadSPIDType(t *testing.T) {
 	assert.Error(t, err)
 
 	// empty spid_type file
-	err = ioutil.WriteFile(filepath.Join(testPath, "spid_type.txt"), nil, 0644)
+	err = os.WriteFile(filepath.Join(testPath, "spid_type.txt"), nil, 0644)
 	assert.NoError(t, err)
 	spidType, err = sgx.ReadSPIDType(testPath)
 	assert.Empty(t, spidType)
 	assert.Error(t, err)
 
 	// success
-	err = ioutil.WriteFile(filepath.Join(testPath, "spid_type.txt"), []byte("simulation"), 0644)
+	err = os.WriteFile(filepath.Join(testPath, "spid_type.txt"), []byte("simulation"), 0644)
 	assert.NoError(t, err)
 	spidType, err = sgx.ReadSPIDType(testPath)
 	assert.Equal(t, spidType, "simulation")
@@ -120,7 +119,7 @@ func TestReadSPIDType(t *testing.T) {
 }
 
 func TestReadSPID(t *testing.T) {
-	testPath, err := ioutil.TempDir("/tmp/", "attestation")
+	testPath, err := os.MkdirTemp("/tmp/", "attestation")
 	assert.NoError(t, err)
 	defer os.RemoveAll(testPath)
 
@@ -130,14 +129,14 @@ func TestReadSPID(t *testing.T) {
 	assert.Error(t, err)
 
 	// empty spid file
-	err = ioutil.WriteFile(filepath.Join(testPath, "spid.txt"), nil, 0644)
+	err = os.WriteFile(filepath.Join(testPath, "spid.txt"), nil, 0644)
 	assert.NoError(t, err)
 	spid, err = sgx.ReadSPID(testPath)
 	assert.Empty(t, spid)
 	assert.Error(t, err)
 
 	// success
-	err = ioutil.WriteFile(filepath.Join(testPath, "spid.txt"), []byte("EEEEAAAABBBBAAAEEEEAAAABBBBAAAA"), 0644)
+	err = os.WriteFile(filepath.Join(testPath, "spid.txt"), []byte("EEEEAAAABBBBAAAEEEEAAAABBBBAAAA"), 0644)
 	assert.NoError(t, err)
 	spid, err = sgx.ReadSPID(testPath)
 	assert.Equal(t, spid, "EEEEAAAABBBBAAAEEEEAAAABBBBAAAA")

@@ -26,31 +26,33 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
-//go:generate counterfeiter -o fakes/transaction.go -fake-name TransactionContext . transactionContext
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+
+//counterfeiter:generate -o fakes/transaction.go -fake-name TransactionContext . transactionContext
 //lint:ignore U1000 This is just used to generate fake
 type transactionContext interface {
 	contractapi.TransactionContextInterface
 }
 
-//go:generate counterfeiter -o fakes/chaincodestub.go -fake-name ChaincodeStub . chaincodeStub
+//counterfeiter:generate -o fakes/chaincodestub.go -fake-name ChaincodeStub . chaincodeStub
 //lint:ignore U1000 This is just used to generate fake
 type chaincodeStub interface {
 	shim.ChaincodeStubInterface
 }
 
-//go:generate counterfeiter -o fakes/statequeryiterator.go -fake-name StateQueryIterator . stateQueryIterator
+//counterfeiter:generate -o fakes/statequeryiterator.go -fake-name StateQueryIterator . stateQueryIterator
 //lint:ignore U1000 This is just used to generate fake
 type stateQueryIterator interface {
 	shim.StateQueryIteratorInterface
 }
 
-//go:generate counterfeiter -o fakes/verifier.go -fake-name CredentialVerifier . credentialVerifier
+//counterfeiter:generate -o fakes/verifier.go -fake-name CredentialVerifier . credentialVerifier
 //lint:ignore U1000 This is just used to generate fake
 type credentialVerifier interface {
 	attestation.Verifier
 }
 
-//go:generate counterfeiter -o fakes/evaluator.go -fake-name IdentityEvaluator . identityEvaluator
+//counterfeiter:generate -o fakes/evaluator.go -fake-name IdentityEvaluator . identityEvaluator
 //lint:ignore U1000 This is just used to generate fake
 type identityEvaluator interface {
 	utils.IdentityEvaluatorInterface

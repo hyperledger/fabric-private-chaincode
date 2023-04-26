@@ -130,7 +130,7 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincod
 
 	signedProposal, err := stub.GetSignedProposal()
 	if err != nil {
-		shim.Error(err.Error())
+		return nil, err
 	}
 
 	if err := e.verifySignedProposal(stub, chaincodeRequestMessageBytes); err != nil {

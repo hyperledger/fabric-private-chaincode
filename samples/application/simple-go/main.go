@@ -10,7 +10,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,7 +27,7 @@ var logger = flogging.MustGetLogger("sdk-test")
 
 func firstFileInPath(dir string) (string, error) {
 	// there's a single file in this dir containing the private key
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		return "", err
 	}
@@ -44,7 +43,7 @@ func populateWallet(wallet *gateway.Wallet, mspPath, mspId, userId string) error
 		return err
 	}
 
-	cert, err := ioutil.ReadFile(filepath.Clean(certPath))
+	cert, err := os.ReadFile(filepath.Clean(certPath))
 	if err != nil {
 		return err
 	}
@@ -54,7 +53,7 @@ func populateWallet(wallet *gateway.Wallet, mspPath, mspId, userId string) error
 		return err
 	}
 
-	key, err := ioutil.ReadFile(filepath.Clean(keyPath))
+	key, err := os.ReadFile(filepath.Clean(keyPath))
 	if err != nil {
 		return err
 	}

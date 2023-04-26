@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 )
@@ -22,7 +21,7 @@ func DetectSgxDevicePath() ([]string, error) {
 }
 
 func ReadMrenclaveFromFile(path string) (string, error) {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return "", fmt.Errorf("cannot read mrenclave from %s", path)
 	}
