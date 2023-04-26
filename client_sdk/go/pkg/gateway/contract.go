@@ -82,12 +82,13 @@ func (cp *contractProvider) GetContract(id string) contract.Contract {
 }
 
 // GetContract is the factory method for creating FPC Contract objects.
-//  Parameters:
-//  network is an initialized Fabric network object
-//  chaincodeID is the ID of the target chaincode
 //
-//  Returns:
-//  The contract object
+//	Parameters:
+//	network is an initialized Fabric network object
+//	chaincodeID is the ID of the target chaincode
+//
+//	Returns:
+//	The contract object
 func GetContract(network Network, chaincodeID string) Contract {
 	return contract.GetContract(&contractProvider{network: network}, chaincodeID)
 }

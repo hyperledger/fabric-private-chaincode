@@ -11,7 +11,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -59,7 +59,7 @@ func GetWorkerCredentials() (*pb.WorkerCredentials, error) {
 		return nil, err
 	}
 
-	workerCredentialsBytes, err := ioutil.ReadAll(resp.Body)
+	workerCredentialsBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func ExecuteEvaluationPack(encryptedEvaluationPack *pb.EncryptedEvaluationPack) 
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

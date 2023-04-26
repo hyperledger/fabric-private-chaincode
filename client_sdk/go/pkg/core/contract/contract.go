@@ -36,12 +36,13 @@ type Provider interface {
 }
 
 // GetContract is the factory method for creating FPC Contract objects.
-//  Parameters:
-//  network is an initialized Fabric network object
-//  chaincodeID is the ID of the target chaincode
 //
-//  Returns:
-//  The contractImpl object
+//	Parameters:
+//	network is an initialized Fabric network object
+//	chaincodeID is the ID of the target chaincode
+//
+//	Returns:
+//	The contractImpl object
 func GetContract(p Provider, chaincodeID string) *contractImpl {
 	ercc := p.GetContract("ercc")
 	return New(p.GetContract(chaincodeID), ercc, nil, &crypto.EncryptionProviderImpl{

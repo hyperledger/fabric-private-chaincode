@@ -259,7 +259,7 @@ func (c PDOCrypto) DecryptMessage(key []byte, encryptedMessage []byte) ([]byte, 
 	return C.GoBytes(messagePtr, C.int(messageActualSize)), nil
 }
 
-//EncryptMessage is a symmetric-key encryption performed with the PDO crypto lib
+// EncryptMessage is a symmetric-key encryption performed with the PDO crypto lib
 func (c PDOCrypto) EncryptMessage(key []byte, message []byte) (encryptedMessage []byte, e error) {
 
 	keyPtr := C.CBytes(key)

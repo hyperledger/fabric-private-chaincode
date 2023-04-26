@@ -5,8 +5,10 @@
 TOP = ../../..
 include $(TOP)/build.mk
 
+GO_BUILD_OPT ?=
+
 build:
-	$(GO) build $(GOTAGS) -o fpcclient
+	$(GO) build $(GO_BUILD_OPT) $(GOTAGS) -o fpcclient
 
 DOCKER_BUILD_OPTS += --build-arg FPC_VERSION=$(FPC_VERSION)
 DOCKER_BUILD_OPTS += --no-cache

@@ -7,9 +7,10 @@ TOP = ../../..
 include $(TOP)/build.mk
 
 CC_ID ?= echo
+GO_BUILD_OPT ?=
 
 build:
-	$(GO) build
+	$(GO) build $(GO_BUILD_OPT)
 
 clean:
 	$(GO) clean

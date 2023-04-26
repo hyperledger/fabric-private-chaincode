@@ -204,6 +204,10 @@ func (f *FpcStubInterface) DelPrivateData(collection string, key string) error {
 	panic("not implemented") // TODO: Implement
 }
 
+func (f *FpcStubInterface) PurgePrivateData(collection, key string) error {
+	panic("not implemented") // TODO: Implement
+}
+
 func (f *FpcStubInterface) SetPrivateDataValidationParameter(collection string, key string, ep []byte) error {
 	panic("not implemented") // TODO: Implement
 }

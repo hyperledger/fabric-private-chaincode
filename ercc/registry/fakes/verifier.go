@@ -31,15 +31,16 @@ func (fake *CredentialVerifier) VerifyCredentials(arg1 *protos.Credentials, arg2
 		arg1 *protos.Credentials
 		arg2 string
 	}{arg1, arg2})
+	stub := fake.VerifyCredentialsStub
+	fakeReturns := fake.verifyCredentialsReturns
 	fake.recordInvocation("VerifyCredentials", []interface{}{arg1, arg2})
 	fake.verifyCredentialsMutex.Unlock()
-	if fake.VerifyCredentialsStub != nil {
-		return fake.VerifyCredentialsStub(arg1, arg2)
+	if stub != nil {
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.verifyCredentialsReturns
 	return fakeReturns.result1
 }
 

@@ -11,7 +11,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 
@@ -54,7 +54,7 @@ func main() {
 
 	switch os.Args[1] {
 	case "attestation2Evidence":
-		credentialsIn, err := ioutil.ReadAll(os.Stdin)
+		credentialsIn, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "ERROR: couldn't read stdin: %v\n", err)
 			os.Exit(1)

@@ -10,7 +10,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -58,7 +57,7 @@ func exitIfError(err error) {
 }
 
 func readFile(path string) (string, error) {
-	content, err := ioutil.ReadFile(path)
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return "", errors.Wrapf(err, "could not read %s", path)
 	}

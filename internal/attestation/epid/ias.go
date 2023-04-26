@@ -10,7 +10,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -156,7 +156,7 @@ func (i *IASClient) requestAttestationReport(request *IASRequest) (report *IASRe
 	reportSigningCert := resp.Header.Get("X-IASReport-Signing-Certificate")
 
 	// get the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 
 	report = &IASReport{
 		Signature:    reportSignature,

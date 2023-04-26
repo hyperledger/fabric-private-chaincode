@@ -93,7 +93,7 @@ func (c *Container) Stop() error {
 		return err
 	}
 
-	if err := cli.ContainerStop(ctx, c.containerID, nil); err != nil {
+	if err := cli.ContainerStop(ctx, c.containerID, container.StopOptions{}); err != nil {
 		return err
 	}
 

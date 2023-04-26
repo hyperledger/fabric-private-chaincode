@@ -15,31 +15,33 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
-//go:generate counterfeiter -o fakes/enclave.go -fake-name EnclaveStub . enclaveStub
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+
+//counterfeiter:generate -o fakes/enclave.go -fake-name EnclaveStub . enclaveStub
 //lint:ignore U1000 This is just used to generate fake
 type enclaveStub interface {
 	Enclave
 }
 
-//go:generate counterfeiter -o fakes/utils.go -fake-name Extractors . extractors
+//counterfeiter:generate -o fakes/utils.go -fake-name Extractors . extractors
 //lint:ignore U1000 This is just used to generate fake
 type extractors interface {
 	Extractors
 }
 
-//go:generate counterfeiter -o fakes/validation.go -fake-name Validator . validator
+//counterfeiter:generate -o fakes/validation.go -fake-name Validator . validator
 //lint:ignore U1000 This is just used to generate fake
 type validator interface {
 	endorsement.Validation
 }
 
-//go:generate counterfeiter -o fakes/chaincodestub.go -fake-name ChaincodeStub . chaincodeStub
+//counterfeiter:generate -o fakes/chaincodestub.go -fake-name ChaincodeStub . chaincodeStub
 //lint:ignore U1000 This is just used to generate fake
 type chaincodeStub interface {
 	shim.ChaincodeStubInterface
 }
 
-//go:generate counterfeiter -o fakes/ercc.go -fake-name ErccStub . erccStub
+//counterfeiter:generate -o fakes/ercc.go -fake-name ErccStub . erccStub
 //lint:ignore U1000 This is just used to generate fake
 type erccStub interface {
 	ercc.Stub

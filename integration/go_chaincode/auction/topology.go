@@ -11,16 +11,15 @@ import (
 	"os"
 	"strings"
 
-	"github.com/pkg/errors"
-
+	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/api"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric"
+	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/topology"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fsc"
+	fabric2 "github.com/hyperledger-labs/fabric-smart-client/platform/fabric/sdk"
 	"github.com/hyperledger/fabric-private-chaincode/integration/go_chaincode/auction/views/auctioneer"
 	"github.com/hyperledger/fabric-private-chaincode/integration/go_chaincode/auction/views/bidder"
-
-	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/api"
-	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/topology"
 	"github.com/hyperledger/fabric-private-chaincode/integration/go_chaincode/utils"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -72,6 +71,9 @@ func Topology() []api.Topology {
 	charlyNode := fscTopology.AddNodeByName("charly")
 	charlyNode.AddOptions(fabric.WithOrganization("Org3"))
 	charlyNode.RegisterViewFactory("submit", &bidder.SubmitViewFactory{})
+
+	// Add Fabric SDK to FSC Nodes
+	fscTopology.AddSDK(&fabric2.SDK{})
 
 	return []api.Topology{fabricTopology, fscTopology}
 }

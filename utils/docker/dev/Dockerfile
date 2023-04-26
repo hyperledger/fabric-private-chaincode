@@ -44,7 +44,8 @@ RUN apt-get update \
 ARG GIT_USER_NAME=tester
 ARG GIT_USER_EMAIL=tester@fpc
 RUN git config --global user.name "${GIT_USER_NAME}" \
- && git config --global user.email "${GIT_USER_EMAIL}"
+ && git config --global user.email "${GIT_USER_EMAIL}" \
+ && git config --global --add safe.directory ${FPC_PATH}
 
 # Get Fabric
 ENV FABRIC_PATH=${GOPATH}/${FABRIC_REL_PATH}

@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
 // The main goal is to ease the interaction with a FPC chaincode and provide similar experience as offered by normal
 // chaincode interaction.
 //
-// Packages for end developer usage
+// # Packages for end developer usage
 //
 // pkg/client/resmgmt: Provides resource management capabilities such as installing FPC chaincode.
 // Reference: https://godoc.org/github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt
@@ -19,9 +19,8 @@ SPDX-License-Identifier: Apache-2.0
 // Fabric programming model.
 // Reference: https://godoc.org/github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway
 //
-// Usage samples
+// # Usage samples
 //
 // $FPC_PATH/samples/application: Illustrates the use of the FPC Client SDK.
 // The sample applications can be used with our test-network `$FPC_PATH/samples/deployment/test-network`.
-//
 package fpcclientsdk
