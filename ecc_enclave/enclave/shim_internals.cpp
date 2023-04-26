@@ -119,6 +119,7 @@ bool rwset_to_proto(t_shim_ctx_t* ctx, fpc_FPCKVSet* fpc_rwset_proto)
         fpc_rwset_proto->rw_set.writes[i].value =
             (pb_bytes_array_t*)pb_realloc(NULL, PB_BYTES_ARRAY_T_ALLOCSIZE(0));
         COND2ERR(fpc_rwset_proto->rw_set.writes[i].value == NULL);
+        fpc_rwset_proto->rw_set.writes[i].value->size = 0;
     }
 
     LOG_DEBUG("Fabric RWSet construction successful");

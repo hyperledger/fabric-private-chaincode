@@ -8,10 +8,10 @@ SPDX-License-Identifier: Apache-2.0
 package enclave_go
 
 import (
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
+	timestamp "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type FpcStubInterface struct {

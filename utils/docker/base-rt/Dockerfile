@@ -31,7 +31,7 @@ ARG UBUNTU_NAME
 
 # config/build params (part 2)
 ARG SGX=2.12
-ARG PROTO_VERSION=3.11.4
+ARG PROTO_VERSION=22.3
 ARG APT_ADD_PKGS=
 
 # We define it here even so the installation path is known to all derivates,
