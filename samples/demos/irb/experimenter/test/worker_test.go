@@ -14,13 +14,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/container"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/crypto"
 	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/protos"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/storage"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/utils"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
 )
 
 func requestAttestation() ([]byte, error) {
