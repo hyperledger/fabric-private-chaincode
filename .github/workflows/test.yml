@@ -11,10 +11,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-18.04
-            os-version: 18.04
-            os-name: bionic
-
           - os: ubuntu-20.04
             os-version: 20.04
             os-name: focal
