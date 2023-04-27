@@ -41,16 +41,20 @@ run_test() {
     try ${PEER_CMD} lifecycle chaincode initEnclave -o ${ORDERER_ADDR} --peerAddresses "localhost:7051" --name auction_test
 
     # install something non-fpc
-    CC_PATH="github.com/hyperledger/fabric-samples/chaincode/marbles02/go"
+    # following the official fabric docs at https://hyperledger-fabric.readthedocs.io/en/release-2.5/deploy_chaincode.html
+    CC_PATH="${FPC_PATH}/samples/deployment/test-network/fabric-samples/asset-transfer-basic/chaincode-go/"
+    # jump to the basic chaincode sample and fetch deps
+    (cd ${CC_PATH} && GO111MODULE=on go mod vendor)
+
     CC_VER="0"
     CC_SEQ="1"
-    PKG=/tmp/marbles02.tar.gz
-    try ${PEER_CMD} lifecycle chaincode package --lang golang --label marbles02 --path ${CC_PATH} ${PKG}
+    PKG=/tmp/basic.tar.gz
+    try ${PEER_CMD} lifecycle chaincode package --lang golang --label basic --path ${CC_PATH} ${PKG}
     try ${PEER_CMD} lifecycle chaincode install ${PKG}
-    PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: marbles02/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
-    try ${PEER_CMD} lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} -C ${CHAN_ID} --package-id ${PKG_ID} --name marbles02 --version ${CC_VER} --sequence ${CC_SEQ}
-    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name marbles02 --version ${CC_VER} --sequence ${CC_SEQ}
-    try ${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name marbles02 --version ${CC_VER} --sequence ${CC_SEQ}
+    PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: basic/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
+    try ${PEER_CMD} lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} -C ${CHAN_ID} --package-id ${PKG_ID} --name basic --version ${CC_VER} --sequence ${CC_SEQ}
+    try ${PEER_CMD} lifecycle chaincode checkcommitreadiness -C ${CHAN_ID} --name basic --version ${CC_VER} --sequence ${CC_SEQ}
+    try ${PEER_CMD} lifecycle chaincode commit -o ${ORDERER_ADDR} -C ${CHAN_ID} --name basic --version ${CC_VER} --sequence ${CC_SEQ}
 
     try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["init", "MyAuctionHouse"]}' --waitForEvent
     check_result "OK"
@@ -58,7 +62,8 @@ run_test() {
     try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["create", "MyAuction"]}' --waitForEvent
     check_result "OK"
 
-    try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n marbles02 -c '{"Args":["initMarble","marble1","blue","35","tom"]}' --waitForEvent
+    try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n basic -c '{"Args":["InitLedger"]}' --waitForEvent
+    try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n basic -c '{"Args":["CreateAsset","marble1","blue","35","tom", "500"]}' --waitForEvent
 
     # install samples/chaincode/echo
     CC_PATH=${FPC_PATH}/samples/chaincode/echo/_build/lib/
@@ -92,7 +97,7 @@ run_test() {
     try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n auction_test -c '{"Args":["submit", "MyAuction", "JohnnyCash0", "0"]}' --waitForEvent
     check_result "OK"
 
-    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n marbles02 -c '{"Args":["readMarble","marble1"]}' --waitForEvent
+    try ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n basic -c '{"Args":["ReadAsset","marble1"]}' --waitForEvent
 
     try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n echo_test -c '{"Args": ["bonjour"]}' --waitForEvent
     check_result "bonjour"
