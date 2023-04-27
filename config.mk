@@ -65,7 +65,7 @@ PROJECT_NAME=fabric-private-chaincode
 
 export FABRIC_VERSION ?= 2.3.3
 
-export FPC_VERSION := go-support
+export FPC_VERSION := main
 export FPC_CCENV_IMAGE ?= hyperledger/fabric-private-chaincode-ccenv:$(FPC_VERSION)
 
 export FABRIC_PATH ?= ${GOPATH}/src/github.com/hyperledger/fabric
