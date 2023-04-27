@@ -5,7 +5,7 @@
 TOP = ../../..
 include $(TOP)/build.mk
 
-COMPONENTS = chaincode experimenter
+COMPONENTS = protos chaincode experimenter
 
 all: pull-images ercc build test
 
