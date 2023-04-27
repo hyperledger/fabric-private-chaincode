@@ -63,7 +63,7 @@ PLANTUML_IMG_FORMAT ?= png # pdf / png / svg
 #--------------------------------------------------
 PROJECT_NAME=fabric-private-chaincode
 
-export FABRIC_VERSION ?= 2.3.3
+export FABRIC_VERSION ?= 2.5.3
 
 export FPC_VERSION := main
 export FPC_CCENV_IMAGE ?= hyperledger/fabric-private-chaincode-ccenv:$(FPC_VERSION)

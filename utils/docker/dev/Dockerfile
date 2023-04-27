@@ -23,7 +23,7 @@ FROM hyperledger/fabric-private-chaincode-base-dev:${FPC_VERSION}
 
 # config/build params
 ARG FABRIC_REPO=https://github.com/hyperledger/fabric.git
-ARG FABRIC_VERSION=2.3.3
+ARG FABRIC_VERSION=2.5.3
 
 ARG FABRIC_REL_PATH=src/github.com/hyperledger/fabric
 ARG FPC_REL_PATH=src/github.com/hyperledger/fabric-private-chaincode

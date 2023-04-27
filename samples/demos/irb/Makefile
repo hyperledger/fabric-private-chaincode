@@ -11,10 +11,10 @@ all: pull-images ercc build test
 
 pull-images:
 	$(DOCKER) pull redis:latest
-	$(DOCKER) pull hyperledger/fabric-baseos:2.3
-	$(DOCKER) image tag hyperledger/fabric-baseos:2.3 hyperledger/fabric-baseos:latest
-	$(DOCKER) pull hyperledger/fabric-ccenv:2.3
-	$(DOCKER) image tag hyperledger/fabric-ccenv:2.3 hyperledger/fabric-ccenv:latest
+	$(DOCKER) pull hyperledger/fabric-baseos:2.5
+	$(DOCKER) image tag hyperledger/fabric-baseos:2.5 hyperledger/fabric-baseos:latest
+	$(DOCKER) pull hyperledger/fabric-ccenv:2.5
+	$(DOCKER) image tag hyperledger/fabric-ccenv:2.5 hyperledger/fabric-ccenv:latest
 
 ercc:
 	make -C ${FPC_PATH}/ercc all docker
