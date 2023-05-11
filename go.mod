@@ -44,11 +44,10 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/client9/misspell v0.3.4 // indirect
 	github.com/cloudflare/cfssl v1.4.1 // indirect
 	github.com/containerd/continuity v0.0.0-20190426062206-aaeac12a7ffc // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/docker/distribution v2.7.1+incompatible // indirect
+	github.com/docker/distribution v2.8.2+incompatible // indirect
 	github.com/docker/docker v17.12.0-ce-rc1.0.20190628135806-70f67c6240bb+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
@@ -72,8 +71,6 @@ require (
 	github.com/hyperledger/fabric-amcl v0.0.0-20200128223036-d1aa2665426a // indirect
 	github.com/hyperledger/fabric-config v0.0.7 // indirect
 	github.com/hyperledger/fabric-lib-go v1.0.0 // indirect
-	github.com/hyperledger/fabric-samples/asset-transfer-basic/chaincode-go v0.0.0-20220808110548-1e8fd5cd5647 // indirect
-	github.com/hyperledger/fabric-samples/chaincode/marbles02/go v0.0.0-20220718075617-41717d76f2cb // indirect
 	github.com/ijc/Gotty v0.0.0-20170406111628-a8b993ba6abd // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/joho/godotenv v1.3.0 // indirect
