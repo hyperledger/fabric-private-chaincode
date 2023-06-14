@@ -26,8 +26,8 @@ require (
 	github.com/IBM/idemix v0.0.0-20220113150823-80dd4cb2d74e // indirect
 	github.com/IBM/mathlib v0.0.0-20220112091634-0a7378db6912 // indirect
 	github.com/Knetic/govaluate v3.0.0+incompatible // indirect
-	github.com/Microsoft/go-winio v0.5.0 // indirect
-	github.com/Microsoft/hcsshim v0.8.16 // indirect
+	github.com/Microsoft/go-winio v0.5.2 // indirect
+	github.com/Microsoft/hcsshim v0.8.25 // indirect
 	github.com/ReneKroon/ttlcache/v2 v2.11.0 // indirect
 	github.com/Shopify/sarama v1.26.3 // indirect
 	github.com/VictoriaMetrics/fastcache v1.9.0 // indirect
@@ -39,20 +39,17 @@ require (
 	github.com/btcsuite/btcd v0.22.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.1.3 // indirect
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
-	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/consensys/gnark-crypto v0.6.0 // indirect
-	github.com/containerd/cgroups v1.0.1 // indirect
-	github.com/containerd/containerd v1.5.2 // indirect
+	github.com/containerd/cgroups v1.0.3 // indirect
+	github.com/containerd/containerd v1.5.18 // indirect
 	github.com/coreos/go-systemd v0.0.0-20190620071333-e64a0ec8b42a // indirect
-	github.com/coreos/go-systemd/v22 v22.1.0 // indirect
+	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/davidlazar/go-crypto v0.0.0-20200604182044-b73af7476f6c // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
-	github.com/dgraph-io/badger/v3 v3.2103.2 // indirect
-	github.com/dgraph-io/ristretto v0.1.0 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v20.10.7+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
@@ -72,13 +69,10 @@ require (
 	github.com/go-logfmt/logfmt v0.5.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
-	github.com/godbus/dbus/v5 v5.0.3 // indirect
+	github.com/godbus/dbus/v5 v5.0.4 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
-	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/flatbuffers v1.12.1 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/google/gopacket v1.1.19 // indirect
 	github.com/google/uuid v1.3.0 // indirect
@@ -146,7 +140,7 @@ require (
 	github.com/marten-seemann/qtls-go1-18 v0.1.1 // indirect
 	github.com/marten-seemann/tcp v0.0.0-20210406111302-dfbc87cc63fd // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/miekg/dns v1.1.43 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
 	github.com/mikioh/tcpinfo v0.0.0-20190314235526-30a79bb1804b // indirect
@@ -159,6 +153,7 @@ require (
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/moby/sys/mount v0.2.0 // indirect
 	github.com/moby/sys/mountinfo v0.4.1 // indirect
+	github.com/moby/term v0.5.0 // indirect
 	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/multiformats/go-base32 v0.0.3 // indirect
 	github.com/multiformats/go-base36 v0.1.0 // indirect
@@ -175,9 +170,9 @@ require (
 	github.com/onsi/ginkgo/v2 v2.1.4 // indirect
 	github.com/onsi/gomega v1.19.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
-	github.com/opencontainers/image-spec v1.0.1 // indirect
-	github.com/opencontainers/runc v1.0.0-rc93 // indirect
-	github.com/opencontainers/runtime-spec v1.0.3-0.20200929063507-e6143ca7d51d // indirect
+	github.com/opencontainers/image-spec v1.0.2 // indirect
+	github.com/opencontainers/runc v1.0.2 // indirect
+	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
@@ -223,7 +218,7 @@ require (
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect
-	golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.11 // indirect
 	google.golang.org/genproto v0.0.0-20210201184850-646a494a81ea // indirect
