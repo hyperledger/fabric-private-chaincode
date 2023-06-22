@@ -21,7 +21,7 @@ type FpcStubInterface struct {
 	sep   StateEncryptionFunctions
 }
 
-func NewFpcStubInterface(stub shim.ChaincodeStubInterface, input *pb.ChaincodeInput, rwset *readWriteSet, sep StateEncryptionFunctions) *FpcStubInterface {
+func NewFpcStubInterface(stub shim.ChaincodeStubInterface, input *pb.ChaincodeInput, rwset *readWriteSet, sep StateEncryptionFunctions) shim.ChaincodeStubInterface {
 	return &FpcStubInterface{
 		stub:  stub,
 		input: input,

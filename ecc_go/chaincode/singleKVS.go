@@ -12,17 +12,18 @@ import (
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/ercc"
 	"github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode/enclave_go"
 	"github.com/hyperledger/fabric-private-chaincode/internal/endorsement"
+	"github.com/hyperledger/fabric/common/flogging"
 )
 
-// NewPrivateChaincode creates a new chaincode! This is for go support only!!!
-func NewPrivateChaincode(cc shim.Chaincode) *chaincode.EnclaveChaincode {
-	newStubInterfaceFunc := enclave_go.NewFpcStubInterface
+var logger = flogging.MustGetLogger("enclave_go")
+
+func NewSkvsChaincode(cc shim.Chaincode) *chaincode.EnclaveChaincode {
+	newStubInterfaceFunc := enclave_go.NewSkvsStubInterface
 	ecc := &chaincode.EnclaveChaincode{
 		Enclave:   enclave_go.NewEnclaveStub(cc, newStubInterfaceFunc),
 		Validator: endorsement.NewValidator(),
 		Extractor: &chaincode.ExtractorImpl{},
 		Ercc:      &ercc.StubImpl{},
 	}
-
 	return ecc
 }
