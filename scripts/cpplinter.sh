@@ -26,6 +26,7 @@ EXCLUDED_PATTERNS="\
     .pb. \
     /node_modules \
     common/crypto/pdo \
+    /vendor \
     "
 for FILE in $FILES_TO_PARSE; do
 

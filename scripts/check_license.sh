@@ -35,7 +35,7 @@ function filterExcludedAndGeneratedFiles {
         '(^|/)go.mod$'
         '(^|/)go.sum$'
         '(^|/)Gopkg\.lock$'
-        'integration/test-network/fabric-samples'
+        'samples/deployment/test-network/fabric-samples/'
         '\.json$'
         '\.key$'
         '(^|/)LICENSE$'
@@ -55,6 +55,8 @@ function filterExcludedAndGeneratedFiles {
         '\.txt$'
         '(^|/)vendor\/'
         '\.ico$'
+        'common/crypto/pdo'
+        'protos/fabric'
     )
 
     local filter
