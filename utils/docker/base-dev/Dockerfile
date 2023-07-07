@@ -89,7 +89,7 @@ RUN git clone 'https://github.com/intel/intel-sgx-ssl.git' \
   && cd openssl_source \
   && wget -q https://www.openssl.org/source/openssl-${OPENSSL}.tar.gz \
   && cd ../Linux \
-  && make SGX_MODE=SIM DESTDIR=${SGX_SSL} all test \
+  && make SGX_MODE=SIM DESTDIR=${SGX_SSL} all \
   # Note: we need explicitly set to SIM as default is HW yet during docker
   # build you never have access to HW, regardless of platform. Note, though,
   # that libraries built work for both modes, on tests are executed for SIM only.

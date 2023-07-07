@@ -29,6 +29,7 @@ DOCKER_DEV_CONTAINER_NAME = fpc-development-${FPC_VERSION}
 # Docker & sgx configs
 # ------------------------
 DOCKER_DAEMON_SOCKET ?= /var/run/docker.sock
+DOCKER_SOCKET ?= /var/run/docker.sock
 
 SGX_DEVICE_PATH ?= $(shell if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx/enclave" ]; then echo "/dev/sgx/enclave"; fi)
 SGX_PSW_SOCKET ?= /var/run/aesmd
@@ -74,6 +75,8 @@ ifdef DOCKER_DEV_IMAGE_APT_ADD_PKGS
 	DOCKER_DEV_BUILD_OPTS += --build-arg APT_ADD_PKGS=$(DOCKER_DEV_IMAGE_APT_ADD_PKGS)
 endif
 
+# allows to override with `buildx build`
+DOCKER_BUILD_CMD ?= build
 
 
 # Docker run options
@@ -81,7 +84,7 @@ endif
 DOCKER_DEV_RUN_OPTS ?=
 DOCKER_DEV_RUN_OPTS += --rm
 # - import docker daemon socket (so dev container can run docker)
-DOCKER_DEV_RUN_OPTS += -v $(DOCKER_DAEMON_SOCKET):$(DOCKER_DAEMON_SOCKET)
+DOCKER_DEV_RUN_OPTS += -v "$(DOCKER_DAEMON_SOCKET)":"$(DOCKER_SOCKET)"
 # - if ~/.docker/ exists, pass it also along to container so we have consistent config
 ifneq ($(wildcard ${HOME}/.docker),)
 DOCKER_DEV_RUN_OPTS += -v "${HOME}/.docker":"/root/.docker"
@@ -181,13 +184,13 @@ clobber:
 # - building individual docker images
 # ------------------------------------------------------
 base-rt:
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) $(DOCKER_BASE_RT_BUILD_OPTS) -t $(FPC_DOCKER_BASE_RT_NAME):$(FPC_VERSION) base-rt
+	$(DOCKER) $(DOCKER_BUILD_CMD) $(DOCKER_BUILD_OPTS) $(DOCKER_BASE_RT_BUILD_OPTS) -t $(FPC_DOCKER_BASE_RT_NAME):$(FPC_VERSION) base-rt
 
 base-dev: base-rt
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) $(DOCKER_BASE_DEV_BUILD_OPTS) -t $(FPC_DOCKER_BASE_DEV_NAME):$(FPC_VERSION) base-dev
+	$(DOCKER) $(DOCKER_BUILD_CMD) $(DOCKER_BUILD_OPTS) $(DOCKER_BASE_DEV_BUILD_OPTS) -t $(FPC_DOCKER_BASE_DEV_NAME):$(FPC_VERSION) base-dev
 
 ccenv: base-rt
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CCENV_NAME):$(FPC_VERSION) ccenv
+	$(DOCKER) $(DOCKER_BUILD_CMD) $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CCENV_NAME):$(FPC_VERSION) ccenv
 
 # Note: For all docker images, dependencis will cause docker rebuilds.
 # Docker caching though makes this though fast if nothing has changed.
@@ -203,7 +206,7 @@ ccenv: base-rt
 # before any docker rebuild happens.
 peer: base-dev
 	(cd ${TOP} &&\
-         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_PEER_NAME):$(FPC_VERSION)\
+         $(DOCKER) $(DOCKER_BUILD_CMD) $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_PEER_NAME):$(FPC_VERSION)\
          $(DOCKER_DEV_BUILD_OPTS)\
 	 --target peer\
          -f ./utils/docker/dev_peer_cc-builder/Dockerfile\
@@ -214,14 +217,14 @@ peer: base-dev
 
 dev:
 	(cd ${TOP} &&\
-         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_DEV_NAME):$(FPC_VERSION)\
+         $(DOCKER) $(DOCKER_BUILD_CMD) $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_DEV_NAME):$(FPC_VERSION)\
          $(DOCKER_DEV_BUILD_OPTS)\
          -f ./utils/docker/dev/Dockerfile\
          . )
 
 cc-builder: base-dev
 	(cd ${TOP} &&\
-         $(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CC_BUILDER_NAME):$(FPC_VERSION)\
+         $(DOCKER) $(DOCKER_BUILD_CMD) $(DOCKER_BUILD_OPTS) -t $(FPC_DOCKER_CC_BUILDER_NAME):$(FPC_VERSION)\
          $(DOCKER_DEV_BUILD_OPTS)\
          -f ./utils/docker/dev_peer_cc-builder/Dockerfile\
 	 --target cc-builder \
