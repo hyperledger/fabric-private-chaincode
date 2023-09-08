@@ -191,7 +191,7 @@ official docker [documentation](https://docs.docker.com/install/linux/linux-post
 for more details.
 
 First make sure your host has
-* Docker 18.09 (or higher).
+* Docker v23.0 (or higher).
   It also should use `/var/run/docker.sock` as socket to interact with the daemon (or you
   will have to override in `$FPC_PATH/config.override.mk` the default definition in make of `DOCKER_DAEMON_SOCKET`)
 * GNU make

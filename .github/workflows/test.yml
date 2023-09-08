@@ -22,7 +22,6 @@ jobs:
 
       - name: build dev image
         env:
-          DOCKER_BUILDKIT: 1
           DOCKER_QUIET_BUILD: 1
         run: |
           DOCKER_BUILD_OPTS="--build-arg UBUNTU_VERSION=${{ matrix.os-version }} --build-arg UBUNTU_NAME=${{ matrix.os-name }}" \
@@ -31,7 +30,6 @@ jobs:
       - name: run make inside dev container
         env:
           DOCKER_DEV_CI_MODE: 1
-          DOCKER_BUILDKIT: 1
           DOCKER_QUIET_BUILD: 1
         run: |
           DOCKER_DEV_RUN_OPTS=`bash <(curl -s https://codecov.io/env)` \
