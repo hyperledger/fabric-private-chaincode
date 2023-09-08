@@ -14,10 +14,6 @@ export GO_BUILD_OPT ?= -buildvcs=false
 
 # Docker related settings
 #--------------------------------------------------
-export DOCKER_BUILDKIT ?= 1
-# Building with build-kit makes multi-stage builds more efficient
-# and also provides nicer output. If you experience issues with build-kit,
-# you can disable it by overriding the default in your `config.override.mk`
 DOCKERFLAGS :=
 DOCKER_CMD := docker
 # Note:

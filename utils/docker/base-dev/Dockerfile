@@ -54,13 +54,21 @@ RUN apt-get update -q \
     python \
     protobuf-compiler \
     python-protobuf \
-    # docker commands (need as we use docker daemon from "outside")
-    docker.io \
-    docker-compose \
     psmisc \
     bc \
+    software-properties-common \
     ${APT_ADD_PKGS}
 
+# docker commands (need as we use docker daemon from "outside")
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
+  && add-apt-repository "deb [arch="$(dpkg --print-architecture)"] https://download.docker.com/linux/ubuntu "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" \
+  && apt-get update -q \
+  && apt-get install -y -q \
+    # docker-ce \
+    docker-ce-cli \
+    # containerd.io \
+    docker-buildx-plugin \
+    docker-compose-plugin
 
 # Install go
 ENV GOROOT=/usr/local/go
