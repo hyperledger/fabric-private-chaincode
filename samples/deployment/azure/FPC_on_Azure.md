@@ -77,7 +77,7 @@ echo 'epid-unlinkable' > ${FPC_PATH}/config/ias/spid_type.txt
 
 There are two methods of setting up the FPC development environment.
 The [docker based](../../../README.md#option-1-using-the-docker-based-fpc-development-environment) environment which is used here, and the [local development](../../../README.md#option-2-setting-up-your-system-to-do-local-development) environment.
-Edit the `config.override.mk`  to set HW mode and `DOCKER_BUILDKIT=1`.
+Edit the `config.override.mk`  to set HW mode.
 ```bash
 vim $FPC_PATH/config.override.mk
 ```
@@ -85,7 +85,6 @@ vim $FPC_PATH/config.override.mk
 paste in the following:
 ```bash
 export SGX_MODE=HW
-export DOCKER_BUILDKIT=1
 ```
 
 Now we can start the container as follows:

@@ -11,7 +11,7 @@ protos:
 	$(MAKE) -C ../protos
 
 build: protos
-	DOCKER_BUILDKIT=0 docker build -f Dockerfile -t irb-experimenter-worker ..
+	docker build -f Dockerfile -t irb-experimenter-worker ..
 
 run: build
 	$(MAKE) -C worker stop-docker run-docker

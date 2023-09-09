@@ -26,7 +26,7 @@ ARG NANOPB_VERSION=0.4.7
 ARG OPENSSL=1.1.1g
 ARG SGXSSL=2.10_1.1.1g
 ARG APT_ADD_PKGS=
-ARG EGO_VERSION=1.0.0
+ARG EGO_VERSION=1.3.0
 
 # for convenience remember all versions as env variables ..
 ENV GO_VERSION=${GO_VERSION}
@@ -54,13 +54,21 @@ RUN apt-get update -q \
     python \
     protobuf-compiler \
     python-protobuf \
-    # docker commands (need as we use docker daemon from "outside")
-    docker.io \
-    docker-compose \
     psmisc \
     bc \
+    software-properties-common \
     ${APT_ADD_PKGS}
 
+# docker commands (need as we use docker daemon from "outside")
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
+  && add-apt-repository "deb [arch="$(dpkg --print-architecture)"] https://download.docker.com/linux/ubuntu "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" \
+  && apt-get update -q \
+  && apt-get install -y -q \
+    # docker-ce \
+    docker-ce-cli \
+    # containerd.io \
+    docker-buildx-plugin \
+    docker-compose-plugin
 
 # Install go
 ENV GOROOT=/usr/local/go
