@@ -47,12 +47,13 @@ for org in "${orgs[@]}"; do
   KEYS=("${ORG_PATH}/users/${user}@${org}.example.com/msp/keystore"/*)
 
   # add cryptopath and admin cert / key
-  yq w -i ${CONNECTIONS_PATH} organizations.${org^}.cryptoPath ${ORG_PATH}/msp
-  yq w -i ${CONNECTIONS_PATH} organizations.${org^}.users.${user}.cert.path "${CERTS[0]}"
-  yq w -i ${CONNECTIONS_PATH} organizations.${org^}.users.${user}.key.path "${KEYS[0]}"
+  yq eval ".organizations.${org^}.cryptoPath = \"${ORG_PATH}/msp\"" ${CONNECTIONS_PATH} -i
+  yq eval ".organizations.${org^}.users.${user}.cert.path = \"${CERTS[0]}\"" ${CONNECTIONS_PATH} -i
+  yq eval ".organizations.${org^}.users.${user}.key.path = \"${KEYS[0]}\"" ${CONNECTIONS_PATH} -i
 
   # add channels and entity matcher
-  yq m -i ${CONNECTIONS_PATH} - <<EOF
+  yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' ${CONNECTIONS_PATH} -i <<EOF
+
 channels:
   _default:
     peers:
@@ -75,19 +76,20 @@ entityMatchers:
 EOF
 
   # fetch all peers from connections
-  yq r --printMode pv "${CONNECTIONS_PATH}" peers >> "${tmp_dir}/peers-${org}.yaml"
+  yq e ".peers" "${CONNECTIONS_PATH}" >> "${tmp_dir}/peers-${org}.yaml"
 done
 
 # consolidate all collected peers in a single peers.yaml
-yq m "${tmp_dir}"/peers-*.yaml >> "${tmp_dir}/peers.yaml"
-yq v "${tmp_dir}/peers.yaml"
+yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "${tmp_dir}"/peers-*.yaml >> "${tmp_dir}/peers.yaml"
+yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "${CONNECTIONS_PATH}" "${tmp_dir}/peers.yaml" -i
+
 
 # merge peers.yaml into all connection files
 for org in "${orgs[@]}"; do
   ORG_PATH="${FPC_PATH}/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/${org}.example.com"
   CONNECTIONS_PATH="${ORG_PATH}/connection-${org}.yaml"
-  yq m -i "${CONNECTIONS_PATH}" "${tmp_dir}/peers.yaml"
-  yq v "${CONNECTIONS_PATH}"
+  yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "${CONNECTIONS_PATH}" "${tmp_dir}/peers.yaml" -i
+  yq e "." "${CONNECTIONS_PATH}"
 done
 
 echo "Updated!"

@@ -273,7 +273,7 @@ Make sure that you have the following required dependencies installed:
 * yq v3.x (newer versions, v4.x and higher, are currently *not* supported!)
   You can install `yq` v3 via `go get`.
   ```bash
-  GO111MODULE=on go get github.com/mikefarah/yq/v3
+    GO111MODULE=on go get github.com/mikefarah/yq/v3
   ```
 
 * Protocol Buffers
