@@ -182,6 +182,6 @@ RUN apt-get install -y -q \
 	${APT_ADD_PKGS}
 
 RUN GO111MODULE=on \
-    go get github.com/mikefarah/yq/v3
+    go get github.com/mikefarah/yq/v4
 
 WORKDIR ${FPC_PATH}
