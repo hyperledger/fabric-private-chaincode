@@ -32,9 +32,9 @@ if [[ ! -f "$GATEWAY_CONFIG" ]]; then
     exit 1
 fi
 
-MSP_ID=$(yq r $GATEWAY_CONFIG organizations.${ORG^}.mspid)
-PEER_ID=$(yq r $GATEWAY_CONFIG organizations.${ORG^}.peers[0])
-ADDR=$(yq r $GATEWAY_CONFIG peers.\"${PEER_ID}\".url | sed 's/grpcs:\/\///')
+MSP_ID=$(yq e ".organizations.${ORG^}.mspid" $GATEWAY_CONFIG)
+PEER_ID=$(yq e ".organizations.${ORG^}.peers[0]" $GATEWAY_CONFIG)
+ADDR=$(yq e ".peers.\"${PEER_ID}\".url" $GATEWAY_CONFIG | sed 's/grpcs:\/\///')
 
 echo "export CONF_PATH=$FPC_PATH/samples/deployment/fabric-smart-client/the-simple-testing-network/testdata/fabric.default/crypto" > ${ORG}.env
 echo "export GATEWAY_CONFIG=\$CONF_PATH/peerOrganizations/${ORG,,}.example.com/connections.yaml" >> ${ORG}.env

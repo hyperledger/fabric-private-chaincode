@@ -44,7 +44,7 @@ fi
 echo "Adding FPC external builder to core.yaml"
 # Create a backup copy of `core.yaml` first and always work from there.
 backup ${CORE_PATH}
-yq m -i -a=append ${CORE_PATH} core_ext.yaml
+yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' ${CORE_PATH} core_ext.yaml -i
 
 
 ###############################################
@@ -80,8 +80,8 @@ sed -i "s+\.\./+${FABRIC_SAMPLES_HOST}/test-network/+g" "${DOCKER_COMPOSE_CA}"
 echo "${DOCKER_COMPOSE_TEST_NET}"
 peers=("peer0.org1.example.com" "peer0.org2.example.com")
 for p in "${peers[@]}"; do
-  yq w -i ${DOCKER_COMPOSE_TEST_NET} "services.\"$p\".volumes[+]" "${FPC_PATH_HOST}:/opt/gopath/src/github.com/hyperledger/fabric-private-chaincode"
-  yq w -i ${DOCKER_COMPOSE_TEST_NET} "services.\"$p\".volumes[+]" "${FABRIC_SAMPLES_HOST}/config/core.yaml:/etc/hyperledger/fabric/core.yaml"
+  yq eval ".services.\"$p\".volumes += [\"${FPC_PATH_HOST}:/opt/gopath/src/github.com/hyperledger/fabric-private-chaincode\"]" ${DOCKER_COMPOSE_TEST_NET} -i
+  yq eval ".services.\"$p\".volumes += [\"${FABRIC_SAMPLES_HOST}/config/core.yaml:/etc/hyperledger/fabric/core.yaml\"]" ${DOCKER_COMPOSE_TEST_NET} -i
 done
 
 ###############################################
