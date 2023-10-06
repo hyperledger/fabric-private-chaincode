@@ -199,7 +199,7 @@ git clone https://github.com/hyperledger/fabric-samples
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples
 # no we pick a specific version here to have stable experience :)
 git checkout -b "works" 98028c7
-curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.3.3 1.4.9 -s
+curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.5.4 1.5.7 -s
 cd $FPC_PATH/samples/deployment/test-network
 ./setup.sh
 ```

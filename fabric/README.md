@@ -27,9 +27,9 @@ To clean the native build, type `cd $FPC_PATH/fabric; make clean-native`.
 ### Wrong Fabric version
 ```
 Patching Fabric ...
-Aborting! Tag on current HEAD () does not match expected tag/v2.3.3!
+Aborting! Tag on current HEAD () does not match expected tag/v2.5.4!
 ...
 ```
 
 Seems that your Fabric is on the wrong branch.
-Try to run `pushd $FABRIC_PATH; git checkout tags/v2.3.3; popd;` followed by `make` again.
+Try to run `pushd $FABRIC_PATH; git checkout tags/v2.5.3; popd;` followed by `make` again.
