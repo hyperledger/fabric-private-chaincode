@@ -4,6 +4,11 @@
 
 name: FPC test
 on: [push, pull_request]
+
+env:
+  DOCKER_REGISTRY: 'ghcr.io'
+  PUSH_TO_MAIN: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
 jobs:
   docker:
     runs-on: ${{ matrix.os }}
@@ -20,12 +25,28 @@ jobs:
         with:
           submodules: 'recursive'
 
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            docker:
+              - 'utils/docker/**'
+
       - name: build dev image
+        if: steps.filter.outputs.docker == 'true'
         env:
           DOCKER_QUIET_BUILD: 1
         run: |
           DOCKER_BUILD_OPTS="--build-arg UBUNTU_VERSION=${{ matrix.os-version }} --build-arg UBUNTU_NAME=${{ matrix.os-name }}" \
           make -C utils/docker build build-dev
+
+      - name: fetch dev image
+        if: steps.filter.outputs.docker == 'false'
+        env:
+          DOCKER_QUIET_BUILD: 1
+        run: |
+          DOCKER_BUILD_OPTS="--build-arg UBUNTU_VERSION=${{ matrix.os-version }} --build-arg UBUNTU_NAME=${{ matrix.os-name }}" \
+          make -C utils/docker pull pull-dev
 
       - name: run make inside dev container
         env:
@@ -35,4 +56,20 @@ jobs:
           DOCKER_DEV_RUN_OPTS=`bash <(curl -s https://codecov.io/env)` \
           DOCKER_BUILD_OPTS="--build-arg UBUNTU_VERSION=${{ matrix.os-version }} --build-arg UBUNTU_NAME=${{ matrix.os-name }}" \
           make -C utils/docker run-dev DOCKER_DEV_OPTIONAL_CMD='env IS_CI_RUNNING=true \
-                                                                make all clobber'
+                                                                make all'
+
+      #
+      # continue only if we push to main and rebuild docker images
+      #
+      - name: Login to the ${{ env.DOCKER_REGISTRY }} Container Registry
+        if: env.PUSH_TO_MAIN == 'true' && steps.filter.outputs.docker == 'true'
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: publish images
+        if: env.PUSH_TO_MAIN == 'true' && steps.filter.outputs.docker == 'true'
+        run: |
+          make -C utils/docker publish
