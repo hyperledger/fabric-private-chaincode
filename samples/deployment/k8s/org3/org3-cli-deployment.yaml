@@ -52,7 +52,7 @@ spec:
                 configMapKeyRef:
                   name: chaincode-config
                   key: FPC_MRENCLAVE
-          image: hyperledger/fabric-tools:2.3.3
+          image: hyperledger/fabric-tools:2.5.4
           name: cli
           tty: true
           volumeMounts:
