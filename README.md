@@ -243,6 +243,7 @@ A few more notes:
 * Due to the way the peer's port for chaincode connection is managed,
   you will be able to run only a single FPC development container on a
   particular host.
+* For support for Apple Mac (M1 or newer) see the [Troubleshooting](#troubleshooting) section.
 
 Now you are ready to start development *within* the container. Continue with building FPC as described in the [Build Fabric Private Chaincode
 ](#build-fabric-private-chaincode) Section and then write [your first Private Chaincode](#your-first-private-chaincode).
@@ -580,6 +581,18 @@ To make starting and stopping the dev container more reliable it is advised to u
 * Get another shell inside the dev container: `docker exec -it fpc-development-main /bin/bash`
 * Stop the container: `docker stop fpc-development-main`
 
+#### Development on Apple Mac (M1 or newer)
+
+For developers using Apple Mac (M1 or newer) we suggest to use the prebuilt FPC dev container.
+Add the following configuration to your `config.override.mk`, pull the docker images and start the FPC dev container as described above in [Option 1: Using the Docker-based FPC Development Environment](#option-1-using-the-docker-based-fpc-development-environment).
+Note that SGX is not supported on Apple platforms, and hence, FPC chaincode can only be used in simulation mode.
+Alternatively, a cloud-based development environment can be used with SGX HW support, see our tutorial [How to use FPC with Azure Confidential Computing](samples/deployment/azure/FPC_on_Azure.md).
+
+```Makefile
+DOCKER_BUILD_CMD=buildx build
+DOCKER_BUILD_OPTS=--platform linux/amd64
+DOCKER_DEV_RUN_OPTS=--platform linux/amd64
+```
 
 ### Building Documentation
 
