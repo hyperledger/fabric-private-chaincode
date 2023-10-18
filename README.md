@@ -199,7 +199,7 @@ First make sure your host has
 Once you have cloned the repository, you can either use the pre-built images or you can manually build them. Next, you start the development container.
 
 #### Pull docker images
-To pull the docker image and start the development container execute the following:
+To pull the docker image execute the following:
 ```bash
 make -C $FPC_PATH/utils/docker pull pull-dev 
 ```
