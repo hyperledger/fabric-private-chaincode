@@ -212,6 +212,16 @@ In order to build the development image manually you can use the following comma
 make -C $FPC_PATH/utils/docker build build-dev 
 ```
 
+#### Run the dev container
+
+Next we will open a shell inside the FPC development container, with environment variables like `$FPC_PATH` appropriately defined and all
+dependencies like the Intel SGX SDK, ready to build and run FPC.
+Continue with the following command:
+
+```bash
+make -C $FPC_PATH/utils/docker run-dev
+```
+
 Note that by default the dev container mounts your local cloned FPC project as a volume to `/project/src/github.com/hyperledger/fabric-private-chaincode` within the docker container.
 This allows you to edit the content of the repository using your favorite editor in your system and the changes inside the docker container. Additionally, you are also not loosing changes inside the container when you reboot or the container gets stopped for other reasons.
 
