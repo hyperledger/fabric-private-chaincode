@@ -201,8 +201,7 @@ Once you have cloned the repository, you can either use the pre-built images or 
 #### Pull docker images
 To pull the docker image and start the development container execute the following:
 ```bash
-cd $FPC_PATH/utils/docker
-make pull-dev 
+make -C $FPC_PATH/utils/docker pull pull-dev 
 ```
 This will fetch the FPC development image and then opens a shell inside the FPC development container, with environment variables like `$FPC_PATH` appropriately defined and all
 dependencies like the Intel SGX SDK, ready to build and run FPC.
