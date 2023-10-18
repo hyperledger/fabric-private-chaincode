@@ -196,7 +196,7 @@ First make sure your host has
   will have to override in `$FPC_PATH/config.override.mk` the default definition in make of `DOCKER_DAEMON_SOCKET`)
 * GNU make
 
-Once you have cloned the repository, you can either use the pre-built images or you can manually build them. Next, you start the development container.
+Once you have cloned the repository, you can either use the pre-built images or you can manually build them. After that you will start the development container.
 
 #### Pull docker images
 To pull the docker image execute the following:
@@ -208,11 +208,8 @@ In order to build the development image manually you can use the following comma
 ```bash
 make -C $FPC_PATH/utils/docker build build-dev 
 ```
-
-#### Run the dev container
-
-Next we will open a shell inside the FPC development container, with environment variables like `$FPC_PATH` appropriately defined and all
-dependencies like the Intel SGX SDK, ready to build and run FPC.
+#### Start the dev container
+Next we will open a shell inside the FPC development container, with environment variables like `$FPC_PATH` appropriately defined and all dependencies like the Intel SGX SDK, ready to build and run FPC.
 Continue with the following command:
 
 ```bash
