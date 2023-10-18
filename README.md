@@ -213,7 +213,6 @@ In order to build the development image manually you can use the following comma
 ```bash
 cd $FPC_PATH/utils/docker
 make build-dev 
-make run-dev
 ```
 
 Note that by default the dev container mounts your local cloned FPC project as a volume to `/project/src/github.com/hyperledger/fabric-private-chaincode` within the docker container.
