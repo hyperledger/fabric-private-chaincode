@@ -196,7 +196,7 @@ First make sure your host has
   will have to override in `$FPC_PATH/config.override.mk` the default definition in make of `DOCKER_DAEMON_SOCKET`)
 * GNU make
 
-Once you have cloned the repository, you can either use the images we have already created or you can manually build them.
+Once you have cloned the repository, you can either use the pre-built images or you can manually build them. Next, you start the development container.
 
 #### Pull docker images
 To pull the docker image and start the development container execute the following:
