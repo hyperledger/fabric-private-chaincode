@@ -203,9 +203,6 @@ To pull the docker image execute the following:
 ```bash
 make -C $FPC_PATH/utils/docker pull pull-dev 
 ```
-This will fetch the FPC development image and then opens a shell inside the FPC development container, with environment variables like `$FPC_PATH` appropriately defined and all
-dependencies like the Intel SGX SDK, ready to build and run FPC.
-
 #### Manually build docker images
 In order to build the development image manually you can use the following commands. Note that this process may take some time.
 ```bash
