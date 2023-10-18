@@ -210,8 +210,7 @@ dependencies like the Intel SGX SDK, ready to build and run FPC.
 #### Manually build docker images
 In order to build the development image manually you can use the following commands. Note that this process may take some time.
 ```bash
-cd $FPC_PATH/utils/docker
-make build-dev 
+make -C $FPC_PATH/utils/docker build build-dev 
 ```
 
 Note that by default the dev container mounts your local cloned FPC project as a volume to `/project/src/github.com/hyperledger/fabric-private-chaincode` within the docker container.
