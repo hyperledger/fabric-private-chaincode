@@ -196,25 +196,28 @@ First make sure your host has
   will have to override in `$FPC_PATH/config.override.mk` the default definition in make of `DOCKER_DAEMON_SOCKET`)
 * GNU make
 
-Once you have cloned the repository, to pull the docker image and start the development container execute the following:
-```bash
-cd $FPC_PATH/utils/docker
-make pull-dev 
-make run-dev
-```
+Once you have cloned the repository, you can either use the pre-built images or you can manually build them. After that you will start the development container.
 
-This will fetch the FPC development image and then opens a shell inside the FPC development container, with environment variables like `$FPC_PATH` appropriately defined and all
-dependencies like the Intel SGX SDK, ready to build and run FPC.
+#### Pull docker images
+To pull the docker image execute the following:
+```bash
+make -C $FPC_PATH/utils/docker pull pull-dev 
+```
+#### Manually build docker images
+In order to build the development image manually you can use the following commands. Note that this process may take some time.
+```bash
+make -C $FPC_PATH/utils/docker build build-dev 
+```
+#### Start the dev container
+Next we will open a shell inside the FPC development container, with environment variables like `$FPC_PATH` appropriately defined and all dependencies like the Intel SGX SDK, ready to build and run FPC.
+Continue with the following command:
+
+```bash
+make -C $FPC_PATH/utils/docker run-dev
+```
 
 Note that by default the dev container mounts your local cloned FPC project as a volume to `/project/src/github.com/hyperledger/fabric-private-chaincode` within the docker container.
 This allows you to edit the content of the repository using your favorite editor in your system and the changes inside the docker container. Additionally, you are also not loosing changes inside the container when you reboot or the container gets stopped for other reasons.
-
-In order to build the development image manually you can use the following commands. Note that this process may take some time.
-```bash
-cd $FPC_PATH/utils/docker
-make build-dev 
-make run-dev
-```
 
 A few more notes:
 * We use Ubuntu 20.04 by default.
