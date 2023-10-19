@@ -28,6 +28,12 @@ make -C $FPC_PATH/fabric
 export FAB_BINS=$FPC_PATH/fabric/_internal/bin
 ```
 
+Additionally, we want to use the Hyperledger blockchain explorer to visualize the network activity.
+Get the following docker images:
+```bash
+docker pull hyperledger/explorer:latest
+docker pull hyperledger/explorer-db:latest
+```
 
 ## Run the network
 
@@ -80,6 +86,13 @@ By default, you can reach the Blockchain Explorer Dashboard via your browser on 
 
 Sometimes something goes wrong.
 This is a collection of helpful commands to kill dangling network components.
+
+```bash
+# If the tstn does not find your docker socket automatically, try this!
+# You can check via `docker context ls` and set it via the following environment variable. 
+export DOCKER_HOST=unix://"$HOME/.docker/run/docker.sock"
+```
+
 ```bash
 killall peer
 killall orderer
