@@ -46,7 +46,7 @@ for org in "${orgs[@]}"; do
   CERTS=("${ORG_PATH}/users/${user}@${org}.example.com/msp/signcerts"/*.pem)
   KEYS=("${ORG_PATH}/users/${user}@${org}.example.com/msp/keystore"/*)
 
-  
+  # add cryptopath and admin cert / key
   yq ".organizations.${org^}.cryptoPath = \"${ORG_PATH}/msp\"" -i "${CONNECTIONS_PATH}"
   yq ".organizations.${org^}.users.${user}.cert.path = \"${CERTS[0]}\"" -i "${CONNECTIONS_PATH}"
   yq ".organizations.${org^}.users.${user}.key.path = \"${KEYS[0]}\"" -i "${CONNECTIONS_PATH}"
