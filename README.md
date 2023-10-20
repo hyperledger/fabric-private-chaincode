@@ -226,7 +226,7 @@ A few more notes:
   DOCKER_BUILD_OPTS=--build-arg UBUNTU_VERSION=18.04 --build-arg UBUNTU_NAME=bionic
   ```
 * If you run behind a proxy, you will have to configure the proxy,
-  e.g., for docker (`~/.docker/config.json`). See
+  e.g., for docker (`~/.docker/config.json`) and load the configuration inside the dev container by setting `DOCKER_DEV_RUN_OPTS += -v "~/.docker":"/root/.docker"` in `$FPC_PATH/config.override.mk`. See
   [Working from behind a proxy](#working-from-behind-a-proxy) below for more information.
 * If your local host is SGX enabled, i.e., there is a device `/dev/sgx/enclave` or
   `/dev/isgx` and your PSW daemon listens to `/var/run/aesmd`, then the docker image will be sgx-enabled and your settings from `./config/ias` will be used. You will have to manually set `SGX_MODE=HW` before building anything to use HW mode.
