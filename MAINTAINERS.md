@@ -2,10 +2,11 @@
 
 ### Active Maintainers
 
-| Name | GitHub | email |
-|---|---|---|
-| Bruno Vavala | bvavala | bruno.vavala@intel.com |
-| Marcus Brandenburger | mbrandenburger | bur@zurich.ibm.com |
+| Name                 | GitHub         | email                  |
+|----------------------|----------------|------------------------|
+| Bruno Vavala         | bvavala        | bruno.vavala@intel.com |
+| Marcus Brandenburger | mbrandenburger | bur@zurich.ibm.com     |
+| Maria Munaro         | munapower      | mmunaro@hotmail.com    |
 
 ### Emeritus Maintainers
 
