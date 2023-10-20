@@ -80,8 +80,8 @@ sed -i "s+\.\./+${FABRIC_SAMPLES_HOST}/test-network/+g" "${DOCKER_COMPOSE_CA}"
 echo "${DOCKER_COMPOSE_TEST_NET}"
 peers=("peer0.org1.example.com" "peer0.org2.example.com")
 for p in "${peers[@]}"; do
-  yq eval ".services.\"$p\".volumes += [\"${FPC_PATH_HOST}:/opt/gopath/src/github.com/hyperledger/fabric-private-chaincode\"]" ${DOCKER_COMPOSE_TEST_NET} -i
-  yq eval ".services.\"$p\".volumes += [\"${FABRIC_SAMPLES_HOST}/config/core.yaml:/etc/hyperledger/fabric/core.yaml\"]" ${DOCKER_COMPOSE_TEST_NET} -i
+  yq ".services.\"$p\".volumes += [\"${FPC_PATH_HOST}:/opt/gopath/src/github.com/hyperledger/fabric-private-chaincode\"]" -i "${DOCKER_COMPOSE_TEST_NET}"
+  yq ".services.\"$p\".volumes += [\"${FABRIC_SAMPLES_HOST}/config/core.yaml:/etc/hyperledger/fabric/core.yaml\"]" -i "${DOCKER_COMPOSE_TEST_NET}"
 done
 
 ###############################################

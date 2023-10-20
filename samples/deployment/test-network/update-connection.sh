@@ -46,13 +46,13 @@ for org in "${orgs[@]}"; do
   CERTS=("${ORG_PATH}/users/${user}@${org}.example.com/msp/signcerts"/*.pem)
   KEYS=("${ORG_PATH}/users/${user}@${org}.example.com/msp/keystore"/*)
 
-  # add cryptopath and admin cert / key
-  yq eval ".organizations.${org^}.cryptoPath = \"${ORG_PATH}/msp\"" ${CONNECTIONS_PATH} -i
-  yq eval ".organizations.${org^}.users.${user}.cert.path = \"${CERTS[0]}\"" ${CONNECTIONS_PATH} -i
-  yq eval ".organizations.${org^}.users.${user}.key.path = \"${KEYS[0]}\"" ${CONNECTIONS_PATH} -i
+  
+  yq ".organizations.${org^}.cryptoPath = \"${ORG_PATH}/msp\"" -i "${CONNECTIONS_PATH}"
+  yq ".organizations.${org^}.users.${user}.cert.path = \"${CERTS[0]}\"" -i "${CONNECTIONS_PATH}"
+  yq ".organizations.${org^}.users.${user}.key.path = \"${KEYS[0]}\"" -i "${CONNECTIONS_PATH}"
 
   # add channels and entity matcher
-  yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' ${CONNECTIONS_PATH} -i <<EOF
+  yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' -i ${CONNECTIONS_PATH} <<EOF
 
 channels:
   _default:
@@ -76,19 +76,19 @@ entityMatchers:
 EOF
 
   # fetch all peers from connections
-  yq e ".peers" "${CONNECTIONS_PATH}" >> "${tmp_dir}/peers-${org}.yaml"
+  yq ".peers" "${CONNECTIONS_PATH}" >> "${tmp_dir}/peers-${org}.yaml"
 done
 
 # consolidate all collected peers in a single peers.yaml
-yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "${tmp_dir}"/peers-*.yaml >> "${tmp_dir}/peers.yaml"
-yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "${CONNECTIONS_PATH}" "${tmp_dir}/peers.yaml" -i
+yq eval-all '. as $item ireduce ({}; . * $item )' ${tmp_dir}/peers-*.yaml >> "${tmp_dir}/peers.yaml"
+yq 'true' "${tmp_dir}/peers-${org}.yaml" > /dev/null
 
 # merge peers.yaml into all connection files
 for org in "${orgs[@]}"; do
   ORG_PATH="${FPC_PATH}/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/${org}.example.com"
   CONNECTIONS_PATH="${ORG_PATH}/connection-${org}.yaml"
-  yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "${tmp_dir}"/peers-*.yaml >> "${tmp_dir}/peers.yaml"
-  yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "${CONNECTIONS_PATH}" "${tmp_dir}/peers.yaml" -i
+  yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' -i "${CONNECTIONS_PATH}" "${tmp_dir}/peers.yaml"
+  yq 'true' "${CONNECTIONS_PATH}" > /dev/null
 done
 
 echo "Updated!"
