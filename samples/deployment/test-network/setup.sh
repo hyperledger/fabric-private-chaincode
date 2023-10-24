@@ -44,7 +44,7 @@ fi
 echo "Adding FPC external builder to core.yaml"
 # Create a backup copy of `core.yaml` first and always work from there.
 backup ${CORE_PATH}
-yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' ${CORE_PATH} core_ext.yaml -i
+yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' -i ${CORE_PATH} core_ext.yaml
 
 
 ###############################################

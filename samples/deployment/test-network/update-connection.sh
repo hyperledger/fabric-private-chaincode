@@ -81,7 +81,7 @@ done
 
 # consolidate all collected peers in a single peers.yaml
 yq eval-all '. as $item ireduce ({}; . * $item )' ${tmp_dir}/peers-*.yaml >> "${tmp_dir}/peers.yaml"
-yq 'true' "${tmp_dir}/peers-${org}.yaml" > /dev/null
+yq 'true' "${tmp_dir}/peers.yaml" > /dev/null
 
 # merge peers.yaml into all connection files
 for org in "${orgs[@]}"; do
