@@ -226,8 +226,8 @@ A few more notes:
   DOCKER_BUILD_OPTS=--build-arg UBUNTU_VERSION=18.04 --build-arg UBUNTU_NAME=bionic
   ```
 * If you run behind a proxy, you will have to configure the proxy,
-  e.g., for docker (`~/.docker/config.json`) and load the configuration inside the dev container by setting `DOCKER_DEV_RUN_OPTS += -v "~/.docker":"/root/.docker"` in `$FPC_PATH/config.override.mk`. See
-  [Working from behind a proxy](#working-from-behind-a-proxy) below for more information.
+  e.g., for docker (`~/.docker/config.json`) and load the configuration inside the dev container by setting `DOCKER_DEV_RUN_OPTS += -v "$HOME/.docker":"/root/.docker"` in `$FPC_PATH/config.override.mk`.
+  See [Working from behind a proxy](#working-from-behind-a-proxy) below for more information. Also note that with newer docker versions (i.e., docker desktop), the docker socket is located on the host in `~/.docker/`. This may cause issues when using docker inside the FPC dev container as the docker client is not able to access the docker socket at the path of the host system. You may try to switch the docker context to use `/var/run/docker.sock`. We do not recommend this approach and happy for suggestions.
 * If your local host is SGX enabled, i.e., there is a device `/dev/sgx/enclave` or
   `/dev/isgx` and your PSW daemon listens to `/var/run/aesmd`, then the docker image will be sgx-enabled and your settings from `./config/ias` will be used. You will have to manually set `SGX_MODE=HW` before building anything to use HW mode.
 * If you want additional apt packages to be automatically added to your
