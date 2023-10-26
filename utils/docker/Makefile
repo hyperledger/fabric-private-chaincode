@@ -85,10 +85,6 @@ DOCKER_DEV_RUN_OPTS ?=
 DOCKER_DEV_RUN_OPTS += --rm
 # - import docker daemon socket (so dev container can run docker)
 DOCKER_DEV_RUN_OPTS += -v "$(DOCKER_DAEMON_SOCKET)":"$(DOCKER_SOCKET)"
-# - if ~/.docker/ exists, pass it also along to container so we have consistent config
-ifneq ($(wildcard ${HOME}/.docker),)
-DOCKER_DEV_RUN_OPTS += -v "${HOME}/.docker":"/root/.docker"
-endif
 # - mount local fpc repo into the dev container so development inside container is
 #   persistant (and also can be done from outside with whatever favorite IDE ...)
 DOCKER_DEV_RUN_OPTS += -v "$(abspath ${TOP})":$(DOCKER_FPC_PATH)
