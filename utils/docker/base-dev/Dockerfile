@@ -23,8 +23,8 @@ LABEL org.opencontainers.image.source https://github.com/hyperledger/fabric-priv
 # config/build params
 ARG GO_VERSION=1.20.5
 ARG NANOPB_VERSION=0.4.7
-ARG OPENSSL=1.1.1g
-ARG SGXSSL=2.10_1.1.1g
+ARG OPENSSL=1.1.1n
+ARG SGXSSL=2.16_1.1.1n
 ARG APT_ADD_PKGS=
 ARG EGO_VERSION=1.4.1
 
@@ -97,7 +97,7 @@ RUN git clone 'https://github.com/intel/intel-sgx-ssl.git' \
   && cd openssl_source \
   && wget -q https://www.openssl.org/source/openssl-${OPENSSL}.tar.gz \
   && cd ../Linux \
-  && make SGX_MODE=SIM DESTDIR=${SGX_SSL} all \
+  && make SGX_MODE=SIM NO_THREADS=1 SKIP_INTELCPU_CHECK=TRUE DESTDIR=${SGX_SSL} all test\
   # Note: we need explicitly set to SIM as default is HW yet during docker
   # build you never have access to HW, regardless of platform. Note, though,
   # that libraries built work for both modes, on tests are executed for SIM only.
