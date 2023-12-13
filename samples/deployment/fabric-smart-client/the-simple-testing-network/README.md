@@ -19,6 +19,7 @@ Build the kv-test-go chaincode:
 export CC_NAME=kv-test-go
 export CC_PATH=$FPC_PATH/samples/chaincode/kv-test-go
 make -C $CC_PATH build docker
+export FPC_CHAINCODE_IMAGE=fpc/kv-test-go
 ``` 
 
 To run the Fabric network we need the Fabric binaries.
