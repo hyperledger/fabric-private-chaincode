@@ -27,7 +27,6 @@ require (
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20230228194215-b84622ba6a7a
 	github.com/hyperledger/fabric-contract-api-go v1.2.1
 	github.com/hyperledger/fabric-protos-go v0.3.0
-	github.com/hyperledger/fabric-samples/asset-transfer-basic/chaincode-go v0.0.0-20230505123407-84f9ba1dc4ec
 	github.com/hyperledger/fabric-sdk-go v1.0.1-0.20221020141211-7af45cede6af
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.6.1
 	github.com/onsi/ginkgo v1.16.5
@@ -56,7 +55,7 @@ require (
 	github.com/consensys/gnark-crypto v0.6.0 // indirect
 	github.com/containerd/containerd v1.6.18 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/docker/docker v23.0.2+incompatible // indirect
+	github.com/docker/docker v23.0.3+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
