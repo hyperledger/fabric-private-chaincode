@@ -25,6 +25,7 @@ export FPC_CHAINCODE_IMAGE=fpc/kv-test-go
 To run the Fabric network we need the Fabric binaries.
 We will use the following:
 ```bash
+make images
 make -C $FPC_PATH/fabric
 export FAB_BINS=$FPC_PATH/fabric/_internal/bin
 ```
