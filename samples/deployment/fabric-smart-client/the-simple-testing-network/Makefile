@@ -1,11 +1,17 @@
 # Copyright IBM Corp. All Rights Reserved.
 #
 # SPDX-License-Identifier: Apache-2.0
+TOP = ../../../..
+include $(TOP)/build.mk
 
 FABRIC_LOGGING_SPEC?="fpc=debug:endorser,grpc,comm.grpc,gossip=error:info"
 
 build:
 	go build -o tstn
+
+images: 
+	$(DOCKER) pull hyperledger/fabric-ccenv:2.5
+	$(DOCKER) image tag hyperledger/fabric-ccenv:2.5 hyperledger/fabric-ccenv:latest
 
 clean:
 	rm -rf testdata
