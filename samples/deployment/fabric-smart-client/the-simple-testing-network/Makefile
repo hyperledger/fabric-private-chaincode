@@ -12,6 +12,8 @@ build:
 images: 
 	$(DOCKER) pull hyperledger/fabric-ccenv:2.5
 	$(DOCKER) image tag hyperledger/fabric-ccenv:2.5 hyperledger/fabric-ccenv:latest
+	$(DOCKER) pull hyperledger/explorer:latest
+	$(DOCKER) pull hyperledger/explorer-db:latest
 
 clean:
 	rm -rf testdata

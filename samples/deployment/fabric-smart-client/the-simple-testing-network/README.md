@@ -22,19 +22,12 @@ make -C $CC_PATH build docker
 export FPC_CHAINCODE_IMAGE=fpc/kv-test-go
 ``` 
 
-To run the Fabric network we need the Fabric binaries.
+To run the Fabric network we need the Fabric binaries. Additionally, we want to use the Hyperledger blockchain explorer to visualize the network activity so we need to get the docker images.
 We will use the following:
 ```bash
 make images
 make -C $FPC_PATH/fabric
 export FAB_BINS=$FPC_PATH/fabric/_internal/bin
-```
-
-Additionally, we want to use the Hyperledger blockchain explorer to visualize the network activity.
-Get the following docker images:
-```bash
-docker pull hyperledger/explorer:latest
-docker pull hyperledger/explorer-db:latest
 ```
 
 ## Run the network
