@@ -32,7 +32,7 @@ jobs:
             docker:
               - 'utils/docker/**'
             notdocumentation:
-              - '!([.github/workflows/**,**/*.md)'
+              - '!(['.github/workflows/**','**/*.md'])'
           base: 'main'
       - name: build dev image
         if: steps.filter.outputs.docker == 'true'
