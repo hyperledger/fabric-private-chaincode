@@ -25,7 +25,7 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
@@ -33,7 +33,6 @@ jobs:
               - 'utils/docker/**'
             notdocumentation:
               - !'*.md'
-
       - name: build dev image
         if: steps.filter.outputs.docker == 'true'
         env:
