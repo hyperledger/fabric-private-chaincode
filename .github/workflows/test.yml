@@ -32,7 +32,8 @@ jobs:
             docker:
               - 'utils/docker/**'
             notdocumentation:
-              - '!(*.md)'
+              - '!(**/*.md)'
+          base: 'main'
       - name: build dev image
         if: steps.filter.outputs.docker == 'true'
         env:
