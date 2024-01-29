@@ -31,6 +31,8 @@ jobs:
           filters: |
             docker:
               - 'utils/docker/**'
+            notdocumentation:
+              - !'*.md'
 
       - name: build dev image
         if: steps.filter.outputs.docker == 'true'
@@ -41,7 +43,7 @@ jobs:
           make -C utils/docker build build-dev
 
       - name: fetch dev image
-        if: steps.filter.outputs.docker == 'false'
+        if: steps.filter.outputs.docker == 'false' && steps.filter.outputs.notdocumentation == 'true'
         env:
           DOCKER_QUIET_BUILD: 1
         run: |
@@ -49,6 +51,7 @@ jobs:
           make -C utils/docker pull pull-dev
 
       - name: run make inside dev container
+        if: steps.filter.outputs.notdocumentation == 'true'
         env:
           DOCKER_DEV_CI_MODE: 1
           DOCKER_QUIET_BUILD: 1
