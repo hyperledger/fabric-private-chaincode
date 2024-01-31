@@ -5,13 +5,13 @@
 name: FPC test
 on: 
   push:
-    paths: 
-      - '!**.md'
-      - '!./github/workflows/**'
+    paths-ignore: 
+      - '**.md'
+      - '.github/workflows/**'
   pull_request:
-     paths: 
-       - '!**.md'
-       - '!./github/workflows/**'
+     paths-ignore: 
+       - '**.md'
+       - '.github/workflows/**'
 
 env:
   DOCKER_REGISTRY: 'ghcr.io'
