@@ -3,7 +3,8 @@ Copyright IBM Corp. All Rights Reserved.
 
 SPDX-License-Identifier: Apache-2.0
 test
-test2*/
+test2
+test3*/
 
 package chaincode
 
