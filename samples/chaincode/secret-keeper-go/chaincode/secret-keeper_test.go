@@ -172,7 +172,7 @@ func TestNormalBehavior(t *testing.T) {
 	require.NoError(t, err)
 
 	_, authSetByte := chaincodeStub.PutStateArgsForCall(0)
-	_, secretByte := chaincodeStub.PutStateArgsForCall(1)
+	_, _ = chaincodeStub.PutStateArgsForCall(1)
 
 	aliceSig := "Alice"
 	bobSig := "Bob"
@@ -189,7 +189,7 @@ func TestNormalBehavior(t *testing.T) {
 	chaincodeStub.GetStateReturnsOnCall(2, authSetByte, nil)
 	err = secretKeeper.LockSecret(transactionContext, eveSig, newSecret)
 	require.NoError(t, err)
-	_, secretByte = chaincodeStub.PutStateArgsForCall(3)
+	_, secretByte := chaincodeStub.PutStateArgsForCall(3)
 
 	chaincodeStub.GetStateReturnsOnCall(3, authSetByte, nil)
 	chaincodeStub.GetStateReturnsOnCall(4, secretByte, nil)
@@ -225,7 +225,7 @@ func TestRollbackAttack(t *testing.T) {
 	require.NoError(t, err)
 
 	_, authSetByte := chaincodeStub.PutStateArgsForCall(0)
-	_, secretByte := chaincodeStub.PutStateArgsForCall(1)
+	_, _ = chaincodeStub.PutStateArgsForCall(1)
 	oldauthSetByte := authSetByte
 
 	aliceSig := "Alice"
@@ -243,7 +243,7 @@ func TestRollbackAttack(t *testing.T) {
 	chaincodeStub.GetStateReturnsOnCall(2, authSetByte, nil)
 	err = secretKeeper.LockSecret(transactionContext, eveSig, newSecret)
 	require.NoError(t, err)
-	_, secretByte = chaincodeStub.PutStateArgsForCall(3)
+	_, secretByte := chaincodeStub.PutStateArgsForCall(3)
 
 	chaincodeStub.GetStateReturnsOnCall(3, authSetByte, nil)
 	chaincodeStub.GetStateReturnsOnCall(4, secretByte, nil)

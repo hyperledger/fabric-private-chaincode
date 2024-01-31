@@ -72,12 +72,12 @@ func (t *SecretKeeper) AddUser(ctx contractapi.TransactionContextInterface, sig 
 	if err != nil {
 		return err
 	}
-	if valid != true {
-		return fmt.Errorf("User are not allowed to perform this action.")
+	if !valid {
+		return fmt.Errorf("user are not allowed to perform this action")
 	}
 
 	// update the value
-	authSet, err := GetAuthList(ctx)
+	authSet, _ := GetAuthList(ctx)
 	authSet.Pubkey[pubkey] = struct{}{}
 
 	authSetJson, err := json.Marshal(authSet)
@@ -99,12 +99,12 @@ func (t *SecretKeeper) RemoveUser(ctx contractapi.TransactionContextInterface, s
 	if err != nil {
 		return err
 	}
-	if valid != true {
-		return fmt.Errorf("User are not allowed to perform this action.")
+	if !valid {
+		return fmt.Errorf("user are not allowed to perform this action")
 	}
 
 	// update the value
-	authSet, err := GetAuthList(ctx)
+	authSet, _ := GetAuthList(ctx)
 	delete(authSet.Pubkey, pubkey)
 
 	authSetJson, err := json.Marshal(authSet)
@@ -126,8 +126,8 @@ func (t *SecretKeeper) LockSecret(ctx contractapi.TransactionContextInterface, s
 	if err != nil {
 		return err
 	}
-	if valid != true {
-		return fmt.Errorf("User are not allowed to perform this action.")
+	if !valid {
+		return fmt.Errorf("user are not allowed to perform this action")
 	}
 
 	// update the value
@@ -154,8 +154,8 @@ func (t *SecretKeeper) RevealSecret(ctx contractapi.TransactionContextInterface,
 	if err != nil {
 		return nil, err
 	}
-	if valid != true {
-		return nil, fmt.Errorf("User are not allowed to perform this action.")
+	if !valid {
+		return nil, fmt.Errorf("user are not allowed to perform this action")
 	}
 
 	// reveal secret
