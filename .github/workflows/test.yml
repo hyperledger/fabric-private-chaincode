@@ -3,7 +3,15 @@
 #
 
 name: FPC test
-on: [push, pull_request]
+on: 
+  push:
+    paths: 
+      - '!**.md'
+      - '!./github/workflows/**'
+  pull_request:
+     paths: 
+       - '!**.md'
+       - '!./github/workflows/**'
 
 env:
   DOCKER_REGISTRY: 'ghcr.io'
@@ -31,9 +39,11 @@ jobs:
           filters: |
             docker:
               - 'utils/docker/**'
-            notdocumentation:
-              - '!([?github/workflows/**,**/*.md])'
-          base: 'main'
+#            documentation:
+#              - '**.md'
+#          base: 'main'
+#      - name: if docu change then go to end
+              
       - name: build dev image
         if: steps.filter.outputs.docker == 'true'
         env:
@@ -43,7 +53,8 @@ jobs:
           make -C utils/docker build build-dev
 
       - name: fetch dev image
-        if: steps.filter.outputs.docker == 'false' && steps.filter.outputs.notdocumentation == 'true'
+        if: steps.filter.outputs.docker == 'false' 
+        # && steps.filter.outputs.notdocumentation == 'true'
         env:
           DOCKER_QUIET_BUILD: 1
         run: |
@@ -51,7 +62,7 @@ jobs:
           make -C utils/docker pull pull-dev
 
       - name: run make inside dev container
-        if: steps.filter.outputs.notdocumentation == 'true'
+              # if: steps.filter.outputs.notdocumentation == 'true'
         env:
           DOCKER_DEV_CI_MODE: 1
           DOCKER_QUIET_BUILD: 1
