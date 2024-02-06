@@ -39,11 +39,7 @@ jobs:
           filters: |
             docker:
               - 'utils/docker/**'
-#            documentation:
-#              - '**.md'
 #          base: 'main'
-#      - name: if docu change then go to end
-              
       - name: build dev image
         if: steps.filter.outputs.docker == 'true'
         env:
@@ -53,7 +49,7 @@ jobs:
           make -C utils/docker build build-dev
 
       - name: fetch dev image
-        if: steps.filter.outputs.docker == 'false' 
+        if: steps.filter.outputs.docker == 'false'  
         # && steps.filter.outputs.notdocumentation == 'true'
         env:
           DOCKER_QUIET_BUILD: 1

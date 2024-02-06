@@ -1,0 +1,29 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+name: Update Documentation
+on: 
+  push:
+    paths: 
+      - '**.md'
+    paths-ignore: 
+      - '!**.md'
+  pull_request:
+    paths: 
+       - '**.md'
+    paths-ignore: 
+        - '!**.md'
+  
+jobs:
+  log:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+      - name: log file updated
+        run: |
+          echo "Updated documentation"  
+
