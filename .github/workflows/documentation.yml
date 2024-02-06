@@ -8,14 +8,14 @@ on:
 #    paths: 
 #      - '**.md'
     paths-ignore: 
-      - '!**.md'
       - '.github/workflows/**'
+      - '!**.md'
   pull_request:
 #    paths: 
 #       - '**.md'
     paths-ignore: 
-        - '!**.md'
         - '.github/workflows/**'
+        - '!**.md'
   
 jobs:
   log:
