@@ -5,15 +5,17 @@
 name: Update Documentation
 on: 
   push:
-    paths: 
-      - '**.md'
+#    paths: 
+#      - '**.md'
     paths-ignore: 
       - '!**.md'
+      - '.github/workflows/**'
   pull_request:
-    paths: 
-       - '**.md'
+#    paths: 
+#       - '**.md'
     paths-ignore: 
         - '!**.md'
+        - '.github/workflows/**'
   
 jobs:
   log:
