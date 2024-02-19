@@ -704,7 +704,6 @@ repository is prototype code and not intended for production use.
 
 
 ## Initial Committers
-
 - [Marcus Brandenburger](https://github.com/mbrandenburger) (bur@zurich.ibm.com)
 - [Christian Cachin](https://github.com/cca88) (cca@zurich.ibm.com)
 - [Rüdiger Kapitza](https://github.com/rrkapitz) (kapitza@ibr.cs.tu-bs.de)
