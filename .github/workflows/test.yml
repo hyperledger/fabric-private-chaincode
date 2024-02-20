@@ -12,7 +12,6 @@ on:
      paths-ignore: 
        - '**.md'
        - '.github/workflows/**'
-
 env:
   DOCKER_REGISTRY: 'ghcr.io'
   PUSH_TO_MAIN: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -50,7 +49,6 @@ jobs:
 
       - name: fetch dev image
         if: steps.filter.outputs.docker == 'false'  
-        # && steps.filter.outputs.notdocumentation == 'true'
         env:
           DOCKER_QUIET_BUILD: 1
         run: |
@@ -58,7 +56,6 @@ jobs:
           make -C utils/docker pull pull-dev
 
       - name: run make inside dev container
-              # if: steps.filter.outputs.notdocumentation == 'true'
         env:
           DOCKER_DEV_CI_MODE: 1
           DOCKER_QUIET_BUILD: 1

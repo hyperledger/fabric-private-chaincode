@@ -5,8 +5,6 @@
 name: Update Documentation
 on:
   push:
-#    branches:
-#    - main
     paths:
     - '**.md'
 defaults:
