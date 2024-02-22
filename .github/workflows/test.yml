@@ -3,8 +3,15 @@
 #
 
 name: FPC test
-on: [push, pull_request]
-
+on: 
+  push:
+    paths-ignore: 
+      - '**.md'
+      - '.github/workflows/**'
+  pull_request:
+     paths-ignore: 
+       - '**.md'
+       - '.github/workflows/**'
 env:
   DOCKER_REGISTRY: 'ghcr.io'
   PUSH_TO_MAIN: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -25,13 +32,12 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - uses: dorny/paths-filter@v2
+      - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
             docker:
               - 'utils/docker/**'
-
       - name: build dev image
         if: steps.filter.outputs.docker == 'true'
         env:
