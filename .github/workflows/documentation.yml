@@ -1,0 +1,41 @@
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+name: Check Documentation
+on:
+  push:
+    paths:
+    - '**.md'
+defaults:
+  run:
+    shell: bash
+permissions: {}
+jobs:
+  check-md-only:
+    name: This job was triggered
+    runs-on: ubuntu-latest
+    outputs:
+      md-only: ${{ steps.test-md-only.outputs.md-only }}
+    permissions:
+        contents: read
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 2 # required to compare HEAD^
+    - run: git diff --name-only HEAD^..HEAD
+    - name: Test MD only
+      id: test-md-only
+      run: >-
+        [ -z "$(git diff --name-only HEAD^..HEAD | grep -ve "\.md$")" ] &&
+        echo "md-only=${{toJSON(true)}}" >> $GITHUB_OUTPUT ||
+        echo "md-only=${{toJSON(false)}}" >> $GITHUB_OUTPUT
+  build:
+    name: Run if only MD files
+    needs: ['check-md-only']
+    runs-on: ubuntu-latest
+    if: ${{ fromJSON(needs.check-md-only.outputs.md-only) == true }}
+    steps:
+    - run: echo ran
+
