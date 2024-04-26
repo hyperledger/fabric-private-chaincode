@@ -21,7 +21,7 @@ FROM hyperledger/fabric-private-chaincode-base-rt:${FPC_VERSION} as common
 LABEL org.opencontainers.image.source https://github.com/hyperledger/fabric-private-chaincode
 
 # config/build params
-ARG GO_VERSION=1.20.5
+ARG GO_VERSION=1.21.9
 ARG NANOPB_VERSION=0.4.7
 ARG OPENSSL=1.1.1n
 ARG SGXSSL=2.16_1.1.1n
