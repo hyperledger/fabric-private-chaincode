@@ -27,7 +27,6 @@ require (
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20230228194215-b84622ba6a7a
 	github.com/hyperledger/fabric-contract-api-go v1.2.1
 	github.com/hyperledger/fabric-protos-go v0.3.0
-	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.3
 	github.com/hyperledger/fabric-samples/asset-transfer-basic/chaincode-go v0.0.0-20230505123407-84f9ba1dc4ec
 	github.com/hyperledger/fabric-sdk-go v1.0.1-0.20221020141211-7af45cede6af
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.6.1
