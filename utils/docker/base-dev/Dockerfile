@@ -86,7 +86,7 @@ RUN go install golang.org/x/tools/cmd/goimports@latest \
   && go install github.com/maxbrunsfeld/counterfeiter/v6@latest \
   && go install honnef.co/go/tools/cmd/staticcheck@2023.1.3 \
   && go install github.com/client9/misspell/cmd/misspell@latest \
-  && go install github.com/mikefarah/yq/v4@latest
+  && go install github.com/mikefarah/yq/v4@v4.35.2
 
 # Install SGX SSL
 ENV SGX_SSL /opt/intel/sgxssl
