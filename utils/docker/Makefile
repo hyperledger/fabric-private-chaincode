@@ -107,14 +107,6 @@ DOCKER_DEV_RUN_OPTS += -i
 DOCKER_DEV_RUN_OPTS += -e CI=true
 endif
 
-# In CI build, pass the required coverage variable to the docker container.
-# These variables will be necessary after the tests to report the coverage "from inside the container".
-ifeq (${IS_CI_RUNNING}, true)
-ifeq (${CODE_COVERAGE_ENABLED}, true)
-DOCKER_DEV_RUN_OPTS += `curl -s https://codecov.io/env | bash`
-endif
-endif
-
 # Run a specific command (rather than bash) with 'make run-dev' by defining
 # the variable DOCKER_DEV_OPTIONAL_CMD
 DOCKER_DEV_OPTIONAL_CMD=
