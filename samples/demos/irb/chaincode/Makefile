@@ -38,7 +38,7 @@ PROTO_FILES := irb.proto
 .PHONY: protos
 protos: $(PROTO_BUILD_DIR)
 	$(PROTOC_CMD) \
-		--plugin=protoc-gen-nanopb=$(NANOPB_PATH)/generator/protoc-gen-nanopb-py2 \
+		--plugin=protoc-gen-nanopb=$(NANOPB_PATH)/generator/protoc-gen-nanopb \
 		--proto_path=$(PROTO_PATH) --nanopb_out=$(PROTO_BUILD_DIR) --nanopb_opt="-I${PROTO_PATH} -f ${PROTO_PATH}/irb.options" $(PROTO_FILES)
 
 $(PROTO_BUILD_DIR):

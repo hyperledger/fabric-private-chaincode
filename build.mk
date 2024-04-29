@@ -4,7 +4,7 @@
 
 include $(TOP)/config.mk
 
-# optionlly allow local overriding defaults
+# optionally allow local overriding defaults
 -include $(TOP)/config.override.mk
 
 # define composites only here and not in config.mk so we can override parts in config.override.mk
@@ -17,9 +17,7 @@ GO := $(GO_CMD) $(GOFLAGS)
 GOTESTFLAGS := -v -race -covermode=atomic -coverprofile=coverage.out
 
 .PHONY: all
-all: build test ci_report checks # keep checks last as license test is brittle ...
-
-.PHONY: ci_report
+all: build test checks # keep checks last as license test is brittle ...
 
 .PHONY: build
 .PHONY: test

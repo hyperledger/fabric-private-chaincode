@@ -10,8 +10,8 @@
 #  - fpc image version:         FPC_VERSION
 #  - go version:                GO_VERSION
 #  - nanopb version:            NANOPB_VERSION
-#  - openssl version:           OPENSSL
-#  - sgxssl version:            SGXSSL
+#  - openssl version:           OPENSSL_VERSION
+#  - sgxssl version:            SGXSSL_VERSION
 #  - additional apt pkgs:       APT_ADD_PKGS
 
 
@@ -23,10 +23,10 @@ LABEL org.opencontainers.image.source https://github.com/hyperledger/fabric-priv
 # config/build params
 ARG GO_VERSION=1.21.9
 ARG NANOPB_VERSION=0.4.7
-ARG OPENSSL=1.1.1n
-ARG SGXSSL=2.16_1.1.1n
+ARG OPENSSL_VERSION=3.0.12
+ARG SGXSSL_VERSION=3.0_Rev1
 ARG APT_ADD_PKGS=
-ARG EGO_VERSION=1.4.1
+ARG EGO_VERSION=1.5.0
 
 # for convenience remember all versions as env variables ..
 ENV GO_VERSION=${GO_VERSION}
@@ -34,14 +34,12 @@ ENV NANOPB_VERSION=${NANOPB_VERSION}
 ENV OPENSSL_VERSION=${OPENSSL_VERSION}
 ENV SGXSSL_VERSION=${SGXSSL_VERSION}
 
+ENV DEBIAN_FRONTEND "noninteractive"
 
 WORKDIR /tmp
 
 RUN apt-get update -q \
-  && env DEBIAN_FRONTEND="noninteractive" TZ="UTC" \
-  # above makes sure any install of 'tzdata' or alike (as e.g., pulled in via ubuntu 20.04) does not hang ...
-    apt-get install -y -q \
-    # build tools
+    && apt-get install -y -q \
     build-essential \
     clang-format \
     cmake \
@@ -51,9 +49,9 @@ RUN apt-get update -q \
     libssl-dev \
     libtool \
     pkg-config \
-    python \
+    python-is-python3 \
     protobuf-compiler \
-    python-protobuf \
+    python3-protobuf \
     psmisc \
     bc \
     software-properties-common \
@@ -64,9 +62,7 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
   && add-apt-repository "deb [arch="$(dpkg --print-architecture)"] https://download.docker.com/linux/ubuntu "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" \
   && apt-get update -q \
   && apt-get install -y -q \
-    # docker-ce \
     docker-ce-cli \
-    # containerd.io \
     docker-buildx-plugin \
     docker-compose-plugin
 
@@ -90,18 +86,17 @@ RUN go install golang.org/x/tools/cmd/goimports@latest \
 
 # Install SGX SSL
 ENV SGX_SSL /opt/intel/sgxssl
-RUN git clone 'https://github.com/intel/intel-sgx-ssl.git' \
-  && cd intel-sgx-ssl \
-  && . /opt/intel/sgxsdk/environment \
-  && git checkout lin_${SGXSSL} \
-  && cd openssl_source \
-  && wget -q https://www.openssl.org/source/openssl-${OPENSSL}.tar.gz \
-  && cd ../Linux \
-  && make SGX_MODE=SIM NO_THREADS=1 SKIP_INTELCPU_CHECK=TRUE DESTDIR=${SGX_SSL} all test\
+RUN . /opt/intel/sgxsdk/environment \
+  && git clone --depth 1 --branch ${SGXSSL_VERSION} 'https://github.com/intel/intel-sgx-ssl.git' \
+  && wget -q -P /tmp/intel-sgx-ssl/openssl_source https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz \
+  && cd /tmp/intel-sgx-ssl/Linux \
+  && make SGX_MODE=SIM NO_THREADS=1 SKIP_INTELCPU_CHECK=TRUE DESTDIR=${SGX_SSL} all \
   # Note: we need explicitly set to SIM as default is HW yet during docker
   # build you never have access to HW, regardless of platform. Note, though,
   # that libraries built work for both modes, on tests are executed for SIM only.
-  && make install
+  && make install \
+  && make clean \
+  && rm -rf /tmp/intel-sgx-ssl
 
 # Install nanopb
 ENV NANOPB_PATH=/usr/local/nanopb/
@@ -112,6 +107,6 @@ RUN git clone https://github.com/nanopb/nanopb.git ${NANOPB_PATH} \
   && make
 
 # Install ego
-RUN wget https://github.com/edgelesssys/ego/releases/download/v${EGO_VERSION}/ego_${EGO_VERSION}_amd64_ubuntu-20.04.deb \
-  && apt install -y -q ./ego_${EGO_VERSION}_amd64_ubuntu-20.04.deb \
-  && rm ego_${EGO_VERSION}_amd64_ubuntu-20.04.deb
+RUN wget https://github.com/edgelesssys/ego/releases/download/v${EGO_VERSION}/ego_${EGO_VERSION}_amd64_ubuntu-22.04.deb \
+  && apt install -y -q ./ego_${EGO_VERSION}_amd64_ubuntu-22.04.deb \
+  && rm ego_${EGO_VERSION}_amd64_ubuntu-22.04.deb

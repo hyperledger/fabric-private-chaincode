@@ -220,8 +220,8 @@ Note that by default the dev container mounts your local cloned FPC project as a
 This allows you to edit the content of the repository using your favorite editor in your system and the changes inside the docker container. Additionally, you are also not loosing changes inside the container when you reboot or the container gets stopped for other reasons.
 
 A few more notes:
-* We use Ubuntu 20.04 by default.
-  To build also docker images based on Ubuntu 18.04, add the following to `$FPC_PATH/config.override.mk`.
+* We use Ubuntu 22.04 by default.
+  To build also docker images with a different version of Ubuntu, add the following to `$FPC_PATH/config.override.mk`.
   ```bash
   DOCKER_BUILD_OPTS=--build-arg UBUNTU_VERSION=18.04 --build-arg UBUNTU_NAME=bionic
   ```
@@ -255,7 +255,7 @@ As an alternative to the Docker-based FPC development environment you can instal
 #### Requirements
 
 Make sure that you have the following required dependencies installed:
-* Linux (OS) (we recommend Ubuntu 20.04, see [list](https://github.com/intel/linux-sgx#prerequisites) supported OS)
+* Linux (OS) (we recommend Ubuntu 22.04, see [list](https://github.com/intel/linux-sgx#prerequisites) supported OS)
 
 * CMake v3.5.1 or higher
 
@@ -274,23 +274,23 @@ Make sure that you have the following required dependencies installed:
   sudo chmod +x /usr/local/bin/docker-compose
   ``` 
 
-* yq v3.x (newer versions, v4.x and higher, are currently *not* supported!)
-  You can install `yq` v3 via `go get`.
+* yq v4.x
+  You can install `yq` via `go get`.
   ```bash
-    GO111MODULE=on go get github.com/mikefarah/yq/v4
+    go get github.com/mikefarah/yq/v4
   ```
 
 * Protocol Buffers
     - Protocol Buffers 3.0.x needed for the Intel SGX SDK
     - Protocol Buffers 3.11.x or higher and [Nanopb](http://github.com/nanopb/nanopb) 0.4.7
 
-* SGX PSW & SDK v2.12 for [Linux](https://01.org/intel-software-guard-extensions/downloads)
+* SGX PSW & SDK v2.22 for [Linux](https://01.org/intel-software-guard-extensions/downloads)
   (alternatively, you could also install it from the [source](https://github.com/intel/linux-sgx)
 
 * Credentials for Intel Attestation Service, read [here](#intel-attestation-service-ias) (for hardware-mode SGX)
 
 * [Intel Software Guard Extensions SSL](https://github.com/intel/intel-sgx-ssl)
-  (we recommend using branch `lin_2.10_1.1.1g` OpenSSL `1.1.1g`)
+  (we recommend using tag `3.0_Rev2` OpenSSL `3.0.12`)
 
 * Hyperledger [Fabric](https://github.com/hyperledger/fabric/tree/v2.5.4) v2.5.4
 
@@ -326,7 +326,7 @@ are set correctly in your environment.
 
 We use *nanopb*, a lightweight implementation of Protocol Buffers, inside the enclaves to parse blocks of
 transactions. Install nanopb by following the instruction below. For this you need a working Google Protocol Buffers
-compiler with python bindings (e.g. via `apt-get install protobuf-compiler python-protobuf libprotobuf-dev`).
+compiler with python bindings (e.g. via `apt-get install protobuf-compiler python3-protobuf libprotobuf-dev`).
 For more detailed information consult the official nanopb documentation http://github.com/nanopb/nanopb.
 ```bash
 export NANOPB_PATH=/path-to/install/nanopb/
@@ -341,8 +341,8 @@ Make sure that you set `$NANOPB_PATH` as it is needed to build Fabric Private Ch
 Moreover, in order to build Fabric protobufs we also require a newer Protobuf compiler than what is provided as standard Ubuntu package and is used to build the
 Intel SGX SDK. For this reason you will have to download and install another version and use it together with Nanopb. Do not install the new protobuf, though, such that it is not found in your standard PATH but instead define the `PROTOC_CMD`, either as environment variable or via `config.override.mk` to point to the new `protoc` binary
 ```bash
-wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.4/protoc-3.11.4-linux-x86_64.zip
-unzip protoc-3.11.4-linux-x86_64.zip -d /usr/local/proto3
+wget https://github.com/protocolbuffers/protobuf/releases/download/v22.3/protoc-22.3-linux-x86_64.zip
+unzip protoc-22.3-linux-x86_64.zip -d /usr/local/proto3
 export PROTOC_CMD=/usr/local/proto3/bin/protoc
 ```
 
@@ -444,7 +444,7 @@ Note that this is indented for developing purpose only and does not provide any 
 
 In your `config.override.mk` set the following to variables:
 ```Makefile
-FPC_CCENV_IMAGE=ubuntu:20.04
+FPC_CCENV_IMAGE=ubuntu:22.04
 ERCC_GOTAGS=
 ```
 This configuration sets a standard Ubuntu image as alternative to our `fabric-private-chaincode-ccenv` image and overrides the default build tags we use to build `ercc`.
