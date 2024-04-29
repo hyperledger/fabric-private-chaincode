@@ -52,7 +52,7 @@ cat <<EOT > "${GO_BUILD_DIR}/staticcheck.conf"
 checks = ["-all"]
 EOT
 
-PROTOC_OPTS="--plugin=protoc-gen-nanopb=$NANOPB_PATH/generator/protoc-gen-nanopb-py2"
+PROTOC_OPTS="--plugin=protoc-gen-nanopb=$NANOPB_PATH/generator/protoc-gen-nanopb"
 
 # compile google protos
 $PROTOC_CMD "$PROTOC_OPTS" --proto_path=${PROTOS_DIR} --nanopb_out=$BUILD_DIR google/protobuf/*.proto
