@@ -12,6 +12,10 @@ on:
      paths-ignore: 
        - '**.md'
        - '.github/workflows/**'
+
+permissions:
+  contents: read
+
 env:
   DOCKER_REGISTRY: 'ghcr.io'
   PUSH_TO_MAIN: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
