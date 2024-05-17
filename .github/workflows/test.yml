@@ -3,7 +3,8 @@
 #
 
 name: FPC test
-on: 
+on:
+  workflow_dispatch: 
   push:
     paths-ignore: 
       - '**.md'
@@ -60,16 +61,17 @@ jobs:
         run: |
           DOCKER_BUILD_OPTS="--build-arg UBUNTU_VERSION=${{ matrix.os-version }} --build-arg UBUNTU_NAME=${{ matrix.os-name }}" \
           make -C utils/docker pull pull-dev
-  
+
       - name: run make inside dev container
         env:
           DOCKER_DEV_CI_MODE: 1
           DOCKER_QUIET_BUILD: 1
-        run: |          
+        run: |
           DOCKER_BUILD_OPTS="--build-arg UBUNTU_VERSION=${{ matrix.os-version }} --build-arg UBUNTU_NAME=${{ matrix.os-name }}" \
           GOMODCACHE_PATH=$(go env GOMODCACHE) \
           make -C utils/docker run-dev DOCKER_DEV_OPTIONAL_CMD='env IS_CI_RUNNING=true \
                                                                 make all'
+
       #
       # continue only if we push to main and rebuild docker images
       #
