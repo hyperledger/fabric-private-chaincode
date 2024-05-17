@@ -10,7 +10,8 @@ on:
 defaults:
   run:
     shell: bash
-permissions: {}
+permissions:
+  contents: read
 jobs:
   check-md-only:
     name: This job was triggered
