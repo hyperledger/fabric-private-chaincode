@@ -29,6 +29,9 @@ DOCKER_CMD := docker
 #   - DOCKER_BASE_RT_IMAGE_APT_ADD_PKGS (for all infrastructure containers)
 #   - DOCKER_BASE_DEV_IMAGE_APT_ADD_PKGS (for all images which build fabric/fpc code)
 #   - DOCKER_DEV_IMAGE_APT_ADD_PKGS (for dev image)
+# - You can mount your local go mod cache directory 
+#   to that of the docker image which allows caching of the dependencies and faster builds
+#   - GOMODCACHE_PATH (the path of your local go packages usually known by `go env GOMODCACHE`)
 
 
 # SGX related settings

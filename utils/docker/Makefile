@@ -78,11 +78,18 @@ endif
 # allows to override with `buildx build`
 DOCKER_BUILD_CMD ?= build
 
+# allows to mount host gomodcache into the container
+GOMODCACHE_PATH ?=
+DOCKER_GOMODCACHE=/project/pkg/mod
 
 # Docker run options
 # ------------------
 DOCKER_DEV_RUN_OPTS ?=
 DOCKER_DEV_RUN_OPTS += --rm
+# - mount local gomodcache from the host
+ifneq ($(GOMODCACHE_PATH),)
+	DOCKER_DEV_RUN_OPTS += -v "$(GOMODCACHE_PATH)":"$(DOCKER_GOMODCACHE)"
+endif
 # - import docker daemon socket (so dev container can run docker)
 DOCKER_DEV_RUN_OPTS += -v "$(DOCKER_DAEMON_SOCKET)":"$(DOCKER_SOCKET)"
 # - mount local fpc repo into the dev container so development inside container is
