@@ -16,6 +16,7 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 env:
   DOCKER_REGISTRY: 'ghcr.io'
