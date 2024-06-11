@@ -26,7 +26,7 @@ func NewSkvsStub(cc shim.Chaincode) *skvsStub {
 }
 
 func (e *skvsStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincodeRequestMessageBytes []byte) ([]byte, error) {
-	logger.Error("==== SKVS ChaincodeInvoke ====")
+	logger.Warning("==== SKVS ChaincodeInvoke ====")
 
 	signedProposal, err := stub.GetSignedProposal()
 	if err != nil {
