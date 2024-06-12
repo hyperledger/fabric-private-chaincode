@@ -18,6 +18,7 @@ import (
 var logger = flogging.MustGetLogger("enclave_go")
 
 func NewSkvsChaincode(cc shim.Chaincode) *chaincode.EnclaveChaincode {
+	logger.Info("Creating new SKVS Chaincode")
 	ecc := &chaincode.EnclaveChaincode{
 		Enclave:   enclave_go.NewSkvsStub(cc),
 		Validator: endorsement.NewValidator(),
