@@ -51,6 +51,10 @@ func (s *SkvsStubInterface) InitSKVS() error {
 		logger.Warningf("SKVS has default value, loading current value.")
 
 		err = json.Unmarshal(value, &s.allDataOld)
+		if err != nil {
+			logger.Errorf("SKVS Json unmarshal error: %s", err)
+			return err
+		}
 		err = json.Unmarshal(value, &s.allDataNew)
 		if err != nil {
 			logger.Errorf("SKVS Json unmarshal error: %s", err)
@@ -65,7 +69,7 @@ func (s *SkvsStubInterface) InitSKVS() error {
 func (s *SkvsStubInterface) GetState(key string) ([]byte, error) {
 	logger.Warningf("Calling Get State (Start), key: %s, alldataOld: %s", key, s.allDataOld)
 	value, found := s.allDataOld[key]
-	if found != true {
+	if !found {
 		return nil, errors.New("skvs allDataOld key not found")
 	}
 	logger.Warningf("Calling Get State (End), key: %s, value: %x", key, value)

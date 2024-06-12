@@ -8,6 +8,7 @@ package enclave_go
 
 import (
 	"crypto/sha256"
+	"fmt"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
@@ -30,7 +31,7 @@ func (e *skvsStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincodeRe
 
 	signedProposal, err := stub.GetSignedProposal()
 	if err != nil {
-		shim.Error(err.Error())
+		return nil, fmt.Errorf("cannot get signed proposal: %s", err.Error())
 	}
 
 	if err := e.verifySignedProposal(stub, chaincodeRequestMessageBytes); err != nil {
