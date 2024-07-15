@@ -8,5 +8,5 @@ include $(TOP)/build.mk
 
 SUB_DIRS = auction auction-go echo echo-go kv-test kv-test-go
 
-all build test clean clobber:
+build test clean clobber:
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit ;)
