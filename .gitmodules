@@ -5,6 +5,3 @@
 [submodule "common/crypto/pdo"]
 	path = common/crypto/pdo
 	url = https://github.com/hyperledger-labs/private-data-objects
-[submodule "samples/deployment/test-network/fabric-samples"]
-	path = samples/deployment/test-network/fabric-samples
-	url = https://github.com/hyperledger/fabric-samples.git

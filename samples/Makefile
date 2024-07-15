@@ -6,8 +6,8 @@
 TOP = ..
 include $(TOP)/build.mk
 
-SAMPLES = application chaincode demos #deployment
+SAMPLES = application chaincode demos deployment
 
-build clean:
+build test clean clobber:
 	$(foreach DIR, $(SAMPLES), $(MAKE) -C $(DIR) $@ || exit;)
 

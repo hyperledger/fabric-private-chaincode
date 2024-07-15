@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-set -euo pipefail
+set -Eeuo pipefail
 
 if [[ -z "${FPC_PATH}" ]]; then
   echo "Error: FPC_PATH not set"
@@ -51,9 +51,9 @@ for org in "${orgs[@]}"; do
   yq ".organizations.${org^}.users.${user}.cert.path = \"${CERTS[0]}\"" -i "${CONNECTIONS_PATH}"
   yq ".organizations.${org^}.users.${user}.key.path = \"${KEYS[0]}\"" -i "${CONNECTIONS_PATH}"
 
-  # add channels and entity matcher
-  yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' -i ${CONNECTIONS_PATH} <<EOF
-
+  # Create temporary file with channels and entity matchers
+  temp_yaml=$(mktemp -t temp-XXXXXXXXXX.yaml --tmpdir="${tmp_dir}")
+  cat > "${temp_yaml}" <<EOF
 channels:
   _default:
     peers:
@@ -75,20 +75,23 @@ entityMatchers:
       mappedHost: \${1}
 EOF
 
+  # add channels and entity matcher
+  yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' -i "${CONNECTIONS_PATH}" "${temp_yaml}"
+  yq "${CONNECTIONS_PATH}" > /dev/null
+
   # fetch all peers from connections
-  yq ".peers" "${CONNECTIONS_PATH}" >> "${tmp_dir}/peers-${org}.yaml"
+  yq '(.peers) as $item ireduce({}; setpath($item | path; $item))' "${CONNECTIONS_PATH}" >> "${tmp_dir}/peers-${org}.yaml"
 done
 
 # consolidate all collected peers in a single peers.yaml
 yq eval-all '. as $item ireduce ({}; . * $item )' ${tmp_dir}/peers-*.yaml >> "${tmp_dir}/peers.yaml"
-yq 'true' "${tmp_dir}/peers.yaml" > /dev/null
 
 # merge peers.yaml into all connection files
 for org in "${orgs[@]}"; do
   ORG_PATH="${FPC_PATH}/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/${org}.example.com"
   CONNECTIONS_PATH="${ORG_PATH}/connection-${org}.yaml"
   yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' -i "${CONNECTIONS_PATH}" "${tmp_dir}/peers.yaml"
-  yq 'true' "${CONNECTIONS_PATH}" > /dev/null
+  yq "${CONNECTIONS_PATH}" > /dev/null
 done
 
 echo "Updated!"

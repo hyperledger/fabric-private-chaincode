@@ -3,16 +3,13 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-version: '3'
-
 services:
   #  org1
   ecc.peer0.org1.example.com:
-    container_name: ${CC_ID}.peer0.org1.example.com
-    hostname: ${CC_ID}.peer0.org1.example.com
+    container_name: peer0org1_${CC_ID}_ccaas
     image: fpc/fpc-${CC_ID}${HW_EXTENSION:-}:${FPC_VERSION}
     environment:
-      - CHAINCODE_SERVER_ADDRESS=${CC_ID}.peer0.org1.example.com:9999
+      - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
       - CHAINCODE_PKG_ID=${ORG1_ECC_PKG_ID}
       - FABRIC_LOGGING_SPEC=${FABRIC_LOGGING_SPEC:-DEBUG}
       - SGX_MODE=${SGX_MODE:-SIM}
@@ -25,11 +22,10 @@ services:
       - ${SGX_DEVICE_PATH:-/dev/null}:${SGX_DEVICE_PATH:-/dev/null}
 
   ercc.peer0.org1.example.com:
-    container_name: ercc.peer0.org1.example.com
-    hostname: ercc.peer0.org1.example.com
+    container_name: peer0org1_ercc_ccaas
     image: fpc/ercc:${FPC_VERSION}
     environment:
-      - CHAINCODE_SERVER_ADDRESS=ercc.peer0.org1.example.com:9999
+      - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
       - CHAINCODE_PKG_ID=${ORG1_ERCC_PKG_ID}
       - FABRIC_LOGGING_SPEC=${FABRIC_LOGGING_SPEC:-DEBUG}
       - SGX_MODE=${SGX_MODE:-SIM}
@@ -38,11 +34,10 @@ services:
 
   # org2
   ecc.peer0.org2.example.com:
-    container_name: ${CC_ID}.peer0.org2.example.com
-    hostname: ${CC_ID}.peer0.org2.example.com
+    container_name: peer0org2_${CC_ID}_ccaas
     image: fpc/fpc-${CC_ID}${HW_EXTENSION:-}:${FPC_VERSION}
     environment:
-      - CHAINCODE_SERVER_ADDRESS=${CC_ID}.peer0.org2.example.com:9999
+      - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
       - CHAINCODE_PKG_ID=${ORG2_ECC_PKG_ID}
       - FABRIC_LOGGING_SPEC=${FABRIC_LOGGING_SPEC:-DEBUG}
       - SGX_MODE=${SGX_MODE:-SIM}
@@ -55,11 +50,10 @@ services:
       - ${SGX_DEVICE_PATH:-/dev/null}:${SGX_DEVICE_PATH:-/dev/null}
 
   ercc.peer0.org2.example.com:
-    container_name: ercc.peer0.org2.example.com
-    hostname: ercc.peer0.org2.example.com
+    container_name: peer0org2_ercc_ccaas
     image: fpc/ercc:${FPC_VERSION}
     environment:
-      - CHAINCODE_SERVER_ADDRESS=ercc.peer0.org2.example.com:9999
+      - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
       - CHAINCODE_PKG_ID=${ORG2_ERCC_PKG_ID}
       - FABRIC_LOGGING_SPEC=${FABRIC_LOGGING_SPEC:-DEBUG}
       - SGX_MODE=${SGX_MODE:-SIM}
@@ -68,5 +62,5 @@ services:
 
 networks:
   default:
-    external:
-      name: fabric_test
+    name: fabric_test
+    external: true
