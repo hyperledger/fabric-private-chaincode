@@ -38,8 +38,8 @@ Next, setup fabric sample network, binaries and docker images. Here we follow th
 cd $FPC_PATH/samples/deployment/test-network
 git clone https://github.com/hyperledger/fabric-samples
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples
-git checkout -b "works" 98028c7
-curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.5.4 1.5.7 -s
+git checkout -b "works" e334b75
+curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.5.9 1.5.7 -s
 ```
 
 Before we can start the network, we need to update the Fabric peer configuration to enable FPC support.

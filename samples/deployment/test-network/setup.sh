@@ -26,10 +26,13 @@ backup() {
 echo "Prepare fabric samples test-network for FPC"
 
 FABRIC_SAMPLES=${FPC_PATH}/samples/deployment/test-network/fabric-samples
-CORE_PATH=${FABRIC_SAMPLES}/config/core.yaml
-DOCKER_PATH=${FABRIC_SAMPLES}/test-network/docker
+CORE_PATH=${FABRIC_SAMPLES}/test-network/compose/docker/peercfg/core.yaml
+DOCKER_PATH=${FABRIC_SAMPLES}/test-network/compose/docker
 DOCKER_COMPOSE_TEST_NET=${DOCKER_PATH}/docker-compose-test-net.yaml
 DOCKER_COMPOSE_CA=${DOCKER_PATH}/docker-compose-ca.yaml
+COMPOSE_PATH=${FABRIC_SAMPLES}/test-network/compose
+COMPOSE_TEST_NET=${COMPOSE_PATH}/compose-test-net.yaml
+COMPOSE_CA=${COMPOSE_PATH}/compose-ca.yaml
 
 if [ ! -d "${FABRIC_SAMPLES}/bin" ]; then
   echo "Error: no fabric binaries found, see README.md"
@@ -60,18 +63,23 @@ yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' -i ${CORE_PATH} co
 if [ ! -z ${DOCKERD_FPC_PATH+x} ]; then
   echo "Oo we are in docker mode! we need to use the host fpc path"
   FPC_PATH_HOST=${DOCKERD_FPC_PATH}
+  COMPOSE_PATH_HOST=${DOCKERD_FPC_PATH}
 else
   FPC_PATH_HOST=${FPC_PATH}
+  COMPOSE_PATH_HOST=${FPC_PATH}
 fi
 echo "set FPC_PATH_HOST = ${FPC_PATH_HOST}"
+echo "set COMPOSE_PATH_HOST = ${COMPOSE_PATH_HOST}"
 
 FABRIC_SAMPLES_HOST=${FPC_PATH_HOST}/samples/deployment/test-network/fabric-samples
+COMPOSE_HOST=${COMPOSE_PATH_HOST}/samples/deployment/test-network/fabric-samples/test-network/compose
 
 echo "Resolving relative docker volume paths in ..."
 
 echo "${DOCKER_COMPOSE_TEST_NET}"
 backup ${DOCKER_COMPOSE_TEST_NET}
 sed -i "s+\.\./+${FABRIC_SAMPLES_HOST}/test-network/+g" "${DOCKER_COMPOSE_TEST_NET}"
+sed -i "s+\./+${COMPOSE_HOST}/+g" "${DOCKER_COMPOSE_TEST_NET}"
 
 echo "${DOCKER_COMPOSE_CA}"
 backup ${DOCKER_COMPOSE_CA}
@@ -82,6 +90,23 @@ peers=("peer0.org1.example.com" "peer0.org2.example.com")
 for p in "${peers[@]}"; do
   yq ".services.\"$p\".volumes += [\"${FPC_PATH_HOST}:/opt/gopath/src/github.com/hyperledger/fabric-private-chaincode\"]" -i "${DOCKER_COMPOSE_TEST_NET}"
   yq ".services.\"$p\".volumes += [\"${FABRIC_SAMPLES_HOST}/config/core.yaml:/etc/hyperledger/fabric/core.yaml\"]" -i "${DOCKER_COMPOSE_TEST_NET}"
+done
+
+echo "Now modifying the files in ..."
+
+echo "${COMPOSE_TEST_NET}"
+backup ${COMPOSE_TEST_NET}
+sed -i "s+\.\./+${FABRIC_SAMPLES_HOST}/test-network/+g" "${COMPOSE_TEST_NET}"
+
+echo "${COMPOSE_CA}"
+backup ${COMPOSE_CA}
+sed -i "s+\.\./+${FABRIC_SAMPLES_HOST}/test-network/+g" "${COMPOSE_CA}"
+
+echo "${COMPOSE_TEST_NET}"
+peers=("peer0.org1.example.com" "peer0.org2.example.com")
+for p in "${peers[@]}"; do
+  yq ".services.\"$p\".volumes += [\"${FPC_PATH_HOST}:/opt/gopath/src/github.com/hyperledger/fabric-private-chaincode\"]" -i "${COMPOSE_TEST_NET}"
+  yq ".services.\"$p\".volumes += [\"${FABRIC_SAMPLES_HOST}/config/core.yaml:/etc/hyperledger/fabric/core.yaml\"]" -i "${COMPOSE_TEST_NET}"
 done
 
 ###############################################
