@@ -25,10 +25,10 @@ ecc-container:
 	if [ "${WITH_GO}" = "YES" ]; then \
 		export ECC_PATH=${CC_PATH}/mrenclave ; \
 	else \
-	    export ECC_PATH=${CC_PATH}/_build/lib ; \
+		export ECC_PATH=${CC_PATH}/_build/lib ; \
 	fi && \
 	make -C ${CC_PATH} && \
-	make -C ${FPC_PATH}/ecc DOCKER_IMAGE=fpc/fpc-${CC_ID}$${HW_EXTENSION} DOCKER_ENCLAVE_SO_PATH=$${ECC_PATH} all docker
+	make -C ${FPC_PATH}/ecc DOCKER_IMAGE=fpc/fpc-${CC_ID}$${HW_EXTENSION} DOCKER_ENCLAVE_SO_PATH=${ECC_PATH} all docker
 
 ercc-ecc-start:
 	if [ ! -z "${DOCKERD_FPC_PATH}" ]; then \
