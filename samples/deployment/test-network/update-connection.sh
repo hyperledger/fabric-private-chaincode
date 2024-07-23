@@ -51,9 +51,9 @@ for org in "${orgs[@]}"; do
   yq ".organizations.${org^}.users.${user}.cert.path = \"${CERTS[0]}\"" -i "${CONNECTIONS_PATH}"
   yq ".organizations.${org^}.users.${user}.key.path = \"${KEYS[0]}\"" -i "${CONNECTIONS_PATH}"
 
-  # add channels and entity matcher
-  yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' -i ${CONNECTIONS_PATH} <<EOF
-
+  # Create temporary file with channels and entity matchers
+  temp_yaml=$(mktemp -t temp-XXXXXXXXXX.yaml --tmpdir="${tmp_dir}")
+  cat > "${temp_yaml}" <<EOF
 channels:
   _default:
     peers:
@@ -74,6 +74,9 @@ entityMatchers:
       sslTargetOverrideUrlSubstitutionExp: \${1}
       mappedHost: \${1}
 EOF
+
+  # add channels and entity matcher
+  yq eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' -i "${CONNECTIONS_PATH}" "${temp_yaml}"
 
   # fetch all peers from connections
   yq ".peers" "${CONNECTIONS_PATH}" >> "${tmp_dir}/peers-${org}.yaml"
