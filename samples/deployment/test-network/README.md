@@ -57,7 +57,7 @@ Let's start the Fabric-Samples test network.
 
 ```bash
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
-./network.sh up createChannel -ca
+./network.sh up createChannel -ca -c mychannel
 ```
 
 

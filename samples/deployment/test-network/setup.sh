@@ -65,15 +65,19 @@ else
 fi
 echo "set FPC_PATH_HOST = ${FPC_PATH_HOST}"
 
-FABRIC_SAMPLES_HOST=${FPC_PATH_HOST}/samples/deployment/test-network/fabric-samples
+FABRIC_SAMPLES_HOST=${FPC_PATH}/samples/deployment/test-network/fabric-samples
+DOCKERD_FABRIC_SAMPLES_HOST=${DOCKERD_FPC_PATH}samples/deployment/test-network/fabric-samples
 TEST_NETWORK_HOST=${FABRIC_SAMPLES_HOST}/test-network
+DOCKERD_TEST_NETWORK_HOST=${DOCKERD_FABRIC_SAMPLES_HOST}/test-network
 
+echo "set DOCKERD_TEST_NETWORK_HOST = ${DOCKERD_TEST_NETWORK_HOST}"
+echo "set TEST_NETWORK_HOST = ${TEST_NETWORK_HOST}"
 echo "Resolving relative docker volume paths"
 
 # replace "../" with absolute path
-find "${TEST_NETWORK_HOST}/compose" -maxdepth 1 \( -name '*compose*.yaml' -o -name '*compose*.yml' \) -exec gsed -i -E 's+(- )(\.\.)(/)+\1'"${TEST_NETWORK_HOST}"'\3+g' {} \;
+find "${TEST_NETWORK_HOST}/compose" -maxdepth 1 \( -name '*compose*.yaml' -o -name '*compose*.yml' \) -exec sed -i -E 's+(- )(\.\.)(/)+\1'"${DOCKERD_TEST_NETWORK_HOST}"'\3+g' {} \;
 # replace "./" with absolute path
-find "${TEST_NETWORK_HOST}/compose" -mindepth 2 -maxdepth 2 \( -name '*compose*.yaml' -o -name '*compose*.yml' \) -exec gsed -i -E 's+(- )(\.)(/)+\1'"${TEST_NETWORK_HOST}/compose"'\3+g' {} \;
+find "${TEST_NETWORK_HOST}/compose" -mindepth 2 -maxdepth 2 \( -name '*compose*.yaml' -o -name '*compose*.yml' \) -exec sed -i -E 's+(- )(\.)(/)+\1'"${DOCKERD_TEST_NETWORK_HOST}/compose"'\3+g' {} \;
 
 
 ##############################################################################################
