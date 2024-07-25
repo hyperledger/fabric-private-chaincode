@@ -12,16 +12,6 @@ if [[ -z "${FPC_PATH}" ]]; then
   exit 1
 fi
 
-backup() {
-  FILE=$1
-  BACKUP="${FILE}.backup"
-  echo "backup ${FILE} ..."
-  if [[ -e "${BACKUP}" ]]; then
-    cp "${BACKUP}" "${FILE}"
-  else
-    cp "${FILE}" "${BACKUP}"
-  fi
-}
 
 ##############################################################################################
 # Get the fabric samples repo and fetch binaries and container images
@@ -112,9 +102,9 @@ wget -O "${BE_CONNECTIONS_PROFILE}" https://raw.githubusercontent.com/hyperledge
 wget -O "${BE_DOCKER_COMPOSE}" https://raw.githubusercontent.com/hyperledger/blockchain-explorer/main/docker-compose.yaml
 
 cat > "${BE_PATH}/.env" << EOF
-EXPLORER_CONFIG_FILE_PATH=${BE_PATH}/config.json
-EXPLORER_PROFILE_DIR_PATH=${BE_PATH}/connection-profile
-FABRIC_CRYPTO_PATH=${TEST_NETWORK_HOST}/organizations
+EXPLORER_CONFIG_FILE_PATH=${BE_PATH_HOST}/config.json
+EXPLORER_PROFILE_DIR_PATH=${BE_PATH_HOST}/connection-profile
+FABRIC_CRYPTO_PATH=${DOCKERD_TEST_NETWORK_HOST}/organizations
 EOF
 
 
