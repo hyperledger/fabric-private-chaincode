@@ -56,7 +56,7 @@ fi
 echo "set FPC_PATH_HOST = ${FPC_PATH_HOST}"
 
 FABRIC_SAMPLES_HOST=${FPC_PATH}/samples/deployment/test-network/fabric-samples
-DOCKERD_FABRIC_SAMPLES_HOST=${DOCKERD_FPC_PATH}samples/deployment/test-network/fabric-samples
+DOCKERD_FABRIC_SAMPLES_HOST=${FPC_PATH_HOST}samples/deployment/test-network/fabric-samples
 TEST_NETWORK_HOST=${FABRIC_SAMPLES_HOST}/test-network
 DOCKERD_TEST_NETWORK_HOST=${DOCKERD_FABRIC_SAMPLES_HOST}/test-network
 
