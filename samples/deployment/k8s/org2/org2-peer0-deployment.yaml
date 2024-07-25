@@ -57,7 +57,7 @@ spec:
               value: 0.0.0.0:9443
             - name: CORE_METRICS_PROVIDER
               value: prometheus
-          image: hyperledger/fabric-peer:2.5.4
+          image: hyperledger/fabric-peer:2.5.9
           name: peer0
           ports:
             - containerPort: 7051
