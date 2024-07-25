@@ -53,7 +53,7 @@ run_test() {
 
     # install something non-fpc
     # following the official fabric docs at https://hyperledger-fabric.readthedocs.io/en/release-2.5/deploy_chaincode.html
-    local tmp_dir=$(mktemp -d -t fabric-samples --tmp_dir="${TMP_DIR}")
+    local tmp_dir=$(mktemp -d -t fabric-samples --tmpdir="${TMP_DIR}")
     download_chaincode "${tmp_dir}"
     CC_PATH="${tmp_dir}/asset-transfer-basic/chaincode-go/"
     # jump to the basic chaincode sample and fetch deps
