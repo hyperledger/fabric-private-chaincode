@@ -23,8 +23,8 @@ ercc-ecc-start:
 ercc-ecc-stop:
 	${DOCKER_COMPOSE} down
 
-clobber:
-	docker compose down
+clean:
+	docker compose down -v
 	./fabric-samples/test-network/network.sh down || true
 	rm -rf blockchain-explorer fabric-samples .env
 	docker system prune --force

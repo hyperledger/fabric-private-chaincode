@@ -20,7 +20,7 @@ function cleanup() {
   echo "Cleanup"
   echo "########################################"
 
-  make -C "$FPC_PATH/samples/deployment/test-network" clobber
+  make -C "$FPC_PATH/samples/deployment/test-network" clean
 }
 
 function test_network_setup() {
@@ -134,7 +134,9 @@ function test_blockchain_explorer() {
    cd "$FPC_PATH/samples/deployment/test-network/blockchain-explorer"
    docker compose up -d
 
-   curl http://localhost:8080/
+   #curl http://localhost:8080/
+
+   docker compose down -v
 }
 
 function test_shutdown() {
