@@ -100,6 +100,8 @@ wget -O "${BE_CONFIG}" https://raw.githubusercontent.com/hyperledger/blockchain-
 wget -O "${BE_CONNECTIONS_PROFILE}" https://raw.githubusercontent.com/hyperledger/blockchain-explorer/main/examples/net1/connection-profile/test-network.json
 wget -O "${BE_DOCKER_COMPOSE}" https://raw.githubusercontent.com/hyperledger/blockchain-explorer/main/docker-compose.yaml
 
+yq '(. | .networks."mynetwork.com" ) |= . + {"external": true}' -i "${BE_DOCKER_COMPOSE}"
+
 cat > "${BE_PATH}/.env" << EOF
 EXPLORER_CONFIG_FILE_PATH=${BE_PATH_HOST}/config.json
 EXPLORER_PROFILE_DIR_PATH=${BE_PATH_HOST}/connection-profile
