@@ -2,12 +2,10 @@
 
 This guide shows how to deploy and run a FPC Chaincode on test-network provided by [fabric-samples](https://github.com/hyperledger/fabric-samples).
 
-Before moving forward, follow the main [README](../../../README.md) to set up your environment.
+Before moving forward, follow the main [README](../../../README.md) to set up your environment and build the project.
 This guide works also with the FPC Dev docker container.
 
 ## Prepare FPC Containers
-
-[//]: # (TODO lets work this section)
 
 FPC requires a special docker container to execute a FPC chaincode, similar to Fabric's `ccenv` container image but with additional support for Intel SGX.  
 You can pull the FPC chaincode environment image (`fabric-private-chaincode-ccenv`) from our Github repository or build them manually as follows:
@@ -20,27 +18,31 @@ make -C $FPC_PATH/utils/docker pull
 make -C $FPC_PATH/utils/docker build
 ```
 
-Next, we package the FPC components as docker images (building on top of `fabric-private-chaincode-ccenv`) which are deployed on our test network.
-Use `CC_ID` and `CC_PATH` to define the FPC Chaincode you want to build.
+Next, we package the FPC chaincode as a docker image which are deployed on the test-network using the chaincode as a service method.
+The following snippet builds the `echo-go` FPC chaincode. 
+Note that we export `CC_ID`, `CC_NAME`, and `CC_VER` variables, which we will need  
 
 ```bash
-cd $FPC_PATH/samples/deployment/test-network
-export CC_ID=echo
-export CC_PATH=$FPC_PATH/samples/chaincode/echo
-# TODO this needs to be changed!
-export CC_VER=$(cat CC_PATH/)
-make build
+export CC_ID=echo-go
+export CC_NAME=fpc-echo-go
+make -C $FPC_PATH/samples/chaincode/echo-go build docker
+export CC_VER=$(cat $FPC_PATH/samples/chaincode/echo-go/mrenclave)
 ```
 
-Note: If you want to build with [mock-enclave](../../../ecc/chaincode/enclave/mock_enclave.go) rather than the real enclave-based one, build with
-`make build GOTAGS="-tags mock_ecc"` instead.
+Please verify that the `fpc/fpc-echo-go` image exists using `docker images | grep fpc-echo-go`.
+
+Finally, make sure you have the FPC Enclave Registry container image already build (see the main [README](../../../README.md)), otherwise you can build it as follows:
+
+```bash
+make -C ${FPC_PATH}/ercc all docker
+```
 
 
 ## Prepare the Test Network
 
 Next, we set up the Fabric samples [test-network](https://github.com/hyperledger/fabric-samples/tree/main/test-network).
 
-Since the Fabric samples test network uses docker (and docker-compose) to run the Fabric components, we need to make sure that it works within our FPC dev container environment.
+Since the Fabric samples test network uses docker (and docker compose) to run the Fabric components, we need to make sure that it works within our FPC dev container environment.
 In particular, as we use the host docker daemon, there may be issues with docker mounts.
 
 For convenience, we provide a `setup.sh` script that clones the fabric samples repository, downloads all required fabric container images and binaries, and replaces all relative mount paths in the compose files with absolute path on the host system. 
@@ -57,7 +59,7 @@ Let's start the Fabric-Samples test network.
 
 ```bash
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
-./network.sh up createChannel -ca -c mychannel
+./network.sh up createChannel -c mychannel
 ```
 
 
@@ -80,7 +82,7 @@ Make sure you have set `CC_ID` to the same chaincode ID as used in the earlier s
 
 ```bash
 # Start FPC container
-make ercc-ecc-start
+make -C $FPC_PATH/samples/deployment/test-network ercc-ecc-start
 ```
 
 You should see two instances of the FPC Echo chaincode and two instances of the FPC Enclave Registry chaincode running such as in the following example:
@@ -100,7 +102,7 @@ ercc.peer0.org1.example.com    | 2021-05-11 16:11:32.199 UTC [ercc] main -> INFO
 ```
 
 The FPC Chaincode is now up and running, ready for processing invocations!
-Note that the containers are running in foreground in your terminal using docker-compose.
+Note that the containers are running in the background in your terminal using docker-compose.
 
 
 ## Interact with the FPC Chaincode
@@ -130,7 +132,7 @@ In order to initiate the FPC Chaincode enclave and register it with the FPC Encl
 export SGX_CREDENTIALS_PATH=$FPC_PATH/config/ias
 
 cd $FPC_PATH/samples/application/simple-go
-CC_ID=echo ORG_NAME=Org1 go run . -withLifecycleInitEnclave
+CC_ID=echo-go ORG_NAME=Org1 go run . -withLifecycleInitEnclave
 ```
 
 Note that we execute the go app as `Org1`, thereby creating and registering the FPC Chaincode enclave at `peer0.org1.example.com`. Alternatively, we could run this as `Org2` to initiate the enclave at `peer0.org2.example.com`.
@@ -139,8 +141,8 @@ Afterwards you _must_ run the application without the `withLifecycleInitEnclave`
 
 ```bash
 cd $FPC_PATH/samples/application/simple-go
-CC_ID=echo ORG_NAME=Org1 go run .
-CC_ID=echo ORG_NAME=Org2 go run .
+CC_ID=echo-go ORG_NAME=Org1 go run .
+CC_ID=echo-go ORG_NAME=Org2 go run .
 ```
 
 ### How to use simple-cli-go
@@ -153,7 +155,7 @@ cd $FPC_PATH/samples/application/simple-cli-go
 make
 
 # export fpcclient settings
-export CC_NAME=echo
+export CC_NAME=echo-go
 export CHANNEL_NAME=mychannel
 export CORE_PEER_ADDRESS=localhost:7051
 export CORE_PEER_ID=peer0.org1.example.com
@@ -182,8 +184,6 @@ export SGX_CREDENTIALS_PATH=$FPC_PATH/config/ias
 Since we opened a new terminal to interact with the FPC Chaincode, to be able to shutdown the FPC chaincode you need to define the environment variables that set the chaincode name and path.
 
 ```bash
-export CC_ID=echo
-export CC_PATH=$FPC_PATH/samples/chaincode/echo
 make -C $FPC_PATH/samples/deployment/test-network ercc-ecc-stop
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
 ./network.sh down
@@ -191,12 +191,17 @@ cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
 
 ## Using HelloWorld chaincode on the test-network
 
-In this section we show how you can run a different FPC chaincode on the test network. For example, you can use the [HelloWorld](../../chaincode/helloworld/README.md) code instead of the echo code. To do so you have to change the values of the environment variables set at the beginning `CC_ID` and `CC_PATH`.
+In this section we show how you can run a different FPC chaincode on the test network. For example, you can use the [HelloWorld](../../chaincode/helloworld/README.md) code instead of the echo-go code.
+To do so you have to build the chaincode as follows:
 
 ```bash
 export CC_ID=helloworld
-export CC_PATH=$FPC_PATH/samples/chaincode/helloworld
+export CC_NAME=fpc-helloworld
+make -C $FPC_PATH/samples/chaincode/helloworld build docker
+export CC_VER=$(cat $FPC_PATH/samples/chaincode/helloworld/_build/lib/mrenclave)
 ```
+
+Repeat the process of starting the test-network and deployment as described above.
 
 Afterwards to test you would use [simple-cli-go](#How-to-use-simple-cli-go). You would need to verify that the `CC_NAME` variable is set to helloworld and then to interact you would execute the chaincode as follows:
 

@@ -42,6 +42,8 @@ ORG1_ECC_PKG_ID=$(${NETWORK_CMD} cc list -org 1 | grep "Label: ${CC_ID}_${CC_VER
 ORG2_ECC_PKG_ID=$(${NETWORK_CMD} cc list -org 2 | grep "Label: ${CC_ID}_${CC_VER}" | awk '{print $3}' | sed 's/.$//')
 
 cat > .env << EOF
+CC_ID="$CC_ID"
+CC_VER="${CC_VER}"
 ORG1_ECC_PKG_ID="${ORG1_ECC_PKG_ID}"
 ORG1_ERCC_PKG_ID="${ORG1_ERCC_PKG_ID}"
 ORG2_ECC_PKG_ID="${ORG2_ECC_PKG_ID}"

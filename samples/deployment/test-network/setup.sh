@@ -55,19 +55,18 @@ else
 fi
 echo "set FPC_PATH_HOST = ${FPC_PATH_HOST}"
 
-FABRIC_SAMPLES_HOST=${FPC_PATH}/samples/deployment/test-network/fabric-samples
-DOCKERD_FABRIC_SAMPLES_HOST=${FPC_PATH_HOST}samples/deployment/test-network/fabric-samples
+FABRIC_SAMPLES_HOST=${FPC_PATH_HOST}/samples/deployment/test-network/fabric-samples
 TEST_NETWORK_HOST=${FABRIC_SAMPLES_HOST}/test-network
-DOCKERD_TEST_NETWORK_HOST=${DOCKERD_FABRIC_SAMPLES_HOST}/test-network
+TEST_NETWORK=${FABRIC_SAMPLES}/test-network
 
-echo "set DOCKERD_TEST_NETWORK_HOST = ${DOCKERD_TEST_NETWORK_HOST}"
+echo "set FABRIC_SAMPLES_HOST = ${FABRIC_SAMPLES_HOST}"
 echo "set TEST_NETWORK_HOST = ${TEST_NETWORK_HOST}"
 echo "Resolving relative docker volume paths"
 
 # replace "../" with absolute path
-find "${TEST_NETWORK_HOST}/compose" -maxdepth 1 \( -name '*compose*.yaml' -o -name '*compose*.yml' \) -exec sed -i -E 's+(- )(\.\.)(/)+\1'"${DOCKERD_TEST_NETWORK_HOST}"'\3+g' {} \;
+find "${TEST_NETWORK}/compose" -maxdepth 1 \( -name '*compose*.yaml' -o -name '*compose*.yml' \) -exec sed -i -E 's+(- )(\.\.)(/)+\1'"${TEST_NETWORK_HOST}"'\3+g' {} \;
 # replace "./" with absolute path
-find "${TEST_NETWORK_HOST}/compose" -mindepth 2 -maxdepth 2 \( -name '*compose*.yaml' -o -name '*compose*.yml' \) -exec sed -i -E 's+(- )(\.)(/)+\1'"${DOCKERD_TEST_NETWORK_HOST}/compose"'\3+g' {} \;
+find "${TEST_NETWORK}/compose" -mindepth 2 -maxdepth 2 \( -name '*compose*.yaml' -o -name '*compose*.yml' \) -exec sed -i -E 's+(- )(\.)(/)+\1'"${TEST_NETWORK_HOST}/compose"'\3+g' {} \;
 
 
 ##############################################################################################
@@ -104,7 +103,7 @@ wget -O "${BE_DOCKER_COMPOSE}" https://raw.githubusercontent.com/hyperledger/blo
 cat > "${BE_PATH}/.env" << EOF
 EXPLORER_CONFIG_FILE_PATH=${BE_PATH_HOST}/config.json
 EXPLORER_PROFILE_DIR_PATH=${BE_PATH_HOST}/connection-profile
-FABRIC_CRYPTO_PATH=${DOCKERD_TEST_NETWORK_HOST}/organizations
+FABRIC_CRYPTO_PATH=${TEST_NETWORK_HOST}/organizations
 EOF
 
 
