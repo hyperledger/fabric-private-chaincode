@@ -7,6 +7,6 @@ include $(TOP)/build.mk
 
 DEPLOYMENT_SAMPLES = test-network
 
-build test clean:
+build test clean clobber:
 	$(foreach DIR, $(DEPLOYMENT_SAMPLES), $(MAKE) -C $(DIR) $@ || exit;)
 
