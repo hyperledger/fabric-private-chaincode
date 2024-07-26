@@ -124,7 +124,7 @@ If you have installed them somewhere else on your system, please set `FABIC_BIN_
 For instance, you can download the binaries and use them by following the commands:
 ```bash
 cd $FPC_PATH/samples/deployment/k8s
-curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.5.4 1.5.7 -d -s
+curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.5.9 1.5.12 -d -s
 export FABRIC_BIN_DIR=$(pwd)/bin
 ```
 
