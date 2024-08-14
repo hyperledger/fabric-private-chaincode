@@ -1,0 +1,10 @@
+{
+    "index":{
+        "fields":[
+            {"@assetType": "asc"}
+        ]
+    },
+    "ddoc":"indexAssetTypeDoc",
+    "name":"indexAssetType",
+    "type":"json"
+}

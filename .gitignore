@@ -9,3 +9,4 @@ cscope.*
 common/protos
 internal/protos
 coverage.out
+vendor

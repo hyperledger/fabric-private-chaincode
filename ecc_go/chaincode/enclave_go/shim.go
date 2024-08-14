@@ -11,6 +11,7 @@ import (
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/pkg/errors"
 	timestamp "google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -233,7 +234,7 @@ func (f *FpcStubInterface) GetCreator() ([]byte, error) {
 }
 
 func (f *FpcStubInterface) GetTransient() (map[string][]byte, error) {
-	panic("not implemented") // TODO: Implement
+	return nil, nil
 }
 
 func (f *FpcStubInterface) GetBinding() ([]byte, error) {
@@ -248,10 +249,28 @@ func (f *FpcStubInterface) GetSignedProposal() (*pb.SignedProposal, error) {
 	return f.stub.GetSignedProposal()
 }
 
-func (f *FpcStubInterface) GetTxTimestamp() (*timestamp.Timestamp, error) {
-	panic("not implemented") // TODO: Implement
+// GetTxTimestamp documentation can be found in interfaces.go
+func (s *FpcStubInterface) GetTxTimestamp() (*timestamp.Timestamp, error) {
+	// hdr := &common.Header{}
+	// if err := proto.Unmarshal(s.proposal.Header, hdr); err != nil {
+	// 	return nil, fmt.Errorf("error unmarshaling Header: %s", err)
+	// }
+
+	// chdr := &common.ChannelHeader{}
+	// if err := proto.Unmarshal(hdr.ChannelHeader, chdr); err != nil {
+	// 	return nil, fmt.Errorf("error unmarshaling ChannelHeader: %s", err)
+	// }
+	// return chdr.GetTimestamp(), nil
+	println(timestamp.Now())
+	return timestamp.Now(), nil
+
 }
 
 func (f *FpcStubInterface) SetEvent(name string, payload []byte) error {
-	panic("not implemented") // TODO: Implement
+	if name == "" {
+		return errors.New("event name can not be empty string")
+	}
+	println("Trying to set event name: ", name, "\n with payload: ", payload)
+	println("NO event is bieng set as function is not implemented yet")
+	return nil
 }
