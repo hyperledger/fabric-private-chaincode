@@ -17,6 +17,14 @@
         "fromHost": true
     },
     {
+        "name": "FPC_MODE",
+        "fromHost": true
+    },
+    {
+        "name": "RUN_CCAAS",
+        "fromHost": true
+    },
+    {
         "name": "FABRIC_LOGGING_SPEC",
         "fromHost": true
     }
