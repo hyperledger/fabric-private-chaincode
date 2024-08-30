@@ -39,7 +39,7 @@ DOCKER_CMD := docker
 # (Note: vars are exported as env variables as we also need them in various scripts)
 # alternatives for SGX_MODE: SIM or HW
 export SGX_MODE ?= SIM
-export SGX_BUILD ?= PRERELEASE
+export SGX_BUILD ?= DEBUG
 export SGX_SSL ?= /opt/intel/sgxssl
 export SGX_SDK ?= /opt/intel/sgxsdk
 export SGX_ARCH ?= x64
