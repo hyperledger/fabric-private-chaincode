@@ -11,7 +11,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
@@ -40,12 +39,10 @@ func (c *Container) Start() error {
 			Image: c.Image,
 			Cmd:   c.CMD,
 			Env:   c.Env,
-		},
-		&container.HostConfig{
-			PortBindings: nat.PortMap{
-				nat.Port(fmt.Sprintf("%s/tcp", c.HostPort)): []nat.PortBinding{{HostIP: c.HostIP, HostPort: c.HostPort}},
+			ExposedPorts: nat.PortSet{
+				nat.Port(c.HostPort + "/tcp"): struct{}{},
 			},
-		}, nil, nil, c.Name)
+		}, nil, nil, nil, c.Name)
 	if err != nil {
 		return err
 	}
@@ -54,12 +51,12 @@ func (c *Container) Start() error {
 		return err
 	}
 
-	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+	if err := cli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		return err
 	}
 
 	go func() {
-		reader, err := cli.ContainerLogs(context.Background(), resp.ID, types.ContainerLogsOptions{
+		reader, err := cli.ContainerLogs(context.Background(), resp.ID, container.LogsOptions{
 			ShowStdout: true,
 			ShowStderr: true,
 			Follow:     true,
@@ -93,11 +90,12 @@ func (c *Container) Stop() error {
 		return err
 	}
 
+	// default timeout is 10s
 	if err := cli.ContainerStop(ctx, c.containerID, container.StopOptions{}); err != nil {
 		return err
 	}
 
-	if err := cli.ContainerRemove(ctx, c.containerID, types.ContainerRemoveOptions{}); err != nil {
+	if err := cli.ContainerRemove(ctx, c.containerID, container.RemoveOptions{}); err != nil {
 		return err
 	}
 
