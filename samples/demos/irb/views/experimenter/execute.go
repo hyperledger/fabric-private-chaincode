@@ -20,7 +20,8 @@ import (
 )
 
 type Execution struct {
-	ExperimentId string
+	ExperimentId   string
+	WorkerEndpoint string
 }
 
 type ExecutionView struct {
@@ -30,7 +31,7 @@ type ExecutionView struct {
 func (c *ExecutionView) Call(context view.Context) (interface{}, error) {
 	fmt.Println("All cool, now we can run our experimenter")
 
-	//build experiment proposal
+	// build experiment proposal
 	evaluationPackRequest := pb.EvaluationPackRequest{
 		ExperimentId: c.ExperimentId,
 	}
@@ -57,29 +58,31 @@ func (c *ExecutionView) Call(context view.Context) (interface{}, error) {
 	encryptedEvaluationPack := &pb.EncryptedEvaluationPack{}
 	err = proto.Unmarshal(encryptedEvaluationPackBytes, encryptedEvaluationPack)
 	if err != nil || encryptedEvaluationPack.GetEncryptedEvaluationpack() == nil {
-		//error decoding means something wrong with making the pack
+		// error decoding means something wrong with making the pack
 		status, e := utils.UnmarshalStatus(encryptedEvaluationPackBytes)
 		if e != nil {
-			//cannot even unmarshal status, so just return the error
+			// cannot even unmarshal status, so just return the error
 			return nil, err
 		}
 
-		//return error from status
+		// return error from status
 		m := fmt.Sprintf("error getExperimentProposal: %s, %s", status.GetReturnCode(), status.GetMsg())
 		return nil, errors.New(m)
 	}
 	fmt.Println("Received evaluation pack from FPC Experiment Approval Service!")
 
 	// next, we send the eval pack to the worker
-	// TODO double check that the worker can access redis
-	resultBytes, err := experiment.ExecuteEvaluationPack(encryptedEvaluationPack)
+	resultBytes, err := experiment.ExecuteEvaluationPack(c.WorkerEndpoint, encryptedEvaluationPack)
 	fmt.Printf("Result received from worker: \"%s\"\n", string(resultBytes))
 
 	return nil, nil
 }
 
-func NewExecutionView(ExperimentID string) view.View {
+func NewExecutionView(workerEndpoint, experimentID string) view.View {
 	return &ExecutionView{
-		Execution: &Execution{ExperimentId: ExperimentID},
+		Execution: &Execution{
+			ExperimentId:   experimentID,
+			WorkerEndpoint: workerEndpoint,
+		},
 	}
 }

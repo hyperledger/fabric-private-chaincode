@@ -21,9 +21,11 @@ import (
 )
 
 type SubmitExperiment struct {
-	StudyId      string
-	ExperimentId string
+	StudyID      string
+	ExperimentID string
 	Investigator view.Identity
+	//
+	WorkerEndpoint string
 }
 
 type SubmitExperimentView struct {
@@ -32,7 +34,7 @@ type SubmitExperimentView struct {
 
 func (c *SubmitExperimentView) Call(context view.Context) (interface{}, error) {
 	// get worker credentials
-	workerCredentials, err := experiment.GetWorkerCredentials()
+	workerCredentials, err := experiment.GetWorkerCredentials(c.WorkerEndpoint)
 	if err != nil {
 		fmt.Printf("error: %v\n", err)
 		return nil, err
@@ -40,8 +42,8 @@ func (c *SubmitExperimentView) Call(context view.Context) (interface{}, error) {
 
 	// submit new experimenter proposal
 	experimentProposal := &pb.ExperimentProposal{
-		StudyId:           c.StudyId,
-		ExperimentId:      c.ExperimentId,
+		StudyId:           c.StudyID,
+		ExperimentId:      c.ExperimentID,
 		WorkerCredentials: workerCredentials,
 	}
 	cid := "experimenter-approval-service"
@@ -60,7 +62,7 @@ func (c *SubmitExperimentView) Call(context view.Context) (interface{}, error) {
 	fmt.Println("It seems I got my approval! Ready to start the real work!")
 
 	// trigger execution flow
-	return context.RunView(NewExecutionView(c.ExperimentId))
+	return context.RunView(NewExecutionView(c.WorkerEndpoint, c.ExperimentID))
 }
 
 func (c *SubmitExperimentView) waitForApprovals(context view.Context) error {
@@ -72,7 +74,7 @@ func (c *SubmitExperimentView) waitForApprovals(context view.Context) error {
 	msg := &messages.ApprovalRequestNotification{
 		Message:      "Hey my friend, I just submitted a new experimenter! Please review and approve asap; Thanks",
 		Sender:       context.Me().String(),
-		ExperimentID: c.ExperimentId,
+		ExperimentID: c.ExperimentID,
 	}
 
 	raw, err := msg.Serialize()

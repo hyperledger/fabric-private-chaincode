@@ -10,35 +10,50 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	"os"
-	"strconv"
 
 	"github.com/go-redis/redis"
 )
 
 const DefaultRedisPort = 6379
 
-func getEnv(key, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-	return value
-}
-
 type Client struct {
 	redis *redis.Client
 }
 
-func NewClient() *Client {
-	host := getEnv("REDIS_HOST", "localhost")
-	port := getEnv("REDIS_PORT", strconv.Itoa(DefaultRedisPort))
-	password := getEnv("REDIS_PASSWORD", "")
+type config struct {
+	host     string
+	port     int
+	password string
+}
+
+func WithHost(host string) func(*config) {
+	return func(c *config) {
+		c.host = host
+	}
+}
+
+func WithPort(port int) func(*config) {
+	return func(c *config) {
+		c.port = port
+	}
+}
+
+func WithPassword(password string) func(*config) {
+	return func(c *config) {
+		c.password = password
+	}
+}
+
+func NewClient(options ...func(*config)) *Client {
+	c := &config{}
+	for _, apply := range options {
+		apply(c)
+	}
 
 	return &Client{redis: redis.NewClient(&redis.Options{
-		Addr:     host + ":" + port,
-		Password: password, // no password set
-		DB:       0,        // use default DB
+		Addr:     fmt.Sprintf("%s:%d", c.host, c.port),
+		Password: c.password, // no password set
+		DB:       0,          // use default DB
 	})}
 }
 

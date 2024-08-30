@@ -9,7 +9,6 @@ package experiment
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -21,21 +20,6 @@ import (
 	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/protos"
 	"google.golang.org/protobuf/proto"
 )
-
-func getEnv(key, defaultValue string) string {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-	return value
-}
-
-func getWorkerEndpoint() string {
-	host := getEnv("WORKER_HOST", "localhost")
-	port := getEnv("WORKER_PORT", "5000")
-
-	return fmt.Sprintf("http://%s:%s/", host, port)
-}
 
 func toEvidence(attestation []byte) ([]byte, error) {
 	fpcPath := os.Getenv("FPC_PATH")
@@ -53,8 +37,8 @@ func toEvidence(attestation []byte) ([]byte, error) {
 	}
 }
 
-func GetWorkerCredentials() (*pb.WorkerCredentials, error) {
-	resp, err := http.Get(getWorkerEndpoint() + "attestation")
+func GetWorkerCredentials(workerEndpoint string) (*pb.WorkerCredentials, error) {
+	resp, err := http.Get(fmt.Sprintf("http://%s/%s", workerEndpoint, "attestation"))
 	if err != nil {
 		return nil, err
 	}
@@ -80,14 +64,14 @@ func GetWorkerCredentials() (*pb.WorkerCredentials, error) {
 	return workerCredentials, nil
 }
 
-func ExecuteEvaluationPack(encryptedEvaluationPack *pb.EncryptedEvaluationPack) ([]byte, error) {
+func ExecuteEvaluationPack(workerEndpoint string, encryptedEvaluationPack *pb.EncryptedEvaluationPack) ([]byte, error) {
 	encryptedEvaluationPackBytes, err := proto.Marshal(encryptedEvaluationPack)
 	if err != nil {
 		return nil, err
 	}
 
 	fmt.Println("Send evaluation pack to worker!")
-	resp, err := http.Post(getWorkerEndpoint()+"execute-evaluationpack", "", bytes.NewBuffer(encryptedEvaluationPackBytes))
+	resp, err := http.Post(fmt.Sprintf("http://%s/%s", workerEndpoint, "execute-evaluationpack"), "", bytes.NewBuffer(encryptedEvaluationPackBytes))
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +83,7 @@ func ExecuteEvaluationPack(encryptedEvaluationPack *pb.EncryptedEvaluationPack) 
 	}
 
 	if resp.StatusCode >= 400 {
-		return nil, errors.New(fmt.Sprintf("Error %d: %s", resp.StatusCode, string(bodyBytes)))
+		return nil, fmt.Errorf("Error %d: %s", resp.StatusCode, string(bodyBytes))
 	}
 
 	return bodyBytes, nil

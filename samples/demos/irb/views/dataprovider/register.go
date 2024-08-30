@@ -24,6 +24,9 @@ type Register struct {
 	PatientData []byte
 	PatientUUID string
 	PatientVK   []byte
+	//
+	StorageHost string
+	StoragePort int
 }
 
 type RegisterView struct {
@@ -46,7 +49,7 @@ func (c *RegisterView) Call(context view.Context) (interface{}, error) {
 	}
 
 	// upload encrypted data
-	kvs := storage.NewClient()
+	kvs := storage.NewClient(storage.WithHost(c.StorageHost), storage.WithPort(c.StoragePort))
 	handle, err := kvs.Upload(encryptedData)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot upload data to kvs")
@@ -59,7 +62,7 @@ func (c *RegisterView) Call(context view.Context) (interface{}, error) {
 		PublicKey: c.PatientVK,
 	}
 
-	//build request
+	// build request
 	registerDataRequest := &pb.RegisterDataRequest{
 		Participant:   &userIdentity,
 		DecryptionKey: sk,

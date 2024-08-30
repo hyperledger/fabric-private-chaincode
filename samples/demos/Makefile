@@ -8,6 +8,9 @@ include $(TOP)/build.mk
 
 DEMOS = irb
 
-build clean:
+test:
+	$(foreach DIR, $(DEMOS), $(MAKE) -C $(DIR) || exit;)
+
+clean:
 	$(foreach DIR, $(DEMOS), $(MAKE) -C $(DIR) $@ || exit;)
 
