@@ -8,6 +8,8 @@ SPDX-License-Identifier: Apache-2.0
 package enclave_go
 
 import (
+	"fmt"
+
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
@@ -178,7 +180,11 @@ func (f *FpcStubInterface) SplitCompositeKey(compositeKey string) (string, []str
 }
 
 func (f *FpcStubInterface) GetQueryResult(query string) (shim.StateQueryIteratorInterface, error) {
-	panic("not implemented") // TODO: Implement
+	it, err := f.stub.GetQueryResult(query)
+	if err != nil {
+		return it, errors.Wrap(err, "stub.GetQueryResult call error")
+	}
+	return it, nil
 }
 
 func (f *FpcStubInterface) GetQueryResultWithPagination(query string, pageSize int32, bookmark string) (shim.StateQueryIteratorInterface, *pb.QueryResponseMetadata, error) {
@@ -270,7 +276,7 @@ func (f *FpcStubInterface) SetEvent(name string, payload []byte) error {
 	if name == "" {
 		return errors.New("event name can not be empty string")
 	}
-	println("Trying to set event name: ", name, "\n with payload: ", payload)
-	println("NO event is bieng set as function is not implemented yet")
+	fmt.Println("Trying to set event name: ", name, "\n with payload: ", payload)
+	fmt.Println("NO event is bieng set as function is not implemented yet")
 	return nil
 }
