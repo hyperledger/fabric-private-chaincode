@@ -42,27 +42,25 @@ for org in "${orgs[@]}"; do
 
   # Copy the file from the connection profile
   cp "${CONNECTIONS_PATH}" "${EXTERNAL_CONNECTIONS_PATH}"
-  
+
   backup "${EXTERNAL_CONNECTIONS_PATH}"
 
-  # edit localhost urls to use hostnames
-  ## At the root level
-  
+
+  # This is needed in both files
   yq eval ".\"peer0.org1.example.com\".url = \"grpcs://peer0.org1.example.com:7051\"" -i "$EXTERNAL_CONNECTIONS_PATH"
   yq eval ".\"peer0.org2.example.com\".url = \"grpcs://peer0.org2.example.com:9051\"" -i "$EXTERNAL_CONNECTIONS_PATH"
+  # Check if the org is org1
+  if [[ "$org" == "org1" ]]; then
+    # edit localhost urls to use hostnames for org1
+    yq eval ".peers.\"peer0.org1.example.com\".url = \"grpcs://peer0.org1.example.com:7051\"" -i "$EXTERNAL_CONNECTIONS_PATH"
+    yq eval ".certificateAuthorities.\"ca.org1.example.com\".url = \"https://ca.org1.example.com:7054\"" -i "$EXTERNAL_CONNECTIONS_PATH"
 
-  ## At the peers level
-  yq eval ".peers.\"peer0.org1.example.com\".url = \"grpcs://peer0.org1.example.com:7051\"" -i "$EXTERNAL_CONNECTIONS_PATH"
-  yq eval ".peers.\"peer0.org2.example.com\".url = \"grpcs://peer0.org2.example.com:9051\"" -i "$EXTERNAL_CONNECTIONS_PATH"
-
-  ## At the CA level
-  yq eval ".certificateAuthorities.\"ca.org1.example.com\".url = \"https://ca.org1.example.com:7054\"" -i "$EXTERNAL_CONNECTIONS_PATH"
-  yq eval ".certificateAuthorities.\"ca.org2.example.com\".url = \"https://ca.org2.example.com:8054\"" -i "$EXTERNAL_CONNECTIONS_PATH"
-
-
-
-
-
+  # Check if the org is org2
+  elif [[ "$org" == "org2" ]]; then
+    # edit localhost urls to use hostnames for org2
+    yq eval ".peers.\"peer0.org2.example.com\".url = \"grpcs://peer0.org2.example.com:9051\"" -i "$EXTERNAL_CONNECTIONS_PATH"
+    yq eval ".certificateAuthorities.\"ca.org2.example.com\".url = \"https://ca.org2.example.com:8054\"" -i "$EXTERNAL_CONNECTIONS_PATH"
+  fi
   # remove entity matcher
   yq eval 'del(.entityMatchers)' -i "$EXTERNAL_CONNECTIONS_PATH"
 
