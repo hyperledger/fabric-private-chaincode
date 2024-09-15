@@ -15,7 +15,6 @@ fi
 trap cleanup SIGINT SIGTERM ERR EXIT
 cleanup() {
   trap - SIGINT SIGTERM ERR EXIT
-  rm -rf "${tmp_dir}"
 }
 
 backup() {
