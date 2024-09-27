@@ -32,7 +32,7 @@ cd $FPC_PATH/samples/chaincode/cc-tools-demo/
 export CC_NAME=fpc-cc-tools-demo
 make
 
-# - run docker images | grep cc-tools-demo to make sure of the image 
+# - run docker images | grep fpc-cc-tools-demo to make sure of the image 
 # - complete the tutorial normally:
 cd $FPC_PATH/samples/deployment/test-network
 ./setup.sh
