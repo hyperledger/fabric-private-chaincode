@@ -70,7 +70,7 @@ func main() {
 	if os.Getenv("RUN_CCAAS") == "true" {
 		err = runCCaaS()
 	} else {
-		if os.Getenv("FPC_MODE") == "true" {
+		if os.Getenv("FPC_ENABLED") == "true" {
 			err = shim.Start(fpc.NewPrivateChaincode(new(CCDemo)))
 		} else {
 			err = shim.Start(new(CCDemo))
@@ -93,7 +93,7 @@ func runCCaaS() error {
 
 	var cc shim.Chaincode
 
-	if os.Getenv("FPC_MODE") == "true" {
+	if os.Getenv("FPC_ENABLED") == "true" {
 		cc = fpc.NewPrivateChaincode(new(CCDemo))
 	} else {
 		cc = new(CCDemo)

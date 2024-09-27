@@ -14,7 +14,7 @@ services:
       - FABRIC_LOGGING_SPEC=${FABRIC_LOGGING_SPEC:-DEBUG}
       - SGX_MODE=${SGX_MODE:-SIM}
       - RUN_CCAAS=true
-      - FPC_MODE=true
+      - FPC_ENABLED=true
     networks:
       - default
     volumes:
@@ -44,7 +44,7 @@ services:
       - FABRIC_LOGGING_SPEC=${FABRIC_LOGGING_SPEC:-DEBUG}
       - SGX_MODE=${SGX_MODE:-SIM}
       - RUN_CCAAS=true
-      - FPC_MODE=true
+      - FPC_ENABLED=true
     networks:
       - default
     volumes:
