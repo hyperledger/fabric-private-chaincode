@@ -66,11 +66,11 @@ import (
 func main() {
 
 	//*CC-Tools Specific code (DO NOT OVERWRITE)*//
-	
+
 	if os.Getenv("RUN_CCAAS") == "true" {
 		err = runCCaaS()
 	} else {
-		if os.Getenv("FPC_MODE") == "true" {
+		if os.Getenv("FPC_ENABLED") == "true" {
 			err = shim.Start(fpc.NewPrivateChaincode(new(CCDemo)))
 		} else {
 			err = shim.Start(new(CCDemo))
@@ -88,7 +88,7 @@ func runCCaaS() error {
 	//*CC-Tools Specific code (DO NOT OVERWRITE)*//
 
 	var cc shim.Chaincode
-	if os.Getenv("FPC_MODE") == "true" {
+	if os.Getenv("FPC_ENABLED") == "true" {
 		cc = fpc.NewPrivateChaincode(new(CCDemo))
 	} else {
 		cc = new(CCDemo)
@@ -212,6 +212,8 @@ export CORE_PEER_TLS_KEY_FILE=$FPC_PATH/samples/deployment/test-network/fabric-s
 export CORE_PEER_TLS_ROOTCERT_FILE=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
 export ORDERER_CA=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
 export GATEWAY_CONFIG=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/connection-org1.yaml
+export FPC_ENABLED=true
+export RUN_CCAAS=true
 
 # init our enclave
 ./fpcclient init $CORE_PEER_ID
