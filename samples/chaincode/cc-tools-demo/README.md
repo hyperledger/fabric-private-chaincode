@@ -34,11 +34,13 @@ Clone the [cc-tools-demo]() repository and copy the [chaincode]() folder. Then p
 ```bash
 cd ~
 git clone https://github.com/hyperledger-labs/cc-tools-demo.git
-cp ~/cc-tools-demo/chaincode $FPC_PATH/samples/chaincode/cc-tools-demo
+cp -a ~/cc-tools-demo/chaincode/. $FPC_PATH/samples/chaincode/cc-tools-demo/
 cd $FPC_PATH/samples/chaincode/cc-tools-demo
 ```
 
-The chaincode code structure is different than normal chaincode as it's using the cc-tools-framework
+The chaincode code structure is different than normal chaincode as it's using the cc-tools framework
+
+**Note**: remove all test files (`*_test.go`) you find like `txdefs_createNewLibrary_test.go` as they are not part of the chaincode.
 
 ## Edit the chaincode to became an FPC chaincode instead of normal fabric
 
@@ -48,18 +50,25 @@ Go to `$FPC_PATH/samples/chaincode/cc-tools-demo/main.go` and create the project
 cd $FPC_PATH/samples/chaincode/cc-tools-demo
 ```
 
-The code presented here is not different from traditional Go Chaincode developed with CC-Tools framework. All the FPC specific protect mechanisms are handled by the FPC framework transparently.
+The code presented here is not different from traditional Go Chaincode developed with CC-Tools framework. All the FPC specific protection mechanisms are handled by the FPC framework transparently.
 
 The `main.go` contains the starting point of the chaincode.
 
 To use FPC, we need to add some logic to instantiate our private chaincode and start it.
-To do so, we use `fpc.NewPrivateChaincode(&chaincode.AssetExample{})`.
-Add the following code to `$FPC_PATH/samples/chaincode/cc-tools-demo/main.go` in functions `main()` and `runCCaaS()`:
+To do so, we use `fpc.NewPrivateChaincode(&chaincode.AssetExample{})` and since we're already in the FPC repo, remove the `go.mod` and `go.sum` files so we use the chaincode as part of the FPC package.
+
+CC-tools-demo chaincode has its own packages that are needed, so we run `go get` in the `cc-tools-demo` folder.
+
+Then, add the following code to `$FPC_PATH/samples/chaincode/cc-tools-demo/main.go` in functions `main()` and `runCCaaS()`:
 
 ```go
 package main
 
 import (
+	"github.com/hyperledger/fabric-private-chaincode/samples/chaincode/cc-tools-demo/assettypes"
+	"github.com/hyperledger/fabric-private-chaincode/samples/chaincode/cc-tools-demo/datatypes"
+	"github.com/hyperledger/fabric-private-chaincode/samples/chaincode/cc-tools-demo/header"
+
 	fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
 )
 
@@ -83,7 +92,7 @@ func main() {
 
 func runCCaaS() error {
 	address := os.Getenv("CHAINCODE_SERVER_ADDRESS")
-	ccid := os.Getenv("CHAINCODE_PKG_ID")
+	ccid := os.Getenv("CHAINCODE_PKG_ID") //This needs to be replaced
 
 	//*CC-Tools Specific code (DO NOT OVERWRITE)*//
 
@@ -94,11 +103,28 @@ func runCCaaS() error {
 		cc = new(CCDemo)
 	}
 
+
+	server := &shim.ChaincodeServer{
+		CCID:     ccid,
+		Address:  address,
+		CC:       cc,
+		TLSProps: *tlsProps,
+	}
+
 	//*CC-Tools Specific code (DO NOT OVERWRITE)*//
 
 }
 
 ```
+
+## Set the needed env vars in the docker-compose file
+
+From the code above, we need to set two env variables for the chaincode application to work and use FPC and chaincode-as-a-service (CCAAS). One way to do this is to go to `$FPC_PATH/samples/deployment/test-network/docker-compose.yml` and edit both `ecc.peer0.org1.example.com` and `ecc.peer0.org2.example.com` environment block to have 
+```yaml
+	- RUN_CCAAS=true
+	- FPC_ENABLED=true
+```
+
 
 ## Building FPC Go Chaincode
 
@@ -111,12 +137,34 @@ include $(TOP)/ecc_go/build.mk
 CC_NAME ?= fpc-cc-tools-demo
 ```
 
-Please make sure that in the file above the variable `TOP` points to the FPC root directory (i.e., `$FPC_PATH`).
+Please make sure that in the file above the variable `TOP` points to the FPC root directory (i.e., `$FPC_PATH`) as it uses the `$FPC_PATH/ecc_go/build.mk` file.
+
+**Note**: In our case, we need to change the build command in the `$FPC_PATH/ecc_go/build.mk` file at the `ecc` target to be `ego-go build $(GOTAGS) -o $(ECC_BINARY)` instead of `ego-go build $(GOTAGS) -o $(ECC_BINARY) main.go`
+
 
 In `$FPC_PATH/samples/chaincode/cc-tools-demo` directory, to build the chaincode and package it as docker image, execute:
 
 ```bash
 make
+```
+Note: this command runs inside the FPC dev environment and not your local host.
+
+**Note**: If you faced this error:
+```bash
+/project/pkg/mod/github.com/hyperledger-labs/cc-tools@v1.0.1/mock/mockstub.go:146:22: cannot use stub (variable of type *MockStub) as shim.ChaincodeStubInterface value in argument to stub.cc.Init: *MockStub does not implement shim.ChaincodeStubInterface (missing method PurgePrivateData)
+```
+This is because a minor difference between the `ChaincodeStubInterface` used in the cc-tools `Mockstub` as it's missing the `PurgePrivateData` method. 
+To solve this, run `go mod vendor` in the `$FPC_PATH` root directory to download all used packages and go to the file of the error to add the missing method there. 
+```bash
+nano $FPC_PATH/vendor/github.com/hyperledger-labs/cc-tools/mock/mockstub.go
+```
+add the following function
+```go
+ 	// PurgePrivateData ...
+ 	func (stub *MockStub) PurgePrivateData(collection, key string) error {
+ 		return errors.New("Not Implemented")
+ 	}
+
 ```
 
 After building, you can check that the `fpc/fpc-cc-tools-demo` image exists in your local docker registry using:
