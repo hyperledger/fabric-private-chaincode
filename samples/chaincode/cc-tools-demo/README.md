@@ -121,8 +121,8 @@ func runCCaaS() error {
 
 From the code above, we need to set two env variables for the chaincode application to work and use FPC and chaincode-as-a-service (CCAAS). One way to do this is to go to `$FPC_PATH/samples/deployment/test-network/docker-compose.yml` and edit both `ecc.peer0.org1.example.com` and `ecc.peer0.org2.example.com` environment block to have 
 ```yaml
-	- RUN_CCAAS=true
-	- FPC_ENABLED=true
+- RUN_CCAAS=true
+- FPC_ENABLED=true
 ```
 
 
