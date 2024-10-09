@@ -7,7 +7,7 @@ include $(TOP)/build.mk
 
 COMPONENTS = protos chaincode experimenter
 
-all: pull-images ercc build test
+all: ercc build test
 
 pull-images:
 	$(DOCKER) pull redis:latest
@@ -23,7 +23,7 @@ ercc:
 build: ercc
 	$(foreach DIR, $(COMPONENTS), $(MAKE) -C $(DIR) $@ || exit;)
 
-test:
+test: pull-images
 	$(GO) test -v ./...
 
 run:
