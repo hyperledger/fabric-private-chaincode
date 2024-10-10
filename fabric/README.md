@@ -27,7 +27,7 @@ To clean the native build, type `cd $FPC_PATH/fabric; make clean-native`.
 ### Wrong Fabric version
 ```
 Patching Fabric ...
-Aborting! Tag on current HEAD () does not match expected tag/v2.5.4!
+Aborting! Tag on current HEAD () does not match expected tag/v2.5.9!
 ...
 ```
 

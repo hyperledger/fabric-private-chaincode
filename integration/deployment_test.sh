@@ -20,6 +20,17 @@ CC_EP="OR('SampleOrg.member')" # note that we use .member as NodeOUs is disabled
 NUM_FAILURES=0
 NUM_TESTS=0
 
+# downloads github.com/hyperledger/fabric-samples/asset-transfer-basic/chaincode-go
+download_chaincode() {
+  # download destination
+  local samples_path=$1
+
+  git clone -n --depth=1 --filter=tree:0 https://github.com/hyperledger/fabric-samples "$samples_path"
+  cd "$samples_path" || { echo "$samples_path does not exist" ; exit 1; }
+  git sparse-checkout set --no-cone asset-transfer-basic/chaincode-go
+  git checkout
+}
+
 run_test() {
 
     # install samples/chaincode/auction
@@ -42,9 +53,11 @@ run_test() {
 
     # install something non-fpc
     # following the official fabric docs at https://hyperledger-fabric.readthedocs.io/en/release-2.5/deploy_chaincode.html
-    CC_PATH="${FPC_PATH}/samples/deployment/test-network/fabric-samples/asset-transfer-basic/chaincode-go/"
+    local tmp_dir=$(mktemp -d -t fabric-samples-XXXXXXXXXX --tmpdir="${TMP_DIR}")
+    download_chaincode "${tmp_dir}"
+    CC_PATH="${tmp_dir}/asset-transfer-basic/chaincode-go/"
     # jump to the basic chaincode sample and fetch deps
-    (cd ${CC_PATH} && GO111MODULE=on go mod vendor)
+    (cd "${CC_PATH}" && GO111MODULE=on go mod vendor)
 
     CC_VER="0"
     CC_SEQ="1"
@@ -110,8 +123,13 @@ say "Preparing Test with mixed concurrent chaincodes, FPC and non-FPC ..."
 docker_clean ${ERCC_ID}
 docker_clean example02
 
-trap ledger_shutdown EXIT
-
+# create tmp folder to store artefacts
+TMP_DIR=$(mktemp -d -t tmp-XXXXXXXXXX --tmpdir="${SCRIPTDIR}")
+trap cleanup SIGINT SIGTERM ERR EXIT
+cleanup() {
+  rm -rf "${TMP_DIR}"
+  ledger_shutdown
+}
 
 para
 say "Run test"
