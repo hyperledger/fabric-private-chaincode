@@ -292,7 +292,7 @@ Make sure that you have the following required dependencies installed:
 * [Intel Software Guard Extensions SSL](https://github.com/intel/intel-sgx-ssl)
   (we recommend using tag `3.0_Rev2` OpenSSL `3.0.12`)
 
-* Hyperledger [Fabric](https://github.com/hyperledger/fabric/tree/v2.5.4) v2.5.4
+* Hyperledger [Fabric](https://github.com/hyperledger/fabric/tree/v2.5.9) v2.5.9
 
 * Clang-format 6.x or higher
 
@@ -349,15 +349,15 @@ export PROTOC_CMD=/usr/local/proto3/bin/protoc
 #### Hyperledger Fabric
 
 Our project fetches the latest supported Fabric binaries during the build process automatically.
-However, if you want to use your own Fabric binaries, please checkout Fabric 2.5.4 release using the following commands:
+However, if you want to use your own Fabric binaries, please checkout Fabric 2.5.9 release using the following commands:
 ```bash
 export FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
 git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
-cd $FABRIC_PATH; git checkout tags/v2.5.4
+cd $FABRIC_PATH; git checkout tags/v2.5.9
 ```
 
 Note that Fabric Private Chaincode may not work with the Fabric `main` branch.
-Therefore, make sure you use the Fabric `v2.5.4` tag.
+Therefore, make sure you use the Fabric `v2.5.9` tag.
 Make sure the source of Fabric is in your `$GOPATH`.
 
 ## Build Fabric Private Chaincode

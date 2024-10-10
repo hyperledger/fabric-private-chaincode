@@ -9,6 +9,8 @@ include $(TOP)/config.mk
 
 # define composites only here and not in config.mk so we can override parts in config.override.mk
 DOCKER := $(DOCKER_CMD) $(DOCKERFLAGS)
+DOCKER_COMPOSE := $(DOCKER_CMD) compose
+
 ifeq (${SGX_MODE}, HW)
 	GOTAGS = -tags sgx_hw_mode
 endif
