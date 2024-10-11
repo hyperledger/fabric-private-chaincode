@@ -1,12 +1,11 @@
 # FPC and the Fabric-Samples Test Network
 
 This guide shows how to deploy and run a FPC Chaincode on test-network provided by [fabric-samples](https://github.com/hyperledger/fabric-samples).
-We provide fabric-samples as a submodule in `$FPC_PATH/samples/deployment/test-network/fabric-samples`.
 
-Before moving forward, follow the main [README](../../../README.md) to set up your environment. This guide works also with
-the FPC Dev docker container.
+Before moving forward, follow the main [README](../../../README.md) to set up your environment and build the project.
+This guide works also with the FPC Dev docker container.
 
-## Prepare FPC Containers and the Test Network
+## Prepare FPC Containers
 
 FPC requires a special docker container to execute a FPC chaincode, similar to Fabric's `ccenv` container image but with additional support for Intel SGX.  
 You can pull the FPC chaincode environment image (`fabric-private-chaincode-ccenv`) from our Github repository or build them manually as follows:
@@ -19,75 +18,64 @@ make -C $FPC_PATH/utils/docker pull
 make -C $FPC_PATH/utils/docker build
 ```
 
-Next, we package the FPC components as docker images (building on top of `fabric-private-chaincode-ccenv`) which are deployed on our test network.
-Use `CC_ID` and `CC_PATH` to define the FPC Chaincode you want to build.
+Next, we package the FPC chaincode as a docker image which are deployed on the test-network using the chaincode as a service method.
+Please refer to the section on how to play with FPC in non-SGX environments of the main [README](../../../README.md#fpc-playground-for-non-sgx-environments) and change the following commands accordingly.
+The following snippet builds the `echo-go` FPC chaincode. 
+Note that we export `CC_ID`, `CC_NAME`, and `CC_VER` variables, which we will need.
 
 ```bash
-cd $FPC_PATH/samples/deployment/test-network
-export CC_ID=echo
-export CC_PATH=$FPC_PATH/samples/chaincode/echo
-make build
+export CC_ID=echo-go
+export CC_NAME=fpc-echo-go
+make -C $FPC_PATH/samples/chaincode/echo-go build docker
+export CC_VER=$(cat $FPC_PATH/samples/chaincode/echo-go/mrenclave)
 ```
 
-Note: If you want to build with [mock-enclave](../../../ecc/chaincode/enclave/mock_enclave.go) rather than the real enclave-based one, build with
-`make build GOTAGS="-tags mock_ecc"` instead.
+Please verify that the `fpc/fpc-echo-go` image exists using `docker images | grep fpc-echo-go`.
 
-Next, setup fabric sample network, binaries and docker images. Here we follow the official Fabric [instructions](https://hyperledger-fabric.readthedocs.io/en/release-2.3/install.html).
+Finally, make sure you have the FPC Enclave Registry container image already build (see the main [README](../../../README.md)), otherwise you can build it as follows:
 
 ```bash
-cd $FPC_PATH/samples/deployment/test-network
-git clone https://github.com/hyperledger/fabric-samples
-cd $FPC_PATH/samples/deployment/test-network/fabric-samples
-git checkout -b "works" 98028c7
-curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.5.4 1.5.7 -s
+make -C ${FPC_PATH}/ercc all docker
 ```
 
-Before we can start the network, we need to update the Fabric peer configuration to enable FPC support.
-That is, we need to install the external builders by adding the following lines to the peers `core.yaml`:
-```yaml
-chaincode:
-  externalBuilders:
-    - path: /opt/gopath/src/github.com/hyperledger/fabric-private-chaincode/fabric/externalBuilder/chaincode_server
-      name: fpc-external-launcher
-      propagateEnvironment:
-        - CORE_PEER_ID
-        - FABRIC_LOGGING_SPEC
-```
 
-Since the Fabric-Samples test network uses docker and docker-compose, we need to ensure that the external Builder
-scripts are also available inside the peer container. For this reason, we mount `$FPC_PATH/fabric/externalBuilder/chaincode_server` into
-`/opt/gopath/src/github.com/hyperledger/fabric-private-chaincode/fabric/externalBuilder/chaincode_server`.
+## Prepare the Test Network
 
-For convenience, we provide a `setup.sh` script to update the `core.yaml` and the docker compose files to mount the external
-Builder.
+Next, we set up the Fabric samples [test-network](https://github.com/hyperledger/fabric-samples/tree/main/test-network).
+
+Since the Fabric samples test network uses docker (and docker compose) to run the Fabric components, we need to make sure that it works within our FPC dev container environment.
+In particular, as we use the host docker daemon, there may be issues with docker mounts.
+
+For convenience, we provide a `setup.sh` script that clones the fabric samples repository, downloads all required fabric container images and binaries, and replaces all relative mount paths in the compose files with absolute path on the host system. 
 
 ```bash
 cd $FPC_PATH/samples/deployment/test-network
 ./setup.sh
 ```
 
-## Start the Network
+
+## Start the Test Network
 
 Let's start the Fabric-Samples test network.
+
 ```bash
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
-./network.sh up -ca
-./network.sh createChannel -c mychannel
+./network.sh up createChannel -c mychannel
 ```
 
-Next, we install the FPC Enclave Registry and our FPC Chaincode on the network by using the standard Lifecycle commands,
-including chaincode `package`, `install`, `approveformyorg`, and `commit`. An important detail here is that the
-chaincode packaging differs from traditional chaincode. Since we are using the external Builder and run the FPC Chaincode
-as `Chaincode as a Service (CaaS)`, the packaging artifact will contain information including the CaaS endpoint rather
-than the actual Chaincode.
+
+### Install and run the FPC Chaincode
+
+Next, we install the FPC Enclave Registry and the FPC Chaincode on the network by using the [Chaincode as a Service deployment method](https://github.com/hyperledger/fabric-samples/blob/main/test-network/CHAINCODE_AS_A_SERVICE_TUTORIAL.md).
+For convenience, the test network provides a single command `./network.sh deployCCAAS` that executes the necessary steps of the [Fabric chaincode lifecycle](https://hyperledger-fabric.readthedocs.io/en/latest/chaincode_lifecycle.html),
+in particular, it internally calls `package`, `install`, `approveformyorg`, and `commit`.
+
 We continue with the following command to install the FPC Chaincode as just described.
+Please make sure that you have set `CC_ID` and `CC_VER` variables correctly as described before.
+
 ```bash
 cd $FPC_PATH/samples/deployment/test-network
 ./installFPC.sh
-# IMPORTANT: a successfully install will show you an `export ...`
-# statement as stdout on the command-line.  Copy/Paste this statement
-# into your shell or below starting of FPC containers will not work properly
-# (but also would not give you clear errors that it doesn't!!)
 ```
 
 Now we have the FPC Chaincode installed on the Fabric peers, but we still need to start our chaincode containers.
@@ -95,9 +83,11 @@ Make sure you have set `CC_ID` to the same chaincode ID as used in the earlier s
 
 ```bash
 # Start FPC container
-make ercc-ecc-start
+make -C $FPC_PATH/samples/deployment/test-network ercc-ecc-start
 ```
+
 You should see two instances of the FPC Echo chaincode and two instances of the FPC Enclave Registry chaincode running such as in the following example:
+
 ```bash
 Creating ercc.peer0.org2.example.com ... done
 Creating ercc.peer0.org1.example.com ... done
@@ -111,8 +101,10 @@ ercc.peer0.org1.example.com    | 2021-05-11 16:11:32.108 UTC [cgo] 0 -> INFO 001
 ercc.peer0.org2.example.com    | 2021-05-11 16:11:32.170 UTC [ercc] main -> INFO 002 starting enclave registry (ercc_1.0:db2e97768a87d2b9ed9d86a729a767ef1040fb2e20d2f2a907e727ece7256028)
 ercc.peer0.org1.example.com    | 2021-05-11 16:11:32.199 UTC [ercc] main -> INFO 002 starting enclave registry (ercc_1.0:0919bd1be2e779a582a537da8e29fba241972c3531472006b170b0c26a1d71fb)
 ```
+
 The FPC Chaincode is now up and running, ready for processing invocations!
-Note that the containers are running in foreground in your terminal using docker-compose.
+Note that the containers are running in the background in your terminal using docker-compose.
+
 
 ## Interact with the FPC Chaincode
 
@@ -136,21 +128,22 @@ cd $FPC_PATH/samples/deployment/test-network
 Now we will use the go app in `$FPC_PATH/samples/application/simple-go` to demonstrate the usage of the FPC Client SDK.
 In order to initiate the FPC Chaincode enclave and register it with the FPC Enclave Registry, run the app with the `-withLifecycleInitEnclave` flag.
 
-
 ```bash
 # for SGX HW mode make sure you set the SGX_CREDENTIALS_PATH path; for simulation mode this is not necessary
 export SGX_CREDENTIALS_PATH=$FPC_PATH/config/ias
 
 cd $FPC_PATH/samples/application/simple-go
-CC_ID=echo ORG_NAME=Org1 go run . -withLifecycleInitEnclave
+CC_ID=echo-go ORG_NAME=Org1 go run . -withLifecycleInitEnclave
 ```
+
 Note that we execute the go app as `Org1`, thereby creating and registering the FPC Chaincode enclave at `peer0.org1.example.com`. Alternatively, we could run this as `Org2` to initiate the enclave at `peer0.org2.example.com`.
 
 Afterwards you _must_ run the application without the `withLifecycleInitEnclave` flag and you can play with multiple organizations.
+
 ```bash
 cd $FPC_PATH/samples/application/simple-go
-CC_ID=echo ORG_NAME=Org1 go run .
-CC_ID=echo ORG_NAME=Org2 go run .
+CC_ID=echo-go ORG_NAME=Org1 go run .
+CC_ID=echo-go ORG_NAME=Org2 go run .
 ```
 
 ### How to use simple-cli-go
@@ -163,7 +156,7 @@ cd $FPC_PATH/samples/application/simple-cli-go
 make
 
 # export fpcclient settings
-export CC_NAME=echo
+export CC_NAME=echo-go
 export CHANNEL_NAME=mychannel
 export CORE_PEER_ADDRESS=localhost:7051
 export CORE_PEER_ID=peer0.org1.example.com
@@ -188,22 +181,31 @@ export SGX_CREDENTIALS_PATH=$FPC_PATH/config/ias
 ```
 
 ## Shutdown network
+
 Since we opened a new terminal to interact with the FPC Chaincode, to be able to shutdown the FPC chaincode you need to define the environment variables that set the chaincode name and path.
+
 ```bash
-export CC_ID=echo
-export CC_PATH=$FPC_PATH/samples/chaincode/echo
 make -C $FPC_PATH/samples/deployment/test-network ercc-ecc-stop
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
 ./network.sh down
 ```
 
 ## Using HelloWorld chaincode on the test-network
-In this section we show how you can run a different FPC chaincode on the test network. For example, you can use the [HelloWorld](../../chaincode/helloworld/README.md) code instead of the echo code. To do so you have to change the values of the environment variables set at the beginning `CC_ID` and `CC_PATH`.
+
+In this section we show how you can run a different FPC chaincode on the test network. For example, you can use the [HelloWorld](../../chaincode/helloworld/README.md) code instead of the echo-go code.
+To do so you have to build the chaincode as follows:
+
 ```bash
 export CC_ID=helloworld
-export CC_PATH=$FPC_PATH/samples/chaincode/helloworld
+export CC_NAME=fpc-helloworld
+make -C $FPC_PATH/samples/chaincode/helloworld build docker
+export CC_VER=$(cat $FPC_PATH/samples/chaincode/helloworld/_build/lib/mrenclave)
 ```
+
+Repeat the process of starting the test-network and deployment as described above.
+
 Afterwards to test you would use [simple-cli-go](#How-to-use-simple-cli-go). You would need to verify that the `CC_NAME` variable is set to helloworld and then to interact you would execute the chaincode as follows:
+
 ```bash
 # interact with the FPC Chaincode
 ./fpcclient invoke storeAsset asset1 100
@@ -213,6 +215,7 @@ Afterwards to test you would use [simple-cli-go](#How-to-use-simple-cli-go). You
 ## Debugging
 
 For diagnostics, you can run the following to see logs for `peer0.org1.example.com`.
+
 ```bash
 docker logs -f peer0.org1.example.com
 docker logs -f ercc.peer0.org1.example.com
@@ -220,6 +223,7 @@ docker logs -f ecc.peer0.org1.example.com
 ```
 
 To interact with the peer using the `peer CLI`, run the following
+
 ```bash
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network;
 export FABRIC_CFG_PATH=$FPC_PATH/samples/deployment/test-network/fabric-samples/config
@@ -227,11 +231,15 @@ export PATH=$(readlink -f ../bin):$PATH
 source ./scripts/envVar.sh; \
 setGlobals 1;
 ```
+
 and you will be able to run the usual peer cli commands, e.g.,
+
 ```bash
 peer lifecycle chaincode queryinstalled
 ```
+
 and, in particular, also access ercc to see the registry state, e.g.,
+
 ```bash
 peer chaincode query -C mychannel -n ercc -c '{"Function": "queryChaincodeEndPoints", "Args" : ["echo"]}'
 peer chaincode query -C mychannel -n ercc -c '{"Function": "queryListProvisionedEnclaves", "Args" : ["echo"]}'
@@ -252,9 +260,10 @@ You can find the Blockchain Explorer configuration files in the `blockchain-expl
 Note that `setup.sh` may ask you to override any existing configuration files in `blockchain-explorer` and restore the default configuration.  
 
 To start Blockchain Explorer we use docker compose. Just run the following
+
 ```bash
 cd $FPC_PATH/samples/deployment/test-network/blockchain-explorer
-docker-compose up -d
+docker compose up -d
 ```
 
 Once it is up and running you can access the web interface using your browser.
