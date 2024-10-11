@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package api
 
 import (
-	"github.com/hyperledger/fabric-private-chaincode/samples/application/cc-tools-demo/pkg"
+	"github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/pkg"
 )
 
 func InitEnclave() error {

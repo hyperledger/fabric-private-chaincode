@@ -9,7 +9,7 @@ package api
 import (
 	"fmt"
 
-	"github.com/hyperledger/fabric-private-chaincode/samples/application/cc-tools-demo/pkg"
+	"github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/pkg"
 )
 
 func QueryTransaction(args []string) {

@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	api "github.com/hyperledger/fabric-private-chaincode/samples/application/cc-tools-demo/api"
+	api "github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/api"
 )
 
 func main() {

@@ -20,7 +20,7 @@ ECC_BUNDLE ?= $(ECC_BINARY)-bundle
 build: ecc docker env
 
 ecc: ecc_dependencies
-	ego-go build $(GOTAGS) -o $(ECC_BINARY)
+	ego-go build $(GOTAGS) -o $(ECC_BINARY) main.go
 	cp $(EGO_CONFIG_FILE) .
 	ego sign
 	ego uniqueid $(ECC_BINARY) > mrenclave
