@@ -40,7 +40,7 @@ In developing the chaincode for the integration of FPC and cc-tools, there are s
 
     cc-tools is a package that provides a relational-like framework for programming fabric chaincodes and it translates every code to a normal fabric chaincode at the end. cc-tools is wrapping the [shim.ChaincodeStub](https://github.com/hyperledger/fabric-chaincode-go/blob/acf92c9984733fb937fba943fbf7397d54368751/shim/interfaces.go#L28) interface from Hyperledger Fabric using [stubWrapper](https://github.com/hyperledger-labs/cc-tools/blob/995dfb2a16decae95a9dbf05424819a1df19abee/stubwrapper/stubWrapper.go#L12) and if you look for example at the [PutState](https://github.com/hyperledger-labs/cc-tools/blob/995dfb2a16decae95a9dbf05424819a1df19abee/stubwrapper/stubWrapper.go#L18) function you notice it only does some in-memory operations and it calls another `sw.Stub.PutState` from the stub passed to it (till now it was always the [stub for standard fabric](https://github.com/hyperledger/fabric-chaincode-go/blob/main/shim/stub.go)).
 
-    ```
+    ```go
     package stubwrapper
 
     import (
@@ -72,7 +72,7 @@ In developing the chaincode for the integration of FPC and cc-tools, there are s
 
     On the other hand for FPC, it also wraps the [shim.ChaincodeStub](https://github.com/hyperledger/fabric-chaincode-go/blob/acf92c9984733fb937fba943fbf7397d54368751/shim/interfaces.go#L28) interface from Hyperledger Fabric but the wrapper it uses (in this case it's [FpcStubInterface](https://github.com/hyperledger/fabric-private-chaincode/blob/33fd56faf886d88a5e5f9a7dba15d8d02d739e92/ecc_go/chaincode/enclave_go/shim.go#L17)) is not always using the functions from the passed stub. With the same example as before, if you look at the [PutState](https://github.com/hyperledger/fabric-private-chaincode/blob/33fd56faf886d88a5e5f9a7dba15d8d02d739e92/ecc_go/chaincode/enclave_go/shim.go#L104) function you can notice it's not using the `sw.Stub.PutState` and going directly to the `rwset.AddWrite` (this is specific to fpc use case as it's not using the fabric proposal response). There are some other functions where the passed `stub` functions are being used.
 
-    ```
+    ```go
     package enclave_go
 
     import (
@@ -119,7 +119,7 @@ In developing the chaincode for the integration of FPC and cc-tools, there are s
 
     Here's an example of how the end user enables FPC for a cc-tools-based chaincode.
 
-    ```
+    ```go
     var cc shim.Chaincode
     if os.Getenv("FPC_ENABLED") == "true" {
         // *Wrap the chaincode with FPC wrapper*//
@@ -196,7 +196,7 @@ For this, we should follow this section in the FPC repo to set the development e
 Fortunately, since the stub wrapper for both cc-tools and fpc are implementing the same interface, the conversion to an fpc chaincode can be done by plug-and-play. This means the user should start by developing the chaincode using cc-tools, and at the main loop where they pass the chaincode instance to the server to start it, they need to wrap it with `fpc.NewPrivateChaincode`. For example, have a look at the cc-tools-demo chaincode below.
 Before:
 
-```
+```go
 func runCCaaS() error {
 	address := os.Getenv("CHAINCODE_SERVER_ADDRESS")
 	ccid := os.Getenv("CHAINCODE_ID")
@@ -219,9 +219,9 @@ func runCCaaS() error {
 
 After:
 
-```
+```go
 
-# Import the FPC package first
+// Import the FPC package first
 import (
 	fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
 )
@@ -255,7 +255,7 @@ func runCCaaS() error {
 
 Also, the user needs to install and update dependencies before building the code. We did mention that the interface is the same between the two wrappers but for some cases like the cc-tools-demo mock stub it was not implementing the `PurgePrivateData` function so it was breaking as FPC was implementing the function with `Panic(not Implemented)`. Managing private data is not supported with FPC but it has to adhere to the stub Interface of the standard fabric shim API which requires it. Since the cc-tools mock stub was an imported package, a good solution is to use `go mod vendor` and download all go packages in the vendor directory and edit it one time there. Running `nano $FPC_PATH/vendor/github.com/hyperledger-labs/cc-tools/mock/mockstub.go` and put the following block there:
 
-```
+```go
 // PurgePrivateData ...
  func (stub *MockStub) PurgePrivateData(collection, key string) error {
  return errors.New("Not Implemented")
