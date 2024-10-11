@@ -185,35 +185,35 @@ The transaction client invocation process, as illustrated in the diagram, consis
 
 We will describe from a user perspective a high overview of how to develop a chaincode using cc-tools that works with FPC achieving both ease of development and enhanced security of the chaincode.
 
-###### 1. Setting up the FPC dev environment
+### 1. Setting up the FPC dev environment
 
 First, any chaincode that is supposed to be working with FPC needs some dependencies to develop and build the chaincode like Ego, Protocol Buffers, SGX PSW, etc...
 
 For this, we should follow this section in the FPC repo to set the development environment [here](https://github.com/hyperledger/fabric-private-chaincode/tree/main?tab=readme-ov-file#getting-started).
 
-###### 2. Develop the chaincode in cc-tools and FPC
+### 2. Develop the chaincode in cc-tools and FPC
 
 Fortunately, since the stub wrapper for both cc-tools and fpc are implementing the same interface, the conversion to an fpc chaincode can be done by plug-and-play. This means the user should start by developing the chaincode using cc-tools, and at the main loop where they pass the chaincode instance to the server to start it, they need to wrap it with `fpc.NewPrivateChaincode`. For example, have a look at the cc-tools-demo chaincode below.
 Before:
 
 ```go
 func runCCaaS() error {
-	address := os.Getenv("CHAINCODE_SERVER_ADDRESS")
-	ccid := os.Getenv("CHAINCODE_ID")
+    address := os.Getenv("CHAINCODE_SERVER_ADDRESS")
+    ccid := os.Getenv("CHAINCODE_ID")
 
-	tlsProps, err := getTLSProperties()
-	if err != nil {
-		return err
-	}
+    tlsProps, err := getTLSProperties()
+    if err != nil {
+        return err
+    }
 
-	server := &shim.ChaincodeServer{
-		CCID:     ccid,
-		Address:  address,
-		CC:       new(CCDemo),
-		TLSProps: *tlsProps,
-	}
+    server := &shim.ChaincodeServer{
+      CCID:     ccid,
+      Address:  address,
+      CC:       new(CCDemo),
+      TLSProps: *tlsProps,
+    }
 
-	return server.Start()
+    return server.Start()
 }
 ```
 
@@ -223,33 +223,33 @@ After:
 
 // Import the FPC package first
 import (
-	fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
+    fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
 )
 
 func runCCaaS() error {
-	address := os.Getenv("CHAINCODE_SERVER_ADDRESS")
-	ccid := os.Getenv("CHAINCODE_ID")
+    address := os.Getenv("CHAINCODE_SERVER_ADDRESS")
+    ccid := os.Getenv("CHAINCODE_ID")
 
-	tlsProps, err := getTLSProperties()
-	if err != nil {
-		return err
-	}
+    tlsProps, err := getTLSProperties()
+    if err != nil {
+        return err
+    }
 
-	//*Wrap the chaincode with FPC wrapper*//
-	var cc shim.Chaincode
-	if os.Getenv("FPC_ENABLED") == "true" {
-		cc = fpc.NewPrivateChaincode(new(CCDemo))
-	} else {
-		cc = new(CCDemo)
-	}
+    //*Wrap the chaincode with FPC wrapper*//
+    var cc shim.Chaincode
+    if os.Getenv("FPC_ENABLED") == "true" {
+      cc = fpc.NewPrivateChaincode(new(CCDemo))
+    } else {
+      cc = new(CCDemo)
+    }
 
-	server := &shim.ChaincodeServer{
-		CCID:     ccid,
-		Address:  address,
-		CC:       cc,
-		TLSProps: *tlsProps,
-	}
-	return server.Start()
+    server := &shim.ChaincodeServer{
+      CCID:     ccid,
+      Address:  address,
+      CC:       cc,
+      TLSProps: *tlsProps,
+    }
+    return server.Start()
 }
 ```
 
@@ -258,25 +258,25 @@ Also, the user needs to install and update dependencies before building the code
 ```go
 // PurgePrivateData ...
  func (stub *MockStub) PurgePrivateData(collection, key string) error {
- return errors.New("Not Implemented")
+     return errors.New("Not Implemented")
 }
 ```
 
 Also, if you find other conflicts with the FPC standard packages released it may be a better option to copy your chaincode inside `$FPC_PATH/samples/chaincode/<YOUR_CHAINCODE>` since you've already followed [step 1](#1-setting-up-the-fpc-dev-environment) to setup the dev environment. And then you use the fpc package locally from within `import (fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode")`. More on this is driven by this [FPC tutorial](https://github.com/osamamagdy/fabric-private-chaincode/blob/feat/create-sample-app/samples/chaincode/simple-asset-go/README.md#writing-go-chaincode).
 
-###### Build the chaincode
+#### Build the chaincode
 
 After setting up the development environment, you can build the chaincode using the [Ego](https://pkg.go.dev/github.com/edgelesssys/ego) framework which is necessary to run in encrypted enclaves. You can use the FPC build Makefile [here](https://github.com/osamamagdy/fabric-private-chaincode/blob/feat/create-sample-app/ecc_go/build.mk) but need to point the `CC_NAME` to it. The chaicode will be present as a docker image as the fabric network is using docker-compose.
 
-###### Start the Fabric network
+#### Start the Fabric network
 
 Now that we have the chaincode built and ready to be deployed, we need to start the fabric network before going any further. We're following the FPC [guide](https://github.com/osamamagdy/fabric-private-chaincode/tree/feat/create-sample-app/samples/deployment/test-network#prepare-the-test-network) for preparing and starting the network.
 
-###### Install the chaincode
+#### Install the chaincode
 
 FPC provides another `installFPC.sh` script for installing the chaincode on the peers but first, we must make sure to set the `CC_ID` with the chaincode name and `CC_VER` with the path to the `mrenclave` of that chaincode. Then we run the script and also start the chaincode containers like [here](https://github.com/osamamagdy/fabric-private-chaincode/tree/feat/create-sample-app/samples/deployment/test-network#install-and-run-the-fpc-chaincode).
 
-###### Work with the client application
+#### Work with the client application
 
 As explained in the [client](#on-the-client-side-level) section we're following the standard by FPC so using a client application based on the FPC client SDK is the way to go. In [here](https://github.com/osamamagdy/fabric-private-chaincode/blob/feat/create-sample-app/samples/chaincode/simple-asset-go/README.md#invoke-simple-asset) is a guide on how to build and use an FPC client cli to communicate with the chaincode. It builds the tool, updates the connection configurations, initializes the enclave, and invokes the transactions. All needed is to edit the chaincode parameters like `CC_NAME`, `CHANNEL_NAME` , etc...
 
