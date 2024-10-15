@@ -2,14 +2,14 @@
 
 This tutorial shows how to build, install and test a Go Chaincode developed using the [CC-Tools]() framework and integrating it with the Fabric Private Chaincode (FPC) framework.
 
-This tutorial illustrates a simple use case where we follow the [cc-tools-demo]() chaincode which is based on standard fabric and then convert it to an FPC chaincode achieving FPC security capabilities.
+This tutorial illustrates a simple use case where we follow the [cc-tools-demo]() chaincode which is based on standard Fabric and then convert it to an FPC chaincode achieving FPC security capabilities.
 
-This tutorial is based on the [FPC with CC-Tools integration project]() and all our design choices are explained here in the [design document]()
+This tutorial is based on the [FPC with CC-Tools integration project]() and all our design choices are explained here in the [design document]().
 Here are the steps to accomplish this:
 
 * Clone and copy the cc-tools-demo chaincode
-* Edit the chaincode to became an FPC chaincode instead of normal fabric
-* Build your FPC Go Chaincode
+* Modify the chaincode to use FPC
+* Build your FPC CC-tools-demo chaincode
 * Launch a Fabric network
 * Install and instantiate your chaincode
 * Invoke transactions by using the FPC simple-cli
@@ -38,7 +38,7 @@ cp -a ~/cc-tools-demo/chaincode/. $FPC_PATH/samples/chaincode/cc-tools-demo/
 cd $FPC_PATH/samples/chaincode/cc-tools-demo
 ```
 
-The chaincode code structure is different than normal chaincode as it's using the cc-tools framework
+The chaincode code structure is different than normal chaincode as it's using the cc-tools framework.
 
 **Note**: remove all test files (`*_test.go`) you find like `txdefs_createNewLibrary_test.go` as they are not part of the chaincode.
 
@@ -55,7 +55,7 @@ The code presented here is not different from traditional Go Chaincode developed
 The `main.go` contains the starting point of the chaincode.
 
 To use FPC, we need to add some logic to instantiate our private chaincode and start it.
-To do so, we use `fpc.NewPrivateChaincode(&chaincode.AssetExample{})` and since we're already in the FPC repo, remove the `go.mod` and `go.sum` files so we use the chaincode as part of the FPC package.
+To do so, we use `shim.Start(fpc.NewPrivateChaincode(new(CCDemo)))` and since we're already in the FPC repo, remove the `go.mod` and `go.sum` files so we use the chaincode as part of the FPC package.
 
 CC-tools-demo chaincode has its own packages that are needed, so we run `go get` in the `cc-tools-demo` folder.
 
@@ -153,7 +153,7 @@ Note: this command runs inside the FPC dev environment and not your local host.
 ```bash
 /project/pkg/mod/github.com/hyperledger-labs/cc-tools@v1.0.1/mock/mockstub.go:146:22: cannot use stub (variable of type *MockStub) as shim.ChaincodeStubInterface value in argument to stub.cc.Init: *MockStub does not implement shim.ChaincodeStubInterface (missing method PurgePrivateData)
 ```
-This is because a minor difference between the `ChaincodeStubInterface` used in the cc-tools `Mockstub` as it's missing the `PurgePrivateData` method. 
+This is because there is a minor difference between the `ChaincodeStubInterface` used in the cc-tools `Mockstub` as it's missing the `PurgePrivateData` method. 
 To solve this, run `go mod vendor` in the `$FPC_PATH` root directory to download all used packages and go to the file of the error to add the missing method there. 
 ```bash
 nano $FPC_PATH/vendor/github.com/hyperledger-labs/cc-tools/mock/mockstub.go
@@ -196,7 +196,7 @@ cd $FPC_PATH/samples/deployment/test-network
 
 ### Start the test network
 
-Now we are ready to launch the fabric test network and install the FPC chaincode on it.
+Now we are ready to launch the Fabric test network and install the FPC chaincode on it.
 We begin with setting up the network with a single channel `mychannel`.
 
 ```bash
@@ -239,7 +239,7 @@ docker exec -it fpc-development-go-support /bin/bash
 cd $FPC_PATH/samples/deployment/test-network
 ./update-connection.sh
 
-# # update the connection profile for external clients outside the fpc dev environment
+# # update the connection profile for external clients outside the FPC dev environment
 cd $FPC_PATH/samples/deployment/test-network
 ./update-external-connection.sh
 
@@ -271,4 +271,4 @@ export RUN_CCAAS=true
 
 ```
 
-Congratulations! You have successfully created a FPC chaincode with go and invoked it using our simple cli.
+Congratulations! You have successfully created an FPC chaincode with go using cc-tools and invoked it using our simple cli.
