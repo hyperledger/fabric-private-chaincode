@@ -14,7 +14,7 @@ This project seeks to integrate the privacy guarantees of FPC with the developer
 
 ## Problem Statement
 
-This integration can't be done implicitly as both projects are not tailored to each other. cc-tools is created based on using standard fabric networks so it doesn't handle encryption while communicating between the ledger and peers. FPC also was never tested with cc-tools packages as both utilize fabric stub interface in their stub wrapper.
+This integration can't be done implicitly as both projects are not tailored to each other. cc-tools is created based on using standard Fabric networks so it doesn't handle encryption while communicating between the ledger and peers. FPC also was never tested with cc-tools packages as both utilize Fabric stub interface in their stub wrapper.
 
 The integration between FPC and cc-tools needs to occur at two distinct levels:
 
@@ -38,105 +38,104 @@ In developing the chaincode for the integration of FPC and cc-tools, there are s
 
 1. Stub interface order:
 
-    cc-tools is a package that provides a relational-like framework for programming fabric chaincodes and it translates every code to a normal fabric chaincode at the end. cc-tools is wrapping the [shim.ChaincodeStub](https://github.com/hyperledger/fabric-chaincode-go/blob/acf92c9984733fb937fba943fbf7397d54368751/shim/interfaces.go#L28) interface from Hyperledger Fabric using [stubWrapper](https://github.com/hyperledger-labs/cc-tools/blob/995dfb2a16decae95a9dbf05424819a1df19abee/stubwrapper/stubWrapper.go#L12) and if you look for example at the [PutState](https://github.com/hyperledger-labs/cc-tools/blob/995dfb2a16decae95a9dbf05424819a1df19abee/stubwrapper/stubWrapper.go#L18) function you notice it only does some in-memory operations and it calls another `sw.Stub.PutState` from the stub passed to it (till now it was always the [stub for standard fabric](https://github.com/hyperledger/fabric-chaincode-go/blob/main/shim/stub.go)).
+   cc-tools is a package that provides a relational-like framework for programming Fabric chaincodes and it translates every code to a normal Fabric chaincode at the end. cc-tools is wrapping the [shim.ChaincodeStub](https://github.com/hyperledger/fabric-chaincode-go/blob/acf92c9984733fb937fba943fbf7397d54368751/shim/interfaces.go#L28) interface from Hyperledger Fabric using [stubWrapper](https://github.com/hyperledger-labs/cc-tools/blob/995dfb2a16decae95a9dbf05424819a1df19abee/stubwrapper/stubWrapper.go#L12) and if you look for example at the [PutState](https://github.com/hyperledger-labs/cc-tools/blob/995dfb2a16decae95a9dbf05424819a1df19abee/stubwrapper/stubWrapper.go#L18) function you notice it only does some in-memory operations and it calls another `sw.Stub.PutState` from the stub passed to it (till now it was always the [stub for standard fabric](https://github.com/hyperledger/fabric-chaincode-go/blob/main/shim/stub.go)).
 
-    ```go
-    package stubwrapper
+   ```go
+   package stubwrapper
 
-    import (
-        "github.com/hyperledger-labs/cc-tools/errors"
-        "github.com/hyperledger/fabric-chaincode-go/shim"
-    )
+   import (
+       "github.com/hyperledger-labs/cc-tools/errors"
+       "github.com/hyperledger/fabric-chaincode-go/shim"
+   )
 
-    type StubWrapper struct {
-        Stub        shim.ChaincodeStubInterface
-        WriteSet    map[string][]byte
-        PvtWriteSet map[string]map[string][]byte
-    }
+   type StubWrapper struct {
+       Stub        shim.ChaincodeStubInterface
+       WriteSet    map[string][]byte
+       PvtWriteSet map[string]map[string][]byte
+   }
 
-    func (sw *StubWrapper) PutState(key string, obj []byte) errors.ICCError {
-        err := sw.Stub.PutState(key, obj)
-        if err != nil {
-            return errors.WrapError(err, "stub.PutState call error")
-        }
+   func (sw *StubWrapper) PutState(key string, obj []byte) errors.ICCError {
+       err := sw.Stub.PutState(key, obj)
+       if err != nil {
+           return errors.WrapError(err, "stub.PutState call error")
+       }
 
-        if sw.WriteSet == nil {
-            sw.WriteSet = make(map[string][]byte)
-        }
-        sw.WriteSet[key] = obj
+       if sw.WriteSet == nil {
+           sw.WriteSet = make(map[string][]byte)
+       }
+       sw.WriteSet[key] = obj
 
-        return nil
-    }
+       return nil
+   }
 
-    ```
+   ```
 
-    On the other hand for FPC, it also wraps the [shim.ChaincodeStub](https://github.com/hyperledger/fabric-chaincode-go/blob/acf92c9984733fb937fba943fbf7397d54368751/shim/interfaces.go#L28) interface from Hyperledger Fabric but the wrapper it uses (in this case it's [FpcStubInterface](https://github.com/hyperledger/fabric-private-chaincode/blob/33fd56faf886d88a5e5f9a7dba15d8d02d739e92/ecc_go/chaincode/enclave_go/shim.go#L17)) is not always using the functions from the passed stub. With the same example as before, if you look at the [PutState](https://github.com/hyperledger/fabric-private-chaincode/blob/33fd56faf886d88a5e5f9a7dba15d8d02d739e92/ecc_go/chaincode/enclave_go/shim.go#L104) function you can notice it's not using the `sw.Stub.PutState` and going directly to the `rwset.AddWrite` (this is specific to fpc use case as it's not using the fabric proposal response). There are some other functions where the passed `stub` functions are being used.
+   On the other hand for FPC, it also wraps the [shim.ChaincodeStub](https://github.com/hyperledger/fabric-chaincode-go/blob/acf92c9984733fb937fba943fbf7397d54368751/shim/interfaces.go#L28) interface from Hyperledger Fabric but the wrapper it uses (in this case it's [FpcStubInterface](https://github.com/hyperledger/fabric-private-chaincode/blob/33fd56faf886d88a5e5f9a7dba15d8d02d739e92/ecc_go/chaincode/enclave_go/shim.go#L17)) is not always using the functions from the passed stub. With the same example as before, if you look at the [PutState](https://github.com/hyperledger/fabric-private-chaincode/blob/33fd56faf886d88a5e5f9a7dba15d8d02d739e92/ecc_go/chaincode/enclave_go/shim.go#L104) function you can notice it's not using the `sw.Stub.PutState` and going directly to the `rwset.AddWrite` (this is specific to FPC use case as it's not using the Fabric proposal response). However, there still are some other functions where the passed `stub` functions are being used.
 
-    ```go
-    package enclave_go
+   ```go
+   package enclave_go
 
-    import (
-        "github.com/hyperledger/fabric-chaincode-go/shim"
-        pb "github.com/hyperledger/fabric-protos-go/peer"
-    )
+   import (
+       "github.com/hyperledger/fabric-chaincode-go/shim"
+       pb "github.com/hyperledger/fabric-protos-go/peer"
+   )
 
-    type FpcStubInterface struct {
-        stub  shim.ChaincodeStubInterface
-        input *pb.ChaincodeInput
-        rwset ReadWriteSet
-        sep   StateEncryptionFunctions
-    }
+   type FpcStubInterface struct {
+       stub  shim.ChaincodeStubInterface
+       input *pb.ChaincodeInput
+       rwset ReadWriteSet
+       sep   StateEncryptionFunctions
+   }
 
-    func (f *FpcStubInterface) PutState(key string, value []byte) error {
-        encValue, err := f.sep.EncryptState(value)
-        if err != nil {
-            return err
-        }
-        return f.PutPublicState(key, encValue)
-    }
+   func (f *FpcStubInterface) PutState(key string, value []byte) error {
+       encValue, err := f.sep.EncryptState(value)
+       if err != nil {
+           return err
+       }
+       return f.PutPublicState(key, encValue)
+   }
 
-    func (f *FpcStubInterface) PutPublicState(key string, value []byte) error {
-        f.rwset.AddWrite(key, value)
+   func (f *FpcStubInterface) PutPublicState(key string, value []byte) error {
+       f.rwset.AddWrite(key, value)
 
-        // Note that since we are not using the fabric proposal response  we can skip the putState call
-        // return f.stub.PutState(key, value)
-        return nil
-    }
-    ```
+       // Note that since we are not using the Fabric proposal response  we can skip the putState call
+       // return f.stub.PutState(key, value)
+       return nil
+   }
+   ```
 
-    This was also tested practically by logging during the invocation of a transaction that uses the PutState functionality.
-    ![1726531513506](chaincodeStubOrder.png)
+   This was also tested practically by logging during the invocation of a transaction that uses the PutState functionality.
+   ![1726531513506](chaincodeStubOrder.png)
 
-    For this, It's better to inject the fpc stub wrapper in the middle between fabric stub and cc-tools stub wrapper.
-
+   For this, It's better to inject the FPC stub wrapper in the middle between Fabric stub and cc-tools stub wrapper.
 2. The order needed by how the flow of the code works:
-    Since the cc-tools code is translated to normal fabric chaincode before communicating with the ledger, the cc-tools code itself doesn't communicate with the ledger but performs some in-memory operations and then calls the same shim functionality from the fabric code (as explained above).
+   Since the cc-tools code is translated to normal Fabric chaincode before communicating with the ledger, the cc-tools code itself doesn't communicate with the ledger but performs some in-memory operations and then calls the same shim functionality from the Fabric code (as explained above).
 
-    For FPC, it changes the way dealing with the ledger as it deals with decrypting the arguments before committing the transaction to the ledger and encrypting the response before sending it back to the client.
+   For FPC, it changes the way dealing with the ledger as it deals with decrypting the arguments before committing the transaction to the ledger and encrypting the response before sending it back to the client.
 
-    To meet this requirement, the chaincode must be wrapped with the FPC stub wrapper before being passed to the cc-tools wrapper.
-    ![wrappingOrder](./wrappingOrder.png)
+   To meet this requirement, the chaincode must be wrapped with the FPC stub wrapper before being passed to the cc-tools wrapper.
+   ![wrappingOrder](./wrappingOrder.png)
 
-    Here's an example of how the end user enables FPC for a cc-tools-based chaincode.
+   Here's an example of how the end user enables FPC for a cc-tools-based chaincode.
 
-    ```go
-    var cc shim.Chaincode
-    if os.Getenv("FPC_ENABLED") == "true" {
-        // *Wrap the chaincode with FPC wrapper*//
-        cc = fpc.NewPrivateChaincode(new(CCDemo))
-    } else {
-        cc = new(CCDemo)
-    }
-    server := &shim.ChaincodeServer{
-        CCID:     ccid,
-        Address:  address,
-        CC:       cc,
-        TLSProps: *tlsProps,
-    }
-    return server.Start()
-    ```
+   ```go
+   var cc shim.Chaincode
+   if os.Getenv("FPC_ENABLED") == "true" {
+       // *Wrap the chaincode with FPC wrapper*//
+       cc = fpc.NewPrivateChaincode(new(CCDemo))
+   } else {
+       cc = new(CCDemo)
+   }
+   server := &shim.ChaincodeServer{
+       CCID:     ccid,
+       Address:  address,
+       CC:       cc,
+       TLSProps: *tlsProps,
+   }
+   return server.Start()
+   ```
 
-    Note: For this code to work, there are more changes required to be done in terms of packages, building, and the deployment process. We'll go into this in the [User Experience](#user-experience) section.
+   Note: For this code to work, there are more changes required to be done in terms of packages, building, and the deployment process. We'll go into this in the [User Experience](#user-experience) section.
 
 <br>
 
@@ -156,7 +155,7 @@ For more details about this, refer to the FPC chaincode deployment process secti
 
 ### On The Client Side Level
 
-Similarly, as cc-tools is a framework for developing the chaincode which is normally translated to fabric chaincode (now also fabric private chaincode), the client transaction invocation flow is not affected by cc-tools but it must follow the FPC transaction flow for encryption and decryption operations to meet the security requirements asserted by FPC.
+Similarly, as cc-tools is a framework for developing the chaincode which is normally translated to Fabric chaincode (now also Fabric Private Chaincode), the client transaction invocation flow is not affected by cc-tools but it must follow the FPC transaction flow for encryption and decryption operations to meet the security requirements asserted by FPC.
 
 1. Step 1-5: FPC Client SDK Invocation : The client application invokes FPC Chaincode via the SDK, which retrieves the chaincode's public encryption key from the Enclave Registry and encrypts the transaction proposal in addition to a symmetric client response key.
 2. Step 6-7: Chaincode Execution : The encrypted proposal is processed by the FPC Shim inside the Enclave, which decrypts the arguments and executes the chaincode logic using the World State.
@@ -193,7 +192,7 @@ For this, we should follow this section in the FPC repo to set the development e
 
 ### 2. Develop the chaincode in cc-tools and FPC
 
-Fortunately, since the stub wrapper for both cc-tools and fpc are implementing the same interface, the conversion to an fpc chaincode can be done by plug-and-play. This means the user should start by developing the chaincode using cc-tools, and at the main loop where they pass the chaincode instance to the server to start it, they need to wrap it with `fpc.NewPrivateChaincode`. For example, have a look at the cc-tools-demo chaincode below.
+Fortunately, since the stub wrapper for both cc-tools and FPC are implementing the same interface, the conversion to an FPC chaincode can be done by plug-and-play. This means the user should start by developing the chaincode using cc-tools, and at the main loop where they pass the chaincode instance to the server to start it, they need to wrap it with `fpc.NewPrivateChaincode`. For example, have a look at the cc-tools-demo chaincode below.
 Before:
 
 ```go
@@ -253,24 +252,24 @@ func runCCaaS() error {
 }
 ```
 
-Also, the user needs to install and update dependencies before building the code. We did mention that the interface is the same between the two wrappers but for some cases like the cc-tools-demo mock stub it was not implementing the `PurgePrivateData` function so it was breaking as FPC was implementing the function with `Panic(not Implemented)`. Managing private data is not supported with FPC but it has to adhere to the stub Interface of the standard fabric shim API which requires it. Since the cc-tools mock stub was an imported package, a good solution is to use `go mod vendor` and download all go packages in the vendor directory and edit it one time there. Running `nano $FPC_PATH/vendor/github.com/hyperledger-labs/cc-tools/mock/mockstub.go` and put the following block there:
+Also, the user needs to install and update dependencies before building the code. We did mention that the interface is the same between the two wrappers but for some cases like the cc-tools-demo mock stub it was not implementing the `PurgePrivateData` function so it was breaking as FPC was implementing the function with `Panic(not Implemented)`. Managing private data is not supported with FPC but it has to adhere to the stub Interface of the standard Fabric shim API which requires it. Since the cc-tools mock stub was an imported package, a good solution is to use `go mod vendor` and download all go packages in the vendor directory and edit it one time there. Running `nano $FPC_PATH/vendor/github.com/hyperledger-labs/cc-tools/mock/mockstub.go` and put the following block there:
 
 ```go
 // PurgePrivateData ...
- func (stub *MockStub) PurgePrivateData(collection, key string) error {
+func (stub *MockStub) PurgePrivateData(collection, key string) error {
      return errors.New("Not Implemented")
 }
 ```
 
-Also, if you find other conflicts with the FPC standard packages released it may be a better option to copy your chaincode inside `$FPC_PATH/samples/chaincode/<YOUR_CHAINCODE>` since you've already followed [step 1](#1-setting-up-the-fpc-dev-environment) to setup the dev environment. And then you use the fpc package locally from within `import (fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode")`. More on this is driven by this [FPC tutorial](https://github.com/osamamagdy/fabric-private-chaincode/blob/feat/create-sample-app/samples/chaincode/simple-asset-go/README.md#writing-go-chaincode).
+Also, if you find other conflicts with the FPC standard packages released it may be a better option to copy your chaincode inside `$FPC_PATH/samples/chaincode/<YOUR_CHAINCODE>` since you've already followed [step 1](#1-setting-up-the-fpc-dev-environment) to setup the dev environment. And then you use the FPC package locally from within `import (fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode")`. More on this is driven by this [FPC tutorial](https://github.com/osamamagdy/fabric-private-chaincode/blob/feat/create-sample-app/samples/chaincode/simple-asset-go/README.md#writing-go-chaincode).
 
 #### Build the chaincode
 
-After setting up the development environment, you can build the chaincode using the [Ego](https://pkg.go.dev/github.com/edgelesssys/ego) framework which is necessary to run in encrypted enclaves. You can use the FPC build Makefile [here](https://github.com/osamamagdy/fabric-private-chaincode/blob/feat/create-sample-app/ecc_go/build.mk) but need to point the `CC_NAME` to it. The chaicode will be present as a docker image as the fabric network is using docker-compose.
+After setting up the development environment, you can build the chaincode using the [Ego](https://pkg.go.dev/github.com/edgelesssys/ego) framework which is necessary to run in encrypted enclaves. You can use the FPC build Makefile [here](https://github.com/osamamagdy/fabric-private-chaincode/blob/feat/create-sample-app/ecc_go/build.mk) but you need to point the `CC_NAME` to it. The chaicode will be present as a docker image as the Fabric network is using docker-compose.
 
 #### Start the Fabric network
 
-Now that we have the chaincode built and ready to be deployed, we need to start the fabric network before going any further. We're following the FPC [guide](https://github.com/osamamagdy/fabric-private-chaincode/tree/feat/create-sample-app/samples/deployment/test-network#prepare-the-test-network) for preparing and starting the network.
+Now that we have the chaincode built and ready to be deployed, we need to start the Fabric network before going any further. We're following the FPC [guide](https://github.com/osamamagdy/fabric-private-chaincode/tree/feat/create-sample-app/samples/deployment/test-network#prepare-the-test-network) for preparing and starting the network.
 
 #### Install the chaincode
 
@@ -278,18 +277,19 @@ FPC provides another `installFPC.sh` script for installing the chaincode on the 
 
 #### Work with the client application
 
-As explained in the [client](#on-the-client-side-level) section we're following the standard by FPC so using a client application based on the FPC client SDK is the way to go. In [here](https://github.com/osamamagdy/fabric-private-chaincode/blob/feat/create-sample-app/samples/chaincode/simple-asset-go/README.md#invoke-simple-asset) is a guide on how to build and use an FPC client cli to communicate with the chaincode. It builds the tool, updates the connection configurations, initializes the enclave, and invokes the transactions. All needed is to edit the chaincode parameters like `CC_NAME`, `CHANNEL_NAME` , etc...
+As explained in the [client](#on-the-client-side-level) section we're following the standard by FPC so using a client application based on the FPC client SDK is the way to go. In [here](https://github.com/osamamagdy/fabric-private-chaincode/blob/feat/create-sample-app/samples/chaincode/simple-asset-go/README.md#invoke-simple-asset) is a guide on how to build and use an FPC client cli to communicate with the chaincode. It builds the tool, updates the connection configurations, initializes the enclave, and invokes the transactions. All you need to do is edit the chaincode parameters like `CC_NAME`, `CHANNEL_NAME` , etc...
 
 ## Limitations
 
-There are some standard fabric features that are not compatible with the security properties of FPC and how FPC works and then it's not part of our intention to support.
+There are some standard Fabric features that are not compatible with the security properties of FPC and how FPC works and it's not part of our intention to support.
 
 The following functionalities are not yet supported:
+
 * `GetTransient()` and `GetBinding()`: This is not needed as the application-level confidentiality is handled by the FPC client invocation approach.
 
 ## Future work
 
-The following functionalities are beyond the scope of the integration project as they're missing functionalities from FPC side and once they're implemented, they can be easily integrated and work with cc-tools.
+The following functionalities are beyond the scope of the integration project as they're missing functionalities on the FPC side and once they're implemented, they can be easily integrated and will work with cc-tools.
 
 * Add support for [private data collections](https://hyperledger-fabric.readthedocs.io/en/latest/private-data/private-data.html) for FPC chaincodes.
 * Complex rich queries and range queries (CouchDB).
