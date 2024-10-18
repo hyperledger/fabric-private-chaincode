@@ -40,8 +40,6 @@ cd $FPC_PATH/samples/chaincode/cc-tools-demo
 
 The chaincode code structure is different than normal chaincode as it's using the cc-tools framework.
 
-**Note**: remove all test files (`*_test.go`) you find like `txdefs_createNewLibrary_test.go` as they are not part of the chaincode.
-
 ## Edit the chaincode to became an FPC chaincode instead of normal fabric
 
 Go to `$FPC_PATH/samples/chaincode/cc-tools-demo/main.go` and create the project structure.
@@ -153,8 +151,8 @@ Note: this command runs inside the FPC dev environment and not your local host.
 ```bash
 /project/pkg/mod/github.com/hyperledger-labs/cc-tools@v1.0.1/mock/mockstub.go:146:22: cannot use stub (variable of type *MockStub) as shim.ChaincodeStubInterface value in argument to stub.cc.Init: *MockStub does not implement shim.ChaincodeStubInterface (missing method PurgePrivateData)
 ```
-This is because there is a minor difference between the `ChaincodeStubInterface` used in the cc-tools `Mockstub` as it's missing the `PurgePrivateData` method. 
-To solve this, run `go mod vendor` in the `$FPC_PATH` root directory to download all used packages and go to the file of the error to add the missing method there. 
+This is because there is a minor difference between the `ChaincodeStubInterface` used in the cc-tools `Mockstub` as it's missing the `PurgePrivateData` method.
+To solve this, run `go mod vendor` in the `$FPC_PATH/samples/chaincode/cc-tools-demo` root directory to download all used packages and go to the file of the error to add the missing method there.
 ```bash
 nano $FPC_PATH/vendor/github.com/hyperledger-labs/cc-tools/mock/mockstub.go
 ```
@@ -167,7 +165,7 @@ add the following function
 
 ```
 
-After building, you can check that the `fpc/fpc-cc-tools-demo` image exists in your local docker registry using:
+After building again, you can check that the `fpc/fpc-cc-tools-demo` image exists in your local docker registry using:
 
 ```bash
 docker images | grep fpc-cc-tools-demo

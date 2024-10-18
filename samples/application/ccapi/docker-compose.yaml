@@ -1,0 +1,85 @@
+version: "2"
+
+networks:
+  cc-tools-demo-net:
+    external: true
+
+services:
+  ccapi.org1.example.com:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 80:80
+    volumes:
+      - ./:/rest-server
+      - ../fabric/organizations:/fabric/organizations
+    logging:
+      options:
+        max-size: 50m  
+    environment:
+      - SDK_PATH=./config/configsdk-org1.yaml
+      - USER=Admin
+      - ORG=org1
+      - DOMAIN=example.com
+      - CHANNEL=mainchannel
+      - CCNAME=cc-tools-demo
+      - FABRIC_GATEWAY_ENDPOINT=peer0.org1.example.com:7051
+      - FABRIC_GATEWAY_NAME=peer0.org1.example.com
+      - GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn
+    working_dir: /rest-server
+    container_name: ccapi.org1.example.com
+    networks:
+      - cc-tools-demo-net
+  ccapi.org2.example.com:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 980:80
+    volumes:
+      - ./:/rest-server
+      - ../fabric/organizations:/fabric/organizations
+    logging:
+      options:
+        max-size: 50m  
+    environment:
+      - SDK_PATH=./config/configsdk-org2.yaml
+      - USER=Admin
+      - ORG=org2
+      - DOMAIN=example.com
+      - CHANNEL=mainchannel
+      - CCNAME=cc-tools-demo
+      - FABRIC_GATEWAY_ENDPOINT=peer0.org2.example.com:7051
+      - FABRIC_GATEWAY_NAME=peer0.org2.example.com
+      - GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn
+    working_dir: /rest-server
+    container_name: ccapi.org2.example.com
+    networks:
+      - cc-tools-demo-net
+  ccapi.org3.example.com:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 1080:80
+    volumes:
+      - ./:/rest-server
+      - ../fabric/organizations:/fabric/organizations
+    logging:
+      options:
+        max-size: 50m  
+    environment:
+      - SDK_PATH=./config/configsdk-org3.yaml
+      - USER=Admin
+      - ORG=org3
+      - DOMAIN=example.com
+      - CHANNEL=mainchannel
+      - CCNAME=cc-tools-demo
+      - FABRIC_GATEWAY_ENDPOINT=peer0.org3.example.com:7051
+      - FABRIC_GATEWAY_NAME=peer0.org3.example.com
+      - GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn
+    working_dir: /rest-server
+    container_name: ccapi.org3.example.com
+    networks:
+      - cc-tools-demo-net

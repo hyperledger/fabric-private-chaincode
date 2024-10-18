@@ -4,21 +4,21 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package api
+package common
 
 import (
 	"fmt"
 	"os"
 	"strconv"
 
-	"github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/pkg"
+	pkgFpc "github.com/hyperledger-labs/ccapi/fpcUtils"
 )
 
 var (
-	config *pkg.Config
+	defaultFpcConfig *pkgFpc.Config
 )
 
-func InitConfig() {
+func InitFpcConfig() {
 
 	getStrEnv := func(key string) string {
 		val := os.Getenv(key)
@@ -39,7 +39,7 @@ func InitConfig() {
 		return ret
 	}
 
-	config = &pkg.Config{
+	defaultFpcConfig = &pkgFpc.Config{
 		CorePeerAddress:         getStrEnv("CORE_PEER_ADDRESS"),
 		CorePeerId:              getStrEnv("CORE_PEER_ID"),
 		CorePeerLocalMSPID:      getStrEnv("CORE_PEER_LOCALMSPID"),
@@ -49,8 +49,20 @@ func InitConfig() {
 		CorePeerTLSKeyFile:      getStrEnv("CORE_PEER_TLS_KEY_FILE"),
 		CorePeerTLSRootCertFile: getStrEnv("CORE_PEER_TLS_ROOTCERT_FILE"),
 		OrdererCA:               getStrEnv("ORDERER_CA"),
-		ChaincodeId:             getStrEnv("CC_NAME"),
-		ChannelId:               getStrEnv("CHANNEL_NAME"),
+		ChaincodeId:             getStrEnv("CCNAME"),
+		ChannelId:               getStrEnv("CHANNEL"),
 		GatewayConfigPath:       getStrEnv("GATEWAY_CONFIG"),
 	}
+
+}
+
+func NewDefaultFpcClient() *pkgFpc.Client {
+	return pkgFpc.NewClient(defaultFpcConfig)
+}
+
+func NewFpcClient(channelName string, chaincodeName string) *pkgFpc.Client {
+	fpcConfig := defaultFpcConfig
+	fpcConfig.ChannelId = channelName
+	fpcConfig.ChaincodeId = chaincodeName
+	return pkgFpc.NewClient(fpcConfig)
 }

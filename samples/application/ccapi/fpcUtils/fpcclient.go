@@ -4,7 +4,7 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package pkg
+package fpcUtils
 
 import (
 	"fmt"
@@ -104,10 +104,10 @@ func newContract(config *Config) fpc.Contract {
 }
 
 func (c *Client) Invoke(function string, args ...string) string {
-	logger.Debugf("--> Invoke FPC chaincode with %s %s", function, args)
+	logger.Infof("--> Invoke FPC chaincode with %s %s", function, args)
 	result, err := c.contract.SubmitTransaction(function, args...)
 	if err != nil {
-		logger.Fatalf("Failed to Submit transaction: %v", err)
+		logger.Infof("Failed to Submit transaction: %v", err)
 	}
 	logger.Debugf("--> Result: %s", string(result))
 	return string(result)
