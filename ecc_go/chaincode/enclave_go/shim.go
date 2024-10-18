@@ -13,7 +13,6 @@ import (
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/pkg/errors"
 	timestamp "google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -180,11 +179,7 @@ func (f *FpcStubInterface) SplitCompositeKey(compositeKey string) (string, []str
 }
 
 func (f *FpcStubInterface) GetQueryResult(query string) (shim.StateQueryIteratorInterface, error) {
-	it, err := f.stub.GetQueryResult(query)
-	if err != nil {
-		return it, errors.Wrap(err, "stub.GetQueryResult call error")
-	}
-	return it, nil
+	return nil, fmt.Errorf("function not yet supported")
 }
 
 func (f *FpcStubInterface) GetQueryResultWithPagination(query string, pageSize int32, bookmark string) (shim.StateQueryIteratorInterface, *pb.QueryResponseMetadata, error) {
@@ -240,7 +235,7 @@ func (f *FpcStubInterface) GetCreator() ([]byte, error) {
 }
 
 func (f *FpcStubInterface) GetTransient() (map[string][]byte, error) {
-	return nil, nil
+	return nil, fmt.Errorf("function not yet supported")
 }
 
 func (f *FpcStubInterface) GetBinding() ([]byte, error) {
@@ -273,10 +268,5 @@ func (s *FpcStubInterface) GetTxTimestamp() (*timestamp.Timestamp, error) {
 }
 
 func (f *FpcStubInterface) SetEvent(name string, payload []byte) error {
-	if name == "" {
-		return errors.New("event name can not be empty string")
-	}
-	fmt.Println("Trying to set event name: ", name, "\n with payload: ", payload)
-	fmt.Println("NO event is bieng set as function is not implemented yet")
-	return nil
+	return fmt.Errorf("function not yet supported")
 }
