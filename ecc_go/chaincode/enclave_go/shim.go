@@ -8,6 +8,8 @@ SPDX-License-Identifier: Apache-2.0
 package enclave_go
 
 import (
+	"fmt"
+
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
@@ -177,7 +179,7 @@ func (f *FpcStubInterface) SplitCompositeKey(compositeKey string) (string, []str
 }
 
 func (f *FpcStubInterface) GetQueryResult(query string) (shim.StateQueryIteratorInterface, error) {
-	panic("not implemented") // TODO: Implement
+	return nil, fmt.Errorf("function not yet supported")
 }
 
 func (f *FpcStubInterface) GetQueryResultWithPagination(query string, pageSize int32, bookmark string) (shim.StateQueryIteratorInterface, *pb.QueryResponseMetadata, error) {
@@ -233,7 +235,7 @@ func (f *FpcStubInterface) GetCreator() ([]byte, error) {
 }
 
 func (f *FpcStubInterface) GetTransient() (map[string][]byte, error) {
-	panic("not implemented") // TODO: Implement
+	return nil, fmt.Errorf("function not yet supported")
 }
 
 func (f *FpcStubInterface) GetBinding() ([]byte, error) {
@@ -248,10 +250,23 @@ func (f *FpcStubInterface) GetSignedProposal() (*pb.SignedProposal, error) {
 	return f.stub.GetSignedProposal()
 }
 
-func (f *FpcStubInterface) GetTxTimestamp() (*timestamp.Timestamp, error) {
-	panic("not implemented") // TODO: Implement
+// GetTxTimestamp documentation can be found in interfaces.go
+func (s *FpcStubInterface) GetTxTimestamp() (*timestamp.Timestamp, error) {
+	// hdr := &common.Header{}
+	// if err := proto.Unmarshal(s.proposal.Header, hdr); err != nil {
+	// 	return nil, fmt.Errorf("error unmarshaling Header: %s", err)
+	// }
+
+	// chdr := &common.ChannelHeader{}
+	// if err := proto.Unmarshal(hdr.ChannelHeader, chdr); err != nil {
+	// 	return nil, fmt.Errorf("error unmarshaling ChannelHeader: %s", err)
+	// }
+	// return chdr.GetTimestamp(), nil
+	println(timestamp.Now())
+	return timestamp.Now(), nil
+
 }
 
 func (f *FpcStubInterface) SetEvent(name string, payload []byte) error {
-	panic("not implemented") // TODO: Implement
+	return fmt.Errorf("function not yet supported")
 }
