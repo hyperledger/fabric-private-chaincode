@@ -9,5 +9,6 @@
 !ecc/ecc
 !ecc_go/ecc_go
 !ecc_go/enclave.json
+!ecc_go/ccToolsDemoEnclave.json
 !ecc_enclave/_build/lib/libsgxcc.so
 # note: docker seems to have troubles with '+' in filenames in this file, at least in exceptions ..

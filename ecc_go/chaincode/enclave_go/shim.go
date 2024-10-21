@@ -10,9 +10,13 @@ package enclave_go
 import (
 	"fmt"
 
+	protoV1 "github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
+	common "github.com/hyperledger/fabric-protos-go/common"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
+
+	"google.golang.org/protobuf/proto"
 	timestamp "google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -250,21 +254,21 @@ func (f *FpcStubInterface) GetSignedProposal() (*pb.SignedProposal, error) {
 	return f.stub.GetSignedProposal()
 }
 
-// GetTxTimestamp documentation can be found in interfaces.go
-func (s *FpcStubInterface) GetTxTimestamp() (*timestamp.Timestamp, error) {
-	// hdr := &common.Header{}
-	// if err := proto.Unmarshal(s.proposal.Header, hdr); err != nil {
-	// 	return nil, fmt.Errorf("error unmarshaling Header: %s", err)
-	// }
+func (f *FpcStubInterface) GetTxTimestamp() (*timestamp.Timestamp, error) {
+	hdr := &common.Header{}
+	proposal, Proposalerr := f.GetSignedProposal()
+	if Proposalerr != nil {
+		return nil, fmt.Errorf("Error retrieving the proposal from the FPC Stub")
+	}
+	if err := proto.Unmarshal(proposal.ProposalBytes, protoV1.MessageV2(hdr)); err != nil {
+		return nil, fmt.Errorf("error unmarshaling Header: %s", err)
+	}
 
-	// chdr := &common.ChannelHeader{}
-	// if err := proto.Unmarshal(hdr.ChannelHeader, chdr); err != nil {
-	// 	return nil, fmt.Errorf("error unmarshaling ChannelHeader: %s", err)
-	// }
-	// return chdr.GetTimestamp(), nil
-	println(timestamp.Now())
-	return timestamp.Now(), nil
-
+	chdr := &common.ChannelHeader{}
+	if err := proto.Unmarshal(hdr.ChannelHeader, protoV1.MessageV2(chdr)); err != nil {
+		return nil, fmt.Errorf("error unmarshaling ChannelHeader: %s", err)
+	}
+	return chdr.GetTimestamp(), nil
 }
 
 func (f *FpcStubInterface) SetEvent(name string, payload []byte) error {

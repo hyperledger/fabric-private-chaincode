@@ -17,11 +17,14 @@ The transaction client invocation process, as illustrated in the diagram, consis
 
 ![CCAPIFlow](./CCAPIFlow.png)
 
-
 ## User Experience
 
-CCAPI is using docker and docker-compose for spinning up all the required components needed to work. 
+CCAPI is using docker and docker-compose for spinning up all the required components needed to work.
 
 Have a look at the [fpc-docker-compose.yaml](./fpc-docker-compose.yaml) to see how we use different env vars. Most of these environment variables are required by any client application to work and communicate with FPC. If you followed the [cc-tools-demo](../../chaincode/cc-tools-demo/README.md) tutorial, the values should be the same.
 
-Start by running `docker-compose -f fpc-docker-compose.yaml up`
+Start by running `docker-compose -f fpc-docker-compose.yaml up` then go to the browser and type `localhost:80` to open the swagger api and start executing functions.
+
+## Future work
+
+CCAPI have another component for the dashboard frontend application but it's not yet utilized with
