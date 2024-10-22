@@ -28,6 +28,7 @@ type fabricLedgerClient struct {
 //  1. Get sdk
 //  2. Use sdk to create a ClientProvider ()
 //  3. From client provider create resmgmt Client
+//
 // You can then use this .Client to call for specific functionalities
 func NewFabricResmgmtClient(orgName, userName string, opts ...resmgmt.ClientOption) (*fabricResmgtmClient, error) {
 	sdk, err := GetSDK()
@@ -58,6 +59,7 @@ func NewFabricResmgmtClient(orgName, userName string, opts ...resmgmt.ClientOpti
 //  1. Get sdk
 //  2. Use sdk to create a ChannelProvider ()
 //  3. From channel provider create channel Client
+//
 // You can then use this .Client to call for specific functionalities
 func NewFabricChClient(channelName, userName, orgName string) (*fabricChannelClient, error) {
 	sdk, err := GetSDK()
@@ -87,6 +89,7 @@ func NewFabricChClient(channelName, userName, orgName string) (*fabricChannelCli
 //  1. Get sdk
 //  2. Use sdk to create a ChannelProvider ()
 //  3. From channel provider create ledger Client
+//
 // You can then use this .Client to call for specific functionalities
 func NewFabricLedgerClient(channelName, user, orgName string) (*fabricLedgerClient, error) {
 	sdk, err := GetSDK()

@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
-	
+
 	"github.com/gin-gonic/gin"
 	"github.com/hyperledger-labs/ccapi/chaincode"
 	"github.com/hyperledger-labs/ccapi/common"
@@ -25,7 +25,7 @@ func QueryQSCC(c *gin.Context) {
 	case "getBlockByNumber":
 		getBlockByNumber(c, channelName)
 	case "getBlockByHash":
-	getBlockByHash(c, channelName)
+		getBlockByHash(c, channelName)
 	case "getTransactionByID":
 		getTransactionByID(c, channelName)
 	case "getChainInfo":
@@ -147,7 +147,7 @@ func getBlockByHash(c *gin.Context, channelName string) {
 	}
 
 	result, err := chaincode.QueryGateway(channelName, "qscc", "GetBlockByHash", user, []string{channelName, string(hashBytes)})
-	
+
 	if err != nil {
 		err, status := common.ParseError(err)
 		common.Abort(c, status, err)
