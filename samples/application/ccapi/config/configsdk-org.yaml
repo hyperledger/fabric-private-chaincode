@@ -1,0 +1,220 @@
+version: 1.0.0
+
+#
+# The client section used by GO SDK.
+#
+client:
+  # Which organization does this application instance belong to? The value must be the name of an org
+  # defined under "organizations"
+  organization: org
+  logging:
+    # Develope can using debug to get more information
+    #    level: debug
+    level: info
+  cryptoconfig:
+    path: "/fabric/organizations"
+  # Some SDKs support pluggable KV stores, the properties under "credentialStore"
+  # are implementation specific
+  credentialStore:
+    # [Optional]. Used by user store. Not needed if all credentials are embedded in configuration
+    # and enrollments are performed elswhere.
+    path: "/tmp/examplestore"
+
+  # [Optional] BCCSP config for the client. Used by GO SDK.
+  BCCSP:
+    security:
+      enabled: true
+      default:
+        provider: "SW"
+      hashAlgorithm: "SHA2"
+      softVerify: true
+      level: 256
+
+  tlsCerts:
+    # [Optional]. Use system certificate pool when connecting to peers, orderers (for negotiating TLS) Default: false
+    systemCertPool: true
+    # [Optional]. Client key and cert for TLS handshake with peers and orderers
+    client:
+      # 使用byfn中Admin@org的证书
+      keyfile: /fabric/organizations/peerOrganizations/org.example.com/users/Admin@org.example.com/tls/client.key
+      certfile: /fabric/organizations/peerOrganizations/org.example.com/users/Admin@org.example.com/tls/client.crt
+      cacertfile: /fabric/organizations/peerOrganizations/org.example.com/users/Admin@org.example.com/tls/ca.crt
+
+################################## General part ##################################
+
+#
+# [Optional]. But most apps would have this section so that channel objects can be constructed
+# based on the content below. If an app is creating channels, then it likely will not need this
+# section.
+#
+channels:
+  # name of the channel
+  mainchannel:
+    # Required. list of orderers designated by the application to use for transactions on this
+    # channel. This list can be a result of access control ("org" can only access "ordererA"), or
+    # operational decisions to share loads from applications among the orderers.  The values must
+    # be "names" of orgs defined under "organizations/peers"
+    # deprecated: not recommended, to override any orderer configuration items, entity matchers should be used.
+    #    orderers:
+    #      - orderer.example.com
+
+    # 不要缺少当前channel的orderer节点
+    # orderers:
+    #   - orderer.example.com
+
+    # Required. list of peers from participating orgs
+    peers:
+      peer0.org.example.com:
+        # [Optional]. will this peer be sent transaction proposals for endorsement? The peer must
+        # have the chaincode installed. The app can also use this property to decide which peers
+        # to send the chaincode install request. Default: true
+        endorsingPeer: true
+
+        # [Optional]. will this peer be sent query proposals? The peer must have the chaincode
+        # installed. The app can also use this property to decide which peers to send the
+        # chaincode install request. Default: true
+        chaincodeQuery: true
+
+        # [Optional]. will this peer be sent query proposals that do not require chaincodes, like
+        # queryBlock(), queryTransaction(), etc. Default: true
+        ledgerQuery: true
+
+        # [Optional]. will this peer be the target of the SDK's listener registration? All peers can
+        # produce events but the app typically only needs to connect to one to listen to events.
+        # Default: true
+        eventSource: true
+
+    # [Optional]. The application can use these options to perform channel operations like retrieving channel
+    # config etc.
+    policies:
+      #[Optional] options for retrieving channel configuration blocks
+      queryChannelConfig:
+        #[Optional] min number of success responses (from targets/peers)
+        minResponses: 1
+        #[Optional] channel config will be retrieved for these number of random targets
+        maxTargets: 1
+        #[Optional] retry options for query config block
+        retryOpts:
+          #[Optional] number of retry attempts
+          attempts: 5
+          #[Optional] the back off interval for the first retry attempt
+          initialBackoff: 500ms
+          #[Optional] the maximum back off interval for any retry attempt
+          maxBackoff: 5s
+          #[Optional] he factor by which the initial back off period is exponentially incremented
+          backoffFactor: 2.0
+
+#
+# list of participating organizations in this network
+#
+organizations:
+  org:
+    mspid: orgMSP
+    # set msp files path (this path is relative to client.cryptoConfig defined above)
+    cryptoPath: peerOrganizations/org.example.com/users/{username}@org.example.com/msp
+
+    # Add peers for org
+    peers:
+      - peer0.org.example.com
+
+
+  # the profile will contain public information about organizations other than the one it belongs to.
+  # These are necessary information to make transaction lifecycles work, including MSP IDs and
+  # peers with a public URL to send transaction proposals. The file will not contain private
+  # information reserved for members of the organization, such as admin key and certificate,
+  # fabric-ca registrar enroll ID and secret, etc.
+
+  # Orderer Org name
+  OrdererOrg:
+    # Membership Service Provider ID for this organization
+    mspID: OrdererMSP
+    cryptoPath: ordererOrganizations/example.com/users/Admin@example.com/msp
+    peers:
+      - orderer.example.com
+
+#
+# List of orderers to send transaction and channel create/update requests to. For the time
+# being only one orderer is needed. If more than one is defined, which one get used by the
+# SDK is implementation specific. Consult each SDK's documentation for its handling of orderers.
+#
+orderers:
+  orderer.example.com:
+    # [Optional] Default: Infer from hostname
+    url: grpcs://orderer.example.com:7050
+
+    # these are standard properties defined by the gRPC library
+    # they will be passed in as-is to gRPC client constructor
+    grpcOptions:
+      ssl-target-name-override: orderer.example.com
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+
+      #will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
+      allow-insecure: false
+
+    tlsCACerts:
+      # Certificate location absolute path
+      # Replace to orderer cert path
+      path: /fabric/organizations/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
+
+#
+# List of peers to send various requests to, including endorsement, query
+# and event listener registration.
+#
+peers:
+  peer0.org.example.com:
+    # this URL is used to send endorsement and query requests
+    # [Optional] Default: Infer from hostname
+    # url: grpcs://peer0.org.example.com:7051
+    url: grpcs://peer0.org.example.com:7051
+
+    grpcOptions:
+      ssl-target-name-override: peer0.org.example.com
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+
+      #will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
+      allow-insecure: false
+
+    tlsCACerts:
+      # Certificate location absolute path
+      path: /fabric/organizations/peerOrganizations/org.example.com/tlsca/tlsca.org.example.com-cert.pem
+
+
+  orderer.example.com:
+    # [Optional] Default: Infer from hostname
+    url: grpcs://orderer.example.com:7050
+
+    # these are standard properties defined by the gRPC library
+    # they will be passed in as-is to gRPC client constructor
+    grpcOptions:
+      ssl-target-name-override: orderer.example.com
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+
+      #will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
+      allow-insecure: false
+
+    tlsCACerts:
+      # Certificate location absolute path
+      # Replace to orderer cert path
+      path: /fabric/organizations/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
+
+entitymatchers:
+  peer:
+    - pattern: (\w*)peer0.org.example.com(\w*)
+      urlsubstitutionexp: grpcs://peer0.org.example.com:7051
+      ssltargetoverrideurlsubstitutionexp: peer0.org.example.com
+      mappedhost: peer0.org.example.com
+
+  orderer:
+    - pattern: (\w*)orderer.example.com(\w*)
+      urlsubstitutionexp: orderer.example.com:7050
+      ssltargetoverrideurlsubstitutionexp: orderer.example.com
+      mappedhost: orderer.example.com

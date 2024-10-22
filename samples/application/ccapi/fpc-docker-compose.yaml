@@ -1,0 +1,83 @@
+version: "2"
+services:
+  ccapi.org1.example.com:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 80:80
+    volumes:
+      - ./:/rest-server
+      - /src/github.com/hyperledger/fabric-private-chaincode/samples/deployment/test-network/fabric-samples/test-network/organizations:/fabric/organizations
+      - /src/github.com/hyperledger/fabric-private-chaincode/samples/deployment/test-network/fabric-samples/test-network/organizations/:/project/src/github.com/hyperledger/fabric-private-chaincode/samples/deployment/test-network/fabric-samples/test-network/organizations/
+    logging:
+      options:
+        max-size: 50m  
+    environment:
+      - SDK_PATH=./config/configsdk-org1.yaml
+      - USER=Admin
+      - ORG=org1
+      - DOMAIN=example.com
+      - CHANNEL=mychannel
+      - CCNAME=cc-tools-demo
+      - FABRIC_GATEWAY_ENDPOINT=peer0.org1.example.com:7051
+      - FABRIC_GATEWAY_NAME=peer0.org1.example.com
+      - GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn
+      - FPC_ENABLED=true
+      - SGX_MODE=SIM
+      - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+      - CORE_PEER_ID=peer0.org1.example.com
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_MSPCONFIGPATH=/fabric/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+      - CORE_PEER_TLS_CERT_FILE=/fabric/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt
+      - CORE_PEER_TLS_ENABLED="true"
+      - CORE_PEER_TLS_KEY_FILE=/fabric/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/fabric/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+      - ORDERER_CA=/fabric/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+      - GATEWAY_CONFIG=/fabric/organizations/peerOrganizations/org1.example.com/external-connection-org1.yaml
+    working_dir: /rest-server
+    container_name: ccapi.org1.example.com
+    networks:
+      - fabric_test
+  ccapi.org2.example.com:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 980:80
+    volumes:
+      - ./:/rest-server
+      - /src/github.com/hyperledger/fabric-private-chaincode/samples/deployment/test-network/fabric-samples/test-network/organizations:/fabric/organizations
+      - /src/github.com/hyperledger/fabric-private-chaincode/samples/deployment/test-network/fabric-samples/test-network/organizations/:/project/src/github.com/hyperledger/fabric-private-chaincode/samples/deployment/test-network/fabric-samples/test-network/organizations/
+    logging:
+      options:
+        max-size: 50m  
+    environment:
+      - SDK_PATH=./config/configsdk-org2.yaml
+      - USER=Admin
+      - ORG=org2
+      - DOMAIN=example.com
+      - CHANNEL=mychannel
+      - CCNAME=cc-tools-demo
+      - FABRIC_GATEWAY_ENDPOINT=peer0.org2.example.com:7051
+      - FABRIC_GATEWAY_NAME=peer0.org2.example.com
+      - GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn
+      - FPC_MODE=true
+      - SGX_MODE=SIM
+      - CORE_PEER_ADDRESS=peer0.org2.example.com:7051
+      - CORE_PEER_ID=peer0.org2.example.com
+      - CORE_PEER_LOCALMSPID=Org2MSP
+      - CORE_PEER_MSPCONFIGPATH=/fabric/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp
+      - CORE_PEER_TLS_CERT_FILE=/fabric/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/server.crt
+      - CORE_PEER_TLS_ENABLED="true"
+      - CORE_PEER_TLS_KEY_FILE=/fabric/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/fabric/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
+      - ORDERER_CA=/fabric/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+      - GATEWAY_CONFIG=/fabric/organizations/peerOrganizations/org2.example.com/external-connection-org2.yaml
+    working_dir: /rest-server
+    container_name: ccapi.org2.example.com
+    networks:
+      - fabric_test
+networks:
+  fabric_test:
+    external: true
