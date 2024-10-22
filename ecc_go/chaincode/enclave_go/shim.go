@@ -258,7 +258,7 @@ func (f *FpcStubInterface) GetTxTimestamp() (*timestamp.Timestamp, error) {
 	hdr := &common.Header{}
 	proposal, Proposalerr := f.GetSignedProposal()
 	if Proposalerr != nil {
-		return nil, fmt.Errorf("Error retrieving the proposal from the FPC Stub")
+		return nil, fmt.Errorf("error retrieving the proposal from the FPC Stub")
 	}
 	if err := proto.Unmarshal(proposal.ProposalBytes, protoV1.MessageV2(hdr)); err != nil {
 		return nil, fmt.Errorf("error unmarshaling Header: %s", err)
