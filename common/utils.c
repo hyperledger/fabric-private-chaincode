@@ -29,17 +29,3 @@ void bytes_swap(void* bytes, size_t len)
         *end = swap;
     }
 }
-
-char* bytes_to_hexstring(uint8_t* bytes, size_t len)
-{
-    const char* hexdigs = "0123456789abcdef";
-    size_t k = len * 2 + 1;
-    char* out = malloc(k);
-    for (int i = 0; i < len; i++)
-    {
-        out[i * 2] = hexdigs[bytes[i] >> 4];
-        out[i * 2 + 1] = hexdigs[bytes[i] & 0x0f];
-    }
-    out[k - 1] = '\0';
-    return out;
-}
