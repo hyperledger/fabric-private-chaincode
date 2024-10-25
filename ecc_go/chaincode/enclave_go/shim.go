@@ -9,7 +9,7 @@ package enclave_go
 
 import (
 	"fmt"
-
+	//lint:ignore SA1019 the package is needed to unmarshall the header
 	protoV1 "github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
