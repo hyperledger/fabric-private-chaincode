@@ -17,7 +17,11 @@ ercc-ecc-start:
 		    SGX_DEVICE_PATH=$$(if [ -e "/dev/isgx" ]; then echo "/dev/isgx"; elif [ -e "/dev/sgx/enclave" ]; then echo "/dev/sgx/enclave"; else echo "none"; fi) && \
 		[ "$${SGX_DEVICE_PATH}" != "none" ] || ( echo "ERROR: SGX_MODE is HW but no sgx device found"; exit 1; ) \
 	fi && \
-	env FPC_VERSION=${FPC_VERSION} ${DOCKER_COMPOSE} up -d
+	if [ ! -z "${EXTRA_COMPOSE_FILE}" ]; then \
+		env FPC_VERSION=${FPC_VERSION} ${DOCKER_COMPOSE} -f compose.yaml -f ${EXTRA_COMPOSE_FILE} up -d; \
+	else \
+		env FPC_VERSION=${FPC_VERSION} ${DOCKER_COMPOSE} up -d; \
+	fi
 
 .PHONY: ercc-ecc-start
 ercc-ecc-stop:

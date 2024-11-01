@@ -16,27 +16,26 @@ Here are the steps to accomplish this:
 
 ## Prerequisites
 
-* This tutorial presumes that you have installed FPC on your `$GOPATH` as described in the FPC [README.md](../../../README.md#clone-fabric-private-chaincode) and `$FPC_PATH` is set accordingly.
-
+* This tutorial presumes that you have installed FPC as described in the FPC [README.md](../../../README.md#clone-fabric-private-chaincode) and `$FPC_PATH` is set accordingly.
 * We need a working FPC development environment. As described in the "Setup your Development Environment" Section of the FPC [README.md](../../../README.md#setup-your-development-environment), you can use our docker-based dev environment (Option 1) or setup your local development environment (Option 2).
-We recommend using the docker-based development environment and continue this tutorial within the dev container terminal.
-
+  We recommend using the docker-based development environment and continue this tutorial within the dev container terminal.
 * Moreover, within your FPC development you have already installed the FPC Go Chaincode Support components.
-See the installation steps in [ecc_go/README.md](../../../ecc_go/README.md#installation).
-
+  See the installation steps in [ecc_go/README.md](../../../ecc_go/README.md#installation).
 * We assume that you are familiar with Fabric chaincode development in go.
-Most of the steps in this tutorial follow the normal Fabric chaincode development process, however, there are a few differences that we will highlight here.
-
+  Most of the steps in this tutorial follow the normal Fabric chaincode development process, however, there are a few differences that we will highlight here.
 * Also, since the tutorial is on the integration between cc-tools and FPC, we expect you to have a grasp knowledge of [cc-tools](https://github.com/hyperledger-labs/cc-tools) framework and that you've at least tried to run the [cc-tools-demo](https://github.com/hyperledger-labs/cc-tools-demo) once by yourself on a Fabric network
 
 ## Clone the cc-tools-demo chaincode
 
 We need to clone the chaincode folder from the [cc-tools-demo](https://github.com/hyperledger-labs/cc-tools-demo) repository here.
+Note: In some cases, git commands need sudo permissions
 
 ```bash
 export ccToolsDemoPath=$FPC_PATH/samples/chaincode/cc-tools-demo
-git clone -n --no-checkout --depth=1 --filter=tree:0 https://github.com/hyperledger-labs/cc-tools-demo.git "$ccToolsDemoPath/chaincode"
+sudo git clone -n --no-checkout --depth=1 --filter=tree:0 https://github.com/hyperledger-labs/cc-tools-demo.git "$ccToolsDemoPath/chaincode"
 cd "$ccToolsDemoPath/chaincode" || { echo "$ccToolsDemoPath/chaincode does not exist" ; exit 1; }
+sudo chown -R $USER $ccToolsDemoPath
+git config --global --add safe.directory /src/github.com/hyperledger/fabric-private-chaincode/samples/chaincode/cc-tools-demo/chaincode
 git sparse-checkout set --no-cone chaincode/*
 git checkout
 mv chaincode/* $ccToolsDemoPath
@@ -48,7 +47,7 @@ The chaincode code structure is different than normal chaincode as it's using th
 
 ## Edit the chaincode to became an FPC chaincode instead of normal fabric
 
-Go to `$FPC_PATH/samples/chaincode/cc-tools-demo/main.go` and create the project structure.
+Go to `$FPC_PATH/samples/chaincode/cc-tools-demo/main.go` and view the project structure.
 
 ```bash
 cd $FPC_PATH/samples/chaincode/cc-tools-demo
@@ -59,69 +58,96 @@ The code presented here is not different from traditional Go Chaincode developed
 The `main.go` contains the starting point of the chaincode.
 
 To use FPC, we need to add some logic to instantiate our private chaincode and start it.
-To do so, we use `shim.Start(fpc.NewPrivateChaincode(new(CCDemo)))` and since we're already in the FPC repo, remove the `go.mod` and `go.sum` files so we use the chaincode as part of the FPC package.
+To do so, we use `shim.Start(fpc.NewPrivateChaincode(new(CCDemo)))` and since we're already in the FPC repo we will point to the local FPC package.
 
-CC-tools-demo chaincode has its own packages that are needed, so we run `go get` in the `cc-tools-demo` folder.
-
-Then, add the following code to `$FPC_PATH/samples/chaincode/cc-tools-demo/main.go` in functions `main()` and `runCCaaS()`:
+Go to the `go.mod` file in the `cc-tools-demo` chaincode folder and add the following replace line before the `require( )` block:
 
 ```go
-package main
+replace github.com/hyperledger/fabric-private-chaincode => ../../../ 
+```
 
+CC-tools-demo chaincode has its own packages that are needed, so we run `go mod tidy` in the `cc-tools-demo` folder.
+
+Then, edit the chaincode in the `$FPC_PATH/samples/chaincode/cc-tools-demo/main.go` file:
+
+For import block, add the fpc package
+
+```go
 import (
-	"github.com/hyperledger/fabric-private-chaincode/samples/chaincode/cc-tools-demo/assettypes"
-	"github.com/hyperledger/fabric-private-chaincode/samples/chaincode/cc-tools-demo/datatypes"
-	"github.com/hyperledger/fabric-private-chaincode/samples/chaincode/cc-tools-demo/header"
-
+	///Keep everything as is
 	fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
 )
+```
 
-func main() {
+In the `main()` function, replace the following `if` statement:
 
-	//*CC-Tools Specific code (DO NOT OVERWRITE)*//
-
-	if os.Getenv("RUN_CCAAS") == "true" {
-		err = runCCaaS()
-	} else {
-		if os.Getenv("FPC_ENABLED") == "true" {
-			err = shim.Start(fpc.NewPrivateChaincode(new(CCDemo)))
-		} else {
-			err = shim.Start(new(CCDemo))
-		}
-	}
-
-	//*CC-Tools Specific code (DO NOT OVERWRITE)*//
-
+```go
+if os.Getenv("RUN_CCAAS") == "true" {
+	err = runCCaaS()
+} else {
+	err = shim.Start(new(CCDemo))
 }
 
-func runCCaaS() error {
-	address := os.Getenv("CHAINCODE_SERVER_ADDRESS")
-	ccid := os.Getenv("CHAINCODE_PKG_ID") //This needs to be replaced
+```
 
-	//*CC-Tools Specific code (DO NOT OVERWRITE)*//
+With this:
 
-	var cc shim.Chaincode
+```go
+if os.Getenv("RUN_CCAAS") == "true" {
+	err = runCCaaS()
+} else {
 	if os.Getenv("FPC_ENABLED") == "true" {
-		cc = fpc.NewPrivateChaincode(new(CCDemo))
+		err = shim.Start(fpc.NewPrivateChaincode(new(CCDemo)))
 	} else {
-		cc = new(CCDemo)
+		err = shim.Start(new(CCDemo))
 	}
+}
+```
 
+In the `runCCaaS()` function, replace the following lines:
 
-	server := &shim.ChaincodeServer{
-		CCID:     ccid,
-		Address:  address,
-		CC:       cc,
-		TLSProps: *tlsProps,
-	}
+```go
+ccid := os.Getenv("CHAINCODE_ID") //This needs to be replaced
 
-	//*CC-Tools Specific code (DO NOT OVERWRITE)*//
+server := &shim.ChaincodeServer{
+	CCID:     ccid,
+	Address:  address,
+	CC:       new(CCDemo),
+	TLSProps: *tlsProps,
+}
+```
 
+With this
+
+```go
+ccid := os.Getenv("CHAINCODE_PKG_ID") //This needs to be replaced
+
+var cc shim.Chaincode
+if os.Getenv("FPC_ENABLED") == "true" {
+	cc = fpc.NewPrivateChaincode(new(CCDemo))
+} else {
+	cc = new(CCDemo)
+}
+
+server := &shim.ChaincodeServer{
+	CCID:     ccid,
+	Address:  address,
+	CC:       cc,
+	TLSProps: *tlsProps,
 }
 
 ```
 
 ## Building FPC Go Chaincode
+
+First, to update the go dependencies run (inside the dev environment):
+
+```bash
+cd $FPC_PATH/samples/chaincode/cc-tools-demo
+go get github.com/hyperledger/fabric-private-chaincode
+go mod tidy
+go get
+```
 
 Create a `Makefile` (i.e., `touch $FPC_PATH/samples/chaincode/cc-tools-demo/Makefile`) with the following content:
 
@@ -137,7 +163,17 @@ EGO_CONFIG_FILE ?= $(FPC_PATH)/ecc_go/ccToolsDemoEnclave.json
 
 Please make sure that in the file above the variable `TOP` points to the FPC root directory (i.e., `$FPC_PATH`) as it uses the `$FPC_PATH/ecc_go/build.mk` file.
 
-**Note**: In our case, we need to change the build command in the `$FPC_PATH/ecc_go/build.mk` file at the `ecc` target to be `ego-go build $(GOTAGS) -o $(ECC_BINARY)` instead of `ego-go build $(GOTAGS) -o $(ECC_BINARY) main.go`
+**Note**: In our case, we need to change the build command in the `$FPC_PATH/ecc_go/build.mk` file at the `ecc` target instead of 
+
+```Makefile
+ego-go build $(GOTAGS) -o $(ECC_BINARY) main.go
+```
+
+to be 
+
+```Makefile
+ego-go build $(GOTAGS) -o $(ECC_BINARY)
+```
 
 In `$FPC_PATH/samples/chaincode/cc-tools-demo` directory, to build the chaincode and package it as docker image, execute:
 
@@ -154,13 +190,20 @@ Note: this command runs inside the FPC dev environment and not your local host.
 ```
 
 This is because there is a minor difference between the `ChaincodeStubInterface` used in the cc-tools `Mockstub` as it's missing the `PurgePrivateData` method.
-To solve this, run `go mod vendor` in the `$FPC_PATH/samples/chaincode/cc-tools-demo` root directory to download all used packages and go to the file of the error to add the missing method there.
+To solve this, run
+
+```bash
+cd $FPC_PATH/samples/chaincode/cc-tools-demo
+go mod vendor
+```
+
+to download all used packages and go to the file of the error to add the missing method there.
 
 ```bash
 nano $FPC_PATH/vendor/github.com/hyperledger-labs/cc-tools/mock/mockstub.go
 ```
 
-add the following function
+add the following function:
 
 ```go
  	// PurgePrivateData ...
@@ -208,16 +251,6 @@ cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
 ./network.sh createChannel -c mychannel
 ```
 
-
-### Set the needed env vars in the docker-compose file
-
-From the code above, we need to set two env variables for the chaincode application to work and use FPC and chaincode-as-a-service (CCAAS). One way to do this is to go to `$FPC_PATH/samples/deployment/test-network/docker-compose.yml` and edit both `ecc.peer0.org1.example.com` and `ecc.peer0.org2.example.com` environment block to have
-
-```yaml
-- RUN_CCAAS=true
-- FPC_ENABLED=true
-```
-
 ### Install the chaincode
 
 Once the network is up and running, we install the cc-tools-demo chaincode and the FPC Enclave Registry.
@@ -231,9 +264,21 @@ cd $FPC_PATH/samples/deployment/test-network
 ./installFPC.sh
 ```
 
+### Set the needed env vars in the docker-compose file and start the chaincode
+
+From the code above, we need to set two env variables for the chaincode application to work and use FPC and chaincode-as-a-service (CCAAS).
+
+```yaml
+- RUN_CCAAS=true
+- FPC_ENABLED=true
+```
+
+To achieve this, we created extra configurations for the start command at `$FPC_PATH/samples/deployment/test-network/cc-tools-demo-compose.yaml`.
+
 Continue by running:
 
 ```bash
+export EXTRA_COMPOSE_FILE="$FPC_PATH/samples/deployment/test-network/cc-tools-demo-compose.yaml"
 make ercc-ecc-start
 ```
 

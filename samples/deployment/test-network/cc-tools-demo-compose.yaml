@@ -1,0 +1,17 @@
+# Copyright IBM Corp. All Rights Reserved.
+# Copyright 2020 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+services:
+  #  org1
+  ecc.peer0.org1.example.com:
+    environment:
+      - RUN_CCAAS=true
+      - FPC_ENABLED=true
+
+  # org2
+  ecc.peer0.org2.example.com:
+    environment:
+      - RUN_CCAAS=true
+      - FPC_ENABLED=true
