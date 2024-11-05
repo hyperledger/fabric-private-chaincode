@@ -48,6 +48,7 @@ export CC_VER=$(cat "$FPC_PATH/samples/chaincode/cc-tools-demo/mrenclave")
 cd $FPC_PATH/samples/deployment/test-network
 ./installFPC.sh
 sleep 5
+export EXTRA_COMPOSE_FILE="$FPC_PATH/samples/deployment/test-network/cc-tools-demo-compose.yaml"
 make ercc-ecc-start
 sleep 5
 
@@ -55,7 +56,7 @@ sleep 5
 cd $FPC_PATH/samples/deployment/test-network
 ./update-connection.sh
 
-# # update the connection profile for external clients outside the fpc dev environment
+# update the connection profile for external clients outside the fpc dev environment
 cd $FPC_PATH/samples/deployment/test-network
 ./update-external-connection.sh
 

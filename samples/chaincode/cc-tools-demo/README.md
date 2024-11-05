@@ -157,19 +157,19 @@ include $(TOP)/ecc_go/build.mk
 
 CC_NAME ?= fpc-cc-tools-demo
 
-EGO_CONFIG_FILE ?= $(FPC_PATH)/ecc_go/ccToolsDemoEnclave.json
+EGO_CONFIG_FILE = $(FPC_PATH)/ecc_go/ccToolsDemoEnclave.json
 
 ```
 
 Please make sure that in the file above the variable `TOP` points to the FPC root directory (i.e., `$FPC_PATH`) as it uses the `$FPC_PATH/ecc_go/build.mk` file.
 
-**Note**: In our case, we need to change the build command in the `$FPC_PATH/ecc_go/build.mk` file at the `ecc` target instead of 
+**Note**: In our case, we need to change the build command in the `$FPC_PATH/ecc_go/build.mk` file at the `ecc` target instead of
 
 ```Makefile
 ego-go build $(GOTAGS) -o $(ECC_BINARY) main.go
 ```
 
-to be 
+to be
 
 ```Makefile
 ego-go build $(GOTAGS) -o $(ECC_BINARY)
@@ -190,20 +190,14 @@ Note: this command runs inside the FPC dev environment and not your local host.
 ```
 
 This is because there is a minor difference between the `ChaincodeStubInterface` used in the cc-tools `Mockstub` as it's missing the `PurgePrivateData` method.
-To solve this, run
+To solve this, run the following to download all used packages
 
 ```bash
 cd $FPC_PATH/samples/chaincode/cc-tools-demo
 go mod vendor
 ```
 
-to download all used packages and go to the file of the error to add the missing method there.
-
-```bash
-nano $FPC_PATH/vendor/github.com/hyperledger-labs/cc-tools/mock/mockstub.go
-```
-
-add the following function:
+Edit the file of the error `$FPC_PATH/samples/chaincode/cc-tools-demo/vendor/github.com/hyperledger-labs/cc-tools/mock/mockstub.go` and add the missing method there:
 
 ```go
  	// PurgePrivateData ...
