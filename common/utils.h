@@ -18,7 +18,6 @@ extern "C" {
 
 int append_string(char* buf, const char* string);
 void bytes_swap(void* bytes, size_t len);
-char* bytes_to_hexstring(uint8_t* bytes, size_t len);
 
 #ifdef __cplusplus
 }
