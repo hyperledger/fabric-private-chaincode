@@ -86,6 +86,10 @@ sleep 5
 ./fpcclient invoke getSchema
 
 ########################## Some transactions to test ####################################
+
+##NOTE: In cc-tools-demo, most of these transactions set permissions to filter which orgs are allowed to invoke it or not. The current organization used in this script is "Org1MSP".
+## Beware that org names are case semsitive 
+
 # sleep 5
 # ./fpcclient invoke createNewLibrary "{\"name\":\"samuel\"}"
 # sleep 5
