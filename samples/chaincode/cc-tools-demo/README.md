@@ -28,11 +28,12 @@ Here are the steps to accomplish this:
 ## Clone the cc-tools-demo chaincode
 
 We need to clone the chaincode folder from the [cc-tools-demo](https://github.com/hyperledger-labs/cc-tools-demo) repository here.
-Note: In some cases, git commands need sudo permissions
+
+**Note**: If you're inside the dev environment, git commands will need sudo permissions
 
 ```bash
 export ccToolsDemoPath=$FPC_PATH/samples/chaincode/cc-tools-demo
-sudo git clone -n --no-checkout --depth=1 --filter=tree:0 https://github.com/hyperledger-labs/cc-tools-demo.git "$ccToolsDemoPath/chaincode"
+git clone -n --no-checkout --depth=1 --filter=tree:0 https://github.com/hyperledger-labs/cc-tools-demo.git "$ccToolsDemoPath/chaincode"
 cd "$ccToolsDemoPath/chaincode" || { echo "$ccToolsDemoPath/chaincode does not exist" ; exit 1; }
 sudo chown -R $USER $ccToolsDemoPath
 git config --global --add safe.directory /src/github.com/hyperledger/fabric-private-chaincode/samples/chaincode/cc-tools-demo/chaincode
@@ -104,11 +105,21 @@ if os.Getenv("RUN_CCAAS") == "true" {
 }
 ```
 
-In the `runCCaaS()` function, replace the following lines:
+In the `runCCaaS()` function, replace the following line:
 
 ```go
-ccid := os.Getenv("CHAINCODE_ID") //This needs to be replaced
+ccid := os.Getenv("CHAINCODE_ID")
+```
 
+With this
+
+```go
+ccid := os.Getenv("CHAINCODE_PKG_ID")
+```
+
+And replace this
+
+```go
 server := &shim.ChaincodeServer{
 	CCID:     ccid,
 	Address:  address,
@@ -120,7 +131,6 @@ server := &shim.ChaincodeServer{
 With this
 
 ```go
-ccid := os.Getenv("CHAINCODE_PKG_ID") //This needs to be replaced
 
 var cc shim.Chaincode
 if os.Getenv("FPC_ENABLED") == "true" {
