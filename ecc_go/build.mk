@@ -21,7 +21,7 @@ build: ecc docker env
 
 ecc: ecc_dependencies
 	ego-go build $(GOTAGS) -o $(ECC_BINARY) main.go
-	cp $(EGO_CONFIG_FILE) .
+	cp $(EGO_CONFIG_FILE) ./enclave.json
 	ego sign
 	ego uniqueid $(ECC_BINARY) > mrenclave
 	ego bundle $(ECC_BINARY) $(ECC_BUNDLE)
