@@ -229,11 +229,6 @@ Next step is to test the chaincode by invoking transactions, for which you need 
 We will use the test network provided in [`$FPC_PATH/samples/deployment/test-network`](../../deployment/test-network).
 To invoke the chaincode, we will use the `simple-cli` application in [`$FPC_PATH/samples/application/simple-cli-go`](../../pplication/simple-cli-go).
 
-### Enclave Registry
-
-To run any FPC chaincode we need to prepare the docker images for the FPC Enclave Registry (ERCC).
-In case you have not yet created them, run `make -C $FPC_PATH/ercc build docker`.
-
 ### Prepare the test network
 
 We already provide a detailed tutorial how to use FPC with the test network in [`$FPC_PATH/samples/deployment/test-network`](../../deployment/test-network).
