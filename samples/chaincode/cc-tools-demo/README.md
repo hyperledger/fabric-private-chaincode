@@ -169,22 +169,11 @@ include $(TOP)/ecc_go/build.mk
 CC_NAME ?= fpc-cc-tools-demo
 
 EGO_CONFIG_FILE = $(FPC_PATH)/samples/chaincode/cc-tools-demo/ccToolsDemoEnclave.json
+ECC_MAIN_FILES=$(FPC_PATH)/samples/chaincode/cc-tools-demo
 
 ```
 
 Please make sure that in the file above the variable `TOP` points to the FPC root directory (i.e., `$FPC_PATH`) as it uses the `$FPC_PATH/ecc_go/build.mk` file.
-
-**Note**: In our case, we need to change the build command in the `$FPC_PATH/ecc_go/build.mk` file at the `ecc` target instead of
-
-```Makefile
-ego-go build $(GOTAGS) -o $(ECC_BINARY) main.go
-```
-
-to be
-
-```Makefile
-ego-go build $(GOTAGS) -o $(ECC_BINARY)
-```
 
 In `$FPC_PATH/samples/chaincode/cc-tools-demo` directory, to build the chaincode and package it as docker image, execute:
 
