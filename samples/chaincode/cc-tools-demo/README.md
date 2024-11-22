@@ -29,7 +29,7 @@ Here are the steps to accomplish this:
 
 We need to clone the chaincode folder from the [cc-tools-demo](https://github.com/hyperledger-labs/cc-tools-demo) repository here.
 
-**Note**: If you're inside the dev environment, git commands will need sudo permissions
+**Note**: If you're not inside the dev environment, git commands will need sudo permissions like the following:
 
 ```bash
 export ccToolsDemoPath=$FPC_PATH/samples/chaincode/cc-tools-demo
@@ -44,6 +44,7 @@ cd $ccToolsDemoPath
 sudo rm -r $ccToolsDemoPath/chaincode
 ```
 
+**Note:** If you're inside the dev environment, you don't need the `sudo` permissions and don't need to `chown` the directory.
 The chaincode code structure is different than normal chaincode as it's using the cc-tools framework.
 
 ## Edit the chaincode to became an FPC chaincode instead of normal fabric
