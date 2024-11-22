@@ -168,7 +168,7 @@ include $(TOP)/ecc_go/build.mk
 
 CC_NAME ?= fpc-cc-tools-demo
 
-EGO_CONFIG_FILE = $(FPC_PATH)/ecc_go/ccToolsDemoEnclave.json
+EGO_CONFIG_FILE = $(FPC_PATH)/samples/chaincode/cc-tools-demo/ccToolsDemoEnclave.json
 
 ```
 
