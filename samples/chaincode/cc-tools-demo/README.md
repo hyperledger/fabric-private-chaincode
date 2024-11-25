@@ -45,9 +45,10 @@ sudo rm -r $ccToolsDemoPath/chaincode
 ```
 
 **Note:** If you're inside the dev environment, you don't need the `sudo` permissions and don't need to `chown` the directory.
-The chaincode code structure is different than normal chaincode as it's using the cc-tools framework.
 
 ## Edit the chaincode to became an FPC chaincode instead of normal fabric
+
+The chaincode code structure is different than normal chaincode as it's using the cc-tools framework.
 
 Go to `$FPC_PATH/samples/chaincode/cc-tools-demo/main.go` and view the project structure.
 
@@ -181,7 +182,9 @@ In `$FPC_PATH/samples/chaincode/cc-tools-demo` directory, to build the chaincode
 make
 ```
 
-Note: this command runs inside the FPC dev environment and not your local host.
+**Note**: For those who have arm-based computers, you should use the method recommended in the [main readme](https://github.com/hyperledger/fabric-private-chaincode?tab=readme-ov-file#fpc-playground-for-non-sgx-environments) for building both the cc-tools-demo chaincode as well as ercc.
+
+**Note**: this command runs inside the FPC dev environment and not your local host.
 
 **Note**: If you faced this error:
 
@@ -275,10 +278,10 @@ You should see now four containers running (i.e., `cc-tools-demo.peer0.org1`, `c
 
 ### Invoke simple getSchema transaction
 
-Open a new terminal and connect to the `fpc-development-go-support` container by running
+Open a new terminal and connect to the `fpc-development-main` container by running
 
 ```bash
-docker exec -it fpc-development-go-support /bin/bash
+docker exec -it fpc-development-main /bin/bash
 ```
 
 ```bash
