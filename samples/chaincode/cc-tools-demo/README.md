@@ -265,12 +265,12 @@ From the code above, we need to set two env variables for the chaincode applicat
 - FPC_ENABLED=true
 ```
 
-To achieve this, we created extra configurations for the start command at `$FPC_PATH/samples/deployment/test-network/cc-tools-demo-compose.yaml`.
+To achieve this, we created extra configurations for the start command at `$FPC_PATH/samples/chaincode/cc-tools-demo/cc-tools-demo-compose.yaml`.
 
 Continue by running:
 
 ```bash
-export EXTRA_COMPOSE_FILE="$FPC_PATH/samples/deployment/test-network/cc-tools-demo-compose.yaml"
+export EXTRA_COMPOSE_FILE="$FPC_PATH/samples/chaincode/cc-tools-demo/cc-tools-demo-compose.yaml"
 make ercc-ecc-start
 ```
 

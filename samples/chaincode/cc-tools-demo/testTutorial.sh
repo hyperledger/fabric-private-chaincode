@@ -48,7 +48,7 @@ export CC_VER=$(cat "$FPC_PATH/samples/chaincode/cc-tools-demo/mrenclave")
 cd $FPC_PATH/samples/deployment/test-network
 ./installFPC.sh
 sleep 5
-export EXTRA_COMPOSE_FILE="$FPC_PATH/samples/deployment/test-network/cc-tools-demo-compose.yaml"
+export EXTRA_COMPOSE_FILE="$FPC_PATH/samples/chaincode/cc-tools-demo/cc-tools-demo-compose.yaml"
 make ercc-ecc-start
 sleep 5
 
