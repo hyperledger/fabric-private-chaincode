@@ -16,11 +16,12 @@ DOCKER_FILE ?= $(FPC_PATH)/ecc_go/Dockerfile
 EGO_CONFIG_FILE ?= $(FPC_PATH)/ecc_go/enclave.json
 ECC_BINARY ?= ecc
 ECC_BUNDLE ?= $(ECC_BINARY)-bundle
+MAIN_GO_PATH ?= main.go
 
 build: ecc docker env
 
 ecc: ecc_dependencies
-	ego-go build $(GOTAGS) -o $(ECC_BINARY) main.go
+	ego-go build $(GOTAGS) -o $(ECC_BINARY) $(MAIN_GO_PATH)
 	cp $(EGO_CONFIG_FILE) .
 	ego sign
 	ego uniqueid $(ECC_BINARY) > mrenclave
@@ -28,7 +29,7 @@ ecc: ecc_dependencies
 
 .PHONY: with_go
 with_go: ecc_dependencies
-	$(GO) build $(GOTAGS) -o $(ECC_BUNDLE) main.go
+	$(GO) build $(GOTAGS) -o $(ECC_BUNDLE) $(MAIN_GO_PATH)
 	echo "fake_mrenclave" > mrenclave
 
 ecc_dependencies:
