@@ -18,6 +18,7 @@ import (
 	"github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode/enclave_go/attestation"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/bccsp"
 	"github.com/hyperledger/fabric/bccsp/factory"
 	"github.com/hyperledger/fabric/common/flogging"
@@ -37,6 +38,7 @@ type EnclaveStub struct {
 	hostParams           *protos.HostParameters
 	chaincodeParams      *protos.CCParameters
 	fabricCryptoProvider bccsp.BCCSP
+	stubProvider         func(shim.ChaincodeStubInterface, *pb.ChaincodeInput, *readWriteSet, StateEncryptionFunctions) shim.ChaincodeStubInterface
 }
 
 func NewEnclaveStub(cc shim.Chaincode) *EnclaveStub {
@@ -49,6 +51,9 @@ func NewEnclaveStub(cc shim.Chaincode) *EnclaveStub {
 		csp:                  crypto.GetDefaultCSP(),
 		ccRef:                cc,
 		fabricCryptoProvider: cryptoProvider,
+		stubProvider: func(stub shim.ChaincodeStubInterface, input *pb.ChaincodeInput, rwset *readWriteSet, sep StateEncryptionFunctions) shim.ChaincodeStubInterface {
+			return NewFpcStubInterface(stub, input, rwset, sep)
+		},
 	}
 }
 
@@ -161,7 +166,7 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincod
 
 	// Invoke chaincode
 	// we wrap the stub with our FpcStubInterface
-	fpcStub := NewFpcStubInterface(stub, cleartextChaincodeRequest.GetInput(), rwset, e.ccKeys)
+	fpcStub := e.stubProvider(stub, cleartextChaincodeRequest.GetInput(), rwset, e.ccKeys)
 	ccResponse := e.ccRef.Invoke(fpcStub)
 
 	// marshal chaincode response
