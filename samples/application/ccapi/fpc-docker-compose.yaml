@@ -8,8 +8,8 @@ services:
       - 80:80
     volumes:
       - ./:/rest-server
-      - /src/github.com/hyperledger/fabric-private-chaincode/samples/deployment/test-network/fabric-samples/test-network/organizations:/fabric/organizations
-      - /src/github.com/hyperledger/fabric-private-chaincode/samples/deployment/test-network/fabric-samples/test-network/organizations/:/project/src/github.com/hyperledger/fabric-private-chaincode/samples/deployment/test-network/fabric-samples/test-network/organizations/
+      - $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations:/fabric/organizations
+      - $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/:/project/src/github.com/hyperledger/fabric-private-chaincode/samples/deployment/test-network/fabric-samples/test-network/organizations/
     logging:
       options:
         max-size: 50m  
@@ -47,8 +47,8 @@ services:
       - 980:80
     volumes:
       - ./:/rest-server
-      - /src/github.com/hyperledger/fabric-private-chaincode/samples/deployment/test-network/fabric-samples/test-network/organizations:/fabric/organizations
-      - /src/github.com/hyperledger/fabric-private-chaincode/samples/deployment/test-network/fabric-samples/test-network/organizations/:/project/src/github.com/hyperledger/fabric-private-chaincode/samples/deployment/test-network/fabric-samples/test-network/organizations/
+      - $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations:/fabric/organizations
+      - $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/:/project/src/github.com/hyperledger/fabric-private-chaincode/samples/deployment/test-network/fabric-samples/test-network/organizations/
     logging:
       options:
         max-size: 50m  

@@ -2,7 +2,7 @@
 
 ## Motivation
 
-As continuation to the [cc-tools-demo]() tutorial on how to integrate the cc-tools project with FPC chaincodes, we start by utilizing another powerful solution offered by cc-tools is the CCAPI. It's a complete web server that simplifies the communication with the peers and Fabric components to replace the need to deal with CLI applications.
+As continuation to the [cc-tools-demo]() tutorial on how to integrate the cc-tools project with FPC chaincodes, we start by utilizing another powerful solution offered by cc-tools which is the CCAPI. It's a complete web server that simplifies the communication with the peers and Fabric components to replace the need to deal with CLI applications.
 
 ## Architecture
 
@@ -13,7 +13,7 @@ The transaction client invocation process, as illustrated in the diagram, consis
 1. Step 1-2: The API server is listening for requests on a specified port over an HTTP channel and sends it to the handler.
 2. Step 3: The handler starts by determining the appropriate transaction invocation based on the requested endpoint and calling the corresponding chaincode API.
 3. Step 4: The chaincode API is responsible for parsing and ensuring the payload is correctly parsed into a format that is FPC-friendly. This parsing step is crucial, as it prepares the data to meet FPC’s privacy and security requirements before it reaches the peer.
-4. Step 5: FPCUtils is the step where the actual transaction invocation happens and it follows the steps explained in the previous diagram as it builds on top of the FPC Client SDK.
+4. Step 5: FPCUtils is the step where the actual transaction invocation happens and it follows the steps explained in [here](https://github.com/hyperledger/fabric-rfcs/blob/main/text/0000-fabric-private-chaincode-1.0.md#fpc-transaction-flow) as it builds on top of the FPC Client SDK.
 
 ![CCAPIFlow](./CCAPIFlow.png)
 
