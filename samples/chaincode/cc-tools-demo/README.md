@@ -42,7 +42,7 @@ cd $ccToolsDemoPath
 rm -r $ccToolsDemoPath/chaincode
 ```
 
-**Note**: If you're not inside the dev environment, git commands will need sudo permissions.
+**Note**: You might encounter permission errors if you run this outside the FPC dev container. In that case you may want to use `sudo`.
 
 ## Edit the chaincode to became an FPC chaincode instead of normal fabric
 
