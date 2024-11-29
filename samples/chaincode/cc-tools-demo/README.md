@@ -323,7 +323,7 @@ Congratulations! You have successfully created an FPC chaincode with go using cc
 
 Now you can test all your work again by running the [test](./testTutorial.sh) script
 
-**Note**: In cc-tools-demo, most of these transactions set permissions to filter which orgs are allowed to invoke it or not. The current organization used in this script is "Org1MSP". Also, beware that org names are case semsitive
+**Note**: In cc-tools-demo, most of these transactions set permissions to filter which orgs are allowed to invoke it or not. The current organization used in this script is "Org1MSP". Also, beware that org names are case sensitive
 
 ## Next Step
 
