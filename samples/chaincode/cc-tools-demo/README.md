@@ -28,23 +28,15 @@ Here are the steps to accomplish this:
 ## Clone the cc-tools-demo chaincode
 
 We need to clone the chaincode folder from the [cc-tools-demo](https://github.com/hyperledger-labs/cc-tools-demo) repository here.
-Run the following commands inside the dev environment:
+Run the following script inside the dev environment:
 
 ```bash
-export ccToolsDemoPath=$FPC_PATH/samples/chaincode/cc-tools-demo
-git clone -n --no-checkout --depth=1 --filter=tree:0 https://github.com/hyperledger-labs/cc-tools-demo.git "$ccToolsDemoPath/chaincode"
-cd "$ccToolsDemoPath/chaincode" || { echo "$ccToolsDemoPath/chaincode does not exist" ; exit 1; }
-git config --global --add safe.directory /src/github.com/hyperledger/fabric-private-chaincode/samples/chaincode/cc-tools-demo/chaincode
-git sparse-checkout set --no-cone chaincode/*
-git checkout
-mv chaincode/* $ccToolsDemoPath
-cd $ccToolsDemoPath
-rm -r $ccToolsDemoPath/chaincode
+$FPC_PATH/samples/chaincode/cc-tools-demo/setup.sh
 ```
 
 **Note**: You might encounter permission errors if you run this outside the FPC dev container. In that case you may want to use `sudo`.
 
-## Edit the chaincode to became an FPC chaincode instead of normal fabric
+## Edit the chaincode to become an FPC chaincode instead of normal fabric
 
 The chaincode code structure is different than normal chaincode as it's using the cc-tools framework.
 
