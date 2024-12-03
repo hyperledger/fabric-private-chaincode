@@ -8,9 +8,15 @@ SPDX-License-Identifier: Apache-2.0
 package enclave_go
 
 import (
+	"fmt"
+	//lint:ignore SA1019 the package is needed to unmarshall the header
+	protoV1 "github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
+	common "github.com/hyperledger/fabric-protos-go/common"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
+
+	"google.golang.org/protobuf/proto"
 	timestamp "google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -177,7 +183,7 @@ func (f *FpcStubInterface) SplitCompositeKey(compositeKey string) (string, []str
 }
 
 func (f *FpcStubInterface) GetQueryResult(query string) (shim.StateQueryIteratorInterface, error) {
-	panic("not implemented") // TODO: Implement
+	return nil, fmt.Errorf("function not yet supported")
 }
 
 func (f *FpcStubInterface) GetQueryResultWithPagination(query string, pageSize int32, bookmark string) (shim.StateQueryIteratorInterface, *pb.QueryResponseMetadata, error) {
@@ -233,7 +239,7 @@ func (f *FpcStubInterface) GetCreator() ([]byte, error) {
 }
 
 func (f *FpcStubInterface) GetTransient() (map[string][]byte, error) {
-	panic("not implemented") // TODO: Implement
+	return nil, fmt.Errorf("function not yet supported")
 }
 
 func (f *FpcStubInterface) GetBinding() ([]byte, error) {
@@ -249,9 +255,22 @@ func (f *FpcStubInterface) GetSignedProposal() (*pb.SignedProposal, error) {
 }
 
 func (f *FpcStubInterface) GetTxTimestamp() (*timestamp.Timestamp, error) {
-	panic("not implemented") // TODO: Implement
+	hdr := &common.Header{}
+	proposal, Proposalerr := f.GetSignedProposal()
+	if Proposalerr != nil {
+		return nil, fmt.Errorf("error retrieving the proposal from the FPC Stub")
+	}
+	if err := proto.Unmarshal(proposal.ProposalBytes, protoV1.MessageV2(hdr)); err != nil {
+		return nil, fmt.Errorf("error unmarshaling Header: %s", err)
+	}
+
+	chdr := &common.ChannelHeader{}
+	if err := proto.Unmarshal(hdr.ChannelHeader, protoV1.MessageV2(chdr)); err != nil {
+		return nil, fmt.Errorf("error unmarshaling ChannelHeader: %s", err)
+	}
+	return chdr.GetTimestamp(), nil
 }
 
 func (f *FpcStubInterface) SetEvent(name string, payload []byte) error {
-	panic("not implemented") // TODO: Implement
+	return fmt.Errorf("function not yet supported")
 }

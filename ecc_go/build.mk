@@ -14,21 +14,22 @@ HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
 DOCKER_IMAGE ?= fpc/$(CC_NAME)${HW_EXTENSION}
 DOCKER_FILE ?= $(FPC_PATH)/ecc_go/Dockerfile
 EGO_CONFIG_FILE ?= $(FPC_PATH)/ecc_go/enclave.json
+ECC_MAIN_FILES ?= main.go
 ECC_BINARY ?= ecc
 ECC_BUNDLE ?= $(ECC_BINARY)-bundle
 
 build: ecc docker env
 
 ecc: ecc_dependencies
-	ego-go build $(GOTAGS) -o $(ECC_BINARY) main.go
-	cp $(EGO_CONFIG_FILE) .
+	ego-go build $(GOTAGS) -o $(ECC_BINARY) $(ECC_MAIN_FILES)
+	cp $(EGO_CONFIG_FILE) ./enclave.json
 	ego sign
 	ego uniqueid $(ECC_BINARY) > mrenclave
 	ego bundle $(ECC_BINARY) $(ECC_BUNDLE)
 
 .PHONY: with_go
 with_go: ecc_dependencies
-	$(GO) build $(GOTAGS) -o $(ECC_BUNDLE) main.go
+	$(GO) build $(GOTAGS) -o $(ECC_BUNDLE) $(ECC_MAIN_FILES)
 	echo "fake_mrenclave" > mrenclave
 
 ecc_dependencies:
