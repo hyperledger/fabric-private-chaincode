@@ -1,0 +1,14 @@
+version: '3'
+
+networks:
+  fabric_test:
+    external: true
+
+services:
+  goinitus:
+    image: goledger/cc-webclient:latest
+    container_name: goinitus
+    ports:
+      - "8080:80"
+    networks:
+      - fabric_test

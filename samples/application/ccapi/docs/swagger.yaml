@@ -1,0 +1,1087 @@
+openapi: 3.0.0
+info:
+  description: Documentation of the Chaincode API. This API is used to interact with the chaincode through the Gateway service.
+  version: "1.0"
+  title: CC Tools Demo
+servers:
+  - url: /api
+tags:
+  - name: Basic Operations
+  - name: Select Channel and Chaincode
+  - name: Blockchain
+components:
+  securitySchemes:
+    basicAuth:
+      type: "http"
+      scheme: "basic"
+paths:
+  /invoke/{txName}:
+    post:
+      tags:
+        - Basic Operations
+      security:
+        - basicAuth: []
+      summary: Executes transaction txName and writes the result to the blockchain.
+      parameters:
+        - in: path
+          name: txName
+          schema:
+            type: string
+          required: true
+          description: Name of the transaction to be executed.
+      requestBody:
+        description: The request body must match the definition of the transaction arguments.
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: OK
+        "4XX":
+          description: Bad Request
+        5XX:
+          description: Internal error
+  /query/{txName}:
+    post:
+      tags:
+        - Basic Operations
+      security:
+        - basicAuth: []
+      summary: Executes transaction txName and returns only the result, without writing it to the blockchain.
+      parameters:
+        - in: path
+          name: txName
+          schema:
+            type: string
+          required: true
+          description: Name of the transaction to be executed.
+      requestBody:
+        description: The request body must match the definition of the transaction arguments.
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: OK
+        "4XX":
+          description: Bad Request
+        5XX:
+          description: Internal error
+
+  /query/getHeader:
+    get:
+      tags:
+        - Basic Operations
+      security:
+        - basicAuth: []
+      summary: Retrieves information about the chaincode.
+      responses:
+        "200":
+          description: OK
+        5XX:
+          description: Internal error.
+
+  /query/getTx:
+    get:
+      tags:
+        - Basic Operations
+      security:
+        - basicAuth: []
+      summary: Requests the list of defined transactions.
+      responses:
+        "200":
+          description: OK
+        5XX:
+          description: Internal error
+    post:
+      tags:
+        - Basic Operations
+      security:
+        - basicAuth: []
+      summary: Gets the description of a specific transaction.
+      requestBody:
+        description: The txName field must contain the name of a transaction defined by the chaincode.
+        content:
+          application/json:
+            schema:
+              txName:
+                type: string
+            examples:
+              getTx:
+                value:
+                  txName: getTx
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Transaction not found
+        5XX:
+          description: Internal error
+
+  /query/getSchema:
+    get:
+      tags:
+        - Basic Operations
+      security:
+        - basicAuth: []
+      summary: Searches the list of existing assets.
+      responses:
+        "200":
+          description: OK
+        5XX:
+          description: Internal error
+    post:
+      tags:
+        - Basic Operations
+      security:
+        - basicAuth: []
+      summary: Gets the description of a specific asset type.
+      requestBody:
+        description: The assetType must contain an asset type defined by the chaincode.
+        content:
+          application/json:
+            schema:
+              assetType:
+                type: string
+            examples:
+              person:
+                value:
+                  assetType: person
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Asset type not found
+        5XX:
+          description: Internal error
+
+  /invoke/createAsset:
+    post:
+      tags:
+        - Basic Operations
+      security:
+        - basicAuth: []
+      summary: Create asset on the blockchain
+      requestBody:
+        description: The asset must be an array of objects. Each object must contain the asset type in the @assetType field and the asset data in the other fields.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                asset:
+                  type: array
+                  items:
+                    description: Any asset type defined by the chaincode. Check via getSchema.
+                    type: object
+            examples:
+              person:
+                summary: "Create person"
+                value:
+                  asset:
+                    - "@assetType": person
+                      name: "Maria"
+                      id: "318.207.920-48"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad format
+        "409":
+          description: Asset already exists
+        5XX:
+          description: Internal error
+
+  /query/readAsset:
+    post:
+      tags:
+        - Basic Operations
+      security:
+        - basicAuth: []
+      summary: "Reads an asset from the blockchain using its primary key."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: object
+            examples:
+              person:
+                summary: person
+                value:
+                  key:
+                    "@assetType": person
+                    id: "318.207.920-48"
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Asset not found
+        5XX:
+          description: Internal error
+
+  /query/readAssetHistory:
+    post:
+      tags:
+        - Basic Operations
+      security:
+        - basicAuth: []
+      summary: "Reads the history of an asset from the blockchain using its primary key."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: object
+            examples:
+              person:
+                summary: person
+                value:
+                  key:
+                    "@assetType": person
+                    id: "318.207.920-48"
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Asset not found
+        5XX:
+          description: Internal error
+
+  /query/search:
+    post:
+      tags:
+        - Basic Operations
+      security:
+        - basicAuth: []
+      summary: Searches the blockchain world state using CouchDB rich queries
+      description: "Query JSON as defined by CouchDB docs: https://docs.couchdb.org/en/stable/api/database/find.html"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  selector:
+                    type: object
+                  limit:
+                    type: integer
+                  bookmark:
+                    type: string
+            examples:
+              personAll:
+                summary: Get all assets of type person
+                value:
+                  query:
+                    selector:
+                      "@assetType": person
+              personFirst10:
+                summary: Get first 10 assets of type person
+                value:
+                  query:
+                    selector:
+                      "@assetType": person
+                    limit: 10
+                    bookmark: ""
+              person10to20:
+                summary: Get assets 10-20 of type person
+                value:
+                  query:
+                    selector:
+                      "@assetType": person
+                    limit: 10
+                    bookmark: "g1AAAACGeJzLYWBgYMpgSmHgKy5JLCrJTq2MT8lPzkzJBYprF6QWFefnWaVaGBmbWCan6BqZJ6fpmqalWOgmGSWZ65qbWFommpkZWCYlW4KM4IAZQarmLAD0pSXP"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad format
+        5XX:
+          description: Internal error
+
+  /invoke/updateAsset:
+    put:
+      tags:
+        - Basic Operations
+      security:
+        - basicAuth: []
+      summary: Updates an existing asset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                "@assetType":
+                  type: string
+            examples:
+              updateHeight:
+                summary: "Change person height"
+                value:
+                  update:
+                    "@assetType": "person"
+                    name: "Maria"
+                    height: 1.66
+        description: The asset must contain the primary key of the asset and the fields to be updated.
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad format
+        "404":
+          description: Asset not found
+        5XX:
+          description: Internal error
+
+  /invoke/deleteAsset:
+    delete:
+      tags:
+        - Basic Operations
+      security:
+        - basicAuth: []
+      summary: Deletes an existing asset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                "@assetType":
+                  type: string
+            examples:
+              deletePerson:
+                summary: 'Delete person with name "Maria"'
+                value:
+                  key:
+                    "@assetType": person
+                    id: "318.207.920-48"
+        description: The asset must contain the primary key of the asset.
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad format
+        "404":
+          description: Asset not found
+        5XX:
+          description: Internal error
+  /{channelName}/{chaincodeName}/invoke/{txName}:
+    post:
+      tags:
+        - Select Channel and Chaincode
+      security:
+        - basicAuth: []
+      summary: Executes transaction txName and writes the result to the blockchain.
+      parameters:
+        - in: path
+          name: channelName
+          schema:
+            type: string
+          required: true
+          description: Name of the channel.
+        - in: path
+          name: chaincodeName
+          schema:
+            type: string
+          required: true
+          description: Name of the chaincode in channel.
+        - in: path
+          name: txName
+          schema:
+            type: string
+          required: true
+          description: Name of the transaction to be executed.
+      requestBody:
+        description: The request body must match the definition of the transaction arguments.
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: OK
+        "4XX":
+          description: Bad Request
+        5XX:
+          description: Internal error
+
+  /{channelName}/{chaincodeName}/query/{txName}:
+    post:
+      tags:
+        - Select Channel and Chaincode
+      security:
+        - basicAuth: []
+      summary: Executes transaction txName and returns only the result, without writing it to the blockchain.
+      parameters:
+        - in: path
+          name: channelName
+          schema:
+            type: string
+          required: true
+          description: Name of the channel.
+        - in: path
+          name: chaincodeName
+          schema:
+            type: string
+          required: true
+          description: Name of the chaincode in channel.
+        - in: path
+          name: txName
+          schema:
+            type: string
+          required: true
+          description: Name of the transaction to be executed.
+      requestBody:
+        description: The request body must match the definition of the transaction arguments.
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: OK
+        "4XX":
+          description: Bad Request
+        5XX:
+          description: Internal error
+
+  /{channelName}/{chaincodeName}/query/getHeader:
+    get:
+      tags:
+        - Select Channel and Chaincode
+      security:
+        - basicAuth: []
+      summary: Retrieves information about the chaincode.
+      parameters:
+        - in: path
+          name: channelName
+          schema:
+            type: string
+          required: true
+          description: Name of the channel.
+        - in: path
+          name: chaincodeName
+          schema:
+            type: string
+          required: true
+          description: Name of the chaincode in channel.
+      responses:
+        "200":
+          description: OK
+        5XX:
+          description: Internal error.
+
+  /{channelName}/{chaincodeName}/query/getTx:
+    get:
+      tags:
+        - Select Channel and Chaincode
+      security:
+        - basicAuth: []
+      summary: Requests the list of defined transactions.
+      parameters:
+        - in: path
+          name: channelName
+          schema:
+            type: string
+          required: true
+          description: Name of the channel.
+        - in: path
+          name: chaincodeName
+          schema:
+            type: string
+          required: true
+          description: Name of the chaincode in channel.
+      responses:
+        "200":
+          description: OK
+        5XX:
+          description: Internal error
+    post:
+      tags:
+        - Select Channel and Chaincode
+      security:
+        - basicAuth: []
+      summary: Gets the description of a specific transaction.
+      parameters:
+        - in: path
+          name: channelName
+          schema:
+            type: string
+          required: true
+          description: Name of the channel.
+        - in: path
+          name: chaincodeName
+          schema:
+            type: string
+          required: true
+          description: Name of the chaincode in channel.
+      requestBody:
+        description: The txName field must contain the name of a transaction defined by the chaincode.
+        content:
+          application/json:
+            schema:
+              txName:
+                type: string
+            examples:
+              getTx:
+                value:
+                  txName: getTx
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Transaction not found
+        5XX:
+          description: Internal error
+
+  /{channelName}/{chaincodeName}/query/getSchema:
+    get:
+      tags:
+        - Select Channel and Chaincode
+      security:
+        - basicAuth: []
+      summary: Searches the list of existing assets.
+      parameters:
+        - in: path
+          name: channelName
+          schema:
+            type: string
+          required: true
+          description: Name of the channel.
+        - in: path
+          name: chaincodeName
+          schema:
+            type: string
+          required: true
+          description: Name of the chaincode in channel.
+      responses:
+        "200":
+          description: OK
+        5XX:
+          description: Internal error
+    post:
+      tags:
+        - Select Channel and Chaincode
+      security:
+        - basicAuth: []
+      summary: Gets the description of a specific asset type.
+      parameters:
+        - in: path
+          name: channelName
+          schema:
+            type: string
+          required: true
+          description: Name of the channel.
+        - in: path
+          name: chaincodeName
+          schema:
+            type: string
+          required: true
+          description: Name of the chaincode in channel.
+      requestBody:
+        description: The assetType must contain an asset type defined by the chaincode.
+        content:
+          application/json:
+            schema:
+              assetType:
+                type: string
+            examples:
+              person:
+                value:
+                  assetType: person
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Asset type not found
+        5XX:
+          description: Internal error
+
+  /{channelName}/{chaincodeName}/invoke/createAsset:
+    post:
+      tags:
+        - Select Channel and Chaincode
+      security:
+        - basicAuth: []
+      summary: Create asset on the blockchain
+      parameters:
+        - in: path
+          name: channelName
+          schema:
+            type: string
+          required: true
+          description: Name of the channel.
+        - in: path
+          name: chaincodeName
+          schema:
+            type: string
+          required: true
+          description: Name of the chaincode in channel.
+      requestBody:
+        description: The asset must be an array of objects. Each object must contain the asset type in the @assetType field and the asset data in the other fields.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                asset:
+                  type: array
+                  items:
+                    description: Any asset type defined by the chaincode. Check via getSchema.
+                    type: object
+            examples:
+              person:
+                summary: "Create person"
+                value:
+                  asset:
+                    - "@assetType": person
+                      name: "Maria"
+                      id: "318.207.920-48"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad format
+        "409":
+          description: Asset already exists
+        5XX:
+          description: Internal error
+
+  /{channelName}/{chaincodeName}/query/readAsset:
+    post:
+      tags:
+        - Select Channel and Chaincode
+      security:
+        - basicAuth: []
+      summary: "Reads an asset from the blockchain using its primary key."
+      parameters:
+        - in: path
+          name: channelName
+          schema:
+            type: string
+          required: true
+          description: Name of the channel.
+        - in: path
+          name: chaincodeName
+          schema:
+            type: string
+          required: true
+          description: Name of the chaincode in channel.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: object
+            examples:
+              person:
+                summary: person
+                value:
+                  key:
+                    "@assetType": person
+                    id: "318.207.920-48"
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Asset not found
+        5XX:
+          description: Internal error
+
+  /{channelName}/{chaincodeName}/query/readAssetHistory:
+    post:
+      tags:
+        - Select Channel and Chaincode
+      security:
+        - basicAuth: []
+      summary: "Reads the history of an asset from the blockchain using its primary key."
+      parameters:
+        - in: path
+          name: channelName
+          schema:
+            type: string
+          required: true
+          description: Name of the channel.
+        - in: path
+          name: chaincodeName
+          schema:
+            type: string
+          required: true
+          description: Name of the chaincode in channel.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: object
+            examples:
+              person:
+                summary: person
+                value:
+                  key:
+                    "@assetType": person
+                    id: "318.207.920-48"
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Asset not found
+        5XX:
+          description: Internal error
+
+  /{channelName}/{chaincodeName}/query/search:
+    post:
+      tags:
+        - Select Channel and Chaincode
+      security:
+        - basicAuth: []
+      summary: Searches the blockchain world state using CouchDB rich queries
+      parameters:
+        - in: path
+          name: channelName
+          schema:
+            type: string
+          required: true
+          description: Name of the channel.
+        - in: path
+          name: chaincodeName
+          schema:
+            type: string
+          required: true
+          description: Name of the chaincode in channel.
+      description: "Query JSON as defined by CouchDB docs: https://docs.couchdb.org/en/stable/api/database/find.html"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  selector:
+                    type: object
+                  limit:
+                    type: integer
+                  bookmark:
+                    type: string
+            examples:
+              personAll:
+                summary: Get all assets of type person
+                value:
+                  query:
+                    selector:
+                      "@assetType": person
+              personFirst10:
+                summary: Get first 10 assets of type person
+                value:
+                  query:
+                    selector:
+                      "@assetType": person
+                    limit: 10
+                    bookmark: ""
+              person10to20:
+                summary: Get assets 10-20 of type person
+                value:
+                  query:
+                    selector:
+                      "@assetType": person
+                    limit: 10
+                    bookmark: "g1AAAACGeJzLYWBgYMpgSmHgKy5JLCrJTq2MT8lPzkzJBYprF6QWFefnWaVaGBmbWCan6BqZJ6fpmqalWOgmGSWZ65qbWFommpkZWCYlW4KM4IAZQarmLAD0pSXP"
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad format
+        5XX:
+          description: Internal error
+
+  /{channelName}/{chaincodeName}/invoke/updateAsset:
+    put:
+      tags:
+        - Select Channel and Chaincode
+      security:
+        - basicAuth: []
+      summary: Updates an existing asset
+      parameters:
+        - in: path
+          name: channelName
+          schema:
+            type: string
+          required: true
+          description: Name of the channel.
+        - in: path
+          name: chaincodeName
+          schema:
+            type: string
+          required: true
+          description: Name of the chaincode in channel.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                "@assetType":
+                  type: string
+            examples:
+              updateHeight:
+                summary: "Change person height"
+                value:
+                  update:
+                    "@assetType": "person"
+                    name: "Maria"
+                    height: 1.66
+        description: The asset must contain the primary key of the asset and the fields to be updated.
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad format
+        "404":
+          description: Asset not found
+        5XX:
+          description: Internal error
+
+  /{channelName}/{chaincodeName}/invoke/deleteAsset:
+    delete:
+      tags:
+        - Select Channel and Chaincode
+      security:
+        - basicAuth: []
+      summary: Deletes an existing asset
+      parameters:
+        - in: path
+          name: channelName
+          schema:
+            type: string
+          required: true
+          description: Name of the channel.
+        - in: path
+          name: chaincodeName
+          schema:
+            type: string
+          required: true
+          description: Name of the chaincode in channel.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                "@assetType":
+                  type: string
+            examples:
+              deletePerson:
+                summary: 'Delete person with name "Maria"'
+                value:
+                  key:
+                    "@assetType": person
+                    id: "318.207.920-48"
+        description: The asset must contain the primary key of the asset.
+        required: true
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad format
+        "404":
+          description: Asset not found
+        5XX:
+          description: Internal error
+  /{channelName}/qscc/getBlockByNumber:
+    get:
+      summary: Get block by number
+      description: Retrieves a block by its number from the specified channel.
+      parameters:
+        - name: channelName
+          in: path
+          required: true
+          schema:
+            type: string
+            example: mainchannel
+        - name: number
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Bad request
+        '404':
+          description: Block not found
+      tags:
+        - Blockchain
+      security:
+        - basicAuth: []
+      consumes:
+        - application/json
+      produces:
+        - application/json
+  /{channelName}/qscc/getBlockByHash:
+    get:
+      summary: Get block by hash
+      description: Retrieves a block by its hash from the specified channel.
+      tags:
+        - Blockchain
+      security:
+        - basicAuth: []
+      parameters:
+        - name: channelName
+          in: path
+          required: true
+          schema:
+            type: string
+            example: mainchannel
+          description: Name of the channel.
+        - name: hash
+          in: query
+          required: true
+          schema:
+            type: string
+            example: dbd2b14fb3d61b7aeac3add76f99cd9b47850c7c95ca5e489696a6b543fc6b2d
+          description: The hash of the block to be retrieved.
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          description: Bad request
+        "404":
+          description: Block not found
+        "500":
+          description: Internal server error
+  /{channelName}/qscc/getChainInfo:
+    get:
+      summary: Get chain info
+      description: Retrieves chain information from the specified channel.
+      parameters:
+        - name: channelName
+          in: path
+          required: true
+          schema:
+            type: string
+            example: mainchannel
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Bad request
+        '404':
+          description: Chain info not found
+      tags:
+        - Blockchain
+      security:
+        - basicAuth: []
+      consumes:
+        - application/json
+      produces:
+        - application/json
+  /{channelName}/qscc/getTransactionByID:
+    get:
+      summary: Get transaction by ID
+      description: Retrieves a transaction by its ID from the specified channel.
+      parameters:
+        - name: channelName
+          in: path
+          required: true
+          schema:
+            type: string
+            example: mainchannel
+        - name: txid
+          in: query
+          required: true
+          schema:
+            type: string
+            example: 41675014bf3205b68e2620a802247f77adc730c77426885b15eebc28add6a414
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Bad request
+        '404':
+          description: Transaction not found
+      tags:
+        - Blockchain
+      security:
+        - basicAuth: []
+      consumes:
+        - application/json
+      produces:
+        - application/json
+  /{channelName}/qscc/getBlockByTxID:
+    get:
+      summary: Get block by transaction ID
+      description: Retrieves a block by its transaction ID from the specified channel.
+      parameters:
+        - name: channelName
+          in: path
+          required: true
+          schema:
+            type: string
+            example: mainchannel
+        - name: txid
+          in: query
+          required: true
+          schema:
+            type: string
+            example: 41675014bf3205b68e2620a802247f77adc730c77426885b15eebc28add6a414
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Bad request
+        '404':
+          description: Block not found
+      tags:
+        - Blockchain
+      security:
+        - basicAuth: []
+      consumes:
+        - application/json
+      produces:
+        - application/json
