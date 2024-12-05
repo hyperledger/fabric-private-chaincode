@@ -9,6 +9,7 @@ package pkg
 type Config struct {
 	CorePeerAddress         string
 	CorePeerId              string
+	CorePeerOrgName         string
 	CorePeerLocalMSPID      string
 	CorePeerMSPConfigPath   string
 	CorePeerTLSCertFile     string

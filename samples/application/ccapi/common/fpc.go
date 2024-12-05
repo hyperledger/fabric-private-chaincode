@@ -42,6 +42,7 @@ func InitFpcConfig() {
 	defaultFpcConfig = &pkgFpc.Config{
 		CorePeerAddress:         getStrEnv("CORE_PEER_ADDRESS"),
 		CorePeerId:              getStrEnv("CORE_PEER_ID"),
+		CorePeerOrgName:         getStrEnv("CORE_PEER_ORG_NAME"),
 		CorePeerLocalMSPID:      getStrEnv("CORE_PEER_LOCALMSPID"),
 		CorePeerMSPConfigPath:   getStrEnv("CORE_PEER_MSPCONFIGPATH"),
 		CorePeerTLSCertFile:     getStrEnv("CORE_PEER_TLS_CERT_FILE"),

@@ -27,6 +27,7 @@ services:
       - SGX_MODE=SIM
       - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
       - CORE_PEER_ID=peer0.org1.example.com
+      - CORE_PEER_ORG_NAME=org1
       - CORE_PEER_LOCALMSPID=Org1MSP
       - CORE_PEER_MSPCONFIGPATH=/fabric/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
       - CORE_PEER_TLS_CERT_FILE=/fabric/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt
@@ -59,13 +60,14 @@ services:
       - DOMAIN=example.com
       - CHANNEL=mychannel
       - CCNAME=cc-tools-demo
-      - FABRIC_GATEWAY_ENDPOINT=peer0.org2.example.com:7051
+      - FABRIC_GATEWAY_ENDPOINT=peer0.org2.example.com:9051
       - FABRIC_GATEWAY_NAME=peer0.org2.example.com
       - GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn
       - FPC_MODE=true
       - SGX_MODE=SIM
-      - CORE_PEER_ADDRESS=peer0.org2.example.com:7051
+      - CORE_PEER_ADDRESS=peer0.org2.example.com:9051
       - CORE_PEER_ID=peer0.org2.example.com
+      - CORE_PEER_ORG_NAME=org2
       - CORE_PEER_LOCALMSPID=Org2MSP
       - CORE_PEER_MSPCONFIGPATH=/fabric/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp
       - CORE_PEER_TLS_CERT_FILE=/fabric/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/server.crt

@@ -42,7 +42,7 @@ func NewAdmin(config *Config) *Admin {
 	//defer sdk.Close()
 
 	orgAdmin := "Admin"
-	orgName := "org1"
+	orgName := config.CorePeerOrgName
 	adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
 
 	client, err := fpcmgmt.New(adminContext)
