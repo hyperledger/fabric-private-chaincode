@@ -60,4 +60,4 @@ A few more notes:
 * For support for Apple Mac (M1 or newer) see the [Troubleshooting](#troubleshooting) section.
 
 Now you are ready to start development *within* the container. Continue with building FPC as described in the [Build Fabric Private Chaincode
-](#build-fabric-private-chaincode) Section and then write [your first Private Chaincode](#your-first-private-chaincode).
+](../README.md#build-fabric-private-chaincode) Section and then write [your first Private Chaincode](../README.md#your-first-private-chaincode).
