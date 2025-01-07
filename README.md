@@ -180,185 +180,14 @@ git clone --recursive https://github.com/hyperledger/fabric-private-chaincode.gi
 
 ## Setup your Development Environment
 
-There are two different ways to develop Fabric Private Chaincode. Using our preconfigured Docker container development environment or setting up your local system with all required software dependencies to build and develop chaincode locally.
+There are two different ways to develop Fabric Private Chaincode. 
 
 ### Option 1: Using the Docker-based FPC Development Environment
-
-In this section we explain how to set up a Docker-based development environment that allows you to develop and test FPC chaincode.
-The docker images come with all necessary software dependencies and allow you a quick start.
-We recommend to set privileges to manage docker as a non-root user. See the
-official docker [documentation](https://docs.docker.com/install/linux/linux-postinstall/)
-for more details.
-
-First make sure your host has
-* Docker v23.0 (or higher).
-  It also should use `/var/run/docker.sock` as socket to interact with the daemon (or you
-  will have to override in `$FPC_PATH/config.override.mk` the default definition in make of `DOCKER_DAEMON_SOCKET`)
-* GNU make
-
-Once you have cloned the repository, you can either use the pre-built images or you can manually build them. After that you will start the development container.
-
-#### Pull docker images
-To pull the docker image execute the following:
-```bash
-make -C $FPC_PATH/utils/docker pull pull-dev 
-```
-#### Manually build docker images
-In order to build the development image manually you can use the following commands. Note that this process may take some time.
-```bash
-make -C $FPC_PATH/utils/docker build build-dev 
-```
-#### Start the dev container
-Next we will open a shell inside the FPC development container, with environment variables like `$FPC_PATH` appropriately defined and all dependencies like the Intel SGX SDK, ready to build and run FPC.
-Continue with the following command:
-
-```bash
-make -C $FPC_PATH/utils/docker run-dev
-```
-
-Note that by default the dev container mounts your local cloned FPC project as a volume to `/project/src/github.com/hyperledger/fabric-private-chaincode` within the docker container.
-This allows you to edit the content of the repository using your favorite editor in your system and the changes inside the docker container. Additionally, you are also not loosing changes inside the container when you reboot or the container gets stopped for other reasons.
-
-A few more notes:
-* We use Ubuntu 22.04 by default.
-  To build also docker images with a different version of Ubuntu, add the following to `$FPC_PATH/config.override.mk`.
-  ```bash
-  DOCKER_BUILD_OPTS=--build-arg UBUNTU_VERSION=18.04 --build-arg UBUNTU_NAME=bionic
-  ```
-* If you run behind a proxy, you will have to configure the proxy,
-  e.g., for docker (`~/.docker/config.json`) and load the configuration inside the dev container by setting `DOCKER_DEV_RUN_OPTS += -v "$HOME/.docker":"/root/.docker"` in `$FPC_PATH/config.override.mk`.
-  See [Working from behind a proxy](#working-from-behind-a-proxy) below for more information. Also note that with newer docker versions (i.e., docker desktop), the docker socket is located on the host in `~/.docker/`. This may cause issues when using docker inside the FPC dev container as the docker client is not able to access the docker socket at the path of the host system. You may try to switch the docker context to use `/var/run/docker.sock`. We do not recommend this approach and happy for suggestions.
-* If your local host is SGX enabled, i.e., there is a device `/dev/sgx/enclave` or
-  `/dev/isgx` and your PSW daemon listens to `/var/run/aesmd`, then the docker image will be sgx-enabled and your settings from `./config/ias` will be used. You will have to manually set `SGX_MODE=HW` before building anything to use HW mode.
-* If you want additional apt packages to be automatically added to your
-  container images, you can do so by modifying `$FPC_PATH/config.override.mk` file in the fabric-private-chaincode directory.
-  In that file, define
-  `DOCKER_BASE_RT_IMAGE_APT_ADD_PKGS`,
-  `DOCKER_BASE_DEV_IMAGE_APT_ADD_PKGS'`and/or
-  `DOCKER_DEV_IMAGE_APT_ADD_PKGS` with a list of packages you want to be added to you
-  all images,
-  all images where fabric/fpc is built from source and
-  the dev(eloper) container, respectively.
-  They will then be automatically added to the docker image.
-* Due to the way the peer's port for chaincode connection is managed,
-  you will be able to run only a single FPC development container on a
-  particular host.
-* For support for Apple Mac (M1 or newer) see the [Troubleshooting](#troubleshooting) section.
-
-Now you are ready to start development *within* the container. Continue with building FPC as described in the [Build Fabric Private Chaincode
-](#build-fabric-private-chaincode) Section and then write [your first Private Chaincode](#your-first-private-chaincode).
+Using our preconfigured Docker container development environment or setting up your local system with all required software dependencies to build and develop chaincode locally. [md](docs/setup-option1.md)
 
 ### Option 2: Setting up your system to do local development
 
-As an alternative to the Docker-based FPC development environment you can install and manage all necessary software dependencies which are required to compile and run FPC.  
-
-#### Requirements
-
-Make sure that you have the following required dependencies installed:
-* Linux (OS) (we recommend Ubuntu 22.04, see [list](https://github.com/intel/linux-sgx#prerequisites) supported OS)
-
-* CMake v3.5.1 or higher
-
-* [Go](https://golang.org/) 1.21.x or higher
-
-* Docker 18.09 (or higher) and docker-compose 1.25.x (or higher)
-  Note that version from Ubuntu 18.04 is not recent enough!  To upgrade, install a recent version following the instructions from [docker.com](https://docs.docker.com/compose/install/), e.g., for version 1.25.4 execute	
-  ```bash	
-  sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose	
-  sudo chmod +x /usr/local/bin/docker-compose
-  ```
-
-  To install docker-componse 1.25.4 from [docker.com](https://docs.docker.com/compose/install/), execute
-  ```bash
-  sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-  sudo chmod +x /usr/local/bin/docker-compose
-  ``` 
-
-* yq v4.x
-  You can install `yq` via `go get`.
-  ```bash
-    go get github.com/mikefarah/yq/v4
-  ```
-
-* Protocol Buffers
-    - Protocol Buffers 3.0.x needed for the Intel SGX SDK
-    - Protocol Buffers 3.11.x or higher and [Nanopb](http://github.com/nanopb/nanopb) 0.4.7
-
-* SGX PSW & SDK v2.22 for [Linux](https://01.org/intel-software-guard-extensions/downloads)
-  (alternatively, you could also install it from the [source](https://github.com/intel/linux-sgx)
-
-* Credentials for Intel Attestation Service, read [here](#intel-attestation-service-ias) (for hardware-mode SGX)
-
-* [Intel Software Guard Extensions SSL](https://github.com/intel/intel-sgx-ssl)
-  (we recommend using tag `3.0_Rev2` OpenSSL `3.0.12`)
-
-* Hyperledger [Fabric](https://github.com/hyperledger/fabric/tree/v2.5.9) v2.5.9
-
-* Clang-format 6.x or higher
-
-* jq
-
-* hex (for Ubuntu, found in package basez)
-
-* A recent version of [PlantUML](http://plantuml.com/), including Graphviz, for building documentation. See [Documentation](#building-documentation) for our recommendations on installing. The version available in common package repositories may be out of date.
-
-#### Intel SGX SDK and SSL
-
-Fabric Private Chaincode requires the Intel [SGX SDK](https://github.com/intel/linux-sgx) and
-[SGX SSL](https://github.com/intel/intel-sgx-ssl) to build the main components of our framework and to develop and build
-your first private chaincode.
-
-Install the Intel SGX software stack for Linux by following the
-official [documentation](https://github.com/intel/linux-sgx). Please make sure that you use the
-SDK version as denoted above in the list of requirements.
-
-For SGX SSL, just follow the instructions on the [corresponding
-github page](https://github.com/intel/intel-sgx-ssl). In case you are
-building for simulation mode only and do not have HW support, you
-might also want to make sure that [simulation mode is set](https://github.com/intel/intel-sgx-ssl#available-make-flags)
-when building and installing it.
-
-Once you have installed the SGX SDK and SSL for SGX SDK please double check that `SGX_SDK` and `SGX_SSL` variables
-are set correctly in your environment.
-
-
-#### Protocol Buffers
-
-We use *nanopb*, a lightweight implementation of Protocol Buffers, inside the enclaves to parse blocks of
-transactions. Install nanopb by following the instruction below. For this you need a working Google Protocol Buffers
-compiler with python bindings (e.g. via `apt-get install protobuf-compiler python3-protobuf libprotobuf-dev`).
-For more detailed information consult the official nanopb documentation http://github.com/nanopb/nanopb.
-```bash
-export NANOPB_PATH=/path-to/install/nanopb/
-git clone https://github.com/nanopb/nanopb.git $NANOPB_PATH
-cd $NANOPB_PATH
-git checkout nanopb-0.4.7
-cd generator/proto && make
-```
-
-Make sure that you set `$NANOPB_PATH` as it is needed to build Fabric Private Chaincode.
-
-Moreover, in order to build Fabric protobufs we also require a newer Protobuf compiler than what is provided as standard Ubuntu package and is used to build the
-Intel SGX SDK. For this reason you will have to download and install another version and use it together with Nanopb. Do not install the new protobuf, though, such that it is not found in your standard PATH but instead define the `PROTOC_CMD`, either as environment variable or via `config.override.mk` to point to the new `protoc` binary
-```bash
-wget https://github.com/protocolbuffers/protobuf/releases/download/v22.3/protoc-22.3-linux-x86_64.zip
-unzip protoc-22.3-linux-x86_64.zip -d /usr/local/proto3
-export PROTOC_CMD=/usr/local/proto3/bin/protoc
-```
-
-#### Hyperledger Fabric
-
-Our project fetches the latest supported Fabric binaries during the build process automatically.
-However, if you want to use your own Fabric binaries, please checkout Fabric 2.5.9 release using the following commands:
-```bash
-export FABRIC_PATH=$GOPATH/src/github.com/hyperledger/fabric
-git clone https://github.com/hyperledger/fabric.git $FABRIC_PATH
-cd $FABRIC_PATH; git checkout tags/v2.5.9
-```
-
-Note that Fabric Private Chaincode may not work with the Fabric `main` branch.
-Therefore, make sure you use the Fabric `v2.5.9` tag.
-Make sure the source of Fabric is in your `$GOPATH`.
+As an alternative to the Docker-based FPC development environment you can install and manage all necessary software dependencies which are required to compile and run FPC. [md](docs/setup-option2.md) 
 
 ## Build Fabric Private Chaincode
 
@@ -691,8 +520,6 @@ section.
   [Slides](https://docs.google.com/presentation/d/1KX3_gB70H6PZw5uvYbIPYPOMt8qsh2nLRsGmXEf98Ls/edit#slide=id.ga89b65b885_0_0)
 
 
-
-
 ## Project Status
 
 Hyperledger Fabric Private Chaincode was accepted via a Hyperledger Fabric [RFC](https://github.com/hyperledger/fabric-rfcs/blob/main/text/0000-fabric-private-chaincode-1.0.md) and is now under development.
@@ -701,28 +528,6 @@ This code is provided solely to demonstrate basic Fabric Private Chaincode
 mechanisms and to facilitate collaboration to refine the project architecture
 and define minimum viable product requirements. The code provided in this
 repository is prototype code and not intended for production use.
-
-
-## Initial Committers
-
-- [Marcus Brandenburger](https://github.com/mbrandenburger) (bur@zurich.ibm.com)
-- [Christian Cachin](https://github.com/cca88) (cca@zurich.ibm.com)
-- [Rüdiger Kapitza](https://github.com/rrkapitz) (kapitza@ibr.cs.tu-bs.de)
-- [Alessandro Sorniotti](https://github.com/ale-linux) (aso@zurich.ibm.com)
-
-
-## Core Team FPC 1.0
-- [Mic Bowman](https://github.com/cmickeyb) (mic.bowman@intel.com)
-- [Marcus Brandenburger](https://github.com/mbrandenburger) (bur@zurich.ibm.com)
-- [Jeb Linton](https://github.com/jrlinton) (jrlinton@us.ibm.com)
-- [Michael Steiner](https://github.com/g2flyer) (michael.steiner@intel.com)
-- [Bruno Vavala](https://github.com/bvavala) (bruno.vavala@intel.com)
-
-
-## Sponsor
-
-[Gari Singh](https://github.com/mastersingh24) (garis@us.ibm.com)
-
 
 ## License
 
