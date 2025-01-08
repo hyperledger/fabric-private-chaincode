@@ -157,7 +157,7 @@ git clone --recursive https://github.com/hyperledger/fabric-private-chaincode.gi
 There are two different ways to develop Fabric Private Chaincode. 
 
 ### Option 1: Using the Docker-based FPC Development Environment
-Using our preconfigured Docker container development environment or setting up your local system with all required software dependencies to build and develop chaincode locally. [Option 1](docs/setup-option1.md)
+Using our preconfigured Docker container development environment. [Option 1](docs/setup-option1.md)
 
 ### Option 2: Setting up your system to do local development
 
@@ -174,7 +174,7 @@ cd $FPC_PATH
 make docker
 make
  ```
- 
+
 Besides the default target, there are also following make targets:
 - `build`: build all FPC build artifacts
 - `docker`: build docker images 
