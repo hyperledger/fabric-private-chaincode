@@ -174,7 +174,7 @@ cd $FPC_PATH
 make docker
 make
  ```
-
+ 
 Besides the default target, there are also following make targets:
 - `build`: build all FPC build artifacts
 - `docker`: build docker images 
@@ -187,7 +187,6 @@ Also note that the file `config.mk` contains various defaults which
 can all be redefined in an optional file `config.override.mk`.
 
 See also [below](#building-documentation) on how to build the documentation.
-
 
 ### Intel SGX Attestation Support
 
@@ -208,33 +207,8 @@ To overcome these limitations and allow developers to toy around with the FPC AP
 1) Using the [Docker-based FPC Development Environment](#setup-your-development-environment) (works well on x86-based platforms on Linux and Mac).
 2) FPC builds without SGX SDK dependencies (targets x86/arm-based platforms on Linux and Mac).
 
-We now elaborate on how to build the FPC components without the SGX SDK.
+We now elaborate on how to build the FPC components without the SGX SDK [here](docs/playground-nonsgx.md).
 Note that this is indented for developing purpose only and does not provide any protection at all.
-
-In your `config.override.mk` set the following to variables:
-```Makefile
-FPC_CCENV_IMAGE=ubuntu:22.04
-ERCC_GOTAGS=
-```
-This configuration sets a standard Ubuntu image as alternative to our `fabric-private-chaincode-ccenv` image and overrides the default build tags we use to build `ercc`.
-
-Next you can build `ercc` using the following command:
-```bash
-GOOS=linux make -C $FPC_PATH/ercc build docker
-```
-
-For building a chaincode, for instance `$FPC_PATH/samples/chaincode/kv-test-go`, just run: 
-```bash
-GOOS=linux make -C $FPC_PATH/samples/chaincode/kv-test-go with_go docker
-```
-
-You can test your FPC chaincode easily with one of the [sample deployments](samples/deployment) tutorials.
-We recommend to start with [the-simple-testing-network](samples/deployment/fabric-smart-client/the-simple-testing-network).
-
-Notes:
-- On Mac use a recent version of bash (`brew install bash`).
-- TODO more to come
-
 
 ### Troubleshooting
 
