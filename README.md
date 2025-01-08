@@ -195,41 +195,7 @@ To run Fabric Private Chaincode in hardware mode (secure mode), you need an SGX-
 hardware as well corresponding OS support.  However, even if you don't
 have SGX hardware available, you still can run FPC in simulation mode by
 setting `SGX_MODE=SIM` in your environment.
-
-Note that the simulation mode is for developing purpose only and does
-not provide any security guarantees.
-
-As mentioned before, by default the project builds in SGX simulation mode, `SGX_MODE=SIM` as defined in `$FPC_PATH/config.mk` and you can
-explicitly opt for building in hardware-mode SGX, `SGX_MODE=HW`. In order to set non-default values for install
-location, or for building in hardware-mode SGX, you can create the file `$FPC_PATH/config.override.mk` and override the default
-values by defining the corresponding environment variable.
-
-Note that you can always come back here when you want a setup with SGX
-hardware-mode later after having tested with simulation mode.
-
-#### Register with Intel Attestation Service (IAS)
-
-If you run SGX in __simulation mode only__, you can skip this section.
-We currently support EPID-based attestation and  use the Intel's
-Attestation Service to perform attestation with chaincode enclaves.
-
-What you need:
-* a Service Provider ID (SPID)
-* the (primary) api-key associated with your SPID
-
-In order to use Intel's Attestation Service (IAS), you need to register
-with Intel. On the [IAS EPID registration page](https://api.portal.trustedservices.intel.com/EPID-attestation)
-you can find more details on how to register and obtain your SPID plus corresponding api-key.
-We currently support both `linkable` and `unlinkable` signatures for the attestation.
-
-Place your ias api key and your SPID in the `ias` folder as follows:
-```bash
-echo 'YOUR_API_KEY' > $FPC_PATH/config/ias/api_key.txt
-echo 'YOUR_SPID_TYPE' > $FPC_PATH/config/ias/spid_type.txt
-echo 'YOUR_SPID' > $FPC_PATH/config/ias/spid.txt
-```
-where `YOUR_SPID_TYPE` must be `epid-linkable` or `epid-unlinkable`, depending on the type of your subscription.
-
+You can find more details [here](docs/build-sgx.md).
 
 ### FPC Playground for non-SGX environments
 
@@ -272,130 +238,8 @@ Notes:
 
 ### Troubleshooting
 
-This section elaborate on common issues with building Fabric Private Chaincode.
+This section elaborate on [common issues](docs/troubleshooting.md) with building Fabric Private Chaincode.
 
-#### Docker
-
-Building the project requires docker. We do not recommend to run `sudo make`
-to resolve issues with mis-configured docker environments as this also changes your `$GOPATH`. Please see hints on
-[docker](#docker) installation above.
-
-The makefiles do not ensure that docker files are always rebuild to
-match the latest version of the code in the repo.  If you suspect you
-have an issue with outdated docker images, you can run `make clobber
-build` which forces a rebuild.  It also ensures that all other
-download, build or test artifacts are scrubbed from your repo and might
-help overcoming other problems. Be advised that that the rebuild can
-take a fair amount of time.
-
-#### Working from behind a proxy
-
-The current code should work behind a proxy assuming
-  * you have defined the corresponding environment variables (i.e.,
-    `http_proxy`, `https_proxy` and, potentially, `no_proxy`) properly, and
-  * docker (daemon & client) is properly set up for proxies as
-    outlined in the Docker documentation for
-    [clients](https://docs.docker.com/network/proxy/) and the
-    [daemon](https://docs.docker.com/config/daemon/systemd/#httphttps-proxy).
-  * the docker version is correct.
-    Otherwise you may run into problems with DNS resolution inside the container.
-  * the docker-compose version is correct.
-    For example, the docker-compose from Ubuntu 18.04 (docker-compose 1.17)
-    is _not_ recent enough to understand `~/.docker/config.json` and related proxy options.
-
-Furthermore, for docker-compose networks to work properly with proxies, the `noProxy`
-variable in your `~/.docker/config.json` should at least contain `127.0.0.1,127.0.1.1,localhost,.org1.example.com,.example.com`.
-
-Another problem you might encounter when running the integration tests
-insofar that some '0.0.0.0' in `integration/config/core.yaml` used by
-clients -- e.g., the peer CLI using the `address: 0.0.0.0:7051` config
-as part of the `peer` section -- result in the client being unable
-to find the server. The likely error you will see is
- `err: rpc error: code = Unavailable desc = transport is closing`.
-In that case, you will have to replace the '0.0.0.0' with a concrete
-ip address such as '127.0.0.1'.
-
-
-#### Environment settings
-
-Our build system requires a few variables to be set in your environment. Missing variables may cause `make` to fail.
-Below you find a summary of all variables which you should carefully check and add to your environment.
-
-```bash
-# Path to your SGX SDK and SGX SSL
-export SGX_SDK=/opt/intel/sgxsdk
-export SGX_SSL=/opt/intel/sgxssl
-
-# Path to nanopb
-export NANOPB_PATH=$HOME/nanopb
-
-# SGX simulation mode
-export SGX_MODE=SIM
-
-# SGX simulation mode
-export SGX_MODE=HW
-```
-The file `config.mk` contains various defaults for some of these, but
-all can be (re)defined also in an optional file `config.override.mk`.
-
-
-#### Clang-format
-
-Some users may experience problems with clang-format. In particular, the error `command not found: clang-format`
-appears even after installing it via `apt-get install clang-format`. See [here](https://askubuntu.com/questions/1034996/vim-clang-format-clang-format-is-not-found)
-for how to fix this.
-
-#### ERCC setup failures
-
-<!-- TODO: check below, this section is probably outdated? -->
-
-If, e.g., running the integration tests executed when you run `make`,
-you get errors of following form:
-
-```
-Error: endorsement failure during invoke. response: status:500 message:"Setup failed: Can not register enclave at ercc: Error while retrieving attestation report: IAS returned error: Code 401 Access Denied"
-```
-
-In case you run in SGX HW mode, check that your files in `config/ias`
-are set properly as explained in [Section Intel Attestation Service
-(IAS)](#intel-attestation-service-ias).  Note that if you run
-initially in simulation mode and these files do not exist, the build
-will create dummy files. In case you switch later to HW mode without
-configuring these files correctly for HW mode, this will result in
-above error.
-
-
-#### no Raft leader
-
-The following error message sometimes appears when running the integration tests in the `$FPC_PATH/integration` folder.
-The output contains the following:
-```
-got unexpected status: SERVICE_UNAVAILABLE -- no Raft leader
-```
-
-Rerunning the tests usually works.
-If this error appers during the make step of [building FPC](../fabric-private-chaincode/README.md#build-fabric-private-chaincode) than uncommenting some integration tests fixes the issue.
-
-
-#### Working with the FPC dev container
-
-To make starting and stopping the dev container more reliable it is advised to use the following commands:
-* Start the container and get a shell: `make -C $FPC_PATH/utils/docker run-dev`
-* Get another shell inside the dev container: `docker exec -it fpc-development-main /bin/bash`
-* Stop the container: `docker stop fpc-development-main`
-
-#### Development on Apple Mac (M1 or newer)
-
-For developers using Apple Mac (M1 or newer) we suggest to use the prebuilt FPC dev container.
-Add the following configuration to your `config.override.mk`, pull the docker images and start the FPC dev container as described above in [Option 1: Using the Docker-based FPC Development Environment](#option-1-using-the-docker-based-fpc-development-environment).
-Note that SGX is not supported on Apple platforms, and hence, FPC chaincode can only be used in simulation mode.
-Alternatively, a cloud-based development environment can be used with SGX HW support, see our tutorial [How to use FPC with Azure Confidential Computing](samples/deployment/azure/FPC_on_Azure.md).
-
-```Makefile
-DOCKER_BUILD_CMD=buildx build
-DOCKER_BUILD_OPTS=--platform linux/amd64
-DOCKER_DEV_RUN_OPTS=--platform linux/amd64
-```
 
 ### Building Documentation
 
@@ -431,35 +275,8 @@ We provide a brief [FPC on Azure Tutorial](samples/deployment/azure/FPC_on_Azure
 
 ## Reference Guides
 
-### Management API
+You can find more details related to the Management API, FPC Shim and FPC client SDK [here](docs/referenceguides.md).
 
-While the management API for Fabric is mostly unchanged, some modifications are needed for FPC to work.
-In particular, FPC extends the Fabric's lifecycle API with additional commands to create an FPC enclave and handle the key provisioning.
-These are detailed separately in the **[FPC Management API document](docs/design/fabric-v2%2B/fpc-management.md)**
-
-### FPC Shim
-
-The FPC Shim follows the programming model used in the standard Fabric Go shim and offers a C++ based FPC Shim to FPC chaincode developers. It currently comprises only a subset of the standard Fabric Shim and is complemented in the future.
-These details are documented separately in the Shim header file itself: **[`ecc_enclave/enclave/shim.h`](ecc_enclave/enclave/shim.h)**
-
-*Important*: The initial version of FPC, FPC 1.0 (aka FPC Lite), has a
-few constraints in applicability and programming model.  Hence, study carefully the
-[section discussing this in the FPC RFC](https://github.com/hyperledger/fabric-rfcs/blob/main/text/0000-fabric-private-chaincode-1.0.md#fpc-10-application-domain)
-and the comments at the top of [`shim.h`](ecc_enclave/enclave/shim.h)
-before designing, implementing and deploying an FPC-based solution.
-<!-- could also mention
-	[FPC for Health use  case](https://docs.google.com/document/d/1jbiOY6Eq7OLpM_s3nb-4X4AJXROgfRHOrNLQDLxVnsc/)
--->
-
-
-### FPC Client SDK
-
-In order to interact with a FPC chaincode you can use the FPC Client SDK for Go or use the Peer CLI tool provided with FPC.
-Both make FPC related client-side encryption and decryption transparent to the user, i.e., client-side programming is mostly standard Fabric and agnostic to FPC.
-
-The FPC Client SDK for Go is located in [client_sdk/go](client_sdk/go). See also [Godocs](https://pkg.go.dev/github.com/hyperledger/fabric-private-chaincode/client_sdk/go/).
-
-For the command-line invocations, use the **`$FPC_PATH/fabric/bin/peer.sh`** wrapper script. We refer to our integration tests for usage examples.
 
 ## Getting Help
 
