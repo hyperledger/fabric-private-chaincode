@@ -212,8 +212,7 @@ Note that this is indented for developing purpose only and does not provide any 
 
 ### Troubleshooting
 
-This section elaborate on [common issues](docs/troubleshooting.md) with building Fabric Private Chaincode.
-
+This section elaborate on common issues with building Fabric Private Chaincode that you can read [here](docs/troubleshooting.md).
 
 ### Building Documentation
 
