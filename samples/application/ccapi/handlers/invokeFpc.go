@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hyperledger-labs/ccapi/chaincode"
-	"github.com/hyperledger-labs/ccapi/common"
+	"github.com/hyperledger-labs/cc-tools-demo/ccapi/common"
+	fpcChaincode "github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/chaincode"
 )
 
 func InvokeFpc(c *gin.Context) {
@@ -75,7 +75,7 @@ func InvokeFpc(c *gin.Context) {
 		user = "Admin"
 	}
 
-	res, status, err := chaincode.InvokeFpc(channelName, chaincodeName, txName, argList)
+	res, status, err := fpcChaincode.InvokeFpc(channelName, chaincodeName, txName, argList)
 
 	if err != nil {
 		common.Abort(c, status, err)

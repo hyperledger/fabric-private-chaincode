@@ -9,8 +9,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hyperledger-labs/ccapi/common"
-	"github.com/hyperledger-labs/ccapi/routes"
+	"github.com/hyperledger-labs/cc-tools-demo/ccapi/common"
+	"github.com/hyperledger-labs/cc-tools-demo/ccapi/routes"
+	fpcCommon "github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/common"
 )
 
 func defaultServer(r *gin.Engine) *http.Server {
@@ -27,7 +28,7 @@ func Serve(r *gin.Engine, ctx context.Context) {
 	defer common.CloseSDK()
 
 	if os.Getenv("FPC_ENABLED") == "true" {
-		common.InitFpcConfig()
+		fpcCommon.InitFpcConfig()
 	}
 
 	// Register routes and handlers

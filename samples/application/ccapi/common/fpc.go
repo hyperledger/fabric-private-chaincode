@@ -11,7 +11,7 @@ import (
 	"os"
 	"strconv"
 
-	pkgFpc "github.com/hyperledger-labs/ccapi/fpcUtils"
+	pkgFpc "github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/fpcUtils"
 )
 
 var (

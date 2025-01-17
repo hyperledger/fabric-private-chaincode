@@ -9,7 +9,7 @@ package chaincode
 import (
 	"net/http"
 
-	"github.com/hyperledger-labs/ccapi/common"
+	"github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/common"
 )
 
 func InvokeFpc(channelName string, chaincodeName string, txname string, args [][]byte) ([]byte, int, error) {

@@ -31,29 +31,32 @@ COPY . .
 # Build the Go ccapi
 RUN go build -o ccapi
 
-# Use an official Alpine runtime as a parent image
-FROM alpine:latest
+# # Use an official Alpine runtime as a parent image
+# FROM alpine:latest
 
-ENV PATH="${PATH}:/usr/bin/"
+# ENV PATH="${PATH}:/usr/bin/"
 
-RUN apk update 
+# RUN apk update 
 
-RUN apk add \
-    docker \
-    openrc \
-    git \ 
-    gcc \
-    gcompat \
-    libc-dev  \
-    libc6-compat  \
-    libstdc++ && \
-    ln -s /lib/libc.so.6 /usr/lib/libresolv.so.2
+# RUN apk add \
+#     docker \
+#     openrc \
+#     git \ 
+#     gcc \
+#     gcompat \
+#     libc-dev  \
+#     libc6-compat  \
+#     libstdc++ && \
+#     ln -s /lib/libc.so.6 /usr/lib/libresolv.so.2
 
-# Set the working directory to /rest-server
-WORKDIR /rest-server
+# # Set the working directory to /rest-server
+# WORKDIR /rest-server
 
 # Copy the ccapi binary from the build container to the current directory in the Alpine container
-COPY --from=build /rest-server/ccapi /usr/bin/ccapi
+RUN ls -l
+RUN pwd
+
+RUN cp ./ccapi /usr/bin/ccapi
 
 # Run the ccapi binary
 CMD ["ccapi"]

@@ -1,4 +1,4 @@
-module github.com/hyperledger-labs/ccapi
+module github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi
 
 go 1.21
 
@@ -47,6 +47,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/certificate-transparency-go v1.0.21 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/hyperledger-labs/cc-tools-demo/ccapi v0.0.0-20241207212759-9de20ef72afc // indirect
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20230228194215-b84622ba6a7a // indirect
 	github.com/hyperledger/fabric-config v0.1.0 // indirect
 	github.com/hyperledger/fabric-lib-go v1.0.0 // indirect

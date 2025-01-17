@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hyperledger-labs/ccapi/chaincode"
-	"github.com/hyperledger-labs/ccapi/common"
+	"github.com/hyperledger-labs/cc-tools-demo/ccapi/common"
+	fpcChaincode "github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/chaincode"
 )
 
 func QueryFpcDefault(c *gin.Context) {
@@ -41,7 +41,7 @@ func QueryFpcDefault(c *gin.Context) {
 		user = "Admin"
 	}
 
-	res, status, err := chaincode.QueryFpcDefault(txName, argList)
+	res, status, err := fpcChaincode.QueryFpcDefault(txName, argList)
 	if err != nil {
 		common.Abort(c, status, err)
 		return

@@ -3,7 +3,8 @@ package routes
 import (
 	"os"
 
-	"github.com/hyperledger-labs/ccapi/handlers"
+	"github.com/hyperledger-labs/cc-tools-demo/ccapi/handlers"
+	fpcHandlers "github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/handlers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,22 +12,22 @@ import (
 func addCCRoutes(rg *gin.RouterGroup) {
 	if os.Getenv("FPC_ENABLED") == "true" {
 		//Use FPC Handlers
-		rg.POST("/:channelName/:chaincodeName/invoke/:txname", handlers.InvokeFpc)
-		rg.PUT("/:channelName/:chaincodeName/invoke/:txname", handlers.InvokeFpc)
-		rg.DELETE("/:channelName/:chaincodeName/invoke/:txname", handlers.InvokeFpc)
-		rg.POST("/:channelName/:chaincodeName/query/:txname", handlers.QueryFpc)
-		rg.GET("/:channelName/:chaincodeName/query/:txname", handlers.QueryFpc)
+		rg.POST("/:channelName/:chaincodeName/invoke/:txname", fpcHandlers.InvokeFpc)
+		rg.PUT("/:channelName/:chaincodeName/invoke/:txname", fpcHandlers.InvokeFpc)
+		rg.DELETE("/:channelName/:chaincodeName/invoke/:txname", fpcHandlers.InvokeFpc)
+		rg.POST("/:channelName/:chaincodeName/query/:txname", fpcHandlers.QueryFpc)
+		rg.GET("/:channelName/:chaincodeName/query/:txname", fpcHandlers.QueryFpc)
 
-		rg.POST("/invoke/:txname/", handlers.InvokeFpcDefault)
-		rg.POST("/invoke/:txname", handlers.InvokeFpcDefault)
-		rg.PUT("/invoke/:txname/", handlers.InvokeFpcDefault)
-		rg.PUT("/invoke/:txname", handlers.InvokeFpcDefault)
-		rg.DELETE("/invoke/:txname/", handlers.InvokeFpcDefault)
-		rg.DELETE("/invoke/:txname", handlers.InvokeFpcDefault)
-		rg.POST("/query/:txname/", handlers.QueryFpcDefault)
-		rg.POST("/query/:txname", handlers.QueryFpcDefault)
-		rg.GET("/query/:txname/", handlers.QueryFpcDefault)
-		rg.GET("/query/:txname", handlers.QueryFpcDefault)
+		rg.POST("/invoke/:txname/", fpcHandlers.InvokeFpcDefault)
+		rg.POST("/invoke/:txname", fpcHandlers.InvokeFpcDefault)
+		rg.PUT("/invoke/:txname/", fpcHandlers.InvokeFpcDefault)
+		rg.PUT("/invoke/:txname", fpcHandlers.InvokeFpcDefault)
+		rg.DELETE("/invoke/:txname/", fpcHandlers.InvokeFpcDefault)
+		rg.DELETE("/invoke/:txname", fpcHandlers.InvokeFpcDefault)
+		rg.POST("/query/:txname/", fpcHandlers.QueryFpcDefault)
+		rg.POST("/query/:txname", fpcHandlers.QueryFpcDefault)
+		rg.GET("/query/:txname/", fpcHandlers.QueryFpcDefault)
+		rg.GET("/query/:txname", fpcHandlers.QueryFpcDefault)
 
 		rg.GET("/:channelName/qscc/:txname", handlers.QueryQSCC)
 

@@ -8,8 +8,8 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/hyperledger-labs/ccapi/chaincode"
-	"github.com/hyperledger-labs/ccapi/server"
+	"github.com/hyperledger-labs/cc-tools-demo/ccapi/chaincode"
+	fpcServer "github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/server"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 )
 
@@ -27,7 +27,7 @@ func main() {
 		AllowHeaders:     []string{"Authorization", "Origin", "Content-Type"},
 		AllowCredentials: true,
 	}))
-	go server.Serve(r, ctx)
+	go fpcServer.Serve(r, ctx)
 	// Events are not integrated with FPC
 	if os.Getenv("FPC_ENABLED") != "true" {
 
