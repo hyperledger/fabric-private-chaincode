@@ -13,15 +13,17 @@ The transaction client invocation process, as illustrated in the diagram, consis
 1. Step 1-2: The API server is listening for requests on a specified port over an HTTP channel and sends it to the handler.
 2. Step 3: The handler starts by determining the appropriate transaction invocation based on the requested endpoint and calling the corresponding chaincode API.
 3. Step 4: The chaincode API is responsible for parsing and ensuring the payload is correctly parsed into a format that is FPC-friendly. This parsing step is crucial, as it prepares the data to meet FPC’s privacy and security requirements before it reaches the peer.
-4. Step 5: FPCUtils is the step where the actual transaction invocation happens and it follows the steps explained in [here](https://github.com/hyperledger/fabric-rfcs/blob/main/text/0000-fabric-private-chaincode-1.0.md#fpc-transaction-flow) as it builds on top of the FPC Client SDK.
+4. Step 5: FPCUtils is the step where the actual transaction invocation happens. It follows the steps explained in [here](https://github.com/hyperledger/fabric-rfcs/blob/main/text/0000-fabric-private-chaincode-1.0.md#fpc-transaction-flow) as it builds on top of the FPC Client SDK.
 
 ![CCAPIFlow](./CCAPIFlow.png)
 
 ## User Experience
 
-CCAPI is using docker and docker-compose for spinning up all the required components needed to work.
+CCAPI uses docker and docker-compose to spin up all the required components to work.
 
 Have a look at the [fpc-docker-compose.yaml](./fpc-docker-compose.yaml) to see how we use different env vars. Most of these environment variables are required by any client application to work and communicate with FPC. If you followed the [cc-tools-demo](../../chaincode/cc-tools-demo/README.md) tutorial, the values should be the same.
+
+Note: The following steps should run outside the FPC dev container
 
 Start by running:
 
@@ -34,4 +36,4 @@ then go to the browser and type `localhost:80` to open the swagger api and start
 
 ## Future work
 
-CCAPI have another component for the dashboard frontend application but it's not yet utilized with
+CCAPI has another component for the dashboard frontend application but it's not yet utilized with
