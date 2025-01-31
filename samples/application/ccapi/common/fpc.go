@@ -4,35 +4,21 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package cmd
+package common
 
 import (
 	"fmt"
 	"os"
 	"strconv"
 
-	"github.com/hyperledger/fabric-private-chaincode/samples/application/simple-cli-go/pkg"
-	"github.com/spf13/cobra"
+	pkgFpc "github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/fpcUtils"
 )
 
 var (
-	rootCmd = &cobra.Command{
-		Use:   "fpcclient",
-		Short: "A demo app that calls FPC chaincode",
-	}
-	config *pkg.Config
+	defaultFpcConfig *pkgFpc.Config
 )
 
-// Execute executes the root command.
-func Execute() error {
-	return rootCmd.Execute()
-}
-
-func init() {
-	cobra.OnInitialize(initConfig)
-}
-
-func initConfig() {
+func InitFpcConfig() {
 
 	getStrEnv := func(key string) string {
 		val := os.Getenv(key)
@@ -53,7 +39,7 @@ func initConfig() {
 		return ret
 	}
 
-	config = &pkg.Config{
+	defaultFpcConfig = &pkgFpc.Config{
 		CorePeerAddress:         getStrEnv("CORE_PEER_ADDRESS"),
 		CorePeerId:              getStrEnv("CORE_PEER_ID"),
 		CorePeerOrgName:         getStrEnv("CORE_PEER_ORG_NAME"),
@@ -64,8 +50,20 @@ func initConfig() {
 		CorePeerTLSKeyFile:      getStrEnv("CORE_PEER_TLS_KEY_FILE"),
 		CorePeerTLSRootCertFile: getStrEnv("CORE_PEER_TLS_ROOTCERT_FILE"),
 		OrdererCA:               getStrEnv("ORDERER_CA"),
-		ChaincodeId:             getStrEnv("CC_NAME"),
-		ChannelId:               getStrEnv("CHANNEL_NAME"),
+		ChaincodeId:             getStrEnv("CCNAME"),
+		ChannelId:               getStrEnv("CHANNEL"),
 		GatewayConfigPath:       getStrEnv("GATEWAY_CONFIG"),
 	}
+
+}
+
+func NewDefaultFpcClient() *pkgFpc.Client {
+	return pkgFpc.NewClient(defaultFpcConfig)
+}
+
+func NewFpcClient(channelName string, chaincodeName string) *pkgFpc.Client {
+	fpcConfig := defaultFpcConfig
+	fpcConfig.ChannelId = channelName
+	fpcConfig.ChaincodeId = chaincodeName
+	return pkgFpc.NewClient(fpcConfig)
 }

@@ -44,6 +44,7 @@ echo "export ORDERER_PATH=\$CONF_PATH/ordererOrganizations/example.com" >> ${ORG
 echo "export CHANNEL_NAME=testchannel" >> ${ORG}.env
 echo "export CORE_PEER_ADDRESS=${ADDR}" >> ${ORG}.env
 echo "export CORE_PEER_ID=${PEER_ID}" >> ${ORG}.env
+echo "export CORE_PEER_ORG_NAME=${ORG}" >> ${ORG}.env
 echo "export CORE_PEER_LOCALMSPID=${MSP_ID}" >> ${ORG}.env
 echo "export CORE_PEER_MSPCONFIGPATH=\$ORG_PATH/users/Admin@${ORG,,}.example.com/msp" >> ${ORG}.env
 echo "export CORE_PEER_TLS_CERT_FILE=\$ORG_PATH/peers/${PEER_ID}/tls/server.crt" >> ${ORG}.env

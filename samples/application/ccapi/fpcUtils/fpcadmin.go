@@ -4,7 +4,7 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package pkg
+package fpcUtils
 
 import (
 	"fmt"
@@ -49,7 +49,7 @@ func NewAdmin(config *Config) *Admin {
 	if err != nil {
 		logger.Fatalf("failed to create context: %v", err)
 	}
-
+	logger.Infof("I AM HERE 1")
 	return &Admin{sdk: sdk, client: client, config: config, connections: connections}
 }
 
@@ -58,14 +58,17 @@ func (a *Admin) InitEnclave(targetPeer string) error {
 	logger.Infof("--> Collection attestation params ")
 	attestationParams, err := sgx.CreateAttestationParamsFromEnvironment()
 	if err != nil {
+		logger.Errorf("failed to load attestation params from environment: %v", err)
 		return fmt.Errorf("failed to load attestation params from environment: %v", err)
 	}
+	logger.Infof("I AM HERE 2")
 
 	initReq := fpcmgmt.LifecycleInitEnclaveRequest{
 		ChaincodeID:         a.config.ChaincodeId,
 		EnclavePeerEndpoint: targetPeer, // define the peer where we wanna init our enclave
 		AttestationParams:   attestationParams,
 	}
+	logger.Infof("I AM HERE 3")
 
 	peers := []string{"peer0-org1", "peer0-org2", "peer0-org3"}
 	orderer := "orderer0"
