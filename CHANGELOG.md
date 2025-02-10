@@ -98,44 +98,44 @@ Thu Sep  9 09:57:18 CEST 2021
 ## v1.0.0-rc1
 6 Feb 2021
 
-* [11cc896](https://github.com/hyperledger/fabric-private-chaincode/commit/11cc896) update references and typos
+* [11cc896](https://github.com/hyperledger/fabric-private-chaincode/commit/11cc896) Update references and typos
 * [2bddb79](https://github.com/hyperledger/fabric-private-chaincode/commit/2bddb79) Release v1.0-rc1
 * [6a4039a](https://github.com/hyperledger/fabric-private-chaincode/commit/6a4039a) Add lifecycle support to FPC client SDK (#522)
 * [cca8578](https://github.com/hyperledger/fabric-private-chaincode/commit/cca8578) Enable CI for Ubuntu 18.04 and 20.04 + fix READMEs (#532)
 * [c66d8f4](https://github.com/hyperledger/fabric-private-chaincode/commit/c66d8f4) Upgrade to Ubuntu 20.04 LTS (#531)
 * [c4afaef](https://github.com/hyperledger/fabric-private-chaincode/commit/c4afaef) Fix test-network inside dev container (#529)
 * [a9bf600](https://github.com/hyperledger/fabric-private-chaincode/commit/a9bf600) Export also docker configs to dev container
-* [7253c65](https://github.com/hyperledger/fabric-private-chaincode/commit/7253c65) fix bugs in additinoal-docker-pkg logic and make more uniform
+* [7253c65](https://github.com/hyperledger/fabric-private-chaincode/commit/7253c65) Fix bugs in additinoal-docker-pkg logic and make more uniform
 * [9367a6b](https://github.com/hyperledger/fabric-private-chaincode/commit/9367a6b) Add integration test using client sdk
 * [dfd06e6](https://github.com/hyperledger/fabric-private-chaincode/commit/dfd06e6) Replace Travis with Github Action (#525)
 * [6454ff3](https://github.com/hyperledger/fabric-private-chaincode/commit/6454ff3) Fix codeblocks in READMEs
 * [1d103d3](https://github.com/hyperledger/fabric-private-chaincode/commit/1d103d3) Fix goimports
-* [4fe1e46](https://github.com/hyperledger/fabric-private-chaincode/commit/4fe1e46) fixup! Fix golinter filter
+* [4fe1e46](https://github.com/hyperledger/fabric-private-chaincode/commit/4fe1e46) Fixup! Fix golinter filter
 * [4374cf4](https://github.com/hyperledger/fabric-private-chaincode/commit/4374cf4) Fix golinter filter
 * [59a3c72](https://github.com/hyperledger/fabric-private-chaincode/commit/59a3c72) Clarified wrong comment on SGX 20.04 support
 * [ff7d816](https://github.com/hyperledger/fabric-private-chaincode/commit/ff7d816) Some test-net tweaks
 * [6a70ad4](https://github.com/hyperledger/fabric-private-chaincode/commit/6a70ad4) Some refactoring
 * [0642172](https://github.com/hyperledger/fabric-private-chaincode/commit/0642172) FPC 1.0 Core team
 * [399c8ff](https://github.com/hyperledger/fabric-private-chaincode/commit/399c8ff) Docu update for FPC 1.0
-* [1ae121e](https://github.com/hyperledger/fabric-private-chaincode/commit/1ae121e) upgrade mock ecc to new message format; fix test-network mock test
-* [d61aef0](https://github.com/hyperledger/fabric-private-chaincode/commit/d61aef0) robust handling of constants; comments; use encrypt_message function; move get-request-from-proposal to proto utils
-* [ae16560](https://github.com/hyperledger/fabric-private-chaincode/commit/ae16560) enable chaincode request message consistency check
-* [496fbd7](https://github.com/hyperledger/fabric-private-chaincode/commit/496fbd7) enable message encryption
+* [1ae121e](https://github.com/hyperledger/fabric-private-chaincode/commit/1ae121e) Upgrade mock ecc to new message format; fix test-network mock test
+* [d61aef0](https://github.com/hyperledger/fabric-private-chaincode/commit/d61aef0) Robust handling of constants; comments; use encrypt_message function; move get-request-from-proposal to proto utils
+* [ae16560](https://github.com/hyperledger/fabric-private-chaincode/commit/ae16560) Enable chaincode request message consistency check
+* [496fbd7](https://github.com/hyperledger/fabric-private-chaincode/commit/496fbd7) Enable message encryption
 * [55430f7](https://github.com/hyperledger/fabric-private-chaincode/commit/55430f7) Fix (ancient) html syntax bug in github templates
 * [f669d16](https://github.com/hyperledger/fabric-private-chaincode/commit/f669d16) Make clang-format work in both ubuntus
 * [133b661](https://github.com/hyperledger/fabric-private-chaincode/commit/133b661) Bump to SGX SDK 2.12 and mention also Ubuntu 20.04
 * [dd597cb](https://github.com/hyperledger/fabric-private-chaincode/commit/dd597cb) Bump FABRIC_VERSION to 2.3.0
 * [002fbeb](https://github.com/hyperledger/fabric-private-chaincode/commit/002fbeb) Make client go sdk work with new response message
-* [50a54ea](https://github.com/hyperledger/fabric-private-chaincode/commit/50a54ea) support for digital signatures + integration tests work (again) (#501)
-* [e736015](https://github.com/hyperledger/fabric-private-chaincode/commit/e736015) bug fix for test-network
+* [50a54ea](https://github.com/hyperledger/fabric-private-chaincode/commit/50a54ea) Support for digital signatures + integration tests work (again) (#501)
+* [e736015](https://github.com/hyperledger/fabric-private-chaincode/commit/e736015) Bug fix for test-network
 * [94cbbaf](https://github.com/hyperledger/fabric-private-chaincode/commit/94cbbaf) Scripting improvement
 * [57f5c98](https://github.com/hyperledger/fabric-private-chaincode/commit/57f5c98) Uniform arg & base64 treatment in ecc/contract
 * [4b0864a](https://github.com/hyperledger/fabric-private-chaincode/commit/4b0864a) Peer cli assist for client request/response processing
 * [c5a0db0](https://github.com/hyperledger/fabric-private-chaincode/commit/c5a0db0) Make initEnclave work again and simplify attestation params
-* [3d8ae26](https://github.com/hyperledger/fabric-private-chaincode/commit/3d8ae26) uniform use of FPC_PATH as shell variable
+* [3d8ae26](https://github.com/hyperledger/fabric-private-chaincode/commit/3d8ae26) Uniform use of FPC_PATH as shell variable
 * [1c439a9](https://github.com/hyperledger/fabric-private-chaincode/commit/1c439a9) Test-net Update
 * [7ab9b27](https://github.com/hyperledger/fabric-private-chaincode/commit/7ab9b27) ERCC changes
-* [163d637](https://github.com/hyperledger/fabric-private-chaincode/commit/163d637) adding enclave id to response (#499)
+* [163d637](https://github.com/hyperledger/fabric-private-chaincode/commit/163d637) Adding enclave id to response (#499)
 * [7c1728b](https://github.com/hyperledger/fabric-private-chaincode/commit/7c1728b) Faster docker builds be preloading go downloads
 * [fbbea81](https://github.com/hyperledger/fabric-private-chaincode/commit/fbbea81) Support hw attestation params in client sdk
 * [347e596](https://github.com/hyperledger/fabric-private-chaincode/commit/347e596) Enforce proper attestation verification in HW mode
@@ -144,13 +144,13 @@ Thu Sep  9 09:57:18 CEST 2021
 * [2ad4810](https://github.com/hyperledger/fabric-private-chaincode/commit/2ad4810) Transition to request/reply protos inside enclave (#493)
 * [66b1e0d](https://github.com/hyperledger/fabric-private-chaincode/commit/66b1e0d) Convert all log to flogger
 * [5e9c726](https://github.com/hyperledger/fabric-private-chaincode/commit/5e9c726) Purge more stuff not necessary in FPC 1.0 (aka FPC Lite)
-* [8de6f7a](https://github.com/hyperledger/fabric-private-chaincode/commit/8de6f7a) enforce single enclave registation
-* [feb9931](https://github.com/hyperledger/fabric-private-chaincode/commit/feb9931) remove static debug encryption key
-* [bd296e9](https://github.com/hyperledger/fabric-private-chaincode/commit/bd296e9) state key gen + state encryption
-* [1a9a112](https://github.com/hyperledger/fabric-private-chaincode/commit/1a9a112) fixup! Peer Assistance Utility
-* [4a77930](https://github.com/hyperledger/fabric-private-chaincode/commit/4a77930) fix mrenclave hex encoding inconsistency
+* [8de6f7a](https://github.com/hyperledger/fabric-private-chaincode/commit/8de6f7a) Enforce single enclave registation
+* [feb9931](https://github.com/hyperledger/fabric-private-chaincode/commit/feb9931) Remove static debug encryption key
+* [bd296e9](https://github.com/hyperledger/fabric-private-chaincode/commit/bd296e9) State key gen + state encryption
+* [1a9a112](https://github.com/hyperledger/fabric-private-chaincode/commit/1a9a112) Fixup! Peer Assistance Utility
+* [4a77930](https://github.com/hyperledger/fabric-private-chaincode/commit/4a77930) Fix mrenclave hex encoding inconsistency
 * [dba6c37](https://github.com/hyperledger/fabric-private-chaincode/commit/dba6c37) Peer Assistance Utility
-* [89f489a](https://github.com/hyperledger/fabric-private-chaincode/commit/89f489a) chaincode ek message/flow merge (#472)
+* [89f489a](https://github.com/hyperledger/fabric-private-chaincode/commit/89f489a) Chaincode ek message/flow merge (#472)
 * [9fa01be](https://github.com/hyperledger/fabric-private-chaincode/commit/9fa01be) Cleanup + bug fix + re-enable (sim-mode only) integration tests (#475)
 * [50b5648](https://github.com/hyperledger/fabric-private-chaincode/commit/50b5648) Make fabric-samples work again and easier to use
 * [96798bc](https://github.com/hyperledger/fabric-private-chaincode/commit/96798bc) Fix Go refs for non-dockerized environments (#473)
@@ -159,12 +159,12 @@ Thu Sep  9 09:57:18 CEST 2021
 * [3310106](https://github.com/hyperledger/fabric-private-chaincode/commit/3310106) Bump highlight.js from 9.18.1 to 9.18.5 in /demo/client/frontend
 * [8fd9696](https://github.com/hyperledger/fabric-private-chaincode/commit/8fd9696) Godoc for SDK functions (#468)
 * [db2a80c](https://github.com/hyperledger/fabric-private-chaincode/commit/db2a80c) Fix license headers
-* [fa275ab](https://github.com/hyperledger/fabric-private-chaincode/commit/fa275ab) upgrade to nanopb 0.4.3
+* [fa275ab](https://github.com/hyperledger/fabric-private-chaincode/commit/fa275ab) Upgrade to nanopb 0.4.3
 * [a26eca9](https://github.com/hyperledger/fabric-private-chaincode/commit/a26eca9) Docker fixes for 20.04
-* [6a180c0](https://github.com/hyperledger/fabric-private-chaincode/commit/6a180c0) fixed small protocol inconsistency in diagram
+* [6a180c0](https://github.com/hyperledger/fabric-private-chaincode/commit/6a180c0) Fixed small protocol inconsistency in diagram
 * [57b6bbe](https://github.com/hyperledger/fabric-private-chaincode/commit/57b6bbe) Implement new validation flow (#458)
 * [c66ada0](https://github.com/hyperledger/fabric-private-chaincode/commit/c66ada0) Add FPC Lite restrictions to shim.h (#465)
-* [4db7275](https://github.com/hyperledger/fabric-private-chaincode/commit/4db7275) createenclave flow
+* [4db7275](https://github.com/hyperledger/fabric-private-chaincode/commit/4db7275) Createenclave flow
 * [ddfb651](https://github.com/hyperledger/fabric-private-chaincode/commit/ddfb651) Update Spec with FPC Lite variant (#457)
 * [c6c4186](https://github.com/hyperledger/fabric-private-chaincode/commit/c6c4186) Change flows and protobufs to reflect new enclave discovery
 * [812bfa5](https://github.com/hyperledger/fabric-private-chaincode/commit/812bfa5) Match styleguide for fpc protobufs
@@ -177,12 +177,12 @@ Thu Sep  9 09:57:18 CEST 2021
 * [189dac0](https://github.com/hyperledger/fabric-private-chaincode/commit/189dac0) Add fabric-sample/test-network (#451)
 * [b8a3ac6](https://github.com/hyperledger/fabric-private-chaincode/commit/b8a3ac6) tmp disable broken integration test and demo
 * [5a1eb8b](https://github.com/hyperledger/fabric-private-chaincode/commit/5a1eb8b) ERCC refactoring
-* [e913097](https://github.com/hyperledger/fabric-private-chaincode/commit/e913097) enable verify_evidence api in Go
-* [6024fdf](https://github.com/hyperledger/fabric-private-chaincode/commit/6024fdf) refactor go log
-* [3ccb152](https://github.com/hyperledger/fabric-private-chaincode/commit/3ccb152) move DO_DEBUG down in logging; set logging flags in cmakevariables
-* [b5bb701](https://github.com/hyperledger/fabric-private-chaincode/commit/b5bb701) set default logging function to puts
-* [f34810b](https://github.com/hyperledger/fabric-private-chaincode/commit/f34810b) make ecc_enclave use logging library, rather than its source code
-* [3092ee2](https://github.com/hyperledger/fabric-private-chaincode/commit/3092ee2) add comments on DO_* definitions and compile-time SGX_COMMON_CFLAGS
+* [e913097](https://github.com/hyperledger/fabric-private-chaincode/commit/e913097) Enable verify_evidence api in Go
+* [6024fdf](https://github.com/hyperledger/fabric-private-chaincode/commit/6024fdf) Refactor go log
+* [3ccb152](https://github.com/hyperledger/fabric-private-chaincode/commit/3ccb152) Move DO_DEBUG down in logging; set logging flags in cmakevariables
+* [b5bb701](https://github.com/hyperledger/fabric-private-chaincode/commit/b5bb701) Set default logging function to puts
+* [f34810b](https://github.com/hyperledger/fabric-private-chaincode/commit/f34810b) Make ecc_enclave use logging library, rather than its source code
+* [3092ee2](https://github.com/hyperledger/fabric-private-chaincode/commit/3092ee2) Add comments on DO_* definitions and compile-time SGX_COMMON_CFLAGS
 * [26a46c0](https://github.com/hyperledger/fabric-private-chaincode/commit/26a46c0) port crypto tests to new logging mechanism and re-enabled tests
 * [29d0c47](https://github.com/hyperledger/fabric-private-chaincode/commit/29d0c47) turn on new logging mechanism in Go ecc and tlcc
 * [c768107](https://github.com/hyperledger/fabric-private-chaincode/commit/c768107) logging as a common library + port ecc, tlcc
@@ -232,9 +232,9 @@ Thu Sep  9 09:57:18 CEST 2021
 2 Jul 2020
 
 * [adef1ae](https://github.com/hyperledger/fabric-private-chaincode/commit/adef1ae) Version Tech Preview first release to cr2.0.0.0
-* [da1a8c8](https://github.com/hyperledger/fabric-private-chaincode/commit/da1a8c8) update Tech Preview to README
+* [da1a8c8](https://github.com/hyperledger/fabric-private-chaincode/commit/da1a8c8) Update Tech Preview to README
 * [8aabda4](https://github.com/hyperledger/fabric-private-chaincode/commit/8aabda4) make getRegisteredUsers running again in demo ..
-* [1cd5ab1](https://github.com/hyperledger/fabric-private-chaincode/commit/1cd5ab1) no crypto tests on build
+* [1cd5ab1](https://github.com/hyperledger/fabric-private-chaincode/commit/1cd5ab1) No crypto tests on build
 * [2550f45](https://github.com/hyperledger/fabric-private-chaincode/commit/2550f45) run pdo tests in build
 * [7032371](https://github.com/hyperledger/fabric-private-chaincode/commit/7032371) add pkg-config to docker
 * [f2dfb5c](https://github.com/hyperledger/fabric-private-chaincode/commit/f2dfb5c) update to latest pdo
@@ -455,10 +455,10 @@ Thu Sep  9 09:57:18 CEST 2021
 * [2aebb1b](https://github.com/hyperledger/fabric-private-chaincode/commit/2aebb1b) * change argument handling to be closer to other shims  (WIP)   - replace marshal with GetStringArgs function   - hide json-argument encoding from client (i.e., client passes now args as     {"args": ["arg1", "arg2", ...]} rather than     {"args":["[\"arg1\", \"arg2\", ... ]"]} ...)   - simplify context handling (and strongly type now with shim_ctx_ptr_t     rather than void*)   - part of this also required chanegd enclave transaction processing     which is now a bit more uniform across the different implementations     in particular related to logging. It also required a new tlcc test case     Note, though, there is still an (already existing) signature validation     problem in tlcc, see issue #152, which for now is just made more explicit     by making tlcc_enclave tests verbose (as such errors show up only in log     but not in failing tests)
 * [a88dd71](https://github.com/hyperledger/fabric-private-chaincode/commit/a88dd71) Add link to Fabric maintainer presentation
 * [807c708](https://github.com/hyperledger/fabric-private-chaincode/commit/807c708) - add implementation of FPC-CC init() and augment auction_test correspondingly
-* [d6b126c](https://github.com/hyperledger/fabric-private-chaincode/commit/d6b126c) - more shim.h clean-up and completion   - get_creator_name implementation and "quick fix integration" into auction_test   - dropped chaincode.h   - per-used go & node shim and added a few other (still commented out)     functions which add additional semantics (rather than providing different     ways to do the same, i.e., syntactic sugaring) and which we might consider     to add eventually from completeness & conssitency perspective
+* [d6b126c](https://github.com/hyperledger/fabric-private-chaincode/commit/d6b126c) - more shim.h clean-up and completion   - get_creator_name implementation and "quick fix integration" into auction_test   - dropped chaincode.h - per-used go & node shim and added a few other (still commented out) functions which add additional semantics (rather than providing different ways to do the same, i.e., syntactic sugaring) and which we might consider to add eventually from completeness & consistency perspective.
 * [33dd164](https://github.com/hyperledger/fabric-private-chaincode/commit/33dd164) Added tutorial for first private chaincode (#142)
 * [a00b4b8](https://github.com/hyperledger/fabric-private-chaincode/commit/a00b4b8) Integration test fixes (#146)
-* [0269606](https://github.com/hyperledger/fabric-private-chaincode/commit/0269606) separate out shim internal definitions from shim.h and add function prototype for function chaincode has to implement
+* [0269606](https://github.com/hyperledger/fabric-private-chaincode/commit/0269606) Separate out shim internal definitions from shim.h and add function prototype for function chaincode has to implement.
 * [b3887d2](https://github.com/hyperledger/fabric-private-chaincode/commit/b3887d2) log-file+line-patch
 * [17f8a18](https://github.com/hyperledger/fabric-private-chaincode/commit/17f8a18) Fix broken tlcc config tx parser
 * [4cb41ed](https://github.com/hyperledger/fabric-private-chaincode/commit/4cb41ed) "fixed" tlcc_enclave ledger by - generalizing test.c for arbitrary number of blocks - write a getLedgerBlocks scripts to extract ledger blocks - integrated getLedgerBlocks in deployment_test.sh to use the later as a scenario generator for the blocks - above is exposed as target 'gen_testcases' in ./tlcc_enclave - Note: this doesn't really solve issue #143 as the test is not really testing much as in logs i see error but nothing causes the test to fail (not even an out-of-order block!) - also generalized/diversified deployment_test a bit
@@ -468,7 +468,7 @@ Thu Sep  9 09:57:18 CEST 2021
 * [c9a01ee](https://github.com/hyperledger/fabric-private-chaincode/commit/c9a01ee) Add link to contribution tutorial
 * [470c3ba](https://github.com/hyperledger/fabric-private-chaincode/commit/470c3ba) Remove obsolete fabric/sgxconfig
 * [44cea6c](https://github.com/hyperledger/fabric-private-chaincode/commit/44cea6c) Update documentation reflecting SDKization
-* [9910d3d](https://github.com/hyperledger/fabric-private-chaincode/commit/9910d3d) upgrade to fabric v1.4.2 & config upgrade from old release-1.3 version
+* [9910d3d](https://github.com/hyperledger/fabric-private-chaincode/commit/9910d3d) Upgrade to fabric v1.4.2 & config upgrade from old release-1.3 version
 * [c8bbdd1](https://github.com/hyperledger/fabric-private-chaincode/commit/c8bbdd1) doc update for plantuml dependencies, addressing issue #126
 * [bf79337](https://github.com/hyperledger/fabric-private-chaincode/commit/bf79337) Fix concurrency issue in registry (#122)
 * [d81f26d](https://github.com/hyperledger/fabric-private-chaincode/commit/d81f26d) Wrapper script and libraries improvements * make peer a bit more robust and more complete * handle also chaincode upgrade & chaincode list * additional utility scripts * fix bug in common_ledger.sh / precond_test to handle case where ledger state directory is used first time during ledger_init * some other minor cleanup
@@ -500,7 +500,7 @@ Thu Sep  9 09:57:18 CEST 2021
 * [8385626](https://github.com/hyperledger/fabric-private-chaincode/commit/8385626) Rename project to Fabric Private Chaincode (#59)
 * [73f34e0](https://github.com/hyperledger/fabric-private-chaincode/commit/73f34e0) Adopt Fabric's CoC and contribution guidelines (#60)
 * [4737862](https://github.com/hyperledger/fabric-private-chaincode/commit/4737862) One make to rule them all. (#52)
-* [c9bb368](https://github.com/hyperledger/fabric-private-chaincode/commit/c9bb368) - convert to new IAS authentication from specification release 5.0 - build and typo fix for selection of linkability patch
+* [c9bb368](https://github.com/hyperledger/fabric-private-chaincode/commit/c9bb368) Convert to new IAS authentication from specification release 5.0 - build and typo fix for selection of linkability patch
 * [87fcae8](https://github.com/hyperledger/fabric-private-chaincode/commit/87fcae8) Fixing typos (#46)
 * [9ddf14b](https://github.com/hyperledger/fabric-private-chaincode/commit/9ddf14b) user-defined sgx attestation type
 * [5ca2ad1](https://github.com/hyperledger/fabric-private-chaincode/commit/5ca2ad1) fix "Public key not valid (Point not on curve)" error
@@ -524,7 +524,7 @@ Thu Sep  9 09:57:18 CEST 2021
 * [5e96aa9](https://github.com/hyperledger/fabric-private-chaincode/commit/5e96aa9) Update to SGX SDK v2.4
 * [ffba4d4](https://github.com/hyperledger/fabric-private-chaincode/commit/ffba4d4) update custom validation to fabric 1.4
 * [04db993](https://github.com/hyperledger/fabric-private-chaincode/commit/04db993) update nanopb
-* [3c35c42](https://github.com/hyperledger/fabric-private-chaincode/commit/3c35c42) update fabric config
+* [3c35c42](https://github.com/hyperledger/fabric-private-chaincode/commit/3c35c42) update fabric configuration
 * [af35928](https://github.com/hyperledger/fabric-private-chaincode/commit/af35928) Upgrade to Fabric v1.4
 
 ## fabric_v1.2
