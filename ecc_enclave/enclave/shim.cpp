@@ -192,7 +192,17 @@ int unmarshal_values(
     {
         JSON_Object* pair = json_array_get_object(pairs, i);
         const char* key = json_object_get_string(pair, "key");
+        if (key == NULL)
+        {
+            LOG_ERROR("Shim: Cannot parse json: key does not exists");
+            return -1;
+        }
         const char* b64value = json_object_get_string(pair, "value");
+        if (b64value == NULL)
+        {
+            LOG_ERROR("Shim: Cannot parse json: value does not exist");
+            return -1;
+        }
         std::string value = base64_decode(b64value);
         values.insert({key, value});
     }
