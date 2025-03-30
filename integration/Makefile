@@ -7,7 +7,7 @@ include $(TOP)/build.mk
 
 all: test
 
-test: auction_test echo_test kv_test deployment_test client_sdk_test stress_test ecc_go_test
+test: auction_test echo_test kv_test deployment_test client_sdk_test stress_test ecc_go_test crash_test
 
 auction_test:
 	./auction_test.sh
@@ -29,3 +29,6 @@ stress_test:
 
 ecc_go_test:
 	$(MAKE) -C go_chaincode
+
+crash_test:
+	$(MAKE) -C crashtest
