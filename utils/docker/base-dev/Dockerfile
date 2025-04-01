@@ -26,7 +26,7 @@ ARG NANOPB_VERSION=0.4.7
 ARG OPENSSL_VERSION=3.0.12
 ARG SGXSSL_VERSION=3.0_Rev1
 ARG APT_ADD_PKGS=
-ARG EGO_VERSION=1.5.3
+ARG EGO_VERSION=1.7.0
 
 # for convenience remember all versions as env variables ..
 ENV GO_VERSION=${GO_VERSION}
@@ -39,32 +39,32 @@ ENV DEBIAN_FRONTEND "noninteractive"
 WORKDIR /tmp
 
 RUN apt-get update -q \
-    && apt-get install -y -q \
-    build-essential \
-    clang-format \
-    cmake \
-    git \
-    libcurl4-openssl-dev \
-    libprotobuf-dev \
-    libssl-dev \
-    libtool \
-    pkg-config \
-    python-is-python3 \
-    protobuf-compiler \
-    python3-protobuf \
-    psmisc \
-    bc \
-    software-properties-common \
-    ${APT_ADD_PKGS}
+  && apt-get install -y -q \
+  build-essential \
+  clang-format \
+  cmake \
+  git \
+  libcurl4-openssl-dev \
+  libprotobuf-dev \
+  libssl-dev \
+  libtool \
+  pkg-config \
+  python-is-python3 \
+  protobuf-compiler \
+  python3-protobuf \
+  psmisc \
+  bc \
+  software-properties-common \
+  ${APT_ADD_PKGS}
 
 # docker commands (need as we use docker daemon from "outside")
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
   && add-apt-repository "deb [arch="$(dpkg --print-architecture)"] https://download.docker.com/linux/ubuntu "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" \
   && apt-get update -q \
   && apt-get install -y -q \
-    docker-ce-cli \
-    docker-buildx-plugin \
-    docker-compose-plugin
+  docker-ce-cli \
+  docker-buildx-plugin \
+  docker-compose-plugin
 
 # Install go
 ENV GOROOT=/usr/local/go
