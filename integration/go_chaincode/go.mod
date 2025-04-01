@@ -1,6 +1,6 @@
 module github.com/hyperledger/fabric-private-chaincode/integration/go_chaincode
 
-go 1.21
+go 1.23.5
 
 replace (
 	github.com/btcsuite/btcd v0.23.4 => github.com/btcsuite/btcd v0.22.1
