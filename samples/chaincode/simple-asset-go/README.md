@@ -161,7 +161,7 @@ Create a `Makefile` (i.e., `touch $FPC_PATH/samples/chaincode/simple-asset-go/Ma
 TOP = ../../..
 include $(TOP)/ecc_go/build.mk
 
-CC_NAME ?= simple-asset-go
+CC_NAME ?= fpc-simple-asset-go
 ```
 
 Please make sure that in the file above the variable `TOP` points to the FPC root directory (i.e., `$FPC_PATH`).
@@ -198,7 +198,7 @@ cd $FPC_PATH/samples/deployment/test-network
 git clone https://github.com/hyperledger/fabric-samples
 cd $FPC_PATH/samples/deployment/test-network/fabric-samples
 # no we pick a specific version here to have stable experience :)
-git checkout -b "works" 98028c7
+git checkout -b "works" 50b69f6
 curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.5.9 1.5.12 -s
 cd $FPC_PATH/samples/deployment/test-network
 ./setup.sh
@@ -226,14 +226,12 @@ cd $FPC_PATH/samples/deployment/test-network
 ./installFPC.sh
 ```
 
-Note that the `installFPC.sh` script returns an export statement you need to copy and paste in the terminal.
-This sets environment variables for the package IDs for each chaincode container.
 Continue by running:
 ```bash
 make ercc-ecc-start
 ```
 
-You should see now four containers running (i.e., `simple-asset-go.peer0.org1`, `simple-asset-go.peer0.org2`, `ercc.peer0.org1`, and `ercc.peer0.org2`). 
+You should see now four containers running (i.e., `peer0org1_simple-asset-go_ccaas`, `peer0org2_simple-asset-go_ccaas`, `peer0org1_ercc_ccaas`, and `peer0org2_ercc_ccaas`). 
 
 ### Invoke simple asset
 Open a new terminal and connect to the `fpc-development-go-support` container by running
@@ -256,6 +254,7 @@ export CHANNEL_NAME=mychannel
 export CORE_PEER_ADDRESS=localhost:7051
 export CORE_PEER_ID=peer0.org1.example.com
 export CORE_PEER_LOCALMSPID=Org1MSP
+export CORE_PEER_ORG_NAME=org1
 export CORE_PEER_MSPCONFIGPATH=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
 export CORE_PEER_TLS_CERT_FILE=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt
 export CORE_PEER_TLS_ENABLED="true"
