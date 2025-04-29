@@ -23,8 +23,7 @@ func main() {
 
 	// create chaincode
 	secretChaincode, _ := contractapi.NewChaincode(&chaincode.SecretKeeper{})
-	// chaincode := fpc.NewPrivateChaincode(secretChaincode)
-	skvsChaincode := fpc.NewSkvsChaincode(secretChaincode)
+	skvsChaincode := fpc.NewPrivateChaincode(secretChaincode, fpc.WithSKVS())
 
 	// start chaincode as a service
 	server := &shim.ChaincodeServer{
