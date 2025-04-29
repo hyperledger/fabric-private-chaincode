@@ -78,7 +78,7 @@ jobs:
       #
       - name: Login to the ${{ env.DOCKER_REGISTRY }} Container Registry
         if: env.PUSH_TO_MAIN == 'true' && steps.filter.outputs.docker == 'true'
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.DOCKER_REGISTRY }}
           username: ${{ github.actor }}
