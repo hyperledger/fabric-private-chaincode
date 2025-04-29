@@ -62,22 +62,18 @@ func (s *SkvsStubInterface) InitSKVS() error {
 		}
 	}
 
-	logger.Warningf("SKVS Init finish, allDataOld: %s, allDataNew: %s", s.allDataOld, s.allDataNew)
 	return nil
 }
 
 func (s *SkvsStubInterface) GetState(key string) ([]byte, error) {
-	logger.Warningf("Calling Get State (Start), key: %s, alldataOld: %s", key, s.allDataOld)
 	value, found := s.allDataOld[key]
 	if !found {
 		return nil, errors.New("skvs allDataOld key not found")
 	}
-	logger.Warningf("Calling Get State (End), key: %s, value: %x", key, value)
 	return value, nil
 }
 
 func (s *SkvsStubInterface) PutState(key string, value []byte) error {
-	logger.Warningf("Calling Put State (Start), key: %s, value: %x, alldata: %s", key, value, s.allDataNew)
 
 	s.allDataNew[key] = value
 	byteAllData, err := json.Marshal(s.allDataNew)
@@ -88,7 +84,6 @@ func (s *SkvsStubInterface) PutState(key string, value []byte) error {
 	if err != nil {
 		return err
 	}
-	logger.Warningf("Calling Put State (End), put encValue: %x", encValue)
 
 	return s.PutPublicState(s.key, encValue)
 }
