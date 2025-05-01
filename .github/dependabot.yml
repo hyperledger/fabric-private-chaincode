@@ -5,10 +5,23 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      actions-deps:
+        patterns:
+          - "*"
 
   - package-ecosystem: "gomod"
-    directory: "/"
+    directories:
+      - "**/*"
     allow:
       - dependency-type: all
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "github.com/hyperledger/fabric*"
+      - dependency-name: "github.com/hyperledger-labs/fabric*"
+    groups:
+      all-deps:
+        update-types:
+          - minor
+          - patch
