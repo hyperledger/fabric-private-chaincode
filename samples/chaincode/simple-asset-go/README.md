@@ -161,7 +161,7 @@ Create a `Makefile` (i.e., `touch $FPC_PATH/samples/chaincode/simple-asset-go/Ma
 TOP = ../../..
 include $(TOP)/ecc_go/build.mk
 
-CC_NAME ?= fpc-simple-asset-go
+CC_NAME ?= simple-asset-go
 ```
 
 Please make sure that in the file above the variable `TOP` points to the FPC root directory (i.e., `$FPC_PATH`).
@@ -171,7 +171,7 @@ In `$FPC_PATH/samples/chaincode/simple-asset-go` directory, to build the chainco
 make
 ```
 
-After building, you can check that the `fpc/fpc-simple-asset-go` image exists in your local docker registry using:
+After building, you can check that the `fpc/simple-asset-go` image exists in your local docker registry using:
 ```bash
 docker images | grep simple-asset-go
 ```
@@ -234,9 +234,9 @@ make ercc-ecc-start
 You should see now four containers running (i.e., `peer0org1_simple-asset-go_ccaas`, `peer0org2_simple-asset-go_ccaas`, `peer0org1_ercc_ccaas`, and `peer0org2_ercc_ccaas`). 
 
 ### Invoke simple asset
-Open a new terminal and connect to the `fpc-development-go-support` container by running
+Open a new terminal and connect to the `fpc-development-main` container by running
  ```bash
-docker exec -it fpc-development-go-support /bin/bash
+docker exec -it fpc-development-main /bin/bash
 ```
 
 ```bash
@@ -249,7 +249,7 @@ cd $FPC_PATH/samples/application/simple-cli-go
 make
 
 # export fpcclient settings
-export CC_NAME=simple-asset-go
+export CC_ID=simple-asset-go
 export CHANNEL_NAME=mychannel
 export CORE_PEER_ADDRESS=localhost:7051
 export CORE_PEER_ID=peer0.org1.example.com

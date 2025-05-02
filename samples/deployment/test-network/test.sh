@@ -54,7 +54,7 @@ function test_deploy() {
   GOOS=linux make -C "$FPC_PATH/ercc" build docker
 
   # build fpc chaincode
-  GOOS=linux CC_NAME=fpc-$CC_ID make -C "$CC_PATH" with_go docker
+  GOOS=linux CC_NAME=$CC_ID make -C "$CC_PATH" with_go docker
 
   local ccver
   ccver=$(cat "$CC_PATH/mrenclave")
@@ -105,7 +105,7 @@ function test_simple_cli() {
   cd "$FPC_PATH/samples/application/simple-cli-go"
   make
 
-  export CC_NAME=$CC_ID
+  export CC_ID=$CC_ID
   export CHANNEL_NAME=$CHANNEL_NAME
   export CORE_PEER_ADDRESS=localhost:7051
   export CORE_PEER_ID=peer0.org1.example.com

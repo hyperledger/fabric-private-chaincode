@@ -31,7 +31,7 @@ docker system prune
 sleep 5
 
 cd $FPC_PATH/samples/chaincode/cc-tools-demo/
-export CC_NAME=fpc-cc-tools-demo
+export CC_NAME=cc-tools-demo
 make
 
 # - run docker images | grep fpc-cc-tools-demo to make sure of the image 
@@ -67,7 +67,7 @@ cd $FPC_PATH/samples/application/simple-cli-go
 make
 
 # export fpcclient settings
-export CC_NAME=cc-tools-demo
+export CC_ID=cc-tools-demo
 export CHANNEL_NAME=mychannel
 export CORE_PEER_ADDRESS=localhost:7051
 export CORE_PEER_ID=peer0.org1.example.com

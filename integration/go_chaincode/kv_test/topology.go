@@ -22,7 +22,7 @@ import (
 
 const (
 	ChaincodeName      = "kv-test"
-	ChaincodeImageName = "fpc/fpc-kv-test-go"
+	ChaincodeImageName = "fpc/kv-test-go"
 	ChaincodeImageTag  = "latest"
 )
 

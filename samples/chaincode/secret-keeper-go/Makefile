@@ -5,7 +5,7 @@
 
 TOP = ../../..
 
-CC_NAME ?= fpc-secret-keeper-go
+CC_NAME ?= secret-keeper-go
 
 # Define paths for cmd subdirectories
 DEFAULT= cmd/naive/main.go

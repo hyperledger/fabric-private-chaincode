@@ -16,5 +16,6 @@ DOCKER_BUILD_OPTS += --no-cache
 docker:
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
     	-t fpc/fpcclient:$(FPC_VERSION) \
+		-t fpc/fpcclient:latest \
     	-f Dockerfile \
     	.

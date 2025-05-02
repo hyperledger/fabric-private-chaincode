@@ -7,7 +7,7 @@ services:
   #  org1
   ecc.peer0.org1.example.com:
     container_name: peer0org1_${CC_ID}_ccaas
-    image: fpc/fpc-${CC_ID}${HW_EXTENSION:-}:${FPC_VERSION}
+    image: fpc/${CC_ID}${HW_EXTENSION:-}:${FPC_VERSION}
     environment:
       - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
       - CHAINCODE_PKG_ID=${ORG1_ECC_PKG_ID}
@@ -35,7 +35,7 @@ services:
   # org2
   ecc.peer0.org2.example.com:
     container_name: peer0org2_${CC_ID}_ccaas
-    image: fpc/fpc-${CC_ID}${HW_EXTENSION:-}:${FPC_VERSION}
+    image: fpc/${CC_ID}${HW_EXTENSION:-}:${FPC_VERSION}
     environment:
       - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
       - CHAINCODE_PKG_ID=${ORG2_ECC_PKG_ID}

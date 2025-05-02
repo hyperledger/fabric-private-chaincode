@@ -27,7 +27,7 @@ fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
 In order to build the chaincode, we will use the tools provided by FPC.
 Note that you can use the FPC docker-based development environment.
 
-Set `CC_NAME ?= fpc-basic-asset-transfer` inside the `Makefile`.
+Set `CC_NAME ?= basic-asset-transfer` inside the `Makefile`.
 
 ```bash
 make
