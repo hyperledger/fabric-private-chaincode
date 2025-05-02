@@ -16,7 +16,8 @@ make -C $FPC_PATH/ercc all docker
 
 Build the kv-test-go chaincode:
 ```bash
-export CC_NAME=kv-test-go
+#USE TO BE CC_NAME
+export CC_ID=kv-test-go
 export CC_PATH=$FPC_PATH/samples/chaincode/kv-test-go
 make -C $CC_PATH build docker
 export FPC_CHAINCODE_IMAGE=fpc/kv-test-go
@@ -58,7 +59,7 @@ cd $FPC_PATH/samples/application/simple-cli-go
 make
 
 # Run the following script and source the resulting environment variables
-export CC_NAME=kv-test-go
+export CC_ID=kv-test-go
 $FPC_PATH/samples/deployment/fabric-smart-client/the-simple-testing-network/env.sh Org1
 source Org1.env
 
