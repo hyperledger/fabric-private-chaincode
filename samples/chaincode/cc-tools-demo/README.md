@@ -157,7 +157,7 @@ Create a `Makefile` (i.e., `touch $FPC_PATH/samples/chaincode/cc-tools-demo/Make
 TOP = ../../..
 include $(TOP)/ecc_go/build.mk
 
-CC_NAME ?= fpc-cc-tools-demo
+CC_NAME ?= cc-tools-demo
 
 EGO_CONFIG_FILE = $(FPC_PATH)/samples/chaincode/cc-tools-demo/ccToolsDemoEnclave.json
 ECC_MAIN_FILES=$(FPC_PATH)/samples/chaincode/cc-tools-demo
@@ -200,10 +200,10 @@ Edit the file of the error `$FPC_PATH/samples/chaincode/cc-tools-demo/vendor/git
 
 ```
 
-After building again, you can check that the `fpc/fpc-cc-tools-demo` image exists in your local docker registry using:
+After building again, you can check that the `fpc/cc-tools-demo` image exists in your local docker registry using:
 
 ```bash
-docker images | grep fpc-cc-tools-demo
+docker images | grep cc-tools-demo
 ```
 
 ## Time to test!
@@ -288,7 +288,7 @@ cd $FPC_PATH/samples/application/simple-cli-go
 make
 
 # export fpcclient settings
-export CC_NAME=cc-tools-demo
+export CC_ID=cc-tools-demo
 export CHANNEL_NAME=mychannel
 export CORE_PEER_ADDRESS=localhost:7051
 export CORE_PEER_ID=peer0.org1.example.com

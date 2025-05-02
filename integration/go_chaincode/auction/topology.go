@@ -24,7 +24,7 @@ import (
 
 const (
 	ChaincodeName      = "auction"
-	ChaincodeImageName = "fpc/fpc-auction-go"
+	ChaincodeImageName = "fpc/auction-go"
 	ChaincodeImageTag  = "latest"
 )
 

@@ -31,7 +31,7 @@ make -C $FPC_PATH/utils/docker pull
 make -C $FPC_PATH/utils/docker build
 ```
 
-Then we build the FPC components including the FPC Enclave Registry docker image.
+Then, once we are in the FPC dev environment, we build the FPC components including the FPC Enclave Registry docker image.
 ```bash
 make -C $FPC_PATH build
 make -C $FPC_PATH/ercc docker
@@ -70,7 +70,10 @@ Note that this commands create a docker image with the name `fpc/fpcclient`.
 
 ## Minikube on Mac
 
-This tutorial is heavily inspired by the article [How to implement Hyperledger Fabric External Chaincodes within a Kubernetes cluster](https://medium.com/swlh/how-to-implement-hyperledger-fabric-external-chaincodes-within-a-kubernetes-cluster-fd01d7544523) by Pau Aragonès Sabaté. Thank you!
+For the following steps you do not need to be in the FPC dev environment. This tutorial is heavily inspired by the article [How to implement Hyperledger Fabric External Chaincodes within a Kubernetes cluster](https://medium.com/swlh/how-to-implement-hyperledger-fabric-external-chaincodes-within-a-kubernetes-cluster-fd01d7544523) by Pau Aragonès Sabaté. Thank you!
+
+Note:
+You might run into issues if your Mac has an M1 processor or above. If you install minikube using brew it might detect your environment as amd64 and not arm64, install the arm64 binaries. Another point is that if you have set DOCKER_DEFAULT_PLATFORM=linux/amd64 that will also generate errors. Set it in the terminal to linux/arm64 and your minikube/docker environment should start.
 
 ### Start minikube
 
@@ -132,6 +135,7 @@ Use the `generate.sh` script to create the crypto material for the peer organiza
 script create the genesis block, the client connection profiles, and packages the FPC Chaincode and the FPC Enclave Registry.
 ```bash
 cd $FPC_PATH/samples/deployment/k8s
+export TEST_CC_PATH=$FPC_PATH/samples/chaincode/echo
 ./generate.sh
 ````
 
@@ -220,7 +224,7 @@ Note that the `core.yaml` we have already loaded in the configmap contains the n
 For each Org:
 ```bash
 # copy cli_orgX pod name from above and enter container
-kubectl exec -it cli_orgX_pod_name bash -n hyperledge
+kubectl exec -it cli_orgX_pod_name bash -n hyperledger
 
 # for all peers of orgX we install ercc and fpccc
 export ERCC=ercc-peer0-$ORG; export FPCCC=fpccc-peer0-$ORG
@@ -308,7 +312,7 @@ Alternatively, you can also run `just run fpcclient-org1` to enter the container
 kubectl delete --all all --namespace=hyperledger
 ```
 
-Alternatively, you can also call `just down`.
+Alternatively, you can also call `just down`. If you plan on restarting the environment it is best that you also run `minikube ssh -- sudo rm -rf /tmp/storage`. 
 
 
 ## Troubleshooting

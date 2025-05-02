@@ -6,4 +6,4 @@
 TOP = ../../..
 include $(TOP)/ecc_go/build.mk
 
-CC_NAME ?= fpc-echo-go
+CC_NAME ?= echo-go

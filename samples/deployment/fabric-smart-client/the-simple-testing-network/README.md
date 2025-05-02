@@ -38,7 +38,7 @@ make run
 go run . network start --path ./testdata
 ```
 Once the network is up and running, use a second terminal to interact with the network.
-Uou can shut down the network using `CTRL+C`.
+You can shut down the network using `CTRL+C`.
 
 To clean up the network you can run `make clean` or `go run . network clean --path ./testdata`.
 
@@ -58,7 +58,7 @@ cd $FPC_PATH/samples/application/simple-cli-go
 make
 
 # Run the following script and source the resulting environment variables
-export CC_NAME=kv-test-go
+export CC_ID=kv-test-go
 $FPC_PATH/samples/deployment/fabric-smart-client/the-simple-testing-network/env.sh Org1
 source Org1.env
 
@@ -75,7 +75,10 @@ You can switch the user by running `./env.sh` either with `Org1` or `Org2`.
 
 The test network includes a Hyperledger Blockchain explorer that you can use to see what is happening on the network.
 By default, you can reach the Blockchain Explorer Dashboard via your browser on `http://localhost:8080` with username `admin` and password `admin`.
-
+You can disable adding it by setting the `BE_INSTALL` environment variable to `NO`.
+```bash
+export BE_INSTALL=NO
+```
 
 ### Troubleshooting
 

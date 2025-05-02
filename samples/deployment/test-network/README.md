@@ -25,12 +25,12 @@ Note that we export `CC_ID`, `CC_NAME`, and `CC_VER` variables, which we will ne
 
 ```bash
 export CC_ID=echo-go
-export CC_NAME=fpc-echo-go
+export CC_NAME=echo-go
 make -C $FPC_PATH/samples/chaincode/echo-go build docker
 export CC_VER=$(cat $FPC_PATH/samples/chaincode/echo-go/mrenclave)
 ```
 
-Please verify that the `fpc/fpc-echo-go` image exists using `docker images | grep fpc-echo-go`.
+Please verify that the `fpc/echo-go` image exists using `docker images | grep echo-go`.
 
 Finally, make sure you have the FPC Enclave Registry container image already build (see the main [README](../../../README.md)), otherwise you can build it as follows:
 
@@ -156,7 +156,7 @@ cd $FPC_PATH/samples/application/simple-cli-go
 make
 
 # export fpcclient settings
-export CC_NAME=echo-go
+export CC_ID=echo-go
 export CHANNEL_NAME=mychannel
 export CORE_PEER_ADDRESS=localhost:7051
 export CORE_PEER_ID=peer0.org1.example.com
@@ -198,7 +198,7 @@ To do so you have to build the chaincode as follows:
 
 ```bash
 export CC_ID=helloworld
-export CC_NAME=fpc-helloworld
+export CC_NAME=helloworld
 make -C $FPC_PATH/samples/chaincode/helloworld build docker
 export CC_VER=$(cat $FPC_PATH/samples/chaincode/helloworld/_build/lib/mrenclave)
 ```

@@ -20,10 +20,11 @@ import (
 
 const (
 	defaultChaincodeName      = "kv-test-go"
-	defaultChaincodeImageName = "fpc/fpc-kv-test-go"
+	defaultChaincodeImageName = "fpc/kv-test-go"
 	defaultChaincodeImageTag  = "latest"
 	defaultChaincodeMRENCLAVE = "fakeMRENCLAVE"
 	defaultLoggingSpec        = "info"
+	defaultBlockchainExplorer = "YES"
 )
 
 func Fabric() []api.Topology {
@@ -41,16 +42,18 @@ func Fabric() []api.Topology {
 	// bring hyperledger explorer into the game
 	// you can reach it http://localhost:8080 with admin:admin
 	monitoringTopology := monitoring.NewTopology()
-	monitoringTopology.EnableHyperledgerExplorer()
-
+	if config.blockchainExplorer == "YES" {
+		monitoringTopology.EnableHyperledgerExplorer()
+	}
 	return []api.Topology{fabricTopology, fsc.NewTopology(), monitoringTopology}
 }
 
 type config struct {
-	loggingSpec    string
-	chaincodeName  string
-	chaincodeImage string
-	fpcOptions     []func(chaincode *topology.ChannelChaincode)
+	loggingSpec        string
+	chaincodeName      string
+	chaincodeImage     string
+	blockchainExplorer string
+	fpcOptions         []func(chaincode *topology.ChannelChaincode)
 }
 
 // setup prepares a config helper struct, containing some additional configuration that can be injected via environment variables
@@ -69,10 +72,16 @@ func setup() *config {
 		config.chaincodeName = defaultChaincodeName
 	}
 
-	// export FPC_CHAINCODE_IMAGE=fpc/fpc-kv-test-go:latest
+	// export FPC_CHAINCODE_IMAGE=fpc/kv-test-go:latest
 	config.chaincodeImage = os.Getenv("FPC_CHAINCODE_IMAGE")
 	if len(config.chaincodeImage) == 0 {
 		config.chaincodeImage = fmt.Sprintf("%s:%s", defaultChaincodeImageName, defaultChaincodeImageTag)
+	}
+
+	// export BE_INSTALL=YES or NO
+	config.blockchainExplorer = os.Getenv("BE_INSTALL")
+	if len(config.blockchainExplorer) == 0 {
+		config.blockchainExplorer = defaultBlockchainExplorer
 	}
 
 	// get mrenclave

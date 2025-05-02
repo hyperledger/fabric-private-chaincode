@@ -122,8 +122,8 @@ Here provide a collection of useful developer notes which may help you while dev
 ### Kill hanging containers
 
 ```bash
-docker kill $(docker ps -a -q --filter ancestor=fpc/ercc --filter ancestor=fpc/fpc-auction-go)
-docker rm $(docker ps -a -q --filter ancestor=fpc/ercc --filter ancestor=fpc/fpc-auction-go)
+docker kill $(docker ps -a -q --filter ancestor=fpc/ercc --filter ancestor=fpc/auction-go)
+docker rm $(docker ps -a -q --filter ancestor=fpc/ercc --filter ancestor=fpc/auction-go)
 ```
 
 More to come ...
