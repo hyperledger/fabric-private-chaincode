@@ -234,9 +234,9 @@ make ercc-ecc-start
 You should see now four containers running (i.e., `peer0org1_simple-asset-go_ccaas`, `peer0org2_simple-asset-go_ccaas`, `peer0org1_ercc_ccaas`, and `peer0org2_ercc_ccaas`). 
 
 ### Invoke simple asset
-Open a new terminal and connect to the `fpc-development-go-support` container by running
+Open a new terminal and connect to the `fpc-development-main` container by running
  ```bash
-docker exec -it fpc-development-go-support /bin/bash
+docker exec -it fpc-development-main /bin/bash
 ```
 
 ```bash

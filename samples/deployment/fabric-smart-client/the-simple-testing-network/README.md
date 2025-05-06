@@ -16,8 +16,7 @@ make -C $FPC_PATH/ercc all docker
 
 Build the kv-test-go chaincode:
 ```bash
-#USE TO BE CC_NAME
-export CC_ID=kv-test-go
+export CC_NAME=fpc-kv-test-go
 export CC_PATH=$FPC_PATH/samples/chaincode/kv-test-go
 make -C $CC_PATH build docker
 export FPC_CHAINCODE_IMAGE=fpc/kv-test-go
