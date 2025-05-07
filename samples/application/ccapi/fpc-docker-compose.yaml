@@ -19,7 +19,7 @@ services:
       - ORG=org1
       - DOMAIN=example.com
       - CHANNEL=mychannel
-      - CCID=cc-tools-demo
+      - CCNAME=cc-tools-demo
       - FABRIC_GATEWAY_ENDPOINT=peer0.org1.example.com:7051
       - FABRIC_GATEWAY_NAME=peer0.org1.example.com
       - GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn
@@ -59,7 +59,7 @@ services:
       - ORG=org2
       - DOMAIN=example.com
       - CHANNEL=mychannel
-      - CCID=cc-tools-demo
+      - CCNAME=cc-tools-demo
       - FABRIC_GATEWAY_ENDPOINT=peer0.org2.example.com:9051
       - FABRIC_GATEWAY_NAME=peer0.org2.example.com
       - GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn

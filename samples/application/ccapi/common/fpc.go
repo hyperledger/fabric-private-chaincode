@@ -50,7 +50,7 @@ func InitFpcConfig() {
 		CorePeerTLSKeyFile:      getStrEnv("CORE_PEER_TLS_KEY_FILE"),
 		CorePeerTLSRootCertFile: getStrEnv("CORE_PEER_TLS_ROOTCERT_FILE"),
 		OrdererCA:               getStrEnv("ORDERER_CA"),
-		ChaincodeId:             getStrEnv("CCID"),
+		ChaincodeId:             getStrEnv("CCNAME"),
 		ChannelId:               getStrEnv("CHANNEL"),
 		GatewayConfigPath:       getStrEnv("GATEWAY_CONFIG"),
 	}
