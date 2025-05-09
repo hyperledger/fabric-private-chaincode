@@ -156,7 +156,7 @@ cd $FPC_PATH/samples/application/simple-cli-go
 make
 
 # export fpcclient settings
-export CC_NAME=echo-go
+export CC_ID=echo-go
 export CHANNEL_NAME=mychannel
 export CORE_PEER_ADDRESS=localhost:7051
 export CORE_PEER_ID=peer0.org1.example.com
