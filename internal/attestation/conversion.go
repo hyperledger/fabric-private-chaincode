@@ -11,12 +11,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/epid"
 	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/simulation"
 	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/types"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
-	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/pkg/errors"
 )
 

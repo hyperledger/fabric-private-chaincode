@@ -16,7 +16,7 @@ import (
 	"unsafe"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
-	"github.com/hyperledger/fabric/common/flogging"
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/hyperledger/fabric/protoutil"
 	"golang.org/x/sync/semaphore"
 )
