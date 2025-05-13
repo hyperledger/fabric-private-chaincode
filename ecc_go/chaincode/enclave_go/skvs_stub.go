@@ -12,7 +12,6 @@ import (
 )
 
 func NewSkvsStub(cc shim.Chaincode) *EnclaveStub {
-	logger.Warning("==== SKVS NewSkvsStub ====")
 	enclaveStub := NewEnclaveStub(cc)
 	enclaveStub.stubProvider = func(stub shim.ChaincodeStubInterface, input *pb.ChaincodeInput, rwset *readWriteSet, sep StateEncryptionFunctions) shim.ChaincodeStubInterface {
 		return NewSkvsStubInterface(stub, input, rwset, sep)
