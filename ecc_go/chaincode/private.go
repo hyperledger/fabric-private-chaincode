@@ -19,7 +19,7 @@ type BuildOption func(*chaincode.EnclaveChaincode, shim.Chaincode)
 // NewPrivateChaincode creates a new chaincode! This is for go support only!!!
 func NewPrivateChaincode(cc shim.Chaincode, options ...BuildOption) *chaincode.EnclaveChaincode {
 	ecc := &chaincode.EnclaveChaincode{
-		Enclave:   enclave_go.NewSkvsStub(cc),
+		Enclave:   enclave_go.NewEnclaveStub(cc),
 		Validator: endorsement.NewValidator(),
 		Extractor: &chaincode.ExtractorImpl{},
 		Ercc:      &ercc.StubImpl{},

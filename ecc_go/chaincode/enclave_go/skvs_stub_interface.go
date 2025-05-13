@@ -14,6 +14,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+const SKVSKey = "SKVS"
+
 type SkvsStubInterface struct {
 	*FpcStubInterface
 	allDataOld map[string][]byte
@@ -22,46 +24,50 @@ type SkvsStubInterface struct {
 }
 
 func NewSkvsStubInterface(stub shim.ChaincodeStubInterface, input *pb.ChaincodeInput, rwset *readWriteSet, sep StateEncryptionFunctions) *SkvsStubInterface {
-	logger.Warning("==== Get New Skvs Interface =====")
 	fpcStub := NewFpcStubInterface(stub, input, rwset, sep)
-	skvsStub := SkvsStubInterface{fpcStub, map[string][]byte{}, map[string][]byte{}, "SKVS"}
-	err := skvsStub.InitSKVS()
-	if err != nil {
-		logger.Warningf("Error!! Initializing SKVS failed")
+	skvsStub := &SkvsStubInterface{
+		FpcStubInterface: fpcStub,
+		allDataOld:       map[string][]byte{},
+		allDataNew:       map[string][]byte{},
+		key:              SKVSKey,
 	}
-	return &skvsStub
+	err := skvsStub.initSKVS()
+	if err != nil {
+		panic("Initializing SKVS failed")
+	}
+	return skvsStub
 }
 
-func (s *SkvsStubInterface) InitSKVS() error {
-	logger.Warningf(" === Initializing SKVS === ")
+func (s *SkvsStubInterface) initSKVS() error {
 
 	// get current state, this will only operate once
 	encValue, err := s.GetPublicState(s.key)
 	if err != nil {
+		return err
+	}
+
+	// return if the key initially does not exist
+	if len(encValue) == 0 {
+		logger.Warningf("SKVS is empty, Initiating.")
 		return nil
 	}
 
-	if len(encValue) == 0 {
-		logger.Warningf("SKVS is empty, Initiating.")
-	} else {
-		value, err := s.sep.DecryptState(encValue)
-		if err != nil {
-			return err
-		}
-		logger.Warningf("SKVS has default value, loading current value.")
-
-		err = json.Unmarshal(value, &s.allDataOld)
-		if err != nil {
-			logger.Errorf("SKVS Json unmarshal error: %s", err)
-			return err
-		}
-		err = json.Unmarshal(value, &s.allDataNew)
-		if err != nil {
-			logger.Errorf("SKVS Json unmarshal error: %s", err)
-			return err
-		}
+	value, err := s.sep.DecryptState(encValue)
+	if err != nil {
+		return err
 	}
+	logger.Debug("SKVS has default value, loading current value.")
 
+	err = json.Unmarshal(value, &s.allDataOld)
+	if err != nil {
+		logger.Errorf("SKVS Json unmarshal error: %s", err)
+		return err
+	}
+	err = json.Unmarshal(value, &s.allDataNew)
+	if err != nil {
+		logger.Errorf("SKVS Json unmarshal error: %s", err)
+		return err
+	}
 	return nil
 }
 
