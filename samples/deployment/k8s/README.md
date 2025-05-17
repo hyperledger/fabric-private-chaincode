@@ -71,8 +71,9 @@ Note that this commands create a docker image with the name `fpc/fpcclient`.
 ## Minikube on Mac
 
 This tutorial is heavily inspired by the article [How to implement Hyperledger Fabric External Chaincodes within a Kubernetes cluster](https://medium.com/swlh/how-to-implement-hyperledger-fabric-external-chaincodes-within-a-kubernetes-cluster-fd01d7544523) by Pau Aragonès Sabaté. Thank you!
+
 Note:
-You might run into issues if your Mac has an M1 processor or above. If you install minikube using brew it might detect your environment as amd64 and not arm64, install the arm64 binaries. Another point is that if you have set DOCKER_DEFAULT_PLATFORM=linux/amd64 that will also generate errors. Set it in the terminal to Linux/arm64 and your minikube/docker environment should start.
+You might run into issues if your Mac has an M1 processor or above. If you install minikube using brew it might detect your environment as amd64 and not arm64, install the arm64 binaries. Another point is that if you have set DOCKER_DEFAULT_PLATFORM=linux/amd64 that will also generate errors. Set it in the terminal to linux/arm64 and your minikube/docker environment should start.
 
 ### Start minikube
 
@@ -222,7 +223,7 @@ Note that the `core.yaml` we have already loaded in the configmap contains the n
 For each Org:
 ```bash
 # copy cli_orgX pod name from above and enter container
-kubectl exec -it cli_orgX_pod_name bash -n hyperledge
+kubectl exec -it cli_orgX_pod_name bash -n hyperledger
 
 # for all peers of orgX we install ercc and fpccc
 export ERCC=ercc-peer0-$ORG; export FPCCC=fpccc-peer0-$ORG

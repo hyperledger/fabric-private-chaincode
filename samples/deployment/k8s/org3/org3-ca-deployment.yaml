@@ -39,7 +39,7 @@ spec:
               value: "true"
             - name: FABRIC_CA_SERVER_TLS_KEYFILE
               value: /etc/hyperledger/fabric-ca-server-config/priv_sk
-          image: hyperledger/fabric-ca:1.4.7
+          image: hyperledger/fabric-ca:1.5.12
           name: ca-org3
           ports:
             - containerPort: 7054
