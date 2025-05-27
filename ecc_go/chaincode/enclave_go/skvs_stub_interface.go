@@ -8,10 +8,10 @@ package enclave_go
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/pkg/errors"
 )
 
 const SKVSKey = "SKVS"
@@ -27,13 +27,13 @@ func NewSkvsStubInterface(stub shim.ChaincodeStubInterface, input *pb.ChaincodeI
 	fpcStub := NewFpcStubInterface(stub, input, rwset, sep)
 	skvsStub := &SkvsStubInterface{
 		FpcStubInterface: fpcStub,
-		allDataOld:       map[string][]byte{},
-		allDataNew:       map[string][]byte{},
+		allDataOld:       make(map[string][]byte),
+		allDataNew:       make(map[string][]byte),
 		key:              SKVSKey,
 	}
 	err := skvsStub.initSKVS()
 	if err != nil {
-		panic("Initializing SKVS failed")
+		panic(fmt.Sprintf("Initializing SKVS failed, err: %v", err))
 	}
 	return skvsStub
 }
@@ -74,7 +74,8 @@ func (s *SkvsStubInterface) initSKVS() error {
 func (s *SkvsStubInterface) GetState(key string) ([]byte, error) {
 	value, found := s.allDataOld[key]
 	if !found {
-		return nil, errors.New("skvs allDataOld key not found")
+		logger.Errorf("skvs allDataOld key: %s, not found", key)
+		return nil, nil
 	}
 	return value, nil
 }
