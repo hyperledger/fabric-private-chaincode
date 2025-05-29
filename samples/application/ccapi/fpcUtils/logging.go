@@ -9,9 +9,9 @@ package fpcUtils
 import (
 	"fmt"
 
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/logging"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/logging/api"
-	"github.com/hyperledger/fabric/common/flogging"
 )
 
 var logger = flogging.MustGetLogger("fpc.cli")
@@ -27,7 +27,7 @@ func (p *provider) GetLogger(module string) api.Logger {
 	name := "client.sdk-go"
 	e := &extendedFlogger{flogging.MustGetLogger(name)}
 
-	return e
+	return e.FabricLogger
 }
 
 type extendedFlogger struct {
@@ -35,11 +35,11 @@ type extendedFlogger struct {
 }
 
 func (e *extendedFlogger) Fatalln(v ...interface{}) {
-	e.Fatal(v...)
+	e.Fatalln(v...)
 }
 
 func (e *extendedFlogger) Panicln(v ...interface{}) {
-	e.Panic(v...)
+	e.Panicln(v...)
 }
 
 func (e *extendedFlogger) Print(v ...interface{}) {
@@ -56,17 +56,17 @@ func (e *extendedFlogger) Println(v ...interface{}) {
 }
 
 func (e *extendedFlogger) Debugln(args ...interface{}) {
-	e.Debug(args...)
+	e.Debugln(args...)
 }
 
 func (e *extendedFlogger) Infoln(args ...interface{}) {
-	e.Info(args...)
+	e.Infoln(args...)
 }
 
 func (e *extendedFlogger) Warnln(args ...interface{}) {
-	e.Warn(args...)
+	e.Warnln(args...)
 }
 
 func (e *extendedFlogger) Errorln(args ...interface{}) {
-	e.Error(args...)
+	e.Errorln(args...)
 }

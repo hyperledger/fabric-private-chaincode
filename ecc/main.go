@@ -11,11 +11,11 @@ import (
 	"os"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/enclave"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/ercc"
 	"github.com/hyperledger/fabric-private-chaincode/internal/endorsement"
-	"github.com/hyperledger/fabric/common/flogging"
 )
 
 var logger = flogging.MustGetLogger("ecc")
