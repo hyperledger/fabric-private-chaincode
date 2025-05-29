@@ -25,7 +25,7 @@ spec:
         - env:
             - name: SGX_MODE
               value: SIM
-            - name: CC_NAME
+            - name: CC_ID
               value: fpccc
             - name: CHANNEL_NAME
               value: mychannel

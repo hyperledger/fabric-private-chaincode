@@ -73,7 +73,7 @@ docker-fpc-app: docker-boilerplate-ecc
 		exit 1;\
 	fi
 	echo "\033[1;33mWARNING: overriding $(DOCKER_IMAGE) docker image\033[0m"
-	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_IMAGE):$(FPC_VERSION) -f Dockerfile.fpc-app \
+	$(DOCKER) build $(DOCKER_BUILD_OPTS) -t $(DOCKER_IMAGE):$(FPC_VERSION) -t $(DOCKER_IMAGE):latest -f Dockerfile.fpc-app \
                 --build-arg HW_EXTENSION=$(HW_EXTENSION)\
  		$(DOCKER_ENCLAVE_SO_PATH)
 
