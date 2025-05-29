@@ -14,14 +14,24 @@ import (
 	"github.com/hyperledger/fabric-private-chaincode/internal/endorsement"
 )
 
+type BuildOption func(*chaincode.EnclaveChaincode, shim.Chaincode)
+
 // NewPrivateChaincode creates a new chaincode! This is for go support only!!!
-func NewPrivateChaincode(cc shim.Chaincode) *chaincode.EnclaveChaincode {
+func NewPrivateChaincode(cc shim.Chaincode, options ...BuildOption) *chaincode.EnclaveChaincode {
 	ecc := &chaincode.EnclaveChaincode{
 		Enclave:   enclave_go.NewEnclaveStub(cc),
 		Validator: endorsement.NewValidator(),
 		Extractor: &chaincode.ExtractorImpl{},
 		Ercc:      &ercc.StubImpl{},
 	}
-
+	for _, o := range options {
+		o(ecc, cc)
+	}
 	return ecc
+}
+
+func WithSKVS() BuildOption {
+	return func(ecc *chaincode.EnclaveChaincode, cc shim.Chaincode) {
+		ecc.Enclave = enclave_go.NewSkvsStub(cc)
+	}
 }
