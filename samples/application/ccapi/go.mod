@@ -5,19 +5,16 @@ go 1.23.5
 require (
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.10.0
+	github.com/hyperledger-labs/cc-tools-demo/ccapi v0.0.0-20241207212759-9de20ef72afc
 	github.com/hyperledger/fabric v2.1.1+incompatible
-	github.com/hyperledger/fabric-gateway v1.2.2
 	github.com/hyperledger/fabric-private-chaincode v1.0.0-rc3.0.20241027225741-54c22bdd71b6
-	github.com/hyperledger/fabric-protos-go-apiv2 v0.2.0
 	github.com/hyperledger/fabric-sdk-go v1.0.1-0.20240123083657-5d6ca326e01b
 	github.com/pkg/errors v0.9.1
-	github.com/swaggo/files v1.0.1
-	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.8.12
-	google.golang.org/grpc v1.59.0
-	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v2 v2.4.0
 )
+
+replace github.com/hyperledger/fabric-private-chaincode => ../../../
 
 require (
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect
@@ -47,11 +44,12 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/certificate-transparency-go v1.0.21 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hyperledger-labs/cc-tools-demo/ccapi v0.0.0-20241207212759-9de20ef72afc // indirect
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20230228194215-b84622ba6a7a // indirect
 	github.com/hyperledger/fabric-config v0.1.0 // indirect
+	github.com/hyperledger/fabric-gateway v1.2.2 // indirect
 	github.com/hyperledger/fabric-lib-go v1.0.0 // indirect
 	github.com/hyperledger/fabric-protos-go v0.3.0 // indirect
+	github.com/hyperledger/fabric-protos-go-apiv2 v0.2.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
@@ -78,6 +76,8 @@ require (
 	github.com/spf13/viper v1.10.1 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	github.com/swaggo/files v1.0.1 // indirect
+	github.com/swaggo/gin-swagger v1.6.0 // indirect
 	github.com/sykesm/zap-logfmt v0.0.4 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
@@ -93,6 +93,8 @@ require (
 	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/tools v0.14.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231016165738-49dd2c1f3d0b // indirect
+	google.golang.org/grpc v1.59.0 // indirect
+	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
