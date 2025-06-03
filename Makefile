@@ -46,6 +46,9 @@ gotools:
 godeps: gotools
 	$(GO) mod download
 
+gotidy:
+	./scripts/gomate.sh tidy
+
 fpc-sdk: godeps
 	$(foreach DIR, $(FPC_SDK_DEP_DIRS), $(MAKE) -C $(DIR) build || exit;)
 
