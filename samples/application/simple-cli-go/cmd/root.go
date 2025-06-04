@@ -64,7 +64,7 @@ func initConfig() {
 		CorePeerTLSKeyFile:      getStrEnv("CORE_PEER_TLS_KEY_FILE"),
 		CorePeerTLSRootCertFile: getStrEnv("CORE_PEER_TLS_ROOTCERT_FILE"),
 		OrdererCA:               getStrEnv("ORDERER_CA"),
-		ChaincodeId:             getStrEnv("CC_NAME"),
+		ChaincodeId:             getStrEnv("CC_ID"),
 		ChannelId:               getStrEnv("CHANNEL_NAME"),
 		GatewayConfigPath:       getStrEnv("GATEWAY_CONFIG"),
 	}
