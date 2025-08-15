@@ -21,6 +21,7 @@ var DigitalAssetToken = assets.AssetType{
 			Label:    "Token Symbol",
 			DataType: "string",
 			Required: true,
+			IsKey:    true,
 		},
 		{
 			Tag:      "decimals",
@@ -39,6 +40,18 @@ var DigitalAssetToken = assets.AssetType{
 			Label:    "Issuer Certificate Hash",
 			DataType: "string",
 			Required: true,
+		},
+		{
+			Tag:      "owner",
+			Label:    "Owner Identity",
+			DataType: "string",
+			Required: true,
+		},
+		{
+			Tag:      "issuedAt",
+			Label:    "Issued At",
+			DataType: "datetime",
+			Required: false,
 		},
 	},
 

@@ -13,7 +13,7 @@ var UserDirectory = assets.AssetType{
 		{
 			Tag:      "publicKeyHash",
 			Label:    "Public Key Hash",
-			DataType: "String",
+			DataType: "string",
 			Required: true,
 			IsKey:    true,
 		},

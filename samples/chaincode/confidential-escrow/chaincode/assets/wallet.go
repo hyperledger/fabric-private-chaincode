@@ -19,6 +19,12 @@ var Wallet = assets.AssetType{
 			IsKey:    true, // primary key
 		},
 		{
+			Tag:      "ownerId",
+			Label:    "Owner Identity",
+			DataType: "string",
+			Required: true,
+		},
+		{
 			Tag:      "ownerCertHash",
 			Label:    "Owner Certificate Hash",
 			DataType: "string",
@@ -31,16 +37,16 @@ var Wallet = assets.AssetType{
 			Required: true,
 		},
 		{
-			Tag:      "assetType",
+			Tag:      "digitalAssetType",
 			Label:    "Asset Type Reference",
-			DataType: "@digitalAsset", // References digitalAsset
+			DataType: "string", // References digitalAsset
 			Required: true,
 		},
 		{
 			Tag:      "createdAt",
 			Label:    "Creation Timestamp",
 			DataType: "datetime",
-			Required: true,
+			Required: false,
 		},
 	},
 
