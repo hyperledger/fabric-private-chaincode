@@ -54,6 +54,4 @@ var DigitalAssetToken = assets.AssetType{
 			Required: false,
 		},
 	},
-
-	Readers: []string{"$org1MSP", "$org2MSP"},
 }

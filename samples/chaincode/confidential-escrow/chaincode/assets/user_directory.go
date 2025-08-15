@@ -30,6 +30,4 @@ var UserDirectory = assets.AssetType{
 			Required: true,
 		},
 	},
-
-	Readers: []string{"$org1MSP", "$org2MSP"},
 }

@@ -13,6 +13,7 @@ import (
 
 	asset "github.com/hyperledger/fabric-private-chaincode/samples/chaincode/confidential-escrow/chaincode/assets"
 	header "github.com/hyperledger/fabric-private-chaincode/samples/chaincode/confidential-escrow/chaincode/header"
+	transaction "github.com/hyperledger/fabric-private-chaincode/samples/chaincode/confidential-escrow/chaincode/transactions"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
@@ -23,11 +24,22 @@ var startupCheckExecuted = false
 
 // PPS:REMOVE
 var (
-	txList        = []tx.Transaction{} // Empty for now
+	txList = []tx.Transaction{
+		transaction.DebugTest,
+		transaction.CreateUserDir,
+		transaction.CreateWallet,
+		transaction.CreateDigitalAsset,
+		transaction.CreateEscrow,
+		transaction.ReadUserDir,
+		transaction.ReadWallet,
+		transaction.ReadDigitalAsset,
+		transaction.ReadEscrow,
+	}
 	assetTypeList = []assets.AssetType{
 		asset.Wallet,
 		asset.DigitalAssetToken,
 		asset.UserDirectory,
+		asset.Escrow,
 	}
 	eventTypeList = []events.Event{} // Empty for now
 )
