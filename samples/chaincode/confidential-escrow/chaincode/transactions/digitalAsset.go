@@ -20,10 +20,10 @@ var CreateDigitalAsset = transactions.Transaction{
 	Method:      "POST",
 	Callers: []accesscontrol.Caller{
 		{
-			MSP: "org1MSP",
+			MSP: "Org1MSP",
 			OU:  "admin",
 		}, {
-			MSP: "org2MSP",
+			MSP: "Org2MSP",
 			OU:  "admin",
 		},
 	},
@@ -131,30 +131,29 @@ var ReadDigitalAsset = transactions.Transaction{
 	Method:      "GET",
 	Callers: []accesscontrol.Caller{
 		{
-			MSP: "org1MSP",
+			MSP: "Org1MSP",
 			OU:  "admin",
 		}, {
-			MSP: "org2MSP",
+			MSP: "Org2MSP",
 			OU:  "admin",
 		},
 	},
 
 	Args: []transactions.Argument{
 		{
-			Tag:         "symbol",
-			Label:       "Symbol",
-			Description: "Symbol of the Digital Asset to read",
+			Tag:         "uuid",
+			Label:       "UUID",
+			Description: "UUID of the Digital Asset to read",
 			DataType:    "string",
 			Required:    true,
 		},
 	},
 
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
-		symbol, _ := req["symbol"].(string)
+		uuid, _ := req["uuid"].(string)
 
 		key := assets.Key{
-			"@assetType": "digitalAsset",
-			"symbol":     symbol,
+			"@key": "digitalAsset:" + uuid,
 		}
 
 		asset, err := key.Get(stub)

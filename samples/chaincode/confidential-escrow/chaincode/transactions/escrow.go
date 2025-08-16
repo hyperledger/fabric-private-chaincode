@@ -18,11 +18,11 @@ var CreateEscrow = transactions.Transaction{
 	Method:      "POST",
 	Callers: []accesscontrol.Caller{
 		{
-			MSP: "org1MSP",
+			MSP: "Org1MSP",
 			OU:  "admin",
 		},
 		{
-			MSP: "org2MSP",
+			MSP: "Org2MSP",
 			OU:  "admin",
 		},
 	},
@@ -133,31 +133,30 @@ var ReadEscrow = transactions.Transaction{
 	Method:      "GET",
 	Callers: []accesscontrol.Caller{
 		{
-			MSP: "org1MSP",
+			MSP: "Org1MSP",
 			OU:  "admin",
 		},
 		{
-			MSP: "org2MSP",
+			MSP: "Org2MSP",
 			OU:  "admin",
 		},
 	},
 
 	Args: []transactions.Argument{
 		{
-			Tag:         "escrowId",
-			Label:       "Escrow ID",
-			Description: "ID of the Escrow to read",
+			Tag:         "uuid",
+			Label:       "UUID",
+			Description: "UUID of the Digital Asset to read",
 			DataType:    "string",
 			Required:    true,
 		},
 	},
 
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
-		escrowId, _ := req["escrowId"].(string)
+		uuid, _ := req["uuid"].(string)
 
 		key := assets.Key{
-			"@assetType": "escrow",
-			"escrowId":   escrowId,
+			"@key": "escrow:" + uuid,
 		}
 
 		asset, err := key.Get(stub)

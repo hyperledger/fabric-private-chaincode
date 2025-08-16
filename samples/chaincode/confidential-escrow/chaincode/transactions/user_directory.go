@@ -19,10 +19,10 @@ var CreateUserDir = transactions.Transaction{
 	Method:      "POST",
 	Callers: []accesscontrol.Caller{
 		{
-			MSP: "org1MSP",
+			MSP: "Org1MSP",
 			OU:  "admin",
 		}, {
-			MSP: "org2MSP",
+			MSP: "Org2MSP",
 			OU:  "admin",
 		},
 	},
@@ -92,30 +92,29 @@ var ReadUserDir = transactions.Transaction{
 	Method:      "GET",
 	Callers: []accesscontrol.Caller{
 		{
-			MSP: "org1MSP",
+			MSP: "Org1MSP",
 			OU:  "admin",
 		}, {
-			MSP: "org2MSP",
+			MSP: "Org2MSP",
 			OU:  "admin",
 		},
 	},
 
 	Args: []transactions.Argument{
 		{
-			Tag:         "publicKeyHash",
-			Label:       "Public Key Hash",
-			Description: "Hash of Public Key to read",
+			Tag:         "uuid",
+			Label:       "UUID",
+			Description: "UUID of the Digital Asset to read",
 			DataType:    "string",
 			Required:    true,
 		},
 	},
 
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
-		publicKeyHash, _ := req["publicKeyHash"].(string)
+		uuid, _ := req["uuid"].(string)
 
 		key := assets.Key{
-			"@assetType":    "userdir",
-			"publicKeyHash": publicKeyHash,
+			"@key": "userdir:" + uuid,
 		}
 
 		asset, err := key.Get(stub)

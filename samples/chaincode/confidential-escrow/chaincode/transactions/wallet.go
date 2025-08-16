@@ -17,14 +17,13 @@ var CreateWallet = transactions.Transaction{
 	Description: "Creates a new Wallet",
 	Method:      "POST",
 	Callers: []accesscontrol.Caller{
-		{MSP: "*"},
-		// {
-		// 	MSP: "org1MSP",
-		// 	// OU:  "client",
-		// }, {
-		// 	MSP: "org2MSP",
-		// 	// OU:  "client",
-		// },
+		{
+			MSP: "Org1MSP",
+			OU:  "admin",
+		}, {
+			MSP: "Org2MSP",
+			OU:  "admin",
+		},
 	},
 
 	Args: []transactions.Argument{
@@ -63,6 +62,10 @@ var CreateWallet = transactions.Transaction{
 	},
 
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
+		// Add this debug line at the start
+		// creator, _ := stub.Get
+		// fmt.Printf("DEBUG: Client identity: %s\n", string(creator))
+
 		walletId, _ := req["walletId"].(string)
 		ownerId, _ := req["ownerId"].(string)
 		ownerCertHash, _ := req["ownerCertHash"].(string)
@@ -103,32 +106,30 @@ var ReadWallet = transactions.Transaction{
 	Description: "Read a Wallet by its walletId",
 	Method:      "GET",
 	Callers: []accesscontrol.Caller{
-		{MSP: "*"},
-		// {
-		// 	MSP: "org1MSP",
-		// 	// OU:  "client",
-		// }, {
-		// 	MSP: "org2MSP",
-		// 	// OU:  "client",
-		// },
+		{
+			MSP: "Org1MSP",
+			OU:  "admin",
+		}, {
+			MSP: "Org2MSP",
+			OU:  "admin",
+		},
 	},
 
 	Args: []transactions.Argument{
 		{
-			Tag:         "walletId",
-			Label:       "Wallet ID",
-			Description: "ID of the Wallet to read",
+			Tag:         "uuid",
+			Label:       "UUID",
+			Description: "UUID of the Digital Asset to read",
 			DataType:    "string",
 			Required:    true,
 		},
 	},
 
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
-		walletId, _ := req["walletId"].(string)
+		uuid, _ := req["uuid"].(string)
 
 		key := assets.Key{
-			"@assetType": "wallet",
-			"walletId":   walletId,
+			"@key": "wallet:" + uuid,
 		}
 
 		asset, err := key.Get(stub)
