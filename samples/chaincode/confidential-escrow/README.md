@@ -1,104 +1,89 @@
-# Runnign Procedure
+# Running Procedure
 
-> 1. In 1st terminal Window
+## Prerequisites
+
+- FPC is properly set up and built
+- `main.sh` script is placed in the chaincode directory
+- `.env` file is created with environment variables
+
+## Setup Files
+
+**1. Set FPC_PATH:**
 
 ```bash
+export FPC_PATH=/project/src/github.com/hyperledger/fabric-private-chaincode
+```
+
+**2. Create .env file:**
+
+```bash
+touch .env
+# Add all environment variables as provided in the .env artifact
+cp .env.example .env
+```
+
+## Running Procedure
+
+### 1. In 1st terminal window - Setup and Deploy
+
+```bash
+# Get inside dev env
 make -C $FPC_PATH/utils/docker run-dev
+cd samples/chaincode/confidential-escrow
 
-GOOS=linux make -C $FPC_PATH/ercc build docker
-GOOS=linux make -C $FPC_PATH/samples/chaincode/confidential-escrow with_go docker
+## For first time setup (includes ERCC build/Fabric network)
+./main.sh full
 
-cd $FPC_PATH/samples/chaincode/confidential-escrow
-# make
+## For subsequent runs (skip ERCC build)
+./main.sh quick
 
-# cd $FPC_PATH/samples/deployment/test-network # 1 time
-# ./setup.sh # 1 time
-
-cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
-./network.sh down
-./network.sh up -ca
-./network.sh createChannel -c mychannel
-
-export CC_ID=confidential-escrow
-export CC_PATH="$FPC_PATH/samples/chaincode/confidential-escrow/"
-export CC_VER=$(cat "$FPC_PATH/samples/chaincode/confidential-escrow/mrenclave")
-cd $FPC_PATH/samples/deployment/test-network
-./installFPC.sh
-
-export EXTRA_COMPOSE_FILE="$FPC_PATH/samples/chaincode/confidential-escrow/confidential-escrow-compose.yaml"
-make ercc-ecc-start
+## For code changes only
+./main.sh chaincode
 ```
 
-> 2. In 2nd terminal window
+### 2. In 2nd terminal window - Docker Environment
 
 ```bash
+# Enter docker container
 docker exec -it fpc-development-main /bin/bash
+cd samples/chaincode/confidential-escrow
 
-# prepare connections profile
-cd $FPC_PATH/samples/deployment/test-network
-./update-connection.sh
-
-# # update the connection profile for external clients outside the FPC dev environment
-cd $FPC_PATH/samples/deployment/test-network
-./update-external-connection.sh
-
-# make fpcclient
-cd $FPC_PATH/samples/application/simple-cli-go
-make
-
-# export fpcclient settings
-export CC_ID=confidential-escrow
-export CHANNEL_NAME=mychannel
-export CORE_PEER_ADDRESS=localhost:7051
-export CORE_PEER_ID=peer0.org1.example.com
-export CORE_PEER_ORG_NAME=org1
-export CORE_PEER_LOCALMSPID=Org1MSP
-export CORE_PEER_MSPCONFIGPATH=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
-export CORE_PEER_TLS_CERT_FILE=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt
-export CORE_PEER_TLS_ENABLED="true"
-export CORE_PEER_TLS_KEY_FILE=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.key
-export CORE_PEER_TLS_ROOTCERT_FILE=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
-export ORDERER_CA=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
-export GATEWAY_CONFIG=$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/connection-org1.yaml
-export FPC_ENABLED=true
-export RUN_CCAAS=true
-
-# init our enclave
-./fpcclient init $CORE_PEER_ID
+# Setup client environment and initialize enclave
+./main.sh docker
 ```
 
-> 3. Run transaction
+### 3. Run Transactions
 
 ```bash
-./fpcclient invoke getSchema
+# Run all basic tests
+./main.sh test-all
 
-./fpcclient invoke debugTest '{}'
+# Run specific test sets
+./main.sh test-basic    # Schema, debug, create assets
+./main.sh test-query    # Query operations
 
-./fpcclient invoke createDigitalAsset '{
-  "name": "CBDC",
-  "symbol": "CBDC",
-  "decimals": 2,
-  "totalSupply": 1000000,
-  "owner": "central_bank",
-  "issuerHash": "sha256:abc123"
-}'
-
-./fpcclient invoke createWallet '{
-  "walletId": "wallet-123",
-  "ownerId": "Abhinav",
-  "ownerCertHash": "sha256:def456",
-  "balance": 0,
-  "digitalAssetType": "CBDC"
-}'
-
-./fpcclient invoke createEscrow '{
-  "escrowId": "escrow-456",
-  "buyerPubKey": "buyer_pub",
-  "sellerPubKey": "seller_pub",
-  "amount": 1000,
-  "assetType": "CBDC",
-  "conditionValue": "sha256:secret123",
-  "status": "Active",
-  "buyerCertHash": "sha256:buyer_cert"
-}'
+# Interactive menu for individual tests
+./main.sh
 ```
+
+## Available Commands
+
+| Command                | Description                         |
+| ---------------------- | ----------------------------------- |
+| `./main.sh full`       | Complete setup including ERCC build |
+| `./main.sh quick`      | Quick setup (skip ERCC build)       |
+| `./main.sh chaincode`  | Build chaincode only                |
+| `./main.sh docker`     | Setup docker environment            |
+| `./main.sh test-basic` | Run basic creation tests            |
+| `./main.sh test-query` | Run query tests                     |
+| `./main.sh test-all`   | Run all tests                       |
+| `./main.sh clean`      | Clean and stop network              |
+| `./main.sh`            | Interactive menu                    |
+
+## Typical Workflow
+
+1. **First time:** `./main.sh full`
+2. **Enter docker:** `docker exec -it fpc-development-main /bin/bash`
+3. **Setup client:** `./main.sh docker`
+4. **Run tests:** `./main.sh test-all`
+5. **Code changes:** Exit docker → `./main.sh chaincode` → Re-enter docker → Test again
