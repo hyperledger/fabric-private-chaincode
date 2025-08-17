@@ -6,3 +6,5 @@ public.pem
 mrenclave
 details.env
 
+.env
+*.bak

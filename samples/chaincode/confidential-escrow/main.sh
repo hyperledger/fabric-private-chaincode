@@ -36,11 +36,14 @@ check_fpc_path() {
 
 # Source environment variables
 source_env() {
-    if [ -f ".env" ]; then
-        source .env
+    # Get the directory where the script is located
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    if [ -f "$SCRIPT_DIR/.env" ]; then
+        source "$SCRIPT_DIR/.env"
         log_info "Environment variables loaded from .env"
     else
-        log_error ".env file not found. Make sure it exists in current directory."
+        log_error ".env file not found. Make sure it exists in script directory: $SCRIPT_DIR"
         exit 1
     fi
 }
