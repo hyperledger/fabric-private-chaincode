@@ -37,7 +37,7 @@ check_fpc_path() {
 # Source environment variables
 source_env() {
     # Get the directory where the script is located
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    SCRIPT_DIR="$FPC_PATH/samples/chaincode/confidential-escrow/"
 
     if [ -f "$SCRIPT_DIR/.env" ]; then
         source "$SCRIPT_DIR/.env"
@@ -139,91 +139,106 @@ test_debug() {
     ./fpcclient invoke debugTest '{}'
 }
 
+WALLET_UUID=""
+ESCROW_UUID=""
+DIGITAL_ASSET_UUID=""
+DIGITAL_ASSET_JSON=""
+
+store_asset_data() {
+    local output="$1"
+    DIGITAL_ASSET_JSON=$(echo "$output" | grep '^>' | sed 's/^> //')
+    DIGITAL_ASSET_UUID=$(echo "$DIGITAL_ASSET_JSON" | grep -o '"@key":"digitalAsset:[^"]*"' | cut -d':' -f3 | tr -d '"')
+}
+
+store_wallet_data() {
+    local output="$1"
+    WALLET_UUID=$(echo "$output" | grep '^>' | sed 's/^> //' | grep -o '"@key":"wallet:[^"]*"' | cut -d':' -f3 | tr -d '"')
+}
+
+store_escrow_data() {
+    local output="$1"
+    ESCROW_UUID=$(echo "$output" | grep '^>' | sed 's/^> //' | grep -o '"@key":"escrow:[^"]*"' | cut -d':' -f3 | tr -d '"')
+}
+
 test_create_asset() {
     log_info "Creating digital asset..."
     cd $FPC_PATH/samples/application/simple-cli-go
-    ./fpcclient invoke createDigitalAsset '{
-      "name": "CBDC",
-      "symbol": "CBDC", 
-      "decimals": 2,
-      "totalSupply": 1000000,
-      "owner": "central_bank",
-      "issuerHash": "sha256:abc123"
-    }'
+    local output=$(./fpcclient invoke createDigitalAsset '{
+        "name": "CBDCC",
+        "symbol": "CBDCC", 
+        "decimals": 2,
+        "totalSupply": 1000000,
+        "owner": "central_bank",
+        "issuerHash": "sha256:abc123"
+      }' 2>&1)
+    echo "$output"
+    store_asset_data "$output"
 }
 
 test_create_wallet() {
     log_info "Creating wallet..."
     cd $FPC_PATH/samples/application/simple-cli-go
-    ./fpcclient invoke createWallet '{
-      "walletId": "wallet-123",
-      "ownerId": "Abhinav",
-      "ownerCertHash": "sha256:def456", 
-      "balance": 0,
-      "digitalAssetType": "CBDC"
-    }'
+    local output=$(./fpcclient invoke createWallet "{
+    \"walletId\": \"wallet-111\",
+    \"ownerId\": \"Abhinav\",
+    \"ownerCertHash\": \"sha256:def456\", 
+    \"balances\": [0],
+    \"digitalAssetTypes\": [$DIGITAL_ASSET_JSON]
+  }" 2>&1)
+    echo "$output"
+    store_wallet_data "$output"
 }
 
 test_create_escrow() {
     log_info "Creating escrow..."
     cd $FPC_PATH/samples/application/simple-cli-go
-    ./fpcclient invoke createEscrow '{
-      "escrowId": "escrow-456",
-      "buyerPubKey": "buyer_pub",
-      "sellerPubKey": "seller_pub",
-      "amount": 1000,
-      "assetType": "CBDC",
-      "conditionValue": "sha256:secret123",
-      "status": "Active",
-      "buyerCertHash": "sha256:buyer_cert"
-    }'
+    local output=$(./fpcclient invoke createEscrow "{
+    \"escrowId\": \"escrow-111\",
+    \"buyerPubKey\": \"buyer_pub\",
+    \"sellerPubKey\": \"seller_pub\",
+    \"amount\": 1000,
+    \"assetType\": $DIGITAL_ASSET_JSON,
+    \"conditionValue\": \"sha256:secret123\",
+    \"status\": \"Active\",
+    \"buyerCertHash\": \"sha256:buyer_cert\"
+  }" 2>&1)
+    echo "$output"
+    store_escrow_data "$output"
 }
 
 test_query_asset() {
     log_info "Querying digital asset..."
     cd $FPC_PATH/samples/application/simple-cli-go
-    ./fpcclient query readDigitalAsset '{"uuid": "59a4e99c-c705-513e-8db2-f04fa81bceb8"}'
+    log_info $DIGITAL_ASSET_UUID
+    log_info $DIGITAL_ASSET_JSON
+    ./fpcclient query readDigitalAsset "{\"uuid\": \"$DIGITAL_ASSET_UUID\"}"
 }
 
 test_query_wallet() {
     log_info "Querying wallet..."
     cd $FPC_PATH/samples/application/simple-cli-go
-    ./fpcclient query readWallet '{"uuid": "f7e3afb2-c6b9-5ae4-80de-102d57e86333"}'
+    ./fpcclient query readWallet "{\"uuid\": \"$WALLET_UUID\"}"
 }
 
 test_query_escrow() {
     log_info "Querying escrow..."
     cd $FPC_PATH/samples/application/simple-cli-go
-    ./fpcclient query readEscrow '{"uuid": "403496d6-f2d6-5adc-ab55-a32d87764261"}'
+    ./fpcclient query readEscrow "{\"uuid\": \"$ESCROW_UUID\"}"
 }
 
 # Batch operations
-run_basic_tests() {
-    log_info "=== RUNNING BASIC TESTS ==="
+run_tests() {
+    log_info "=== RUNNING TESTS ==="
     source_env
     test_schema
     test_debug
     test_create_asset
     test_create_wallet
     test_create_escrow
-    log_success "=== BASIC TESTS COMPLETED ==="
-}
-
-run_query_tests() {
-    log_info "=== RUNNING QUERY TESTS ==="
-    source_env
     test_query_asset
     test_query_wallet
     test_query_escrow
-    log_success "=== QUERY TESTS COMPLETED ==="
-}
-
-# Clean network
-clean_network() {
-    log_info "=== CLEANING NETWORK ==="
-    cd $FPC_PATH/samples/deployment/test-network/fabric-samples/test-network
-    ./network.sh down
-    log_success "Network cleaned"
+    log_success "=== TESTS COMPLETED ==="
 }
 
 # Main menu
@@ -233,14 +248,10 @@ show_menu() {
     echo "SETUP OPTIONS:"
     echo "1. Full Setup (ERCC + Network + Install)"
     echo "2. Quick Setup (Skip ERCC build)"
-    echo "3. Build Chaincode Only"
-    echo "4. Setup Docker Environment"
-    echo "5. Clean Network"
+    echo "3. Setup Docker Environment"
     echo
     echo "TEST OPTIONS:"
-    echo "6. Run Basic Tests"
-    echo "7. Run Query Tests"
-    echo "8. Run All Tests"
+    echo "4. Run All Tests"
     echo
     echo "0. Exit"
     echo
@@ -265,25 +276,11 @@ main() {
         install_fpc
         start_ercc
         ;;
-    "chaincode")
-        build_chaincode
-        ;;
     "docker")
         setup_docker
         ;;
-    "clean")
-        clean_network
-        ;;
-    "test-basic")
-        run_basic_tests
-        ;;
-    "test-query")
-        run_query_tests
-        ;;
     "test-all")
-        run_basic_tests
-        echo
-        run_query_tests
+        run_tests
         ;;
     "menu")
         while true; do
@@ -292,12 +289,8 @@ main() {
             case $choice in
             1) main "full" ;;
             2) main "quick" ;;
-            3) main "chaincode" ;;
-            4) main "docker" ;;
-            5) main "clean" ;;
-            6) main "test-basic" ;;
-            7) main "test-query" ;;
-            8) main "test-all" ;;
+            3) main "docker" ;;
+            4) main "test-all" ;;
             0) exit 0 ;;
             *) log_error "Invalid option" ;;
             esac

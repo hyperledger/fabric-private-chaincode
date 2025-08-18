@@ -31,14 +31,14 @@ cp .env.example .env
 make -C $FPC_PATH/utils/docker run-dev
 cd samples/chaincode/confidential-escrow
 
+# Interactive menu
+./main.sh
+
 ## For first time setup (includes ERCC build/Fabric network)
 ./main.sh full
 
 ## For subsequent runs (skip ERCC build)
 ./main.sh quick
-
-## For code changes only
-./main.sh chaincode
 ```
 
 ### 2. In 2nd terminal window - Docker Environment
@@ -47,6 +47,9 @@ cd samples/chaincode/confidential-escrow
 # Enter docker container
 docker exec -it fpc-development-main /bin/bash
 cd samples/chaincode/confidential-escrow
+
+# Interactive menu
+./main.sh
 
 # Setup client environment and initialize enclave
 ./main.sh docker
@@ -57,13 +60,6 @@ cd samples/chaincode/confidential-escrow
 ```bash
 # Run all basic tests
 ./main.sh test-all
-
-# Run specific test sets
-./main.sh test-basic    # Schema, debug, create assets
-./main.sh test-query    # Query operations
-
-# Interactive menu for individual tests
-./main.sh
 ```
 
 ## Available Commands
