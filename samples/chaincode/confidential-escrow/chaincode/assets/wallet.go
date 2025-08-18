@@ -31,15 +31,15 @@ var Wallet = assets.AssetType{
 			Required: true,
 		},
 		{
-			Tag:      "balance",
+			Tag:      "balances",
 			Label:    "Token Balance",
-			DataType: "number",
+			DataType: "[]number",
 			Required: true,
 		},
 		{
-			Tag:      "digitalAssetType",
+			Tag:      "digitalAssetTypes",
 			Label:    "Asset Type Reference",
-			DataType: "string", // References digitalAsset
+			DataType: "[]->digitalAsset", // References digitalAsset
 			Required: true,
 		},
 		{
