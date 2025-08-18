@@ -147,11 +147,39 @@ var ReadDigitalAsset = transactions.Transaction{
 			DataType:    "string",
 			Required:    true,
 		},
+		// {
+		// 	Tag:         "symbol",
+		// 	Label:       "Symbol",
+		// 	Description: "Symbol of the Digital Asset to read",
+		// 	DataType:    "string",
+		// 	Required:    true,
+		// },
 	},
 
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
 		uuid, _ := req["uuid"].(string)
+		// symbol, _ := req["symbol"].(string)
 
+		// query := map[string]interface{}{
+		// 	"selector": map[string]interface{}{
+		// 		"@assetType": "digitalAsset",
+		// 		"author":     symbol,
+		// 	},
+		// }
+		//
+		// var err error
+		// response, err := assets.Search(stub, query, "", true)
+		// if err != nil {
+		// 	return nil, errors.WrapErrorWithStatus(err, "error searching for book's author", 500)
+		// }
+		//
+		// responseJSON, err := json.Marshal(response)
+		// if err != nil {
+		// 	return nil, errors.WrapErrorWithStatus(err, "error marshaling response", 500)
+		// }
+		//
+		// return responseJSON, nil
+		//
 		key := assets.Key{
 			"@key": "digitalAsset:" + uuid,
 		}

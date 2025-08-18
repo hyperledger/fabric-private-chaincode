@@ -2,6 +2,7 @@ package transactions
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/hyperledger-labs/cc-tools/accesscontrol"
@@ -48,37 +49,52 @@ var CreateWallet = transactions.Transaction{
 			Required:    true, // testing purpose
 		},
 		{
-			Tag:      "balance",
-			Label:    "Token Balance",
-			DataType: "number",
+			Tag:      "balances",
+			Label:    "Different Token Balance",
+			DataType: "[]number",
 			Required: true,
 		},
 		{
-			Tag:      "digitalAssetType",
-			Label:    "Digital Asset in Holding",
-			DataType: "string",
+			Tag:      "digitalAssetTypes",
+			Label:    "Digital Assets in Holding",
+			DataType: "[]->digitalAsset",
 			Required: true,
 		},
 	},
 
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
-		// Add this debug line at the start
-		// creator, _ := stub.Get
-		// fmt.Printf("DEBUG: Client identity: %s\n", string(creator))
-
 		walletId, _ := req["walletId"].(string)
 		ownerId, _ := req["ownerId"].(string)
 		ownerCertHash, _ := req["ownerCertHash"].(string)
-		balance, _ := req["balance"].(float64)
-		assetType, _ := req["digitalAssetType"].(string)
+		balances, _ := req["balances"].([]interface{})
+		assetTypes, _ := req["digitalAssetTypes"].([]interface{})
+
+		fmt.Printf("DEBUG: Received assetTypes: %+v\n", assetTypes)
+		fmt.Printf("DEBUG: Type of first element: %T\n", assetTypes[0])
+
+		var processedAssetTypes []interface{}
+		for _, assetType := range assetTypes {
+			switch v := assetType.(type) {
+			case string:
+				// If it's a string (UUID), convert to proper reference format
+				processedAssetTypes = append(processedAssetTypes, map[string]interface{}{
+					"@key": "digitalAsset:" + v,
+				})
+			case map[string]interface{}:
+				// If it's already a map (proper reference), use as-is
+				processedAssetTypes = append(processedAssetTypes, v)
+			default:
+				processedAssetTypes = append(processedAssetTypes, v)
+			}
+		}
 
 		walletMap := make(map[string]interface{})
 		walletMap["@assetType"] = "wallet"
 		walletMap["walletId"] = walletId
 		walletMap["ownerId"] = ownerId
 		walletMap["ownerCertHash"] = ownerCertHash
-		walletMap["balance"] = balance
-		walletMap["digitalAssetType"] = assetType
+		walletMap["balances"] = balances
+		walletMap["digitalAssetTypes"] = processedAssetTypes
 		walletMap["createdAt"] = time.Now()
 
 		walletAsset, err := assets.NewAsset(walletMap)

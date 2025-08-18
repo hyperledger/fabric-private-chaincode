@@ -56,7 +56,7 @@ var CreateEscrow = transactions.Transaction{
 		{
 			Tag:      "assetType",
 			Label:    "Asset Type Reference",
-			DataType: "string",
+			DataType: "->digitalAsset",
 			Required: true,
 		},
 		{
@@ -90,7 +90,7 @@ var CreateEscrow = transactions.Transaction{
 		buyerPubKey, _ := req["buyerPubKey"].(string)
 		sellerPubKey, _ := req["sellerPubKey"].(string)
 		amount, _ := req["amount"].(float64)
-		assetType, _ := req["assetType"].(string)
+		assetType, _ := req["assetType"].(interface{})
 		conditionValue, _ := req["conditionValue"].(string)
 		status, _ := req["status"].(string)
 		buyerCertHash, _ := req["buyerCertHash"].(string)
