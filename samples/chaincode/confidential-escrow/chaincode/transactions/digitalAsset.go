@@ -3,6 +3,7 @@ package transactions
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hyperledger-labs/cc-tools/accesscontrol"
@@ -147,39 +148,10 @@ var ReadDigitalAsset = transactions.Transaction{
 			DataType:    "string",
 			Required:    true,
 		},
-		// {
-		// 	Tag:         "symbol",
-		// 	Label:       "Symbol",
-		// 	Description: "Symbol of the Digital Asset to read",
-		// 	DataType:    "string",
-		// 	Required:    true,
-		// },
 	},
 
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
 		uuid, _ := req["uuid"].(string)
-		// symbol, _ := req["symbol"].(string)
-
-		// query := map[string]interface{}{
-		// 	"selector": map[string]interface{}{
-		// 		"@assetType": "digitalAsset",
-		// 		"author":     symbol,
-		// 	},
-		// }
-		//
-		// var err error
-		// response, err := assets.Search(stub, query, "", true)
-		// if err != nil {
-		// 	return nil, errors.WrapErrorWithStatus(err, "error searching for book's author", 500)
-		// }
-		//
-		// responseJSON, err := json.Marshal(response)
-		// if err != nil {
-		// 	return nil, errors.WrapErrorWithStatus(err, "error marshaling response", 500)
-		// }
-		//
-		// return responseJSON, nil
-		//
 		key := assets.Key{
 			"@key": "digitalAsset:" + uuid,
 		}
@@ -195,5 +167,520 @@ var ReadDigitalAsset = transactions.Transaction{
 		}
 
 		return assetJSON, nil
+	},
+}
+
+var MintTokens = transactions.Transaction{
+	Tag:         "mintTokens",
+	Label:       "Mint Tokens",
+	Description: "Mint new tokens to a wallet (issuer only)",
+	Method:      "POST",
+	Callers: []accesscontrol.Caller{
+		{
+			MSP: "Org1MSP",
+			OU:  "admin",
+		},
+		{
+			MSP: "Org2MSP",
+			OU:  "admin",
+		},
+	},
+
+	Args: []transactions.Argument{
+		{
+			Tag:         "assetId",
+			Label:       "Asset ID",
+			Description: "ID of the digital asset",
+			DataType:    "string",
+			Required:    true,
+		},
+		{
+			Tag:         "walletId",
+			Label:       "Target Wallet ID",
+			Description: "Wallet to mint tokens to",
+			DataType:    "string",
+			Required:    true,
+		},
+		{
+			Tag:         "amount",
+			Label:       "Amount to Mint",
+			Description: "Number of tokens to mint",
+			DataType:    "number",
+			Required:    true,
+		},
+		{
+			Tag:         "issuerCertHash",
+			Label:       "Issuer Certificate Hash",
+			Description: "Certificate hash for issuer verification",
+			DataType:    "string",
+			Required:    true,
+		},
+	},
+
+	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
+		assetId, _ := req["assetId"].(string)
+		walletId, _ := req["walletId"].(string)
+		amount, _ := req["amount"].(float64)
+		issuerCertHash, _ := req["issuerCertHash"].(string)
+
+		// Verify issuer authorization
+		assetKey := assets.Key{"@key": "digitalAsset:" + assetId}
+		asset, err := assetKey.Get(stub)
+		if err != nil {
+			return nil, errors.WrapErrorWithStatus(err, "Error reading digital asset", err.Status())
+		}
+
+		if asset.GetProp("issuerHash").(string) != issuerCertHash {
+			return nil, errors.NewCCError("Unauthorized: Only asset issuer can mint tokens", 403)
+		}
+
+		// Get wallet
+		walletKey := assets.Key{"@key": "wallet:" + walletId}
+		walletAsset, err := walletKey.Get(stub)
+		if err != nil {
+			return nil, errors.WrapErrorWithStatus(err, "Error reading wallet", err.Status())
+		}
+
+		digitalAssetTypes := walletAsset.GetProp("digitalAssetTypes").([]interface{})
+		balances := walletAsset.GetProp("balances").([]interface{})
+
+		// Find asset index and update balance
+		assetFound := false
+		for i, assetRef := range digitalAssetTypes {
+			var refAssetId string
+			switch ref := assetRef.(type) {
+			case map[string]interface{}:
+				refAssetId = strings.Split(ref["@key"].(string), ":")[1]
+			case string:
+				refAssetId = ref
+			}
+
+			if refAssetId == assetId {
+				currentBalance := balances[i].(float64)
+				balances[i] = currentBalance + amount
+				assetFound = true
+				break
+			}
+		}
+
+		// PPS-fix: if asset not found... then add asset...
+		if !assetFound {
+			return nil, errors.NewCCError("Asset not found in wallet", 404)
+		}
+
+		// Create updated wallet map
+		walletMap := make(map[string]interface{})
+		walletMap["@assetType"] = "wallet"
+		walletMap["@key"] = "wallet:" + walletId
+		walletMap["walletId"] = walletAsset.GetProp("walletId")
+		walletMap["ownerId"] = walletAsset.GetProp("ownerId")
+		walletMap["ownerCertHash"] = walletAsset.GetProp("ownerCertHash")
+		walletMap["balances"] = balances
+		walletMap["digitalAssetTypes"] = digitalAssetTypes
+		walletMap["createdAt"] = walletAsset.GetProp("createdAt")
+
+		updatedWallet, err := assets.NewAsset(walletMap)
+		if err != nil {
+			return nil, errors.WrapError(err, "Failed to update wallet")
+		}
+
+		_, err = updatedWallet.Put(stub)
+		if err != nil {
+			return nil, errors.WrapErrorWithStatus(err, "Error updating wallet", err.Status())
+		}
+
+		// Update total supply
+		currentSupply := asset.GetProp("totalSupply").(float64)
+		assetMap := make(map[string]interface{})
+		assetMap["@assetType"] = "digitalAsset"
+		assetMap["@key"] = "digitalAsset:" + assetId
+		assetMap["name"] = asset.GetProp("name")
+		assetMap["symbol"] = asset.GetProp("symbol")
+		assetMap["decimals"] = asset.GetProp("decimals")
+		assetMap["totalSupply"] = currentSupply + amount
+		assetMap["owner"] = asset.GetProp("owner")
+		assetMap["issuedAt"] = asset.GetProp("issuedAt")
+		assetMap["issuerHash"] = asset.GetProp("issuerHash")
+
+		updatedAsset, err := assets.NewAsset(assetMap)
+		if err != nil {
+			return nil, errors.WrapError(err, "Failed to update asset")
+		}
+
+		_, err = updatedAsset.Put(stub)
+		if err != nil {
+			return nil, errors.WrapErrorWithStatus(err, "Error updating asset", err.Status())
+		}
+
+		response := map[string]interface{}{
+			"message":     "Tokens minted successfully",
+			"assetId":     assetId,
+			"walletId":    walletId,
+			"amount":      amount,
+			"totalSupply": currentSupply + amount,
+		}
+
+		respJSON, jsonErr := json.Marshal(response)
+		if jsonErr != nil {
+			return nil, errors.WrapError(nil, "failed to encode response to JSON format")
+		}
+
+		return respJSON, nil
+	},
+}
+
+var TransferTokens = transactions.Transaction{
+	Tag:         "transferTokens",
+	Label:       "Transfer Tokens",
+	Description: "Transfer tokens between wallets with balance validation",
+	Method:      "POST",
+	Callers: []accesscontrol.Caller{
+		{
+			MSP: "Org1MSP",
+			OU:  "admin",
+		},
+		{
+			MSP: "Org2MSP",
+			OU:  "admin",
+		},
+	},
+
+	Args: []transactions.Argument{
+		{
+			Tag:         "fromWalletId",
+			Label:       "From Wallet ID",
+			Description: "Source wallet ID",
+			DataType:    "string",
+			Required:    true,
+		},
+		{
+			Tag:         "toWalletId",
+			Label:       "To Wallet ID",
+			Description: "Destination wallet ID",
+			DataType:    "string",
+			Required:    true,
+		},
+		{
+			Tag:         "assetId",
+			Label:       "Asset ID",
+			Description: "ID of the digital asset to transfer",
+			DataType:    "string",
+			Required:    true,
+		},
+		{
+			Tag:         "amount",
+			Label:       "Transfer Amount",
+			Description: "Number of tokens to transfer",
+			DataType:    "number",
+			Required:    true,
+		},
+		{
+			Tag:         "senderCertHash",
+			Label:       "Sender Certificate Hash",
+			Description: "Certificate hash of the sender for authorization",
+			DataType:    "string",
+			Required:    true,
+		},
+	},
+
+	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
+		fromWalletId, _ := req["fromWalletId"].(string)
+		toWalletId, _ := req["toWalletId"].(string)
+		assetId, _ := req["assetId"].(string)
+		amount, _ := req["amount"].(float64)
+		senderCertHash, _ := req["senderCertHash"].(string)
+
+		// Get source wallet
+		fromKey := assets.Key{"@key": "wallet:" + fromWalletId}
+		fromWalletAsset, err := fromKey.Get(stub)
+		if err != nil {
+			return nil, errors.WrapErrorWithStatus(err, "Error reading source wallet", err.Status())
+		}
+
+		// Verify sender authorization
+		if fromWalletAsset.GetProp("ownerCertHash").(string) != senderCertHash {
+			return nil, errors.NewCCError("Unauthorized: Sender certificate mismatch", 403)
+		}
+
+		// Get destination wallet
+		toKey := assets.Key{"@key": "wallet:" + toWalletId}
+		toWalletAsset, err := toKey.Get(stub)
+		if err != nil {
+			return nil, errors.WrapErrorWithStatus(err, "Error reading destination wallet", err.Status())
+		}
+
+		// Update source wallet balance
+		fromAssetTypes := fromWalletAsset.GetProp("digitalAssetTypes").([]interface{})
+		fromBalances := fromWalletAsset.GetProp("balances").([]interface{})
+
+		fromAssetFound := false
+		for i, assetRef := range fromAssetTypes {
+			var refAssetId string
+			switch ref := assetRef.(type) {
+			case map[string]interface{}:
+				refAssetId = strings.Split(ref["@key"].(string), ":")[1]
+			case string:
+				refAssetId = ref
+			}
+
+			if refAssetId == assetId {
+				currentBalance := fromBalances[i].(float64)
+				if currentBalance < amount {
+					return nil, errors.NewCCError("Insufficient balance", 400)
+				}
+				fromBalances[i] = currentBalance - amount
+				fromAssetFound = true
+				break
+			}
+		}
+
+		if !fromAssetFound {
+			return nil, errors.NewCCError("Asset not found in source wallet", 404)
+		}
+
+		// Update destination wallet balance
+		toAssetTypes := toWalletAsset.GetProp("digitalAssetTypes").([]interface{})
+		toBalances := toWalletAsset.GetProp("balances").([]interface{})
+
+		toAssetFound := false
+		for i, assetRef := range toAssetTypes {
+			var refAssetId string
+			switch ref := assetRef.(type) {
+			case map[string]interface{}:
+				refAssetId = strings.Split(ref["@key"].(string), ":")[1]
+			case string:
+				refAssetId = ref
+			}
+
+			if refAssetId == assetId {
+				currentBalance := toBalances[i].(float64)
+				toBalances[i] = currentBalance + amount
+				toAssetFound = true
+				break
+			}
+		}
+
+		// PPS-fix: if asset not found, Add asset
+		if !toAssetFound {
+			return nil, errors.NewCCError("Asset not found in destination wallet", 404)
+		}
+
+		// Save updated source wallet
+		fromWalletMap := make(map[string]interface{})
+		fromWalletMap["@assetType"] = "wallet"
+		fromWalletMap["@key"] = "wallet:" + fromWalletId
+		fromWalletMap["walletId"] = fromWalletAsset.GetProp("walletId")
+		fromWalletMap["ownerId"] = fromWalletAsset.GetProp("ownerId")
+		fromWalletMap["ownerCertHash"] = fromWalletAsset.GetProp("ownerCertHash")
+		fromWalletMap["balances"] = fromBalances
+		fromWalletMap["digitalAssetTypes"] = fromAssetTypes
+		fromWalletMap["createdAt"] = fromWalletAsset.GetProp("createdAt")
+
+		updatedFromWallet, err := assets.NewAsset(fromWalletMap)
+		if err != nil {
+			return nil, errors.WrapError(err, "Failed to update source wallet")
+		}
+
+		_, err = updatedFromWallet.Put(stub)
+		if err != nil {
+			return nil, errors.WrapErrorWithStatus(err, "Error saving source wallet", err.Status())
+		}
+
+		// Save updated destination wallet
+		toWalletMap := make(map[string]interface{})
+		toWalletMap["@assetType"] = "wallet"
+		toWalletMap["@key"] = "wallet:" + toWalletId
+		toWalletMap["walletId"] = toWalletAsset.GetProp("walletId")
+		toWalletMap["ownerId"] = toWalletAsset.GetProp("ownerId")
+		toWalletMap["ownerCertHash"] = toWalletAsset.GetProp("ownerCertHash")
+		toWalletMap["balances"] = toBalances
+		toWalletMap["digitalAssetTypes"] = toAssetTypes
+		toWalletMap["createdAt"] = toWalletAsset.GetProp("createdAt")
+
+		updatedToWallet, err := assets.NewAsset(toWalletMap)
+		if err != nil {
+			return nil, errors.WrapError(err, "Failed to update destination wallet")
+		}
+
+		_, err = updatedToWallet.Put(stub)
+		if err != nil {
+			return nil, errors.WrapErrorWithStatus(err, "Error saving destination wallet", err.Status())
+		}
+
+		response := map[string]interface{}{
+			"message":      "Transfer completed successfully",
+			"fromWalletId": fromWalletId,
+			"toWalletId":   toWalletId,
+			"assetId":      assetId,
+			"amount":       amount,
+		}
+
+		respJSON, jsonErr := json.Marshal(response)
+		if jsonErr != nil {
+			return nil, errors.WrapError(nil, "failed to encode response to JSON format")
+		}
+
+		return respJSON, nil
+	},
+}
+
+var BurnTokens = transactions.Transaction{
+	Tag:         "burnTokens",
+	Label:       "Burn Tokens",
+	Description: "Burn tokens from a wallet (issuer only)",
+	Method:      "POST",
+	Callers: []accesscontrol.Caller{
+		{
+			MSP: "Org1MSP",
+			OU:  "admin",
+		},
+		{
+			MSP: "Org2MSP",
+			OU:  "admin",
+		},
+	},
+
+	Args: []transactions.Argument{
+		{
+			Tag:         "assetId",
+			Label:       "Asset ID",
+			Description: "ID of the digital asset",
+			DataType:    "string",
+			Required:    true,
+		},
+		{
+			Tag:         "walletId",
+			Label:       "Wallet ID",
+			Description: "Wallet to burn tokens from",
+			DataType:    "string",
+			Required:    true,
+		},
+		{
+			Tag:         "amount",
+			Label:       "Amount to Burn",
+			Description: "Number of tokens to burn",
+			DataType:    "number",
+			Required:    true,
+		},
+		{
+			Tag:         "issuerCertHash",
+			Label:       "Issuer Certificate Hash",
+			Description: "Certificate hash for issuer verification",
+			DataType:    "string",
+			Required:    true,
+		},
+	},
+
+	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
+		assetId, _ := req["assetId"].(string)
+		walletId, _ := req["walletId"].(string)
+		amount, _ := req["amount"].(float64)
+		issuerCertHash, _ := req["issuerCertHash"].(string)
+
+		// Verify issuer authorization
+		assetKey := assets.Key{"@key": "digitalAsset:" + assetId}
+		asset, err := assetKey.Get(stub)
+		if err != nil {
+			return nil, errors.WrapErrorWithStatus(err, "Error reading digital asset", err.Status())
+		}
+
+		if asset.GetProp("issuerHash").(string) != issuerCertHash {
+			return nil, errors.NewCCError("Unauthorized: Only asset issuer can burn tokens", 403)
+		}
+
+		// Get wallet
+		walletKey := assets.Key{"@key": "wallet:" + walletId}
+		walletAsset, err := walletKey.Get(stub)
+		if err != nil {
+			return nil, errors.WrapErrorWithStatus(err, "Error reading wallet", err.Status())
+		}
+
+		digitalAssetTypes := walletAsset.GetProp("digitalAssetTypes").([]interface{})
+		balances := walletAsset.GetProp("balances").([]interface{})
+
+		// Find asset index and update balance
+		assetFound := false
+		for i, assetRef := range digitalAssetTypes {
+			var refAssetId string
+			switch ref := assetRef.(type) {
+			case map[string]interface{}:
+				refAssetId = strings.Split(ref["@key"].(string), ":")[1]
+			case string:
+				refAssetId = ref
+			}
+
+			if refAssetId == assetId {
+				currentBalance := balances[i].(float64)
+				if currentBalance < amount {
+					return nil, errors.NewCCError("Insufficient balance to burn", 400)
+				}
+				balances[i] = currentBalance - amount
+				assetFound = true
+				break
+			}
+		}
+
+		if !assetFound {
+			return nil, errors.NewCCError("Asset not found in wallet", 404)
+		}
+
+		// Create updated wallet map
+		walletMap := make(map[string]interface{})
+		walletMap["@assetType"] = "wallet"
+		walletMap["@key"] = "wallet:" + walletId
+		walletMap["walletId"] = walletAsset.GetProp("walletId")
+		walletMap["ownerId"] = walletAsset.GetProp("ownerId")
+		walletMap["ownerCertHash"] = walletAsset.GetProp("ownerCertHash")
+		walletMap["balances"] = balances
+		walletMap["digitalAssetTypes"] = digitalAssetTypes
+		walletMap["createdAt"] = walletAsset.GetProp("createdAt")
+
+		updatedWallet, err := assets.NewAsset(walletMap)
+		if err != nil {
+			return nil, errors.WrapError(err, "Failed to update wallet")
+		}
+
+		_, err = updatedWallet.Put(stub)
+		if err != nil {
+			return nil, errors.WrapErrorWithStatus(err, "Error updating wallet", err.Status())
+		}
+
+		// Update total supply
+		currentSupply := asset.GetProp("totalSupply").(float64)
+		assetMap := make(map[string]interface{})
+		assetMap["@assetType"] = "digitalAsset"
+		assetMap["@key"] = "digitalAsset:" + assetId
+		assetMap["name"] = asset.GetProp("name")
+		assetMap["symbol"] = asset.GetProp("symbol")
+		assetMap["decimals"] = asset.GetProp("decimals")
+		assetMap["totalSupply"] = currentSupply - amount
+		assetMap["owner"] = asset.GetProp("owner")
+		assetMap["issuedAt"] = asset.GetProp("issuedAt")
+		assetMap["issuerHash"] = asset.GetProp("issuerHash")
+
+		updatedAsset, err := assets.NewAsset(assetMap)
+		if err != nil {
+			return nil, errors.WrapError(err, "Failed to update asset")
+		}
+
+		_, err = updatedAsset.Put(stub)
+		if err != nil {
+			return nil, errors.WrapErrorWithStatus(err, "Error updating asset", err.Status())
+		}
+
+		response := map[string]interface{}{
+			"message":     "Tokens burned successfully",
+			"assetId":     assetId,
+			"walletId":    walletId,
+			"amount":      amount,
+			"totalSupply": currentSupply - amount,
+		}
+
+		respJSON, jsonErr := json.Marshal(response)
+		if jsonErr != nil {
+			return nil, errors.WrapError(nil, "failed to encode response to JSON format")
+		}
+
+		return respJSON, nil
 	},
 }
