@@ -14,14 +14,22 @@ import (
 var (
 	TxList = []tx.Transaction{
 		transaction.DebugTest,
+		// Create
 		transaction.CreateUserDir,
 		transaction.CreateWallet,
 		transaction.CreateDigitalAsset,
 		transaction.CreateEscrow,
+		// Read
 		transaction.ReadUserDir,
 		transaction.ReadWallet,
 		transaction.ReadDigitalAsset,
 		transaction.ReadEscrow,
+		// misc
+		transaction.GetBalance,
+		transaction.GetWalletByOwner,
+		transaction.MintTokens,
+		transaction.TransferTokens,
+		transaction.BurnTokens,
 	}
 	AssetTypeList = []assets.AssetType{
 		asset.Wallet,
