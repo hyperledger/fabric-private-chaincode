@@ -189,6 +189,18 @@ test_create_wallet() {
     store_wallet_data "$output"
 }
 
+test_create_wallet2() {
+    log_info "Creating second wallet..."
+    cd $FPC_PATH/samples/application/simple-cli-go
+    ./fpcclient invoke createWallet "{
+        \"walletId\": \"wallet-222\",
+        \"ownerId\": \"Bob\",
+        \"ownerCertHash\": \"sha256:ghi789\", 
+        \"balances\": [0],
+        \"digitalAssetTypes\": [$DIGITAL_ASSET_JSON]
+    }"
+}
+
 test_create_escrow() {
     log_info "Creating escrow..."
     cd $FPC_PATH/samples/application/simple-cli-go
@@ -220,6 +232,61 @@ test_query_wallet() {
     ./fpcclient query readWallet "{\"uuid\": \"$WALLET_UUID\"}"
 }
 
+test_get_balance() {
+    log_info "Testing getBalance transaction"
+
+    # Test getting balance for CBDCC in wallet1
+    cd $FPC_PATH/samples/application/simple-cli-go
+    ./fpcclient query getBalance '{
+        "walletId": "wallet-111",
+        "assetSymbol": "CBDCC", 
+        "ownerCertHash": "sha256:def456"
+    }'
+}
+
+test_get_wallet_by_owner() {
+    log_info "Testing getWalletByOwner transaction"
+    cd $FPC_PATH/samples/application/simple-cli-go
+    ./fpcclient query getWalletByOwner '{
+        "ownerId": "Abhinav",
+        "ownerCertHash": "sha256:def456"
+    }'
+}
+
+test_mint_tokens() {
+    log_info "Testing mintTokens transaction"
+    cd $FPC_PATH/samples/application/simple-cli-go
+    ./fpcclient invoke mintTokens "{
+        \"assetId\": \"$DIGITAL_ASSET_UUID\",
+        \"walletId\": \"wallet-111\",
+        \"amount\": 100,
+        \"issuerCertHash\": \"sha256:abc123\"
+    }"
+}
+
+test_transfer_tokens() {
+    log_info "Testing transferTokens transaction"
+    cd $FPC_PATH/samples/application/simple-cli-go
+    ./fpcclient invoke transferTokens "{
+        \"fromWalletId\": \"wallet-111\",
+        \"toWalletId\": \"wallet-222\", 
+        \"assetId\": \"$DIGITAL_ASSET_UUID\",
+        \"amount\": 50,
+        \"senderCertHash\": \"sha256:def456\"
+    }"
+}
+
+test_burn_tokens() {
+    log_info "Testing burnTokens transaction"
+    cd $FPC_PATH/samples/application/simple-cli-go
+    ./fpcclient invoke burnTokens "{
+        \"assetId\": \"$DIGITAL_ASSET_UUID\",
+        \"walletId\": \"wallet-111\",
+        \"amount\": 25,
+        \"issuerCertHash\": \"sha256:abc123\"
+    }"
+}
+
 test_query_escrow() {
     log_info "Querying escrow..."
     cd $FPC_PATH/samples/application/simple-cli-go
@@ -234,10 +301,19 @@ run_tests() {
     test_debug
     test_create_asset
     test_create_wallet
+    test_create_wallet2
     test_create_escrow
     test_query_asset
     test_query_wallet
     test_query_escrow
+    test_get_balance
+    test_get_wallet_by_owner
+    test_mint_tokens
+    test_get_balance
+    test_transfer_tokens
+    test_get_balance
+    test_burn_tokens
+    test_get_balance
     log_success "=== TESTS COMPLETED ==="
 }
 
