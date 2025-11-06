@@ -3,7 +3,7 @@ module github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi
 go 1.23.5
 
 require (
-	github.com/gin-contrib/cors v1.4.0
+	github.com/gin-contrib/cors v1.6.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/hyperledger-labs/cc-tools-demo/ccapi v0.0.0-20241207212759-9de20ef72afc
 	github.com/hyperledger/fabric v2.1.1+incompatible
