@@ -1,0 +1,10 @@
+ecc
+ecc-bundle
+enclave.json
+private.pem
+public.pem
+mrenclave
+details.env
+
+.env
+*.bak
