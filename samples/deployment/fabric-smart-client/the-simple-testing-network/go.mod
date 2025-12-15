@@ -20,6 +20,8 @@ require (
 	cloud.google.com/go/storage v1.30.1 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/BurntSushi/toml v1.2.1 // indirect
+	github.com/Masterminds/goutils v1.1.1 // indirect
+	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/containerd/containerd v1.7.13 // indirect
 	github.com/containerd/log v0.1.0 // indirect
@@ -35,7 +37,7 @@ require (
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
+	github.com/go-task/slim-sprig v2.20.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
@@ -50,6 +52,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
 	github.com/hashicorp/consul/sdk v0.8.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/hyperledger-labs/orion-sdk-go v0.2.10 // indirect
 	github.com/hyperledger-labs/orion-server v0.2.10 // indirect
 	github.com/hyperledger/fabric v2.1.1+incompatible // indirect
@@ -57,6 +60,7 @@ require (
 	github.com/hyperledger/fabric-lib-go v1.0.0 // indirect
 	github.com/hyperledger/fabric-private-chaincode v1.0.0-rc3.0.20231026135044-67a19b0fcda0 // indirect
 	github.com/hyperledger/fabric-protos-go v0.3.0 // indirect
+	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/klauspost/compress v1.17.4 // indirect
