@@ -57,6 +57,8 @@ spec:
               value: 0.0.0.0:9443
             - name: CORE_METRICS_PROVIDER
               value: prometheus
+            - name: CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG
+              value: "{\"peername\":\"peer0org1\"}"
           image: hyperledger/fabric-peer:2.5.9
           name: peer0
           ports:
