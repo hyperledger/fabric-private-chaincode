@@ -54,7 +54,7 @@ do
 done
 
 echo "Package ercc and fpccc"
-CC_TYPE="external"
+CC_TYPE="ccaas"
 ERCC_ID="ercc"
 ERCC_VER="1.0"
 FPCCC_ID="fpccc"
