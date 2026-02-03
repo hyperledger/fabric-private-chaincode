@@ -57,14 +57,14 @@ func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Resp
 	initMsg, err := t.Extractor.GetInitEnclaveMessage(stub)
 	if err != nil {
 		errMsg := fmt.Sprintf("getting initEnclave msg failed: %s", err.Error())
-		logger.Errorf(errMsg)
+		logger.Error(errMsg)
 		return shim.Error(errMsg)
 	}
 
 	chaincodeParams, err := t.Extractor.GetChaincodeParams(stub)
 	if err != nil {
 		errMsg := fmt.Sprintf("getting chaincode params failed: %s", err.Error())
-		logger.Errorf(errMsg)
+		logger.Error(errMsg)
 		return shim.Error(errMsg)
 	}
 	serializedChaincodeParams, err := protoutil.Marshal(chaincodeParams)
@@ -75,7 +75,7 @@ func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Resp
 	hostParams, err := t.Extractor.GetHostParams(stub)
 	if err != nil {
 		errMsg := fmt.Sprintf("getting host params failed: %s", err.Error())
-		logger.Errorf(errMsg)
+		logger.Error(errMsg)
 		return shim.Error(errMsg)
 	}
 
@@ -88,7 +88,7 @@ func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Resp
 	credentialsBytes, err := t.Enclave.Init(serializedChaincodeParams, serializedHostParams, initMsg.AttestationParams)
 	if err != nil {
 		errMsg := fmt.Sprintf("Enclave Init function failed: %s", err.Error())
-		logger.Errorf(errMsg)
+		logger.Error(errMsg)
 		return shim.Error(errMsg)
 	}
 
@@ -102,14 +102,14 @@ func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response 
 	serializedChaincodeRequest, err := t.Extractor.GetSerializedChaincodeRequest(stub)
 	if err != nil {
 		errMsg = fmt.Sprintf("cannot get chaincode request message from input: %s", err.Error())
-		logger.Errorf(errMsg)
+		logger.Error(errMsg)
 		return shim.Error(errMsg)
 	}
 
 	signedChaincodeResponseMessage, errInvoke := t.Enclave.ChaincodeInvoke(stub, serializedChaincodeRequest)
 	if errInvoke != nil {
 		errMsg = fmt.Sprintf("t.Enclave.Invoke failed: %s", errInvoke)
-		logger.Errorf(errMsg)
+		logger.Error(errMsg)
 		// likely a chaincode error, so we still want response go back ...
 	}
 
@@ -139,14 +139,14 @@ func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) pb.Response
 	chaincodeParams, err := t.Extractor.GetChaincodeParams(stub)
 	if err != nil {
 		errMsg := fmt.Sprintf("cannot extract chaincode params: %s", err.Error())
-		logger.Errorf(errMsg)
+		logger.Error(errMsg)
 		return shim.Error(errMsg)
 	}
 
 	signedResponseMsg, responseMsg, err := t.Extractor.GetChaincodeResponseMessages(stub)
 	if err != nil {
 		errMsg := fmt.Sprintf("cannot extract chaincode response message: %s", err.Error())
-		logger.Errorf(errMsg)
+		logger.Error(errMsg)
 		return shim.Error(errMsg)
 	}
 
@@ -175,20 +175,20 @@ func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) pb.Response
 	// check cc param.MSPID matches MSPID of endorser (Post-MVP)
 
 	// validate enclave endorsement signature
-	logger.Debugf("Validating endorsement")
+	logger.Debug("Validating endorsement")
 	err = t.Validator.Validate(signedResponseMsg, attestedData)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	// replay read/writes from kvrwset from Enclave (to prepare commitment to ledger) and extract kvrwset for subsequent validation
-	logger.Debugf("Replaying rwset")
+	logger.Debug("Replaying rwset")
 	err = t.Validator.ReplayReadWrites(stub, responseMsg.FpcRwSet)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	logger.Debugf("Endorsement successful")
+	logger.Debug("Endorsement successful")
 	return shim.Success([]byte("OK")) // make sure we have a non-empty return on success so we can distinguish success from failure in cli ...
 }
 

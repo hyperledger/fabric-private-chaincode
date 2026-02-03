@@ -12,6 +12,7 @@ package enclave
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"unsafe"
 
@@ -80,7 +81,7 @@ func (e *EnclaveStub) Init(chaincodeParams, hostParams, attestationParams []byte
 	if ret != 0 {
 		msg := fmt.Sprintf("can not create enclave (%s): Reason: %v", enclaveLibFile, ret)
 		logger.Error(msg)
-		return nil, fmt.Errorf(msg)
+		return nil, errors.New(msg)
 	}
 	e.eid = eid
 	e.sem.Release(1)
@@ -114,7 +115,7 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, crmProto
 	const scresmProtoBytesMaxLen = 1024 * 100 // Let's be really conservative ...
 
 	if !e.isInitialized {
-		return nil, fmt.Errorf("enclave not yet initialized")
+		return nil, errors.New("enclave not yet initialized")
 	}
 
 	// register our stub for callbacks
