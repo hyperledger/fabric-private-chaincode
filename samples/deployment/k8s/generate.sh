@@ -54,6 +54,40 @@ do
 done
 
 echo "Package ercc and fpccc"
+function packageChaincode() {
+
+  address="{{.peername}}_${CC_NAME}_ccaas:${CHAINCODE_SERVER_PORT}"
+  prefix=$(basename "$0")
+  tempdir=$(mktemp -d -t "$prefix.XXXXXXXX") || error_exit "Error creating temporary directory"
+  label=${CC_NAME}_${CC_VERSION}
+  mkdir -p "$tempdir/src"
+
+cat > "$tempdir/src/connection.json" <<CONN_EOF
+{
+  "address": "${address}",
+  "dial_timeout": "10s",
+  "tls_required": false
+}
+CONN_EOF
+
+   mkdir -p "$tempdir/pkg"
+
+cat << METADATA-EOF > "$tempdir/pkg/metadata.json"
+{
+    "type": "ccaas",
+    "label": "$label"
+}
+METADATA-EOF
+
+    tar -C "$tempdir/src" -czf "$tempdir/pkg/code.tar.gz" .
+    tar -C "$tempdir/pkg" -czf "$CC_NAME.tar.gz" metadata.json code.tar.gz
+    rm -Rf "$tempdir"
+
+    PACKAGE_ID=$(peer lifecycle chaincode calculatepackageid ${CC_NAME}.tar.gz)
+  
+    successln "Chaincode is packaged  ${address}"
+}
+
 CC_TYPE="ccaas"
 ERCC_ID="ercc"
 ERCC_VER="1.0"
@@ -70,14 +104,19 @@ FPC_MRENCLAVE="$(cat "${FPCCC_PATH}"/_build/lib/mrenclave)"
 for peer in $(shopt -s globstar; find ${cryptoConfigDir}/**/peers/ -mindepth 1 -maxdepth 1 -execdir echo {} ';' | sed 's/^\.\///g');
 do
     # ercc
-    endpoint="${ERCC_ID}-${peer}:${CHAINCODE_SERVER_PORT}"
-    packageName="${ERCC_ID}-${peer}.tgz"
-    packageChaincode "${packageDir}" "${packageName}" "${ERCC_ID}" "${ERCC_VER}" "${CC_TYPE}" "${endpoint}" "${peer}"
+    CC_NAME=ERCC_ID
+    CC_VER=ERCC_VER
+#    endpoint="${ERCC_ID}-${peer}:${CHAINCODE_SERVER_PORT}"
+#    packageName="${ERCC_ID}-${peer}.tgz"
+#    packageChaincode "${packageDir}" "${packageName}" "${ERCC_ID}" "${ERCC_VER}" "${CC_TYPE}" "${endpoint}" "${peer}"
+    packageChaincode "${peer}"
 
     # fpc cc
-    endpoint="${FPCCC_ID}-${peer}:${CHAINCODE_SERVER_PORT}"
-    packageName="${FPCCC_ID}-${peer}.tgz"
-    packageChaincode "${packageDir}" "${packageName}" "${FPCCC_ID}" "${FPC_MRENCLAVE}" "${CC_TYPE}" "${endpoint}" "${peer}"
+    CC_NAME=FPCCC_ID
+#    endpoint="${FPCCC_ID}-${peer}:${CHAINCODE_SERVER_PORT}"
+#    packageName="${FPCCC_ID}-${peer}.tgz"
+#    packageChaincode "${packageDir}" "${packageName}" "${FPCCC_ID}" "${FPC_MRENCLAVE}" "${CC_TYPE}" "${endpoint}" "${peer}"
+    packageChaincode "${peer}"
 done
 
 echo "Store mrenclave for fpccc"
