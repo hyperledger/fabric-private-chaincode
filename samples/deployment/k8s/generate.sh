@@ -3,6 +3,19 @@
 # Copyright IBM Corp. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
+C_RESET='\033[0m'
+C_RED='\033[0;31m'
+C_GREEN='\033[0;32m'
+C_BLUE='\033[0;34m'
+C_YELLOW='\033[1;33m'
+# successln echos in green color
+function successln() {
+  println "${C_GREEN}${1}${C_RESET}"
+}
+# println echos string
+function println() {
+  echo -e "$1"
+}
 set -euo pipefail
 
 if [[ -z "${FPC_PATH}" ]]; then
@@ -21,7 +34,7 @@ packageDir="${outDir}/packages"
 
 CHAINCODE_SERVER_PORT=9999
 
-FABRIC_BIN_DIR="${FABRIC_BIN_DIR:-${FABRIC_PATH}/build/bin}"
+FABRIC_BIN_DIR="${FPC_PATH}/fabric/_internal/bin"
 if [[ -z "${FABRIC_BIN_DIR}" ]]; then
   echo "Error: FABRIC_BIN_DIR not set"
   echo "Error: FABRIC_BIN_DIR must point to the location of cryptogen and configtxgen"
@@ -83,7 +96,8 @@ METADATA-EOF
     tar -C "$tempdir/pkg" -czf "$CC_NAME.tar.gz" metadata.json code.tar.gz
     rm -Rf "$tempdir"
 
-    PACKAGE_ID=$(peer lifecycle chaincode calculatepackageid ${CC_NAME}.tar.gz)
+#    PACKAGE_ID=$(peer lifecycle chaincode calculatepackageid ${CC_NAME}.tar.gz)
+# commenting due to the network not yet being setup to calculate package_id 
   
     successln "Chaincode is packaged  ${address}"
 }
@@ -105,7 +119,7 @@ for peer in $(shopt -s globstar; find ${cryptoConfigDir}/**/peers/ -mindepth 1 -
 do
     # ercc
     CC_NAME=ERCC_ID
-    CC_VER=ERCC_VER
+    CC_VERSION=ERCC_VER
 #    endpoint="${ERCC_ID}-${peer}:${CHAINCODE_SERVER_PORT}"
 #    packageName="${ERCC_ID}-${peer}.tgz"
 #    packageChaincode "${packageDir}" "${packageName}" "${ERCC_ID}" "${ERCC_VER}" "${CC_TYPE}" "${endpoint}" "${peer}"
@@ -119,5 +133,5 @@ do
     packageChaincode "${peer}"
 done
 
-echo "Store mrenclave for fpccc"
-echo "FPC_MRENCLAVE=${FPC_MRENCLAVE}" >> ${packageDir}/chaincode-config.properties
+#echo "Store mrenclave for fpccc"
+#echo "FPC_MRENCLAVE=${FPC_MRENCLAVE}" >> ${packageDir}/chaincode-config.properties
