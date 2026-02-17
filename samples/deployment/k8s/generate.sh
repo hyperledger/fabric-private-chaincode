@@ -31,6 +31,7 @@ outDir="."
 cryptoConfigDir="${outDir}/crypto-config"
 channelArtifactsDir="${outDir}/channel-artifacts"
 packageDir="${outDir}/packages"
+mkdir packageDir
 
 CHAINCODE_SERVER_PORT=9999
 
@@ -99,7 +100,9 @@ METADATA-EOF
 #    PACKAGE_ID=$(peer lifecycle chaincode calculatepackageid ${CC_NAME}.tar.gz)
 # commenting due to the network not yet being setup to calculate package_id 
   
-    successln "Chaincode is packaged  ${address}"
+    mv $CC_NAME.tar.gz packageDir
+    successln "Chaincode is packaged  ${address} and in ${packageDir}/$CC_NAME.tar.gz"
+    
 }
 
 CC_TYPE="ccaas"
@@ -133,5 +136,6 @@ do
     packageChaincode "${peer}"
 done
 
-#echo "Store mrenclave for fpccc"
-#echo "FPC_MRENCLAVE=${FPC_MRENCLAVE}" >> ${packageDir}/chaincode-config.properties
+
+echo "Store mrenclave for fpccc"
+echo "FPC_MRENCLAVE=${FPC_MRENCLAVE}" >> ${packageDir}/chaincode-config.properties
