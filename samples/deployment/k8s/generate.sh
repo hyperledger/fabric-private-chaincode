@@ -31,7 +31,7 @@ outDir="."
 cryptoConfigDir="${outDir}/crypto-config"
 channelArtifactsDir="${outDir}/channel-artifacts"
 packageDir="${outDir}/packages"
-mkdir packageDir
+
 
 CHAINCODE_SERVER_PORT=9999
 
@@ -117,7 +117,7 @@ if [[ -z "${TEST_CC_PATH}" ]]; then
 fi
 
 FPC_MRENCLAVE="$(cat "${FPCCC_PATH}"/_build/lib/mrenclave)"
-
+mkdir packageDir
 for peer in $(shopt -s globstar; find ${cryptoConfigDir}/**/peers/ -mindepth 1 -maxdepth 1 -execdir echo {} ';' | sed 's/^\.\///g');
 do
     # ercc
