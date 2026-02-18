@@ -562,9 +562,12 @@ chaincode:
         #      - GOPROXY
     externalBuilders:
         # FPC Addition 0: external builder for fpc-c chaincode
-        - path: /builders/external
-          name: fpc-c
-          propagateEnvironment:
+       # - path: /builders/external
+       #   name: fpc-c
+       - name: ccaas_builder
+         path: /opt/hyperledger/ccaas_builder/ccaas/bin
+         propagateEnvironment:
+              - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG
               - CORE_PEER_ID
               - FPC_HOSTING_MODE
               - FABRIC_LOGGING_SPEC
