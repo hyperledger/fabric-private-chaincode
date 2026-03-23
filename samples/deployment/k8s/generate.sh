@@ -46,9 +46,9 @@ CRYPPTOGEN_CMD="${FABRIC_BIN_DIR}/cryptogen"
 CONFIGTXGEN_CMD="${FABRIC_BIN_DIR}/configtxgen"
 
 echo "Clean existing deployment artifacts"
-rm -rf ${cryptoConfigDir}
-rm -rf ${channelArtifactsDir}
-rm -rf ${packageDir}
+rm -rf $cryptoConfigDir
+rm -rf $channelArtifactsDir
+rm -rf $packageDir
 
 echo "Generate crypto material for orgs"
 $CRYPPTOGEN_CMD generate --output=${cryptoConfigDir} --config=./crypto-config.yaml
@@ -70,7 +70,7 @@ done
 echo "Package ercc and fpccc"
 function packageChaincode() {
 
-  address="{{.peername}}_${CC_NAME}_ccaas:${CHAINCODE_SERVER_PORT}"
+  address="${peer}_${CC_NAME}_ccaas:${CHAINCODE_SERVER_PORT}"
   prefix=$(basename "$0")
   tempdir=$(mktemp -d -t "$prefix.XXXXXXXX") || error_exit "Error creating temporary directory"
   label=${CC_NAME}_${CC_VERSION}
@@ -100,8 +100,8 @@ METADATA-EOF
 #    PACKAGE_ID=$(peer lifecycle chaincode calculatepackageid ${CC_NAME}.tar.gz)
 # commenting due to the network not yet being setup to calculate package_id 
   
-    mv $CC_NAME.tar.gz packageDir
-    successln "Chaincode is packaged  ${address} and in ${packageDir}/$CC_NAME.tar.gz"
+    mv $CC_NAME.tar.gz $packageDir
+    successln "Chaincode is packaged  ${address} and in ${packageDir}/${CC_NAME}.tar.gz"
     
 }
 
@@ -117,19 +117,19 @@ if [[ -z "${TEST_CC_PATH}" ]]; then
 fi
 
 FPC_MRENCLAVE="$(cat "${FPCCC_PATH}"/_build/lib/mrenclave)"
-mkdir packageDir
+mkdir $packageDir
 for peer in $(shopt -s globstar; find ${cryptoConfigDir}/**/peers/ -mindepth 1 -maxdepth 1 -execdir echo {} ';' | sed 's/^\.\///g');
 do
     # ercc
-    CC_NAME=ERCC_ID
-    CC_VERSION=ERCC_VER
+    CC_NAME="${ERCC_ID}-${peer}"
+    CC_VERSION=$ERCC_VER
 #    endpoint="${ERCC_ID}-${peer}:${CHAINCODE_SERVER_PORT}"
 #    packageName="${ERCC_ID}-${peer}.tgz"
 #    packageChaincode "${packageDir}" "${packageName}" "${ERCC_ID}" "${ERCC_VER}" "${CC_TYPE}" "${endpoint}" "${peer}"
     packageChaincode "${peer}"
 
     # fpc cc
-    CC_NAME=FPCCC_ID
+    CC_NAME="${FPCCC_ID}-${peer}"
 #    endpoint="${FPCCC_ID}-${peer}:${CHAINCODE_SERVER_PORT}"
 #    packageName="${FPCCC_ID}-${peer}.tgz"
 #    packageChaincode "${packageDir}" "${packageName}" "${FPCCC_ID}" "${FPC_MRENCLAVE}" "${CC_TYPE}" "${endpoint}" "${peer}"
