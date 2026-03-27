@@ -165,6 +165,7 @@ Show all pods
 # list all pods
 kubectl get pods -n hyperledger
 ```
+Before moving on ensure that all the pods status appears as running. You might have to wait a while for them to be at that status.
 
 Org1
 ```bash

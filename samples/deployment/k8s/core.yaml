@@ -565,7 +565,7 @@ chaincode:
        # - path: /builders/external
        #   name: fpc-c
        - name: ccaas_builder
-         path: /opt/hyperledger/ccaas_builder/ccaas/bin
+         path: /opt/hyperledger/ccaas_builder
          propagateEnvironment:
               - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG
               - CORE_PEER_ID
