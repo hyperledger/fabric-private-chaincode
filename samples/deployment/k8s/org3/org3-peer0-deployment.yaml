@@ -74,8 +74,8 @@ spec:
             - mountPath: /etc/hyperledger/fabric/core.yaml
               name: peer0-config
               subPath: core.yaml
-            - mountPath: /builders/external/bin/
-              name: external-builder
+#            - mountPath: /builders/external/bin/
+#              name: external-builder
       restartPolicy: Always
       volumes:
         - name: peer0-org3-claim1
@@ -96,10 +96,10 @@ spec:
             items:
               - key: core.yaml
                 path: core.yaml
-        - name: external-builder
-          hostPath:
-            path: /fpc/fabric/externalBuilder/chaincode_server/bin
-            type: Directory
+#        - name: external-builder
+#          hostPath:
+#            path: /fpc/fabric/externalBuilder/chaincode_server/bin
+#            type: Directory
 ---
 apiVersion: v1
 kind: Service
