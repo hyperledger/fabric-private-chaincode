@@ -99,9 +99,9 @@ make these images available inside the k8s environment.
 With minikube we can easily do that by calling the following commands:
 
 ```bash
-minikube cache add fpc/ercc:latest
-minikube cache add fpc/fpccc:latest
-minikube cache add fpc/fpcclient:latest
+minikube image load fpc/ercc:latest
+minikube image load fpc/fpccc:latest
+minikube image load fpc/fpcclient:latest
 ```
 
 You can double check if the images are available. Please also carefully check if the image ID corresponds to the image you want to use.
@@ -229,8 +229,8 @@ kubectl exec -it cli_orgX_pod_name bash -n hyperledger
 # for all peers of orgX we install ercc and fpccc
 export ERCC=ercc-peer0-$ORG; export FPCCC=fpccc-peer0-$ORG
 
-peer lifecycle chaincode install packages/$ERCC.tgz
-peer lifecycle chaincode install packages/$FPCCC.tgz
+peer lifecycle chaincode install packages/$ERCC.tar.gz
+peer lifecycle chaincode install packages/$FPCCC.tar.gz
 peer lifecycle chaincode queryinstalled
 
 export ERCC_PKG_ID=$(peer lifecycle chaincode queryinstalled | grep ercc | awk '{print $3}' | sed 's/.$//')
