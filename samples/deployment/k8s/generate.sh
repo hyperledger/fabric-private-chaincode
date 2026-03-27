@@ -70,7 +70,7 @@ done
 echo "Package ercc and fpccc"
 function packageChaincode() {
 
-  address="${peer}_${CC_NAME}_ccaas:${CHAINCODE_SERVER_PORT}"
+  address="{{.peername}}_${CC_NAME}_ccaas:${CHAINCODE_SERVER_PORT}"
   prefix=$(basename "$0")
   tempdir=$(mktemp -d -t "$prefix.XXXXXXXX") || error_exit "Error creating temporary directory"
   label=${CC_NAME}_${CC_VERSION}
@@ -94,14 +94,14 @@ cat << METADATA-EOF > "$tempdir/pkg/metadata.json"
 METADATA-EOF
 
     tar -C "$tempdir/src" -czf "$tempdir/pkg/code.tar.gz" .
-    tar -C "$tempdir/pkg" -czf "$CC_NAME.tar.gz" metadata.json code.tar.gz
+    tar -C "$tempdir/pkg" -czf "$CC_NAME-$peer.tar.gz" metadata.json code.tar.gz
     rm -Rf "$tempdir"
 
 #    PACKAGE_ID=$(peer lifecycle chaincode calculatepackageid ${CC_NAME}.tar.gz)
 # commenting due to the network not yet being setup to calculate package_id 
   
-    mv $CC_NAME.tar.gz $packageDir
-    successln "Chaincode is packaged  ${address} and in ${packageDir}/${CC_NAME}.tar.gz"
+    mv $CC_NAME-$1.tar.gz $packageDir
+    successln "Chaincode is packaged  ${address} and in ${packageDir}/${CC_NAME}-${1}.tar.gz"
     
 }
 
@@ -121,7 +121,7 @@ mkdir $packageDir
 for peer in $(shopt -s globstar; find ${cryptoConfigDir}/**/peers/ -mindepth 1 -maxdepth 1 -execdir echo {} ';' | sed 's/^\.\///g');
 do
     # ercc
-    CC_NAME="${ERCC_ID}-${peer}"
+    CC_NAME="${ERCC_ID}"
     CC_VERSION=$ERCC_VER
 #    endpoint="${ERCC_ID}-${peer}:${CHAINCODE_SERVER_PORT}"
 #    packageName="${ERCC_ID}-${peer}.tgz"
@@ -129,7 +129,7 @@ do
     packageChaincode "${peer}"
 
     # fpc cc
-    CC_NAME="${FPCCC_ID}-${peer}"
+    CC_NAME="${FPCCC_ID}"
 #    endpoint="${FPCCC_ID}-${peer}:${CHAINCODE_SERVER_PORT}"
 #    packageName="${FPCCC_ID}-${peer}.tgz"
 #    packageChaincode "${packageDir}" "${packageName}" "${FPCCC_ID}" "${FPC_MRENCLAVE}" "${CC_TYPE}" "${endpoint}" "${peer}"
