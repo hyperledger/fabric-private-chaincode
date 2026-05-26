@@ -10,7 +10,8 @@ import (
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/api"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fsc"
-	fabric2 "github.com/hyperledger-labs/fabric-smart-client/platform/fabric/sdk"
+	fabric2 "github.com/hyperledger-labs/fabric-smart-client/platform/fabric/sdk/dig"
+	fpctopo "github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/topology"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/views/dataprovider"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/views/experimenter"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/views/investigator"
@@ -19,7 +20,7 @@ import (
 func Topology() []api.Topology {
 	fabricTopology := fabric.NewDefaultTopology()
 	fabricTopology.AddOrganizationsByName("Org1", "Org2", "Org3")
-	fabricTopology.AddFPC("experimenter-approval-service", "fpc/irb-experiment")
+	fpctopo.AddFPC(fabricTopology, "experimenter-approval-service", "fpc/irb-experiment")
 	fabricTopology.SetLogging("fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info", "")
 	fscTopology := fsc.NewTopology()
 
