@@ -15,7 +15,8 @@ import (
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/topology"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fsc"
-	fabric2 "github.com/hyperledger-labs/fabric-smart-client/platform/fabric/sdk"
+	fabric2 "github.com/hyperledger-labs/fabric-smart-client/platform/fabric/sdk/dig"
+	fpctopo "github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/topology"
 	"github.com/hyperledger/fabric-private-chaincode/integration/go_chaincode/auction/views/auctioneer"
 	"github.com/hyperledger/fabric-private-chaincode/integration/go_chaincode/auction/views/bidder"
 	"github.com/hyperledger/fabric-private-chaincode/integration/go_chaincode/utils"
@@ -34,24 +35,24 @@ func Topology() []api.Topology {
 
 	if strings.ToUpper(os.Getenv("SGX_MODE")) == "HW" {
 		chaincodeImageName = fmt.Sprintf("%s-hw:%s", ChaincodeImageName, ChaincodeImageTag)
-		fpcOptions = append(fpcOptions, topology.WithSGXMode("HW"))
+		fpcOptions = append(fpcOptions, fpctopo.WithSGXMode("HW"))
 
 		mrenclave, err := utils.ReadMrenclaveFromFile("mrenclave")
 		if err != nil {
 			panic(errors.Wrapf(err, "cannot get mrenclave"))
 		}
-		fpcOptions = append(fpcOptions, topology.WithMREnclave(mrenclave))
+		fpcOptions = append(fpcOptions, fpctopo.WithMREnclave(mrenclave))
 
 		sgxDevicePath, err := utils.DetectSgxDevicePath()
 		if err != nil {
 			panic(errors.Wrapf(err, "SGX HW mode set but now sgx device found"))
 		}
-		fpcOptions = append(fpcOptions, topology.WithSGXDevicesPaths(sgxDevicePath))
+		fpcOptions = append(fpcOptions, fpctopo.WithSGXDevicesPaths(sgxDevicePath))
 	}
 
 	fabricTopology := fabric.NewDefaultTopology()
 	fabricTopology.AddOrganizationsByName("Org1", "Org2", "Org3")
-	fabricTopology.AddFPC(ChaincodeName, chaincodeImageName, fpcOptions...)
+	fpctopo.AddFPC(fabricTopology, ChaincodeName, chaincodeImageName, fpcOptions...)
 	fabricTopology.SetLogging("fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info", "")
 	fscTopology := fsc.NewTopology()
 

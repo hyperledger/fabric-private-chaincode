@@ -11,9 +11,9 @@ import (
 
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/api"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric"
-	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/topology"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fsc"
-	fabric2 "github.com/hyperledger-labs/fabric-smart-client/platform/fabric/sdk"
+	fabric2 "github.com/hyperledger-labs/fabric-smart-client/platform/fabric/sdk/dig"
+	fpctopo "github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/topology"
 )
 
 const (
@@ -24,11 +24,10 @@ const (
 
 func Topology() []api.Topology {
 	chaincodeImageName := fmt.Sprintf("%s:%s", ChaincodeImageName, ChaincodeImageTag)
-	var fpcOptions []func(chaincode *topology.ChannelChaincode)
 
 	fabricTopology := fabric.NewDefaultTopology()
 	fabricTopology.AddOrganizationsByName("Org1")
-	fabricTopology.AddFPC(ChaincodeName, chaincodeImageName, fpcOptions...)
+	fpctopo.AddFPC(fabricTopology, ChaincodeName, chaincodeImageName)
 	fabricTopology.SetLogging("fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info", "")
 	fscTopology := fsc.NewTopology()
 
