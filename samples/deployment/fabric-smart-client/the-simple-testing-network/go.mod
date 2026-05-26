@@ -3,10 +3,6 @@ module the-simple-testing-network
 go 1.25.6
 
 replace (
-	// local FSC clone (post-PR-696, FPC integration removed); replace with real
-	// pseudo-version once the remote has the commit available:
-	//   go get github.com/hyperledger-labs/fabric-smart-client@26a5600582a1
-	github.com/hyperledger-labs/fabric-smart-client => ../../../../../fabric-smart-client
 	github.com/hyperledger-labs/orion-sdk-go => github.com/hyperledger-labs/orion-sdk-go v0.2.5
 	github.com/hyperledger-labs/orion-server => github.com/hyperledger-labs/orion-server v0.2.5
 	github.com/hyperledger/fabric => github.com/hyperledger/fabric v1.4.0-rc1.0.20230405174026-695dd57e01c2
@@ -16,7 +12,7 @@ replace (
 )
 
 require (
-	github.com/hyperledger-labs/fabric-smart-client v0.3.1-0.20260521000000-26a5600582a1
+	github.com/hyperledger-labs/fabric-smart-client v0.11.0
 	github.com/hyperledger/fabric-private-chaincode/extension/fsc v0.0.0
 )
 

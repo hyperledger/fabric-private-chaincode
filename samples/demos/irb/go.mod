@@ -1,11 +1,8 @@
 module github.com/hyperledger/fabric-private-chaincode/samples/demos/irb
 
-go 1.25.7
+go 1.26.3
 
 replace (
-	// local FSC clone (post-PR-696); replace with real pseudo-version once remote
-	// has the commit: go get github.com/hyperledger-labs/fabric-smart-client@26a5600582a1
-	github.com/hyperledger-labs/fabric-smart-client => ../../../../fabric-smart-client
 	github.com/hyperledger-labs/orion-sdk-go => github.com/hyperledger-labs/orion-sdk-go v0.2.5
 	github.com/hyperledger-labs/orion-server => github.com/hyperledger-labs/orion-server v0.2.5
 	github.com/hyperledger/fabric => github.com/hyperledger/fabric v1.4.0-rc1.0.20230405174026-695dd57e01c2
@@ -19,7 +16,7 @@ replace github.com/hyperledger/fabric-private-chaincode => ../../..
 require (
 	github.com/docker/go-connections v0.6.0
 	github.com/go-redis/redis v6.15.9+incompatible
-	github.com/hyperledger-labs/fabric-smart-client v0.3.1-0.20260521000000-26a5600582a1
+	github.com/hyperledger-labs/fabric-smart-client v0.11.0
 	github.com/hyperledger/fabric v2.1.1+incompatible
 	github.com/hyperledger/fabric-private-chaincode/extension/fsc v0.0.0
 	github.com/libp2p/go-libp2p-core v0.20.1
@@ -42,7 +39,7 @@ require (
 	dario.cat/mergo v1.0.2 // indirect
 	filippo.io/bigmod v0.1.1-0.20260103110540-f8a47775ebe5 // indirect
 	filippo.io/keygen v0.0.0-20260114151900-8e2790ea4c5b // indirect
-	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
+	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.30.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.48.1 // indirect
@@ -130,7 +127,6 @@ require (
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.7 // indirect
-	github.com/hashicorp/consul/sdk v0.8.0 // indirect
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/huin/goupnp v1.3.0 // indirect
@@ -138,16 +134,16 @@ require (
 	github.com/hyperledger/fabric-amcl v0.0.0-20230602173724-9e02669dceb2 // indirect
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20230228194215-b84622ba6a7a // indirect
 	github.com/hyperledger/fabric-config v0.3.0 // indirect
-	github.com/hyperledger/fabric-lib-go v1.1.3-0.20240523144151-25edd1eaf5f5 // indirect
+	github.com/hyperledger/fabric-lib-go v1.1.3 // indirect
 	github.com/hyperledger/fabric-private-chaincode v1.0.0-rc3.0.20231026135044-67a19b0fcda0 // indirect
 	github.com/hyperledger/fabric-protos-go v0.3.0 // indirect
 	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/ipfs/boxo v0.37.0 // indirect
-	github.com/ipfs/go-cid v0.6.0 // indirect
+	github.com/ipfs/go-cid v0.6.1 // indirect
 	github.com/ipfs/go-datastore v0.9.1 // indirect
 	github.com/ipfs/go-log/v2 v2.9.1 // indirect
-	github.com/ipld/go-ipld-prime v0.22.0 // indirect
+	github.com/ipld/go-ipld-prime v0.23.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.9.2 // indirect
@@ -199,21 +195,23 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/go-archive v0.1.0 // indirect
+	github.com/moby/moby/api v1.54.2 // indirect
+	github.com/moby/moby/client v0.4.0 // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
 	github.com/moby/sys/sequential v0.6.0 // indirect
 	github.com/moby/sys/user v0.4.0 // indirect
 	github.com/moby/sys/userns v0.1.0 // indirect
-	github.com/moby/term v0.5.0 // indirect
+	github.com/moby/term v0.5.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
-	github.com/mr-tron/base58 v1.2.0 // indirect
+	github.com/mr-tron/base58 v1.3.0 // indirect
 	github.com/multiformats/go-base32 v0.1.0 // indirect
 	github.com/multiformats/go-base36 v0.2.0 // indirect
 	github.com/multiformats/go-multiaddr v0.16.1 // indirect
 	github.com/multiformats/go-multiaddr-dns v0.5.0 // indirect
 	github.com/multiformats/go-multiaddr-fmt v0.1.0 // indirect
-	github.com/multiformats/go-multibase v0.2.0 // indirect
+	github.com/multiformats/go-multibase v0.3.0 // indirect
 	github.com/multiformats/go-multicodec v0.10.0 // indirect
 	github.com/multiformats/go-multihash v0.2.3 // indirect
 	github.com/multiformats/go-multistream v0.6.1 // indirect
@@ -311,15 +309,15 @@ require (
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/arch v0.18.0 // indirect
-	golang.org/x/crypto v0.49.0 // indirect
+	golang.org/x/crypto v0.50.0 // indirect
 	golang.org/x/exp v0.0.0-20260312153236-7ab1446f8b90 // indirect
 	golang.org/x/mod v0.34.0 // indirect
 	golang.org/x/net v0.52.0 // indirect
 	golang.org/x/oauth2 v0.35.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/telemetry v0.0.0-20260311193753-579e4da9a98c // indirect
-	golang.org/x/text v0.35.0 // indirect
+	golang.org/x/text v0.36.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
 	golang.org/x/tools v0.43.0 // indirect
 	gonum.org/v1/gonum v0.17.0 // indirect
