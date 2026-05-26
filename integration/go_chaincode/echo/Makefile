@@ -8,7 +8,7 @@ include $(TOP)/build.mk
 all: test clean
 
 test:
-	FABRIC_LOGGING_SPEC=fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info go test -v -failfast .
+	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn FABRIC_LOGGING_SPEC=fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info go test -v -failfast .
 
 clean:
 	rm -rf cmd
