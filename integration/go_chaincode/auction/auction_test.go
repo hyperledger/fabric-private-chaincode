@@ -12,6 +12,7 @@ import (
 
 	"github.com/hyperledger-labs/fabric-smart-client/integration"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/common"
+	fpcnwo "github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/fpc"
 	"github.com/hyperledger/fabric-private-chaincode/integration/go_chaincode/auction/views/auctioneer"
 	"github.com/hyperledger/fabric-private-chaincode/integration/go_chaincode/auction/views/bidder"
 	"github.com/stretchr/testify/assert"
@@ -26,6 +27,7 @@ func TestFlow(t *testing.T) {
 	// setup fabric network
 	ii, err := integration.Generate(23000, false, Topology()...)
 	assert.NoError(t, err)
+	ii.RegisterPlatformFactory(fpcnwo.NewPlatformFactory())
 	ii.Start()
 
 	// give me some time
