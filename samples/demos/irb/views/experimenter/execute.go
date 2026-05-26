@@ -10,7 +10,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/fpc"
+	"github.com/hyperledger/fabric-private-chaincode/extension/fsc/platform/fabric/services/fpc"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view/view"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/experiment"
 	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/protos"

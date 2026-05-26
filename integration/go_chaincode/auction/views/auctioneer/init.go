@@ -7,7 +7,7 @@
 package auctioneer
 
 import (
-	"github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/fpc"
+	"github.com/hyperledger/fabric-private-chaincode/extension/fsc/platform/fabric/services/fpc"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view/view"
 	"github.com/pkg/errors"
 )
