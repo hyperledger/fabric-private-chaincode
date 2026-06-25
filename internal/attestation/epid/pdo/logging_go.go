@@ -11,7 +11,7 @@
 package pdo
 
 import (
-	"github.com/hyperledger/fabric/common/flogging"
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
 )
 
 // #cgo CFLAGS: -I${SRCDIR}/../../../../common/logging/untrusted

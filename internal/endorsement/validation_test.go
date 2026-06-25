@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	//lint:ignore SA1019 v1 protos required for compatibility with internal/protos/fpc.pb.go generated types
+	protoV1 "github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-private-chaincode/internal/endorsement/fakes"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
-	"github.com/hyperledger/fabric-protos-go/common"
-	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
-	"github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/hyperledger/fabric/protoutil"
+	"github.com/hyperledger/fabric-protos-go-apiv2/common"
+	"github.com/hyperledger/fabric-protos-go-apiv2/ledger/rwset/kvrwset"
+	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -242,7 +243,7 @@ func createChaincodeResponseMessage(chaincodeRequest []byte, chaincodeRequestHas
 	}
 
 	header := &common.Header{
-		ChannelHeader:   protoutil.MarshalOrPanic(chdr),
+		ChannelHeader:   mustMarshalV1(chdr),
 		SignatureHeader: nil,
 	}
 
@@ -257,13 +258,13 @@ func createChaincodeResponseMessage(chaincodeRequest []byte, chaincodeRequestHas
 	}
 
 	payload := &peer.ChaincodeProposalPayload{
-		Input:        protoutil.MarshalOrPanic(input),
+		Input:        mustMarshalV1(input),
 		TransientMap: nil,
 	}
 
 	proposal := &peer.Proposal{
-		Header:    protoutil.MarshalOrPanic(header),
-		Payload:   protoutil.MarshalOrPanic(payload),
+		Header:    mustMarshalV1(header),
+		Payload:   mustMarshalV1(payload),
 		Extension: nil,
 	}
 
@@ -271,7 +272,7 @@ func createChaincodeResponseMessage(chaincodeRequest []byte, chaincodeRequestHas
 		EncryptedResponse: []byte("someEncryptedResponse"),
 		FpcRwSet:          nil,
 		Proposal: &peer.SignedProposal{
-			ProposalBytes: protoutil.MarshalOrPanic(proposal),
+			ProposalBytes: mustMarshalV1(proposal),
 			Signature:     nil,
 		},
 		ChaincodeRequestMessageHash: chaincodeRequestHash,
@@ -283,4 +284,12 @@ func hash(v []byte) []byte {
 	h := sha256.New()
 	h.Write(v)
 	return h.Sum(nil)
+}
+
+func mustMarshalV1(msg protoV1.Message) []byte {
+	data, err := protoV1.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+	return data
 }
