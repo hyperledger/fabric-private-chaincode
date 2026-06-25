@@ -12,8 +12,8 @@
 package protos
 
 import (
-	kvrwset "github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
-	peer "github.com/hyperledger/fabric-protos-go/peer"
+	kvrwset "github.com/hyperledger/fabric-protos-go-apiv2/ledger/rwset/kvrwset"
+	peer "github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	anypb "google.golang.org/protobuf/types/known/anypb"

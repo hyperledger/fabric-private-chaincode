@@ -74,4 +74,9 @@ sed -i 's/namespace/ns/g' ${FABRIC_BUILD_DIR}/ledger/rwset/rwset.pb.c
 
 # compile fpc protos
 $PROTOC_CMD "$PROTOC_OPTS" --proto_path=${PROTOS_DIR} --proto_path=${FABRIC_PROTOS_DIR} --nanopb_out=${BUILD_DIR} --nanopb_opt="-I${PROTOS_DIR} -f ${PROTOS_DIR}/fpc.options" ${PROTOS_DIR}/fpc/fpc.proto
-$PROTOC_CMD "$PROTOC_OPTS" --proto_path=${PROTOS_DIR} --proto_path=${FABRIC_PROTOS_DIR} --go_out=${GOPATH}/src ${PROTOS_DIR}/fpc/*.proto
+$PROTOC_CMD "$PROTOC_OPTS" --proto_path=${PROTOS_DIR} --proto_path=${FABRIC_PROTOS_DIR} --go_out=${GOPATH}/src \
+  --go_opt=Mpeer/chaincode.proto=github.com/hyperledger/fabric-protos-go-apiv2/peer \
+  --go_opt=Mpeer/proposal.proto=github.com/hyperledger/fabric-protos-go-apiv2/peer \
+  --go_opt=Mpeer/proposal_response.proto=github.com/hyperledger/fabric-protos-go-apiv2/peer \
+  --go_opt=Mledger/rwset/kvrwset/kv_rwset.proto=github.com/hyperledger/fabric-protos-go-apiv2/ledger/rwset/kvrwset \
+  ${PROTOS_DIR}/fpc/*.proto
