@@ -763,24 +763,6 @@ func (fake *CryptoProvider) VerifyMessageReturnsOnCall(i int, result1 error) {
 func (fake *CryptoProvider) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.decryptMessageMutex.RLock()
-	defer fake.decryptMessageMutex.RUnlock()
-	fake.encryptMessageMutex.RLock()
-	defer fake.encryptMessageMutex.RUnlock()
-	fake.newECDSAKeysMutex.RLock()
-	defer fake.newECDSAKeysMutex.RUnlock()
-	fake.newRSAKeysMutex.RLock()
-	defer fake.newRSAKeysMutex.RUnlock()
-	fake.newSymmetricKeyMutex.RLock()
-	defer fake.newSymmetricKeyMutex.RUnlock()
-	fake.pkDecryptMessageMutex.RLock()
-	defer fake.pkDecryptMessageMutex.RUnlock()
-	fake.pkEncryptMessageMutex.RLock()
-	defer fake.pkEncryptMessageMutex.RUnlock()
-	fake.signMessageMutex.RLock()
-	defer fake.signMessageMutex.RUnlock()
-	fake.verifyMessageMutex.RLock()
-	defer fake.verifyMessageMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

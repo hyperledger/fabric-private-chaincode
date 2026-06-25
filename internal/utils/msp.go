@@ -9,7 +9,9 @@ package utils
 import (
 	"fmt"
 
-	"github.com/hyperledger/fabric/protoutil"
+	//lint:ignore SA1019 old protos required for fpc.pb.go and test compatibility
+	protoV1 "github.com/golang/protobuf/proto"
+	"github.com/hyperledger/fabric-protos-go-apiv2/msp"
 )
 
 type IdentityEvaluatorInterface interface {
@@ -35,8 +37,8 @@ func (id *IdentityEvaluator) EvaluateCreatorIdentity(creatorIdentityBytes []byte
 }
 
 func ExtractMSPID(serializedIdentityRaw []byte) (string, error) {
-	sID, err := protoutil.UnmarshalSerializedIdentity(serializedIdentityRaw)
-	if err != nil {
+	sID := &msp.SerializedIdentity{}
+	if err := protoV1.Unmarshal(serializedIdentityRaw, sID); err != nil {
 		return "", err
 	}
 	return sID.Mspid, nil
