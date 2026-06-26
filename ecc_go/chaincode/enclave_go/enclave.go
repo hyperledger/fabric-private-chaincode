@@ -14,15 +14,15 @@ import (
 	"encoding/pem"
 	"fmt"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	"github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode/enclave_go/attestation"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/hyperledger/fabric/bccsp"
-	"github.com/hyperledger/fabric/bccsp/factory"
-	"github.com/hyperledger/fabric/common/flogging"
-	"github.com/hyperledger/fabric/protoutil"
+	pb "github.com/hyperledger/fabric-protos-go-apiv2/peer"
+	"github.com/hyperledger/fabric-lib-go/bccsp"
+	"github.com/hyperledger/fabric-lib-go/bccsp/factory"
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
+	"github.com/hyperledger/fabric-x-common/protoutil"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -170,7 +170,7 @@ func (e *EnclaveStub) ChaincodeInvoke(stub shim.ChaincodeStubInterface, chaincod
 	ccResponse := e.ccRef.Invoke(fpcStub)
 
 	// marshal chaincode response
-	ccResponseBytes, err := protoutil.Marshal(&ccResponse)
+	ccResponseBytes, err := protoutil.Marshal(ccResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -255,12 +255,12 @@ func checkSignatureFromCreator(creatorBytes, sig, msg []byte, cryptoProvider bcc
 
 	// TODO check if serializedIdentity is idemix
 
-	sId, err := protoutil.UnmarshalSerializedIdentity(creatorBytes)
+	sId, err := protoutil.UnmarshalIdentity(creatorBytes)
 	if err != nil {
 		return errors.Wrap(err, "could not deserialize a SerializedIdentity; note that idemix is currently not supported")
 	}
 
-	bl, _ := pem.Decode(sId.GetIdBytes())
+	bl, _ := pem.Decode(sId.GetCertificate())
 	if bl == nil {
 		return errors.New("could not decode the PEM structure!")
 	}

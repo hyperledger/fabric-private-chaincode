@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package chaincode
 
 import (
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/ercc"
 	"github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode/enclave_go"
