@@ -4,7 +4,7 @@ package fakes
 import (
 	"sync"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 )
 
@@ -406,16 +406,6 @@ func (fake *Extractors) GetSerializedChaincodeRequestReturnsOnCall(i int, result
 func (fake *Extractors) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.getChaincodeParamsMutex.RLock()
-	defer fake.getChaincodeParamsMutex.RUnlock()
-	fake.getChaincodeResponseMessagesMutex.RLock()
-	defer fake.getChaincodeResponseMessagesMutex.RUnlock()
-	fake.getHostParamsMutex.RLock()
-	defer fake.getHostParamsMutex.RUnlock()
-	fake.getInitEnclaveMessageMutex.RLock()
-	defer fake.getInitEnclaveMessageMutex.RUnlock()
-	fake.getSerializedChaincodeRequestMutex.RLock()
-	defer fake.getSerializedChaincodeRequestMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
