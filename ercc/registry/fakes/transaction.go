@@ -4,8 +4,8 @@ package fakes
 import (
 	"sync"
 
-	"github.com/hyperledger/fabric-chaincode-go/pkg/cid"
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/v2/pkg/cid"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 )
 
 type TransactionContext struct {
@@ -142,10 +142,6 @@ func (fake *TransactionContext) GetStubReturnsOnCall(i int, result1 shim.Chainco
 func (fake *TransactionContext) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.getClientIdentityMutex.RLock()
-	defer fake.getClientIdentityMutex.RUnlock()
-	fake.getStubMutex.RLock()
-	defer fake.getStubMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

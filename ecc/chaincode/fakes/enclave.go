@@ -4,7 +4,7 @@ package fakes
 import (
 	"sync"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 )
 
 type EnclaveStub struct {
@@ -481,18 +481,6 @@ func (fake *EnclaveStub) InitReturnsOnCall(i int, result1 []byte, result2 error)
 func (fake *EnclaveStub) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.chaincodeInvokeMutex.RLock()
-	defer fake.chaincodeInvokeMutex.RUnlock()
-	fake.exportCCKeysMutex.RLock()
-	defer fake.exportCCKeysMutex.RUnlock()
-	fake.generateCCKeysMutex.RLock()
-	defer fake.generateCCKeysMutex.RUnlock()
-	fake.getEnclaveIdMutex.RLock()
-	defer fake.getEnclaveIdMutex.RUnlock()
-	fake.importCCKeysMutex.RLock()
-	defer fake.importCCKeysMutex.RUnlock()
-	fake.initMutex.RLock()
-	defer fake.initMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

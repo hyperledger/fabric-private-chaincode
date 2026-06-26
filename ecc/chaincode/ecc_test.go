@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/ercc"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/fakes"
 	"github.com/hyperledger/fabric-private-chaincode/internal/endorsement"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
-	"github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/anypb"
 )
@@ -262,7 +262,7 @@ func TestEndorse(t *testing.T) {
 	assert.EqualValues(t, []byte("OK"), r.Payload)
 }
 
-func expectError(t *testing.T, errorMsg string, r peer.Response) {
+func expectError(t *testing.T, errorMsg string, r *peer.Response) {
 	assert.EqualValues(t, shim.ERROR, r.Status)
 	assert.EqualValues(t, errorMsg, r.Message)
 }
