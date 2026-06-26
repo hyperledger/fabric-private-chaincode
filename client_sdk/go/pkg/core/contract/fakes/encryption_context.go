@@ -179,10 +179,6 @@ func (fake *EncryptionContext) RevealReturnsOnCall(i int, result1 []byte, result
 func (fake *EncryptionContext) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.concealMutex.RLock()
-	defer fake.concealMutex.RUnlock()
-	fake.revealMutex.RLock()
-	defer fake.revealMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -90,8 +90,6 @@ func (fake *Transaction) EvaluateReturnsOnCall(i int, result1 []byte, result2 er
 func (fake *Transaction) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.evaluateMutex.RLock()
-	defer fake.evaluateMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
