@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
-	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
+	"github.com/hyperledger/fabric-protos-go-apiv2/ledger/rwset/kvrwset"
 )
 
 type ReadWriteSet interface {

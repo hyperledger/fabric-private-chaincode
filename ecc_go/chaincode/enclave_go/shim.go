@@ -11,10 +11,10 @@ import (
 	"fmt"
 	//lint:ignore SA1019 the package is needed to unmarshall the header
 	protoV1 "github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
-	common "github.com/hyperledger/fabric-protos-go/common"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
+	common "github.com/hyperledger/fabric-protos-go-apiv2/common"
+	pb "github.com/hyperledger/fabric-protos-go-apiv2/peer"
 
 	"google.golang.org/protobuf/proto"
 	timestamp "google.golang.org/protobuf/types/known/timestamppb"
@@ -78,8 +78,22 @@ func (f *FpcStubInterface) GetChannelID() string {
 	return f.stub.GetChannelID()
 }
 
-func (f *FpcStubInterface) InvokeChaincode(chaincodeName string, args [][]byte, channel string) pb.Response {
+func (f *FpcStubInterface) InvokeChaincode(chaincodeName string, args [][]byte, channel string) *pb.Response {
 	panic("not supported")
+}
+
+func (f *FpcStubInterface) GetMultiplePrivateData(collection string, keys ...string) ([][]byte, error) {
+	panic("not implemented") // TODO: Implement
+}
+
+func (f *FpcStubInterface) StartWriteBatch() {}
+
+func (f *FpcStubInterface) FinishWriteBatch() error {
+	return nil
+}
+
+func (f *FpcStubInterface) GetAllStatesCompositeKeyWithPagination(pageSize int32, bookmark string) (shim.StateQueryIteratorInterface, *pb.QueryResponseMetadata, error) {
+	panic("not implemented") // TODO: Implement
 }
 
 func (f *FpcStubInterface) GetState(key string) ([]byte, error) {
@@ -94,6 +108,19 @@ func (f *FpcStubInterface) GetState(key string) ([]byte, error) {
 	}
 
 	return f.sep.DecryptState(encValue)
+}
+
+func (f *FpcStubInterface) GetMultipleStates(keys ...string) ([][]byte, error) {
+	results := make([][]byte, len(keys))
+	for i, key := range keys {
+		val, err := f.GetState(key)
+		if err != nil {
+			return nil, err
+		}
+		results[i] = val
+	}
+
+	return results, nil
 }
 
 func (f *FpcStubInterface) GetPublicState(key string) ([]byte, error) {
@@ -119,7 +146,7 @@ func (f *FpcStubInterface) PutPublicState(key string, value []byte) error {
 	f.rwset.AddWrite(key, value)
 
 	// note that since we are not using the fabric proposal response  we can skip the putState call
-	//return f.stub.PutState(key, value)
+	// return f.stub.PutState(key, value)
 	return nil
 }
 
@@ -127,7 +154,7 @@ func (f *FpcStubInterface) DelState(key string) error {
 	f.rwset.AddDelete(key)
 
 	// note that since we are not using the fabric proposal response  we can skip the delState call
-	//return f.stub.DelState(key)
+	// return f.stub.DelState(key)
 	return nil
 }
 

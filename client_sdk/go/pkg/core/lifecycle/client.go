@@ -39,7 +39,7 @@ SPDX-License-Identifier: Apache-2.0
 package lifecycle
 
 import (
-	"github.com/hyperledger/fabric/common/flogging"
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/pkg/errors"
 
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
