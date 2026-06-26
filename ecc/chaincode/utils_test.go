@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	"github.com/hyperledger/fabric-private-chaincode/ercc/registry/fakes"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
-	"github.com/hyperledger/fabric-protos-go/msp"
-	"github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/hyperledger/fabric-protos-go/peer/lifecycle"
-	"github.com/hyperledger/fabric/protoutil"
+	"github.com/hyperledger/fabric-protos-go-apiv2/msp"
+	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
+	"github.com/hyperledger/fabric-protos-go-apiv2/peer/lifecycle"
+	"github.com/hyperledger/fabric-x-common/protoutil"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )
@@ -133,7 +133,7 @@ func TestGetChaincodeParams(t *testing.T) {
 			}),
 	}
 	stub.GetSignedProposalReturns(signedProposal, nil)
-	stub.InvokeChaincodeReturns(peer.Response{
+	stub.InvokeChaincodeReturns(&peer.Response{
 		Status:  shim.ERROR,
 		Message: "some error",
 	})
@@ -145,7 +145,7 @@ func TestGetChaincodeParams(t *testing.T) {
 	stub = &fakes.ChaincodeStub{}
 	stub.GetSignedProposalReturns(signedProposal, nil)
 	stub.GetChannelIDReturns(channelId)
-	stub.InvokeChaincodeReturns(peer.Response{
+	stub.InvokeChaincodeReturns(&peer.Response{
 		Status: shim.OK,
 		Payload: protoutil.MarshalOrPanic(
 			&lifecycle.QueryChaincodeDefinitionResult{

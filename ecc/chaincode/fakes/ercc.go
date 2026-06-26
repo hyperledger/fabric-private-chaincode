@@ -4,7 +4,7 @@ package fakes
 import (
 	"sync"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 )
 
@@ -99,8 +99,6 @@ func (fake *ErccStub) QueryEnclaveCredentialsReturnsOnCall(i int, result1 *proto
 func (fake *ErccStub) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.queryEnclaveCredentialsMutex.RLock()
-	defer fake.queryEnclaveCredentialsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
