@@ -25,15 +25,11 @@ const (
 func TestFlow(t *testing.T) {
 
 	// setup fabric network
-	ii, err := integration.Generate(23000, false, Topology()...)
+	ii, err := integration.New(23000, "", Topology()...)
 	assert.NoError(t, err)
 	ii.RegisterPlatformFactory(fpcnwo.NewPlatformFactory())
+	ii.Generate()
 	ii.Start()
-
-	// give me some time
-	//fmt.Println("time to sleep!!")
-	//time.Sleep(45 * time.Second)
-
 	defer ii.Stop()
 
 	// init auction house
