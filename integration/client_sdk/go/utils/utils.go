@@ -15,14 +15,14 @@ import (
 	fpcmgmt "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
 	fpcpackager "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/fab/ccpackager"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
-	"github.com/hyperledger/fabric-protos-go/common"
+	"github.com/hyperledger/fabric-protos-go-apiv2/common"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	lifecyclepkg "github.com/hyperledger/fabric-sdk-go/pkg/fab/ccpackager/lifecycle"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
-	"github.com/hyperledger/fabric/common/flogging"
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
 )
 
 var (

@@ -18,9 +18,10 @@ import (
 func TestFlow(t *testing.T) {
 
 	// setup fabric network
-	ii, err := integration.Generate(23000, false, Topology()...)
+	ii, err := integration.New(23100, "", Topology()...)
 	assert.NoError(t, err)
 	ii.RegisterPlatformFactory(fpcnwo.NewPlatformFactory())
+	ii.Generate()
 	ii.Start()
 	defer ii.Stop()
 

@@ -6,7 +6,6 @@ replace (
 	github.com/btcsuite/btcd v0.23.4 => github.com/btcsuite/btcd v0.22.1
 	github.com/hyperledger-labs/orion-sdk-go => github.com/hyperledger-labs/orion-sdk-go v0.2.5
 	github.com/hyperledger-labs/orion-server => github.com/hyperledger-labs/orion-server v0.2.5
-	github.com/hyperledger/fabric => github.com/hyperledger/fabric v1.4.0-rc1.0.20230405174026-695dd57e01c2
 	github.com/hyperledger/fabric-private-chaincode => ../..
 	github.com/hyperledger/fabric-private-chaincode/extension/fsc => ../../extension/fsc
 	kilic/bls12-377 => github.com/kilic/bls12-377 v0.0.0-20201230075656-5449decbf102
@@ -14,9 +13,7 @@ replace (
 
 require (
 	github.com/hyperledger-labs/fabric-smart-client v0.11.0
-	github.com/hyperledger/fabric v2.1.1+incompatible // indirect
 	github.com/hyperledger/fabric-private-chaincode/extension/fsc v0.0.0
-	github.com/hyperledger/fabric-protos-go v0.3.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.11.1
 )
@@ -117,10 +114,12 @@ require (
 	github.com/huin/goupnp v1.3.0 // indirect
 	github.com/hyperledger/aries-bbs-go v0.0.0-20240528084656-761671ea73bc // indirect
 	github.com/hyperledger/fabric-amcl v0.0.0-20230602173724-9e02669dceb2 // indirect
-	github.com/hyperledger/fabric-chaincode-go v0.0.0-20230228194215-b84622ba6a7a // indirect
+	github.com/hyperledger/fabric-chaincode-go/v2 v2.3.0 // indirect
 	github.com/hyperledger/fabric-lib-go v1.1.3 // indirect
 	github.com/hyperledger/fabric-private-chaincode v1.0.0-rc3.0.20231026135044-67a19b0fcda0 // indirect
+	github.com/hyperledger/fabric-protos-go v0.3.0 // indirect
 	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7 // indirect
+	github.com/hyperledger/fabric-x-common v0.2.2 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/ipfs/boxo v0.37.0 // indirect
 	github.com/ipfs/go-cid v0.6.1 // indirect
