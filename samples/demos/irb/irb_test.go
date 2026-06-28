@@ -99,9 +99,10 @@ func TestFlow(t *testing.T) {
 	require.NoError(t, err)
 
 	// setup fabric network
-	ii, err := integration.Generate(23000, false, Topology()...)
+	ii, err := integration.New(23300, "", Topology()...)
 	require.NoError(t, err)
 	ii.RegisterPlatformFactory(fpcnwo.NewPlatformFactory())
+	ii.Generate()
 	ii.Start()
 	defer func() {
 		ii.Stop()
