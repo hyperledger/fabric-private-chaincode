@@ -22,10 +22,10 @@ build: pull-images ercc
 	$(foreach DIR, $(COMPONENTS), $(MAKE) -C $(DIR) $@ || exit;)
 
 test:
-	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn $(GO) test -v -failfast ./...
+	$(GO) test -v -failfast ./...
 
 run:
-	GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn $(GO) test -v .
+	$(GO) test -v .
 
 clean:
 	$(GO) clean
