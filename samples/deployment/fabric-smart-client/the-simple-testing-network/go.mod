@@ -5,7 +5,6 @@ go 1.25.6
 replace (
 	github.com/hyperledger-labs/orion-sdk-go => github.com/hyperledger-labs/orion-sdk-go v0.2.5
 	github.com/hyperledger-labs/orion-server => github.com/hyperledger-labs/orion-server v0.2.5
-	github.com/hyperledger/fabric => github.com/hyperledger/fabric v1.4.0-rc1.0.20230405174026-695dd57e01c2
 	github.com/hyperledger/fabric-private-chaincode => ../../../../
 	github.com/hyperledger/fabric-private-chaincode/extension/fsc => ../../../../extension/fsc
 	kilic/bls12-377 => github.com/kilic/bls12-377 v0.0.0-20201230075656-5449decbf102
@@ -59,11 +58,8 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hyperledger-labs/orion-sdk-go v0.2.10 // indirect
 	github.com/hyperledger-labs/orion-server v0.2.10 // indirect
-	github.com/hyperledger/fabric v2.1.1+incompatible // indirect
-	github.com/hyperledger/fabric-chaincode-go v0.0.0-20230228194215-b84622ba6a7a // indirect
 	github.com/hyperledger/fabric-lib-go v1.0.0 // indirect
 	github.com/hyperledger/fabric-private-chaincode v1.0.0-rc3.0.20231026135044-67a19b0fcda0 // indirect
-	github.com/hyperledger/fabric-protos-go v0.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
