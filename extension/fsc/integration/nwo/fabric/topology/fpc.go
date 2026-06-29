@@ -37,6 +37,7 @@ func AddFPCAtOrgs(t *topology.Topology, name, image string, orgs []string, optio
 	if len(orgs) == 0 {
 		orgs = t.Consortiums[0].Organizations
 	}
+
 	majority := len(orgs)/2 + 1
 	policy := "OutOf(" + strconv.Itoa(majority) + ","
 	for i, org := range orgs {
@@ -64,7 +65,7 @@ func AddFPCAtOrgs(t *topology.Topology, name, image string, orgs []string, optio
 			Sequence:        "1",
 			InitRequired:    false,
 			Path:            name,
-			Lang:            "external",
+			Lang:            "external", // FPC CC runs as a separate docker container (Doesnt't run inside Fabric peer process)
 			Label:           fmt.Sprintf("%s_1.0", name),
 			Ctor:            `{"Args":["init"]}`,
 			Policy:          policy,
