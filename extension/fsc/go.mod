@@ -2,11 +2,8 @@ module github.com/hyperledger/fabric-private-chaincode/extension/fsc
 
 go 1.26.3
 
-replace (
-	github.com/hyperledger/fabric => github.com/hyperledger/fabric v1.4.0-rc1.0.20230405174026-695dd57e01c2
-	// local FPC root for client_sdk resolution
-	github.com/hyperledger/fabric-private-chaincode => ../..
-)
+// local FPC root for client_sdk resolution
+replace github.com/hyperledger/fabric-private-chaincode => ../..
 
 require (
 	github.com/docker/docker v28.5.2+incompatible
@@ -32,6 +29,7 @@ require (
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.30.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.48.1 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.48.1 // indirect
+	github.com/IBM/idemix v0.0.2-0.20250313153527-832db18b9478 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/Masterminds/squirrel v1.5.4 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
@@ -94,11 +92,11 @@ require (
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/huin/goupnp v1.3.0 // indirect
-	github.com/hyperledger/fabric v1.4.0-rc1.0.20230405174026-695dd57e01c2 // indirect
-	github.com/hyperledger/fabric-chaincode-go v0.0.0-20230228194215-b84622ba6a7a // indirect
+	github.com/hyperledger/fabric-chaincode-go/v2 v2.3.0 // indirect
 	github.com/hyperledger/fabric-lib-go v1.1.3 // indirect
 	github.com/hyperledger/fabric-protos-go v0.3.0 // indirect
 	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7 // indirect
+	github.com/hyperledger/fabric-x-common v0.2.2 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/ipfs/boxo v0.37.0 // indirect
 	github.com/ipfs/go-cid v0.6.1 // indirect
@@ -147,7 +145,6 @@ require (
 	github.com/minio/sha256-simd v1.0.1 // indirect
 	github.com/miracl/conflate v1.3.4 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
-	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/moby/api v1.54.2 // indirect
