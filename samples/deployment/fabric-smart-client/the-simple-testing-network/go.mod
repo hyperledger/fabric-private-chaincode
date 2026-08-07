@@ -1,6 +1,6 @@
 module the-simple-testing-network
 
-go 1.25.6
+go 1.26.3
 
 replace (
 	github.com/hyperledger-labs/orion-sdk-go => github.com/hyperledger-labs/orion-sdk-go v0.2.5

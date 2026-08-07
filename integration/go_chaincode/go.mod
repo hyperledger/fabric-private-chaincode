@@ -14,13 +14,10 @@ replace (
 require (
 	github.com/hyperledger-labs/fabric-smart-client v0.11.0
 	github.com/hyperledger/fabric-private-chaincode/extension/fsc v0.0.0
-	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.11.1
-)
-
-require (
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
+	github.com/pkg/errors v0.9.1
+	github.com/stretchr/testify v1.11.1
 )
 
 require (
