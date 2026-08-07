@@ -71,14 +71,18 @@ func (c *ChannelTransaction) Evaluate(args ...string) ([]byte, error) {
 		s.Args = append(s.Args, string(arg))
 	}
 	ctor, err := json.Marshal(s)
-	Expect(err).NotTo(HaveOccurred())
+	if err != nil {
+		return nil, err
+	}
 
 	sess, err := c.Network.PeerUserSession(peer, "User1", commands.ChaincodeQuery{
 		ChannelID: c.Channel,
 		Name:      c.CC.Chaincode.Name,
 		Ctor:      string(ctor),
 	})
-	Expect(err).NotTo(HaveOccurred())
+	if err != nil {
+		return nil, err
+	}
 	Eventually(sess, c.Network.EventuallyTimeout).Should(gexec.Exit(0))
 
 	return sess.Buffer().Contents(), nil
@@ -106,14 +110,18 @@ func (c *ChannelContract) EvaluateTransaction(name string, args ...string) ([]by
 		s.Args = append(s.Args, string(arg))
 	}
 	ctor, err := json.Marshal(s)
-	Expect(err).NotTo(HaveOccurred())
+	if err != nil {
+		return nil, err
+	}
 
 	sess, err := c.Network.PeerUserSession(peer, "User1", commands.ChaincodeQuery{
 		ChannelID: c.Channel,
 		Name:      c.CC.Chaincode.Name,
 		Ctor:      string(ctor),
 	})
-	Expect(err).NotTo(HaveOccurred())
+	if err != nil {
+		return nil, err
+	}
 	Eventually(sess, c.Network.EventuallyTimeout).Should(gexec.Exit(0))
 
 	return sess.Buffer().Contents(), nil
@@ -131,7 +139,9 @@ func (c *ChannelContract) SubmitTransaction(name string, args ...string) ([]byte
 		s.Args = append(s.Args, string(arg))
 	}
 	ctor, err := json.Marshal(s)
-	Expect(err).NotTo(HaveOccurred())
+	if err != nil {
+		return nil, err
+	}
 
 	// Peers
 	initOrgs := map[string]bool{}
@@ -151,7 +161,9 @@ func (c *ChannelContract) SubmitTransaction(name string, args ...string) ([]byte
 		Ctor:          string(ctor),
 		PeerAddresses: peerAddresses,
 	})
-	Expect(err).NotTo(HaveOccurred())
+	if err != nil {
+		return nil, err
+	}
 	Eventually(sess, c.Network.EventuallyTimeout).Should(gexec.Exit(0))
 	Expect(sess.Err).To(gbytes.Say("Chaincode invoke successful. result: status:200"))
 
@@ -184,14 +196,18 @@ func (c *ChannelClient) Query(chaincodeID string, fcn string, args [][]byte, tar
 		logger.Infof("arg [%d][%s]", i, arg)
 	}
 	ctor, err := json.Marshal(ci)
-	Expect(err).ToNot(HaveOccurred())
+	if err != nil {
+		return nil, err
+	}
 
 	sess, err := c.n.network.PeerUserSession(c.peer, "User1", commands.ChaincodeQuery{
 		ChannelID: c.chaincode.Channel,
 		Name:      chaincodeID,
 		Ctor:      string(ctor),
 	})
-	Expect(err).NotTo(HaveOccurred())
+	if err != nil {
+		return nil, err
+	}
 	Eventually(sess, c.n.network.EventuallyTimeout).Should(gexec.Exit(0))
 
 	return sess.Buffer().Contents(), nil
@@ -202,7 +218,9 @@ func (c *ChannelClient) Execute(chaincodeID string, fcn string, args [][]byte) (
 		Args: append(append([]string{}, fcn), ArgsToStrings(args)...),
 	}
 	ctor, err := json.Marshal(ci)
-	Expect(err).ToNot(HaveOccurred())
+	if err != nil {
+		return "", err
+	}
 
 	initOrgs := map[string]bool{}
 	var erccPeerAddresses []string
@@ -224,7 +242,9 @@ func (c *ChannelClient) Execute(chaincodeID string, fcn string, args [][]byte) (
 		WaitForEvent:  true,
 		ClientAuth:    c.n.network.ClientAuthRequired,
 	})
-	Expect(err).NotTo(HaveOccurred())
+	if err != nil {
+		return "", err
+	}
 	Eventually(sess, c.n.network.EventuallyTimeout).Should(gexec.Exit(0))
 	for i := 0; i < len(erccPeerAddresses); i++ {
 		Eventually(sess.Err, c.n.network.EventuallyTimeout).Should(gbytes.Say(`\Qcommitted with status (VALID)\E`))

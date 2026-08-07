@@ -9,9 +9,9 @@ package fpc
 import (
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/contract"
 
+	"github.com/hyperledger-labs/fabric-smart-client/platform/common/services/logging"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/fabric"
 	services "github.com/hyperledger-labs/fabric-smart-client/platform/view/services"
-	"github.com/hyperledger-labs/fabric-smart-client/platform/common/services/logging"
 )
 
 var logger = logging.MustGetLogger("fabric-sdk.fpc")

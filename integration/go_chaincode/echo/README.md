@@ -5,7 +5,7 @@ enables the execution of chaincodes using Intel SGX for Hyperledger Fabric.
 
 ## Echo 
 
-Echo is a very simple chaincode written in C++ for SGX that returns the name of the function
+Echo is a very simple chaincode written in Go for SGX that returns the name of the function
 that has been invoked. In our test, we will make sure that this is what happens.
 
 ### Invoking Echo
@@ -53,33 +53,39 @@ func (l *EchoViewFactory) NewView(in []byte) (view.View, error) {
 It is very simple to add an FPC to a Fabric topology and have it ready to be used for our integration tests.
 The important thing is to have already prepared the docker image with the FPC one wants to deploy.
 On how to build an FPC, please, refer to the [`Fabric Private Chaincode documentation`](https://github.com/hyperledger/fabric-private-chaincode#build-fabric-private-chaincode). 
-In our case, we will use the following docker image `ghcr.io/mbrandenburger/fpc/fpc-echo:main`.
+In our case, we will use the following docker image `fpc/fpc-echo-go`.
 
 Here is the topology we use in this case, it is self-explanatory: 
 
 ```go
-func Topology() []api.Topology {
+func Topology(sdk api2.SDK, commType fsc.P2PCommunicationType, replicationOpts *integration.ReplicationOptions) []api.Topology {
 	// Create an empty fabric topology
 	fabricTopology := fabric.NewDefaultTopology()
 	// Add two organizations
 	fabricTopology.AddOrganizationsByName("Org1", "Org2")
 	// Add an FPC by passing chaincode's id and docker image
-	fabricTopology.AddFPC("echo", "fpc/fpc-echo")
+	fpctopo.AddFPC(fabricTopology, "echo", "fpc/fpc-echo-go")
 
 	// Create an empty FSC topology
 	fscTopology := fsc.NewTopology()
+	fscTopology.P2PCommunicationType = commType
 
 	// Alice
-	alice := fscTopology.AddNodeByName("alice")
-	alice.AddOptions(fabric.WithOrganization("Org2"))
-	alice.RegisterViewFactory("ListProvisionedEnclaves", &views.ListProvisionedEnclavesViewFactory{})
-	alice.RegisterViewFactory("Echo", &views.EchoViewFactory{})
+	fscTopology.AddNodeByName("alice").
+		AddOptions(fabric.WithOrganization("Org2")).
+		AddOptions(replicationOpts.For("alice")...).
+		RegisterViewFactory("ListProvisionedEnclaves", &views.ListProvisionedEnclavesViewFactory{}).
+		RegisterViewFactory("Echo", &views.EchoViewFactory{})
 
 	// Bob
-	bob := fscTopology.AddNodeByName("bob")
-	bob.AddOptions(fabric.WithOrganization("Org2"))
-	bob.RegisterViewFactory("ListProvisionedEnclaves", &views.ListProvisionedEnclavesViewFactory{})
-	bob.RegisterViewFactory("Echo", &views.EchoViewFactory{})
+	fscTopology.AddNodeByName("bob").
+		AddOptions(fabric.WithOrganization("Org2")).
+		AddOptions(replicationOpts.For("bob")...).
+		RegisterViewFactory("ListProvisionedEnclaves", &views.ListProvisionedEnclavesViewFactory{}).
+		RegisterViewFactory("Echo", &views.EchoViewFactory{})
+
+	// Add Fabric SDK to FSC Nodes
+	fscTopology.AddSDK(sdk)
 
 	return []api.Topology{fabricTopology, fscTopology}
 }

@@ -11,10 +11,10 @@ import (
 
 	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	"github.com/hyperledger/fabric-contract-api-go/v2/contractapi"
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/hyperledger/fabric-private-chaincode/ercc/attestation"
 	"github.com/hyperledger/fabric-private-chaincode/ercc/registry"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
-	"github.com/hyperledger/fabric-lib-go/common/flogging"
 )
 
 var logger = flogging.MustGetLogger("ercc")

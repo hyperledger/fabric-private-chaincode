@@ -10,8 +10,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/hyperledger/fabric-private-chaincode/extension/fsc/platform/fabric/services/fpc"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view/view"
+	"github.com/hyperledger/fabric-private-chaincode/extension/fsc/platform/fabric/services/fpc"
 	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/protos"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/utils"
 	"github.com/pkg/errors"

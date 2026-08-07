@@ -160,7 +160,7 @@ func GetChaincodeRequestMessageFromSignedProposal(signedProposal *pb.SignedPropo
 
 	proposal := &pb.Proposal{}
 	if err = protoV1.Unmarshal(signedProposal.ProposalBytes, proposal); err != nil {
-		return nil, fmt.Errorf("failed to extract Proposal from SignedProposal: %s", err)
+		return nil, fmt.Errorf("failed to extract Proposal from SignedProposal: %w", err)
 	}
 
 	// check for header
@@ -171,13 +171,13 @@ func GetChaincodeRequestMessageFromSignedProposal(signedProposal *pb.SignedPropo
 	// extract header
 	hdr := &common.Header{}
 	if err = protoV1.Unmarshal(proposal.GetHeader(), hdr); err != nil {
-		return nil, fmt.Errorf("failed to extract proposal header: %s", err)
+		return nil, fmt.Errorf("failed to extract proposal header: %w", err)
 	}
 
 	// validate channel header
 	chdr := &common.ChannelHeader{}
 	if err = protoV1.Unmarshal(hdr.ChannelHeader, chdr); err != nil {
-		return nil, fmt.Errorf("failed to extract channel header: %s", err)
+		return nil, fmt.Errorf("failed to extract channel header: %w", err)
 	}
 	validTypes := map[common.HeaderType]bool{
 		common.HeaderType_ENDORSER_TRANSACTION: true,
@@ -193,7 +193,7 @@ func GetChaincodeRequestMessageFromSignedProposal(signedProposal *pb.SignedPropo
 	// extract args from proposal payload
 	payload := &pb.ChaincodeProposalPayload{}
 	if err = protoV1.Unmarshal(proposal.GetPayload(), payload); err != nil {
-		return nil, fmt.Errorf("failed to extract proposal payload: %s", err)
+		return nil, fmt.Errorf("failed to extract proposal payload: %w", err)
 	}
 	cppInput := payload.GetInput()
 	if cppInput == nil {
@@ -201,7 +201,7 @@ func GetChaincodeRequestMessageFromSignedProposal(signedProposal *pb.SignedPropo
 	}
 	chaincodeInvocationSpec := &pb.ChaincodeInvocationSpec{}
 	if err = protoV1.Unmarshal(cppInput, chaincodeInvocationSpec); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal chaincodeInvocationSpec: %s", err)
+		return nil, fmt.Errorf("failed to unmarshal chaincodeInvocationSpec: %w", err)
 	}
 	chaincodeSpec := chaincodeInvocationSpec.GetChaincodeSpec()
 	if chaincodeSpec == nil {

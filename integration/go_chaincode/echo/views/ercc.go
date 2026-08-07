@@ -9,9 +9,9 @@ package views
 import (
 	"encoding/json"
 
-	"github.com/hyperledger/fabric-private-chaincode/extension/fsc/platform/fabric/services/fpc"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/common/utils/assert"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view/view"
+	"github.com/hyperledger/fabric-private-chaincode/extension/fsc/platform/fabric/services/fpc"
 )
 
 type ListProvisionedEnclaves struct {

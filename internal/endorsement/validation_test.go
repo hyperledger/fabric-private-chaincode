@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"testing"
 
-	//lint:ignore SA1019 v1 protos required for compatibility with internal/protos/fpc.pb.go generated types
-	protoV1 "github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-private-chaincode/internal/endorsement/fakes"
@@ -17,6 +15,7 @@ import (
 	"github.com/hyperledger/fabric-protos-go-apiv2/ledger/rwset/kvrwset"
 	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/proto"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
@@ -243,7 +242,7 @@ func createChaincodeResponseMessage(chaincodeRequest []byte, chaincodeRequestHas
 	}
 
 	header := &common.Header{
-		ChannelHeader:   mustMarshalV1(chdr),
+		ChannelHeader:   mustMarshal(chdr),
 		SignatureHeader: nil,
 	}
 
@@ -258,13 +257,13 @@ func createChaincodeResponseMessage(chaincodeRequest []byte, chaincodeRequestHas
 	}
 
 	payload := &peer.ChaincodeProposalPayload{
-		Input:        mustMarshalV1(input),
+		Input:        mustMarshal(input),
 		TransientMap: nil,
 	}
 
 	proposal := &peer.Proposal{
-		Header:    mustMarshalV1(header),
-		Payload:   mustMarshalV1(payload),
+		Header:    mustMarshal(header),
+		Payload:   mustMarshal(payload),
 		Extension: nil,
 	}
 
@@ -272,7 +271,7 @@ func createChaincodeResponseMessage(chaincodeRequest []byte, chaincodeRequestHas
 		EncryptedResponse: []byte("someEncryptedResponse"),
 		FpcRwSet:          nil,
 		Proposal: &peer.SignedProposal{
-			ProposalBytes: mustMarshalV1(proposal),
+			ProposalBytes: mustMarshal(proposal),
 			Signature:     nil,
 		},
 		ChaincodeRequestMessageHash: chaincodeRequestHash,
@@ -286,8 +285,8 @@ func hash(v []byte) []byte {
 	return h.Sum(nil)
 }
 
-func mustMarshalV1(msg protoV1.Message) []byte {
-	data, err := protoV1.Marshal(msg)
+func mustMarshal(msg proto.Message) []byte {
+	data, err := proto.Marshal(msg)
 	if err != nil {
 		panic(err)
 	}

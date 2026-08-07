@@ -15,10 +15,10 @@ import (
 	"strings"
 
 	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
-	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/pkg/errors"
 )
 
@@ -69,7 +69,7 @@ func (v *ValidatorImpl) ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrw
 
 			v, err := stub.GetState(k)
 			if err != nil {
-				return fmt.Errorf("error (%s) reading key %s", err, k)
+				return fmt.Errorf("error (%w) reading key %s", err, k)
 			}
 
 			logger.Debugf("read key='%s' value(hex)='%s'", k, hex.EncodeToString(v))
@@ -127,12 +127,12 @@ func (v *ValidatorImpl) ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrw
 
 			if w.IsDelete {
 				if err := stub.DelState(k); err != nil {
-					return fmt.Errorf("error (%s) deleting key %s", err, k)
+					return fmt.Errorf("error (%w) deleting key %s", err, k)
 				}
 				logger.Debugf("key %s deleted", k)
 			} else {
 				if err := stub.PutState(k, w.Value); err != nil {
-					return fmt.Errorf("error (%s) writing key %s value(hex) %s", err, k, hex.EncodeToString(w.Value))
+					return fmt.Errorf("error (%w) writing key %s value(hex) %s", err, k, hex.EncodeToString(w.Value))
 				}
 				logger.Debugf("written key %s value(hex) %s", k, hex.EncodeToString(w.Value))
 			}

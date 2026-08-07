@@ -15,14 +15,14 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
-	"github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode/enclave_go/attestation"
-	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
-	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
-	pb "github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/hyperledger/fabric-lib-go/bccsp"
 	"github.com/hyperledger/fabric-lib-go/bccsp/factory"
 	"github.com/hyperledger/fabric-lib-go/common/flogging"
-	"github.com/hyperledger/fabric-x-common/protoutil"
+	"github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode/enclave_go/attestation"
+	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
+	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger/fabric-private-chaincode/internal/protoutil"
+	pb "github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -255,12 +255,12 @@ func checkSignatureFromCreator(creatorBytes, sig, msg []byte, cryptoProvider bcc
 
 	// TODO check if serializedIdentity is idemix
 
-	sId, err := protoutil.UnmarshalIdentity(creatorBytes)
+	sId, err := protoutil.UnmarshalSerializedIdentity(creatorBytes)
 	if err != nil {
 		return errors.Wrap(err, "could not deserialize a SerializedIdentity; note that idemix is currently not supported")
 	}
 
-	bl, _ := pem.Decode(sId.GetCertificate())
+	bl, _ := pem.Decode(sId.GetIdBytes())
 	if bl == nil {
 		return errors.New("could not decode the PEM structure!")
 	}

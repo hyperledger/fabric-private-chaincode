@@ -56,34 +56,34 @@ func validateLabel(label string) error {
 func writeFileToPackage(localpath string, packagepath string, tw *tar.Writer) error {
 	fd, err := os.Open(localpath)
 	if err != nil {
-		return fmt.Errorf("%s: %s", localpath, err)
+		return fmt.Errorf("%s: %w", localpath, err)
 	}
 	defer fd.Close()
 
 	fi, err := fd.Stat()
 	if err != nil {
-		return fmt.Errorf("%s: %s", localpath, err)
+		return fmt.Errorf("stat error for file %s: %w", localpath, err)
 	}
 
 	header, err := tar.FileInfoHeader(fi, localpath)
 	if err != nil {
-		return fmt.Errorf("failed calculating FileInfoHeader: %s", err)
+		return fmt.Errorf("failed calculating FileInfoHeader: %w", err)
 	}
 
 	header.Name = packagepath
-	header.Mode = 0100644
+	header.Mode = 0o100644
 	header.Uid = 500
 	header.Gid = 500
 	header.Uname = ""
 	header.Gname = ""
 
 	if err = tw.WriteHeader(header); err != nil {
-		return fmt.Errorf("failed to write header for %s: %s", localpath, err)
+		return fmt.Errorf("failed to write header for %s: %w", localpath, err)
 	}
 
 	_, err = io.Copy(tw, bufio.NewReader(fd))
 	if err != nil {
-		return fmt.Errorf("failed to write %s as %s: %s", localpath, packagepath, err)
+		return fmt.Errorf("failed to write %s as %s: %w", localpath, packagepath, err)
 	}
 	return nil
 }
@@ -185,7 +185,6 @@ func validateRegularPackageInput(p *Descriptor) error {
 }
 
 func validateCaaSPackageInput(p *Descriptor) error {
-
 	err := utils.ValidateEndpoint(p.CaaSEndpoint)
 	if err != nil {
 		return errors.Wrap(err, "CaaSEndpoint is invalid")
@@ -255,7 +254,7 @@ func writePackage(tw *tar.Writer, name string, payload []byte) error {
 		&tar.Header{
 			Name: name,
 			Size: int64(len(payload)),
-			Mode: 0100644,
+			Mode: 0o100644,
 		},
 	)
 	if err != nil {
@@ -308,8 +307,8 @@ func connectionToJSON(address, dialTimeout string, tlsRequired bool) ([]byte, er
 	}
 
 	return connectionsBytes, nil
-
 }
+
 func getDeploymentPayload(ccPath string) ([]byte, error) {
 	type file struct {
 		Path string
@@ -348,7 +347,6 @@ func getDeploymentPayload(ccPath string) ([]byte, error) {
 }
 
 func getCaaSDeploymentPayload(desc *Descriptor, writeBytesToPackage writer) ([]byte, error) {
-
 	// set default timeout
 	if desc.CaaSTimeout == "" {
 		desc.CaaSTimeout = defaultConnectionTimeout

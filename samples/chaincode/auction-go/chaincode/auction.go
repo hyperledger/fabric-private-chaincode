@@ -16,21 +16,24 @@ import (
 	pb "github.com/hyperledger/fabric-protos-go-apiv2/peer"
 )
 
-const OK = "OK"
-const AUCTION_DRAW = "DRAW"
-const AUCTION_NO_BIDS = "NO_BIDS"
-const AUCTION_ALREADY_EXISTING = "AUCTION_ALREADY_EXISTING"
-const AUCTION_NOT_EXISTING = "AUCTION_NOT_EXISTING"
-const AUCTION_ALREADY_CLOSED = "AUCTION_ALREADY_CLOSED"
-const AUCTION_STILL_OPEN = "AUCTION_STILL_OPEN"
+const (
+	OK                       = "OK"
+	AUCTION_DRAW             = "DRAW"
+	AUCTION_NO_BIDS          = "NO_BIDS"
+	AUCTION_ALREADY_EXISTING = "AUCTION_ALREADY_EXISTING"
+	AUCTION_NOT_EXISTING     = "AUCTION_NOT_EXISTING"
+	AUCTION_ALREADY_CLOSED   = "AUCTION_ALREADY_CLOSED"
+	AUCTION_STILL_OPEN       = "AUCTION_STILL_OPEN"
+)
 
-const INITIALIZED_KEY = "initialized"
-const AUCTION_HOUSE_NAME_KEY = "auction_house_name"
+const (
+	INITIALIZED_KEY        = "initialized"
+	AUCTION_HOUSE_NAME_KEY = "auction_house_name"
+)
 
 const PREFIX = "somePrefix"
 
-type Auction struct {
-}
+type Auction struct{}
 
 type auctionType struct {
 	Name   string
@@ -42,12 +45,11 @@ type bidType struct {
 	Value      int
 }
 
-func (t *Auction) Init(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *Auction) Init(stub shim.ChaincodeStubInterface) *pb.Response {
 	return shim.Success(nil)
 }
 
-func (t *Auction) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-
+func (t *Auction) Invoke(stub shim.ChaincodeStubInterface) *pb.Response {
 	initialized := true
 	var auctionHouseName string
 
@@ -94,7 +96,6 @@ func (t *Auction) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	fmt.Println("AuctionCC: Response:", result)
 	fmt.Println("AuctionCC: +++ Executing done +++")
 	return shim.Success([]byte(result))
-
 }
 
 func (t *Auction) initAuctionHouse(stub shim.ChaincodeStubInterface, auctionHouseName string) string {

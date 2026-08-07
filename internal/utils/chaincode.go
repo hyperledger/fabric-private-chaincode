@@ -11,8 +11,8 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
+	"github.com/hyperledger/fabric-private-chaincode/internal/protoutil"
 	"github.com/hyperledger/fabric-protos-go-apiv2/peer/lifecycle"
-	"github.com/hyperledger/fabric-x-common/protoutil"
 )
 
 const MrEnclaveLength = 32

@@ -26,7 +26,7 @@ type IdentityEvaluator struct {
 func (id *IdentityEvaluator) EvaluateCreatorIdentity(creatorIdentityBytes []byte, ownerMSP string) error {
 	creatorMSP, err := ExtractMSPID(creatorIdentityBytes)
 	if err != nil {
-		return fmt.Errorf("error while deserialzing creator identity, err: %s", err)
+		return fmt.Errorf("error while deserialzing creator identity, err: %w", err)
 	}
 
 	if creatorMSP != ownerMSP {

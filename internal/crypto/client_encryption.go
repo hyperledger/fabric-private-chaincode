@@ -11,10 +11,10 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
-	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/pkg/errors"
 )
 
@@ -44,7 +44,7 @@ func (p EncryptionProviderImpl) NewEncryptionContext() (EncryptionContext, error
 
 	ccEncryptionKey, err := p.GetCcEncryptionKey()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get chaincode encryption key from ercc: %s", err.Error())
+		return nil, fmt.Errorf("failed to get chaincode encryption key from ercc: %w", err)
 	}
 	//decode key
 	ccEncryptionKey, err = base64.StdEncoding.DecodeString(string(ccEncryptionKey))

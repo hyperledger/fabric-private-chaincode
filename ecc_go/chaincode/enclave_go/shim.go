@@ -83,17 +83,20 @@ func (f *FpcStubInterface) InvokeChaincode(chaincodeName string, args [][]byte, 
 }
 
 func (f *FpcStubInterface) GetMultiplePrivateData(collection string, keys ...string) ([][]byte, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
-func (f *FpcStubInterface) StartWriteBatch() {}
+func (f *FpcStubInterface) StartWriteBatch() {
+	panic("not supported")
+}
 
 func (f *FpcStubInterface) FinishWriteBatch() error {
+	panic("not supported")
 	return nil
 }
 
 func (f *FpcStubInterface) GetAllStatesCompositeKeyWithPagination(pageSize int32, bookmark string) (shim.StateQueryIteratorInterface, *pb.QueryResponseMetadata, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetState(key string) ([]byte, error) {
@@ -159,19 +162,19 @@ func (f *FpcStubInterface) DelState(key string) error {
 }
 
 func (f *FpcStubInterface) SetStateValidationParameter(key string, ep []byte) error {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetStateValidationParameter(key string) ([]byte, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetStateByRange(startKey string, endKey string) (shim.StateQueryIteratorInterface, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetStateByRangeWithPagination(startKey string, endKey string, pageSize int32, bookmark string) (shim.StateQueryIteratorInterface, *pb.QueryResponseMetadata, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetStateByPartialCompositeKey(objectType string, keys []string) (shim.StateQueryIteratorInterface, error) {
@@ -194,7 +197,7 @@ func (f *FpcStubInterface) GetPublicStateByPartialCompositeKey(objectType string
 }
 
 func (f *FpcStubInterface) GetStateByPartialCompositeKeyWithPagination(objectType string, keys []string, pageSize int32, bookmark string) (shim.StateQueryIteratorInterface, *pb.QueryResponseMetadata, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) CreateCompositeKey(objectType string, attributes []string) (string, error) {
@@ -206,7 +209,7 @@ func (f *FpcStubInterface) CreateCompositeKey(objectType string, attributes []st
 }
 
 func (f *FpcStubInterface) SplitCompositeKey(compositeKey string) (string, []string, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetQueryResult(query string) (shim.StateQueryIteratorInterface, error) {
@@ -214,51 +217,51 @@ func (f *FpcStubInterface) GetQueryResult(query string) (shim.StateQueryIterator
 }
 
 func (f *FpcStubInterface) GetQueryResultWithPagination(query string, pageSize int32, bookmark string) (shim.StateQueryIteratorInterface, *pb.QueryResponseMetadata, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetHistoryForKey(key string) (shim.HistoryQueryIteratorInterface, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetPrivateData(collection string, key string) ([]byte, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetPrivateDataHash(collection string, key string) ([]byte, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) PutPrivateData(collection string, key string, value []byte) error {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) DelPrivateData(collection string, key string) error {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) PurgePrivateData(collection, key string) error {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) SetPrivateDataValidationParameter(collection string, key string, ep []byte) error {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetPrivateDataValidationParameter(collection string, key string) ([]byte, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetPrivateDataByRange(collection string, startKey string, endKey string) (shim.StateQueryIteratorInterface, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetPrivateDataByPartialCompositeKey(collection string, objectType string, keys []string) (shim.StateQueryIteratorInterface, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetPrivateDataQueryResult(collection string, query string) (shim.StateQueryIteratorInterface, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetCreator() ([]byte, error) {
@@ -270,11 +273,11 @@ func (f *FpcStubInterface) GetTransient() (map[string][]byte, error) {
 }
 
 func (f *FpcStubInterface) GetBinding() ([]byte, error) {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetDecorations() map[string][]byte {
-	panic("not implemented") // TODO: Implement
+	panic("not supported")
 }
 
 func (f *FpcStubInterface) GetSignedProposal() (*pb.SignedProposal, error) {
@@ -288,12 +291,12 @@ func (f *FpcStubInterface) GetTxTimestamp() (*timestamp.Timestamp, error) {
 		return nil, fmt.Errorf("error retrieving the proposal from the FPC Stub")
 	}
 	if err := proto.Unmarshal(proposal.ProposalBytes, protoV1.MessageV2(hdr)); err != nil {
-		return nil, fmt.Errorf("error unmarshaling Header: %s", err)
+		return nil, fmt.Errorf("error unmarshaling Header: %w", err)
 	}
 
 	chdr := &common.ChannelHeader{}
 	if err := proto.Unmarshal(hdr.ChannelHeader, protoV1.MessageV2(chdr)); err != nil {
-		return nil, fmt.Errorf("error unmarshaling ChannelHeader: %s", err)
+		return nil, fmt.Errorf("error unmarshaling ChannelHeader: %w", err)
 	}
 	return chdr.GetTimestamp(), nil
 }
