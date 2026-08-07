@@ -22,12 +22,12 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/fabricconfig"
-	"github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/fpc/externalbuilders"
 	nnetwork "github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/network"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/packager"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/topology"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/common/services/logging"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/lifecycle"
+	"github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/fpc/externalbuilders"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 )

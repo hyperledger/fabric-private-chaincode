@@ -13,8 +13,6 @@ import (
 	_ "github.com/hyperledger-labs/fabric-smart-client/platform/view/services/comm"
 	_ "github.com/hyperledger/fabric/cmd/orderer"
 	_ "github.com/hyperledger/fabric/cmd/peer"
-	_ "github.com/hyperledger/fabric-lib-go/common/metrics/prometheus"
-	_ "github.com/hyperledger/fabric-x-common/common/ledger/util/leveldbhelper"
 	_ "github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/statedb/statecouchdb"
 	_ "github.com/hyperledger/fabric/core/ledger/pvtdatastorage"
 	_ "github.com/hyperledger/fabric/core/operations"

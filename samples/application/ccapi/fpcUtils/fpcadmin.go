@@ -59,7 +59,7 @@ func (a *Admin) InitEnclave(targetPeer string) error {
 	attestationParams, err := sgx.CreateAttestationParamsFromEnvironment()
 	if err != nil {
 		logger.Errorf("failed to load attestation params from environment: %v", err)
-		return fmt.Errorf("failed to load attestation params from environment: %v", err)
+		return fmt.Errorf("failed to load attestation params from environment: %w", err)
 	}
 	logger.Infof("I AM HERE 2")
 
