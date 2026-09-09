@@ -9,18 +9,17 @@ package chaincode
 import (
 	"fmt"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
+	pb "github.com/hyperledger/fabric-protos-go-apiv2/peer"
 )
 
-type Echo struct {
-}
+type Echo struct{}
 
-func (t *Echo) Init(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *Echo) Init(stub shim.ChaincodeStubInterface) *pb.Response {
 	return shim.Success(nil)
 }
 
-func (t *Echo) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *Echo) Invoke(stub shim.ChaincodeStubInterface) *pb.Response {
 	functionName, params := stub.GetFunctionAndParameters()
 	fmt.Println("EchoCC: Function:", functionName, "Params:", params)
 	return shim.Success([]byte(functionName))

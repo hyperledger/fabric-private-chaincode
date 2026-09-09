@@ -58,7 +58,7 @@ func (a *Admin) InitEnclave(targetPeer string) error {
 	logger.Infof("--> Collection attestation params ")
 	attestationParams, err := sgx.CreateAttestationParamsFromEnvironment()
 	if err != nil {
-		return fmt.Errorf("failed to load attestation params from environment: %v", err)
+		return fmt.Errorf("failed to load attestation params from environment: %w", err)
 	}
 
 	initReq := fpcmgmt.LifecycleInitEnclaveRequest{

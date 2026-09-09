@@ -92,8 +92,6 @@ func (fake *IdentityEvaluator) EvaluateCreatorIdentityReturnsOnCall(i int, resul
 func (fake *IdentityEvaluator) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.evaluateCreatorIdentityMutex.RLock()
-	defer fake.evaluateCreatorIdentityMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

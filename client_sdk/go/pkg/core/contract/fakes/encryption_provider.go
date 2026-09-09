@@ -83,8 +83,6 @@ func (fake *EncryptionProvider) NewEncryptionContextReturnsOnCall(i int, result1
 func (fake *EncryptionProvider) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.newEncryptionContextMutex.RLock()
-	defer fake.newEncryptionContextMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

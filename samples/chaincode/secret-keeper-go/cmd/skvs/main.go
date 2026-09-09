@@ -10,8 +10,8 @@ package main
 import (
 	"os"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
-	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
+	"github.com/hyperledger/fabric-contract-api-go/v2/contractapi"
 	fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
 	"github.com/hyperledger/fabric-private-chaincode/samples/chaincode/secret-keeper-go/chaincode"
 )

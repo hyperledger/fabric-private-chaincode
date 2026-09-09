@@ -315,14 +315,6 @@ func (fake *Contract) SubmitTransactionReturnsOnCall(i int, result1 []byte, resu
 func (fake *Contract) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.createTransactionMutex.RLock()
-	defer fake.createTransactionMutex.RUnlock()
-	fake.evaluateTransactionMutex.RLock()
-	defer fake.evaluateTransactionMutex.RUnlock()
-	fake.nameMutex.RLock()
-	defer fake.nameMutex.RUnlock()
-	fake.submitTransactionMutex.RLock()
-	defer fake.submitTransactionMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

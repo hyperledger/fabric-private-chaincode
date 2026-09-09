@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	"github.com/hyperledger/fabric-contract-api-go/v2/contractapi"
 )
 
 const OK = "OK"
@@ -45,7 +45,7 @@ func (t *SecretKeeper) InitSecretKeeper(ctx contractapi.TransactionContextInterf
 
 	err = ctx.GetStub().PutState(AUTH_LIST_KEY, authSetJson)
 	if err != nil {
-		return fmt.Errorf("failed to put %s to world state. %v", AUTH_LIST_KEY, err)
+		return fmt.Errorf("failed to put %s to world state. %w", AUTH_LIST_KEY, err)
 	}
 
 	// init secret
@@ -60,7 +60,7 @@ func (t *SecretKeeper) InitSecretKeeper(ctx contractapi.TransactionContextInterf
 
 	err = ctx.GetStub().PutState(SECRET_KEY, secretJson)
 	if err != nil {
-		return fmt.Errorf("failed to put %s to world state. %v", SECRET_KEY, err)
+		return fmt.Errorf("failed to put %s to world state. %w", SECRET_KEY, err)
 	}
 
 	return nil
@@ -87,7 +87,7 @@ func (t *SecretKeeper) AddUser(ctx contractapi.TransactionContextInterface, sig 
 
 	err = ctx.GetStub().PutState(AUTH_LIST_KEY, authSetJson)
 	if err != nil {
-		return fmt.Errorf("failed to put %s to world state. %v", AUTH_LIST_KEY, err)
+		return fmt.Errorf("failed to put %s to world state. %w", AUTH_LIST_KEY, err)
 	}
 
 	return nil
@@ -114,7 +114,7 @@ func (t *SecretKeeper) RemoveUser(ctx contractapi.TransactionContextInterface, s
 
 	err = ctx.GetStub().PutState(AUTH_LIST_KEY, authSetJson)
 	if err != nil {
-		return fmt.Errorf("failed to put %s to world state. %v", AUTH_LIST_KEY, err)
+		return fmt.Errorf("failed to put %s to world state. %w", AUTH_LIST_KEY, err)
 	}
 
 	return nil
@@ -142,7 +142,7 @@ func (t *SecretKeeper) LockSecret(ctx contractapi.TransactionContextInterface, s
 
 	err = ctx.GetStub().PutState(SECRET_KEY, newSecretJson)
 	if err != nil {
-		return fmt.Errorf("failed to put %s to world state. %v", SECRET_KEY, err)
+		return fmt.Errorf("failed to put %s to world state. %w", SECRET_KEY, err)
 	}
 
 	return nil
@@ -161,7 +161,7 @@ func (t *SecretKeeper) RevealSecret(ctx contractapi.TransactionContextInterface,
 	// reveal secret
 	secretJson, err := ctx.GetStub().GetState(SECRET_KEY)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read from world state: %v", err)
+		return nil, fmt.Errorf("failed to read from world state: %w", err)
 	}
 	if secretJson == nil {
 		return nil, fmt.Errorf("the asset %s does not exist", SECRET_KEY)
@@ -177,7 +177,7 @@ func (t *SecretKeeper) RevealSecret(ctx contractapi.TransactionContextInterface,
 func GetAuthList(ctx contractapi.TransactionContextInterface) (*AuthSet, error) {
 	authSetJson, err := ctx.GetStub().GetState(AUTH_LIST_KEY)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read from world state: %v", err)
+		return nil, fmt.Errorf("failed to read from world state: %w", err)
 	}
 	if authSetJson == nil {
 		return nil, fmt.Errorf("the asset %s does not exist", AUTH_LIST_KEY)

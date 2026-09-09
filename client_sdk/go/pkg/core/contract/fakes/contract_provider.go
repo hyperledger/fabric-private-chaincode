@@ -87,8 +87,6 @@ func (fake *ContractProvider) GetContractReturnsOnCall(i int, result1 contract.C
 func (fake *ContractProvider) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.getContractMutex.RLock()
-	defer fake.getContractMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

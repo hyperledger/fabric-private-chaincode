@@ -6,16 +6,16 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
 	"github.com/hyperledger/fabric-private-chaincode/internal/endorsement/fakes"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
-	"github.com/hyperledger/fabric-protos-go/common"
-	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
-	"github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/hyperledger/fabric/protoutil"
+	"github.com/hyperledger/fabric-protos-go-apiv2/common"
+	"github.com/hyperledger/fabric-protos-go-apiv2/ledger/rwset/kvrwset"
+	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/proto"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
@@ -242,7 +242,7 @@ func createChaincodeResponseMessage(chaincodeRequest []byte, chaincodeRequestHas
 	}
 
 	header := &common.Header{
-		ChannelHeader:   protoutil.MarshalOrPanic(chdr),
+		ChannelHeader:   mustMarshal(chdr),
 		SignatureHeader: nil,
 	}
 
@@ -257,13 +257,13 @@ func createChaincodeResponseMessage(chaincodeRequest []byte, chaincodeRequestHas
 	}
 
 	payload := &peer.ChaincodeProposalPayload{
-		Input:        protoutil.MarshalOrPanic(input),
+		Input:        mustMarshal(input),
 		TransientMap: nil,
 	}
 
 	proposal := &peer.Proposal{
-		Header:    protoutil.MarshalOrPanic(header),
-		Payload:   protoutil.MarshalOrPanic(payload),
+		Header:    mustMarshal(header),
+		Payload:   mustMarshal(payload),
 		Extension: nil,
 	}
 
@@ -271,7 +271,7 @@ func createChaincodeResponseMessage(chaincodeRequest []byte, chaincodeRequestHas
 		EncryptedResponse: []byte("someEncryptedResponse"),
 		FpcRwSet:          nil,
 		Proposal: &peer.SignedProposal{
-			ProposalBytes: protoutil.MarshalOrPanic(proposal),
+			ProposalBytes: mustMarshal(proposal),
 			Signature:     nil,
 		},
 		ChaincodeRequestMessageHash: chaincodeRequestHash,
@@ -283,4 +283,12 @@ func hash(v []byte) []byte {
 	h := sha256.New()
 	h.Write(v)
 	return h.Sum(nil)
+}
+
+func mustMarshal(msg proto.Message) []byte {
+	data, err := proto.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+	return data
 }

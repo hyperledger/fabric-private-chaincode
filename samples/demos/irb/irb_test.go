@@ -15,6 +15,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	"github.com/hyperledger-labs/fabric-smart-client/integration"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/common"
+	fpcnwo "github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/fpc"
 	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/protos"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/storage"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/users"
@@ -98,8 +99,10 @@ func TestFlow(t *testing.T) {
 	require.NoError(t, err)
 
 	// setup fabric network
-	ii, err := integration.Generate(23000, false, Topology()...)
+	ii, err := integration.New(23300, "", Topology()...)
 	require.NoError(t, err)
+	ii.RegisterPlatformFactory(fpcnwo.NewPlatformFactory())
+	ii.Generate()
 	ii.Start()
 	defer func() {
 		ii.Stop()

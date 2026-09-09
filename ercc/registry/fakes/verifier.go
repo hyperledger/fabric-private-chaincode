@@ -89,8 +89,6 @@ func (fake *CredentialVerifier) VerifyCredentialsReturnsOnCall(i int, result1 er
 func (fake *CredentialVerifier) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.verifyCredentialsMutex.RLock()
-	defer fake.verifyCredentialsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

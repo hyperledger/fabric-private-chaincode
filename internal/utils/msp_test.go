@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"github.com/hyperledger/fabric-protos-go/msp"
-	"github.com/hyperledger/fabric/protoutil"
+	"github.com/hyperledger/fabric-private-chaincode/internal/protoutil"
+	"github.com/hyperledger/fabric-protos-go-apiv2/msp"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

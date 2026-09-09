@@ -10,14 +10,14 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/ercc"
 	"github.com/hyperledger/fabric-private-chaincode/internal/endorsement"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger/fabric-private-chaincode/internal/protoutil"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/hyperledger/fabric/common/flogging"
-	"github.com/hyperledger/fabric/protoutil"
+	pb "github.com/hyperledger/fabric-protos-go-apiv2/peer"
 )
 
 var logger = flogging.MustGetLogger("ecc")
@@ -31,12 +31,12 @@ type EnclaveChaincode struct {
 }
 
 // Init sets the chaincode state to "init"
-func (t *EnclaveChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *EnclaveChaincode) Init(stub shim.ChaincodeStubInterface) *pb.Response {
 	return shim.Success(nil)
 }
 
 // Invoke receives transactions and forwards to op handlers
-func (t *EnclaveChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *EnclaveChaincode) Invoke(stub shim.ChaincodeStubInterface) *pb.Response {
 	function, _ := stub.GetFunctionAndParameters()
 	logger.Infof("Invoke is running [%s]", function)
 
@@ -52,7 +52,7 @@ func (t *EnclaveChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response 
 	}
 }
 
-func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) *pb.Response {
 	// extract all enclave inputs from invocation params
 	initMsg, err := t.Extractor.GetInitEnclaveMessage(stub)
 	if err != nil {
@@ -96,7 +96,7 @@ func (t *EnclaveChaincode) initEnclave(stub shim.ChaincodeStubInterface) pb.Resp
 	return shim.Success([]byte(base64.StdEncoding.EncodeToString(credentialsBytes)))
 }
 
-func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) *pb.Response {
 	var errMsg string
 
 	serializedChaincodeRequest, err := t.Extractor.GetSerializedChaincodeRequest(stub)
@@ -116,15 +116,15 @@ func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response 
 	signedChaincodeResponseMessageB64 := []byte(base64.StdEncoding.EncodeToString(signedChaincodeResponseMessage))
 	logger.Debugf("base64-encoded response message: '%s'", signedChaincodeResponseMessageB64)
 
-	var response pb.Response
+	var response *pb.Response
 	if errInvoke == nil {
-		response = pb.Response{
+		response = &pb.Response{
 			Status:  shim.OK,
 			Payload: signedChaincodeResponseMessageB64,
 			Message: errMsg,
 		}
 	} else {
-		response = pb.Response{
+		response = &pb.Response{
 			Status:  shim.ERROR,
 			Payload: signedChaincodeResponseMessageB64,
 			Message: errMsg,
@@ -134,7 +134,7 @@ func (t *EnclaveChaincode) invoke(stub shim.ChaincodeStubInterface) pb.Response 
 	return response
 }
 
-func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *EnclaveChaincode) endorse(stub shim.ChaincodeStubInterface) *pb.Response {
 
 	chaincodeParams, err := t.Extractor.GetChaincodeParams(stub)
 	if err != nil {

@@ -12,17 +12,17 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	fpcmgmt "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
 	fpcpackager "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/fab/ccpackager"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
-	"github.com/hyperledger/fabric-protos-go/common"
+	"github.com/hyperledger/fabric-protos-go-apiv2/common"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	lifecyclepkg "github.com/hyperledger/fabric-sdk-go/pkg/fab/ccpackager/lifecycle"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
-	"github.com/hyperledger/fabric/common/flogging"
 )
 
 var (
@@ -112,18 +112,18 @@ func SetupNetwork(channel string) (*gateway.Network, error) {
 
 	err := os.Setenv("DISCOVERY_AS_LOCALHOST", "false")
 	if err != nil {
-		return nil, fmt.Errorf("error setting DISCOVERY_AS_LOCALHOST environment variable: %v", err)
+		return nil, fmt.Errorf("error setting DISCOVERY_AS_LOCALHOST environment variable: %w", err)
 	}
 
 	wallet, err := gateway.NewFileSystemWallet("wallet")
 	if err != nil {
-		return nil, fmt.Errorf("failed to create wallet: %v", err)
+		return nil, fmt.Errorf("failed to create wallet: %w", err)
 	}
 
 	if !wallet.Exists("appUser") {
 		err = populateWallet(wallet)
 		if err != nil {
-			return nil, fmt.Errorf("failed to populate wallet contents: %v", err)
+			return nil, fmt.Errorf("failed to populate wallet contents: %w", err)
 		}
 	}
 
@@ -132,13 +132,13 @@ func SetupNetwork(channel string) (*gateway.Network, error) {
 		gateway.WithIdentity(wallet, "appUser"),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to gateway: %v", err)
+		return nil, fmt.Errorf("failed to connect to gateway: %w", err)
 	}
 	defer gw.Close()
 
 	network, err := gw.GetNetwork(channel)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get network: %v", err)
+		return nil, fmt.Errorf("failed to get network: %w", err)
 	}
 
 	return network, nil
@@ -177,7 +177,7 @@ func Setup(ccID, ccPath string, initEnclave bool) error {
 	// get sdk instance
 	sdk, err := fabsdk.New(config.FromFile(filepath.Clean(ccpPath)))
 	if err != nil {
-		return fmt.Errorf("failed to create sdk: %v", err)
+		return fmt.Errorf("failed to create sdk: %w", err)
 	}
 	defer sdk.Close()
 
@@ -189,13 +189,13 @@ func Setup(ccID, ccPath string, initEnclave bool) error {
 
 	client, err := fpcmgmt.New(adminContext)
 	if err != nil {
-		return fmt.Errorf("failed to create context: %v", err)
+		return fmt.Errorf("failed to create context: %w", err)
 	}
 
 	// install fpc chaincode
 	err = installChaincode(client, ccDetails, nwDetails)
 	if err != nil {
-		return fmt.Errorf("error during installing chaincode: %v", err)
+		return fmt.Errorf("error during installing chaincode: %w", err)
 	}
 
 	return nil
@@ -221,7 +221,7 @@ func installChaincode(client *fpcmgmt.Client, cc *chaincodeDetails, nw *networkD
 	}
 	ccPkg, err := fpcpackager.NewCCPackage(desc)
 	if err != nil {
-		return fmt.Errorf("failed to create new chaincode package: %v", err)
+		return fmt.Errorf("failed to create new chaincode package: %w", err)
 	}
 	logger.Infof("%s successfully packaged", cc.Id)
 
@@ -232,7 +232,7 @@ func installChaincode(client *fpcmgmt.Client, cc *chaincodeDetails, nw *networkD
 	}
 	resp, err := client.LifecycleInstallCC(installCCReq, resmgmt.WithRetry(retry.DefaultResMgmtOpts))
 	if err != nil {
-		return fmt.Errorf("failed to install chaincode: %v", err)
+		return fmt.Errorf("failed to install chaincode: %w", err)
 	}
 	packageID := lifecyclepkg.ComputePackageID(installCCReq.Label, installCCReq.Package)
 	logger.Infof("%s successfully installed: %v", cc.Id, resp)
@@ -254,7 +254,7 @@ func installChaincode(client *fpcmgmt.Client, cc *chaincodeDetails, nw *networkD
 		resmgmt.WithOrdererEndpoint(nw.Orderers[0]),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to approve chaincode: %v", err)
+		return fmt.Errorf("failed to approve chaincode: %w", err)
 	}
 	logger.Infof("%s successfully approved with txid: %v", cc.Id, txid)
 
@@ -273,7 +273,7 @@ func installChaincode(client *fpcmgmt.Client, cc *chaincodeDetails, nw *networkD
 		resmgmt.WithTargetEndpoints(nw.Peers...),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to check chaincode commit readiness: %v", err)
+		return fmt.Errorf("failed to check chaincode commit readiness: %w", err)
 	}
 	logger.Infof("%s readiness check: %v", cc.Id, chkresp)
 
@@ -293,7 +293,7 @@ func installChaincode(client *fpcmgmt.Client, cc *chaincodeDetails, nw *networkD
 		resmgmt.WithOrdererEndpoint(nw.Orderers[0]),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to commit chaincode: %v", err)
+		return fmt.Errorf("failed to commit chaincode: %w", err)
 	}
 	logger.Infof("%s successfully committed", cc.Id)
 
@@ -302,7 +302,7 @@ func installChaincode(client *fpcmgmt.Client, cc *chaincodeDetails, nw *networkD
 
 		attestationParams, err := sgx.CreateAttestationParamsFromEnvironment()
 		if err != nil {
-			return fmt.Errorf("failed to load attestation params from environment: %v", err)
+			return fmt.Errorf("failed to load attestation params from environment: %w", err)
 		}
 
 		initReq := fpcmgmt.LifecycleInitEnclaveRequest{
@@ -318,7 +318,7 @@ func installChaincode(client *fpcmgmt.Client, cc *chaincodeDetails, nw *networkD
 			resmgmt.WithOrdererEndpoint(nw.Orderers[0]),
 		)
 		if err != nil {
-			return fmt.Errorf("failed to init enclave: %v", err)
+			return fmt.Errorf("failed to init enclave: %w", err)
 		}
 		logger.Infof("%s successfully initialized enclave: %v", cc.Id, initTxId)
 	} else {

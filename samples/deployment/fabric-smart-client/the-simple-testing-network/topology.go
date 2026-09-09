@@ -16,6 +16,7 @@ import (
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/topology"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fsc"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/monitoring"
+	fpctopo "github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/topology"
 )
 
 const (
@@ -36,8 +37,8 @@ func Fabric() []api.Topology {
 
 	// in this example we use the FPC kv-test-go chaincode
 	// we just need to set the docker images
-	fabricTopology.EnableFPC()
-	fabricTopology.AddFPC(config.chaincodeName, config.chaincodeImage, config.fpcOptions...)
+	fpctopo.EnableFPC(fabricTopology)
+	fpctopo.AddFPC(fabricTopology, config.chaincodeName, config.chaincodeImage, config.fpcOptions...)
 
 	// bring hyperledger explorer into the game
 	// you can reach it http://localhost:8080 with admin:admin
@@ -89,13 +90,13 @@ func setup() *config {
 	if len(mrenclave) == 0 {
 		mrenclave = defaultChaincodeMRENCLAVE
 	}
-	config.fpcOptions = append(config.fpcOptions, topology.WithMREnclave(mrenclave))
+	config.fpcOptions = append(config.fpcOptions, fpctopo.WithMREnclave(mrenclave))
 
 	// check if we are running in SGX HW mode
 	// export SGX_MODE=SIM
 	if strings.ToUpper(os.Getenv("SGX_MODE")) == "HW" {
 		sgxDevicePath := DetectSgxDevicePath()
-		config.fpcOptions = append(config.fpcOptions, topology.WithSGXDevicesPaths(sgxDevicePath))
+		config.fpcOptions = append(config.fpcOptions, fpctopo.WithSGXDevicesPaths(sgxDevicePath))
 	}
 
 	return config

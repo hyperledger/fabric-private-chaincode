@@ -11,12 +11,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/epid"
 	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/simulation"
 	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/types"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
-	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/pkg/errors"
 )
 
@@ -95,7 +95,7 @@ func (c *CredentialConverter) ConvertCredentials(credentialsOnlyAttestation stri
 	logger.Debugf("Received Credential: '%s'", credentialsOnlyAttestation)
 	credentials, err := utils.UnmarshalCredentials(credentialsOnlyAttestation)
 	if err != nil {
-		return "", fmt.Errorf("cannot decode credentials: %s", err)
+		return "", fmt.Errorf("cannot decode credentials: %w", err)
 	}
 
 	credentials, err = c.convertCredentials(credentials)

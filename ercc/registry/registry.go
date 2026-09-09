@@ -13,11 +13,11 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	"github.com/hyperledger/fabric-contract-api-go/v2/contractapi"
+	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/hyperledger/fabric-private-chaincode/internal/attestation"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
-	"github.com/hyperledger/fabric/common/flogging"
 	"github.com/pkg/errors"
 )
 
@@ -288,17 +288,17 @@ func (rs *Contract) RegisterEnclave(ctx contractapi.TransactionContextInterface,
 	logger.Debugf("Registering credentials at key %s", key)
 
 	if err := ctx.GetStub().PutState(key, []byte(credentialsBase64)); err != nil {
-		return fmt.Errorf("cannot store credentials: %s", err)
+		return fmt.Errorf("cannot store credentials: %w", err)
 	}
 
 	// Due to MVP short-cut (see QueryChaincodeEncryptionKey) we already declare chaincode/enclave as provisioned
 	// TODO: this has to go to RegisterCCKeys and ImportCCKeys (Post-MVP)
 	provisionedKey, err := ctx.GetStub().CreateCompositeKey("namespaces/provisioned", []string{chaincodeId, enclaveId})
 	if err != nil {
-		return fmt.Errorf("cannot create provisionedKey: %s", err)
+		return fmt.Errorf("cannot create provisionedKey: %w", err)
 	}
 	if err := ctx.GetStub().PutState(provisionedKey, []byte("a SignedCCKeyRegistrationMessage")); err != nil {
-		return fmt.Errorf("cannot store provisionedKey: %s", err)
+		return fmt.Errorf("cannot store provisionedKey: %w", err)
 	}
 
 	logger.Debugf("RegisterEnclave successful")
@@ -316,7 +316,7 @@ func checkAttestedData(ctx contractapi.TransactionContextInterface, v attestatio
 	// get chaincode definition for chaincode
 	ccDef, err := utils.GetChaincodeDefinition(attestedData.CcParams.ChaincodeId, ctx.GetStub())
 	if err != nil {
-		return fmt.Errorf("cannot get chaincode definition: %s", err)
+		return fmt.Errorf("cannot get chaincode definition: %w", err)
 	}
 
 	// check that attested data match the chaincode definition
@@ -332,7 +332,7 @@ func checkAttestedData(ctx contractapi.TransactionContextInterface, v attestatio
 
 	// check that attestation evidence contains expectedMrEnclave as defined in chaincode definition
 	if err := v.VerifyCredentials(credentials, expectedMrEnclave); err != nil {
-		return fmt.Errorf("evidence verification failed: %s", err)
+		return fmt.Errorf("evidence verification failed: %w", err)
 	}
 
 	// next check peer (enclave host) identity is covered by the attestation
@@ -347,7 +347,7 @@ func checkAttestedData(ctx contractapi.TransactionContextInterface, v attestatio
 
 	// check that registration transaction creator has same mspid as the enclave owner
 	if err := ie.EvaluateCreatorIdentity(creatorIdentityBytes, attestedData.HostParams.PeerMspId); err != nil {
-		return fmt.Errorf("creator identity evaluation failed: %s", err)
+		return fmt.Errorf("creator identity evaluation failed: %w", err)
 	}
 
 	// TODO add more checks (POST-MVP)
