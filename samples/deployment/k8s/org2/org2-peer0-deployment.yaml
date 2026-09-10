@@ -57,6 +57,8 @@ spec:
               value: 0.0.0.0:9443
             - name: CORE_METRICS_PROVIDER
               value: prometheus
+            - name: CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG
+              value: "{\"peername\":\"peer0org2\"}"
           image: hyperledger/fabric-peer:2.5.9
           name: peer0
           ports:
@@ -74,8 +76,8 @@ spec:
             - mountPath: /etc/hyperledger/fabric/core.yaml
               name: peer0-config
               subPath: core.yaml
-            - mountPath: /builders/external/bin/
-              name: external-builder
+#            - mountPath: /builders/external/bin/
+#              name: external-builder
       restartPolicy: Always
       volumes:
         - name: peer0-org2-claim1
@@ -96,10 +98,10 @@ spec:
             items:
               - key: core.yaml
                 path: core.yaml
-        - name: external-builder
-          hostPath:
-            path: /fpc/fabric/externalBuilder/chaincode_server/bin
-            type: Directory
+#        - name: external-builder
+#          hostPath:
+#            path: /fpc/fabric/externalBuilder/chaincode_server/bin
+#            type: Directory
 ---
 apiVersion: v1
 kind: Service
