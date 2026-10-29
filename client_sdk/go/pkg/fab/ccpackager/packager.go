@@ -37,6 +37,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
@@ -70,6 +71,11 @@ func writeFileToPackage(localpath string, packagepath string, tw *tar.Writer) er
 		return fmt.Errorf("failed calculating FileInfoHeader: %w", err)
 	}
 
+	// Take the variance out of the tar by using zero time and fixed uid/gid.
+	var zeroTime time.Time
+	header.AccessTime = zeroTime
+	header.ModTime = zeroTime
+	header.ChangeTime = zeroTime
 	header.Name = packagepath
 	header.Mode = 0o100644
 	header.Uid = 500
