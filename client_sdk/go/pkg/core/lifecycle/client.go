@@ -11,9 +11,7 @@ SPDX-License-Identifier: Apache-2.0
 //
 // Example:
 //
-//	adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
-//
-//	client, err := lifecycle.New(adminContext)
+//	client, err := lifecycle.New(getChannelClient)
 //	if err != nil {
 //		log.Fatal(err)
 //	}
@@ -77,9 +75,7 @@ type ChannelClient interface {
 
 type GetChannelClientFunction func(channelID string) (ChannelClient, error)
 
-// Client enables managing resources in Fabric network.
-// It extends lifecycle.Client (https://pkg.go.dev/github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt#Client)
-// from the standard Fabric Client SDK with additional FPC-specific functionality.
+// Client enables FPC specific resource management in a Fabric network.
 type Client struct {
 	GetChannelClient GetChannelClientFunction
 	Converter        CredentialConverter

@@ -12,9 +12,9 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/hyperledger/fabric-gateway/pkg/client"
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
 	testutils "github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
-	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -25,7 +25,7 @@ func TestGoClientSDK(t *testing.T) {
 }
 
 var (
-	network        *gateway.Network
+	network        *client.Network
 	contract       fpc.Contract
 	auctionCounter int
 	auctionName    string

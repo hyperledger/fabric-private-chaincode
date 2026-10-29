@@ -20,5 +20,4 @@ type Config struct {
 	FpcPath                 string
 	ChaincodeId             string
 	ChannelId               string
-	GatewayConfigPath       string
 }

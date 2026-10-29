@@ -7,28 +7,34 @@ SPDX-License-Identifier: Apache-2.0
 package utils
 
 import (
+	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/hyperledger/fabric-admin-sdk/pkg/chaincode"
+	adminidentity "github.com/hyperledger/fabric-admin-sdk/pkg/identity"
+	"github.com/hyperledger/fabric-gateway/pkg/client"
 	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	fpcmgmt "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
 	fpcpackager "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/fab/ccpackager"
+	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
-	"github.com/hyperledger/fabric-protos-go-apiv2/common"
-	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
-	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
-	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
-	lifecyclepkg "github.com/hyperledger/fabric-sdk-go/pkg/fab/ccpackager/lifecycle"
-	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
-	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
+	"github.com/hyperledger/fabric-protos-go-apiv2/peer"
+	"google.golang.org/grpc"
+)
+
+const (
+	mspID        = "SampleOrg"
+	peerEndpoint = "127.0.0.1:7051"
 )
 
 var (
 	FPCPath         string
 	testNetworkPath string
-	ccpPath         string
+	mspPath         string
 	logger          = flogging.MustGetLogger("client_sdk_test")
 )
 
@@ -37,7 +43,7 @@ type chaincodeDetails struct {
 	Path         string
 	Version      string
 	Lang         string
-	Policy       *common.SignaturePolicyEnvelope
+	Policy       *peer.ApplicationPolicy
 	Seq          int64
 	Vscc         string
 	Escc         string
@@ -48,10 +54,7 @@ type chaincodeDetails struct {
 
 type networkDetails struct {
 	ChannelID    string
-	Peers        []string
-	Orderers     []string
 	EnclavePeers []string
-	CaaSEndpoint map[string]string
 }
 
 func init() {
@@ -66,82 +69,47 @@ func init() {
 
 	testNetworkPath = filepath.Join(FPCPath, "integration")
 
-	ccpPath = filepath.Join(
-		testNetworkPath,
-		"config",
-		"msp",
-		"connection.yaml",
-	)
-}
-
-func populateWallet(wallet *gateway.Wallet) error {
-	credPath := filepath.Join(
+	mspPath = filepath.Join(
 		testNetworkPath,
 		"config",
 		"msp",
 	)
-
-	certPath := filepath.Join(credPath, "signcerts", "peer.pem")
-	// read the certificate pem
-	cert, err := os.ReadFile(filepath.Clean(certPath))
-	if err != nil {
-		return err
-	}
-
-	keyDir := filepath.Join(credPath, "keystore")
-	// there's a single file in this dir containing the private key
-	files, err := os.ReadDir(keyDir)
-	if err != nil {
-		return err
-	}
-	if len(files) != 1 {
-		return fmt.Errorf("keystore folder should have contain one file")
-	}
-	keyPath := filepath.Join(keyDir, files[0].Name())
-	key, err := os.ReadFile(filepath.Clean(keyPath))
-	if err != nil {
-		return err
-	}
-
-	identity := gateway.NewX509Identity("SampleOrg", string(cert), string(key))
-
-	return wallet.Put("appUser", identity)
 }
 
-func SetupNetwork(channel string) (*gateway.Network, error) {
-
-	err := os.Setenv("DISCOVERY_AS_LOCALHOST", "false")
+// connect creates a gRPC connection to the Fabric Gateway of the test network peer
+func connect() (*grpc.ClientConn, error) {
+	conn, err := fpc.NewGrpcConnection(peerEndpoint, nil, "")
 	if err != nil {
-		return nil, fmt.Errorf("error setting DISCOVERY_AS_LOCALHOST environment variable: %w", err)
+		return nil, fmt.Errorf("failed to create connection: %w", err)
 	}
+	return conn, nil
+}
 
-	wallet, err := gateway.NewFileSystemWallet("wallet")
+func newGateway(conn *grpc.ClientConn) (*client.Gateway, error) {
+	id, sign, err := fpc.NewIdentityFromMSP(mspID, mspPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create wallet: %w", err)
+		return nil, fmt.Errorf("failed to load identity: %w", err)
 	}
 
-	if !wallet.Exists("appUser") {
-		err = populateWallet(wallet)
-		if err != nil {
-			return nil, fmt.Errorf("failed to populate wallet contents: %w", err)
-		}
-	}
-
-	gw, err := gateway.Connect(
-		gateway.WithConfig(config.FromFile(filepath.Clean(ccpPath))),
-		gateway.WithIdentity(wallet, "appUser"),
-	)
+	gw, err := client.Connect(id, client.WithSign(sign), client.WithClientConnection(conn))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to gateway: %w", err)
 	}
-	defer gw.Close()
+	return gw, nil
+}
 
-	network, err := gw.GetNetwork(channel)
+func SetupNetwork(channel string) (*client.Network, error) {
+	conn, err := connect()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get network: %w", err)
+		return nil, err
 	}
 
-	return network, nil
+	gw, err := newGateway(conn)
+	if err != nil {
+		return nil, err
+	}
+
+	return gw.GetNetwork(channel), nil
 }
 
 func Setup(ccID, ccPath string, initEnclave bool) error {
@@ -153,8 +121,6 @@ func Setup(ccID, ccPath string, initEnclave bool) error {
 
 	nwDetails := &networkDetails{
 		ChannelID:    "mychannel",
-		Peers:        []string{"jdoe_test.sampleorg.example.com"},
-		Orderers:     []string{"orderer.example.com"},
 		EnclavePeers: enclavePeers,
 	}
 
@@ -174,26 +140,14 @@ func Setup(ccID, ccPath string, initEnclave bool) error {
 		InitRequired: false,
 	}
 
-	// get sdk instance
-	sdk, err := fabsdk.New(config.FromFile(filepath.Clean(ccpPath)))
+	conn, err := connect()
 	if err != nil {
-		return fmt.Errorf("failed to create sdk: %w", err)
+		return err
 	}
-	defer sdk.Close()
-
-	// new client
-	orgAdmin := "Admin"
-	orgName := "SampleOrg"
-
-	adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
-
-	client, err := fpcmgmt.New(adminContext)
-	if err != nil {
-		return fmt.Errorf("failed to create context: %w", err)
-	}
+	defer conn.Close()
 
 	// install fpc chaincode
-	err = installChaincode(client, ccDetails, nwDetails)
+	err = installChaincode(conn, ccDetails, nwDetails)
 	if err != nil {
 		return fmt.Errorf("error during installing chaincode: %w", err)
 	}
@@ -201,7 +155,7 @@ func Setup(ccID, ccPath string, initEnclave bool) error {
 	return nil
 }
 
-func installChaincode(client *fpcmgmt.Client, cc *chaincodeDetails, nw *networkDetails) error {
+func installChaincode(conn *grpc.ClientConn, cc *chaincodeDetails, nw *networkDetails) error {
 	// TODO promote this install function to a test suite for the FPC Admin API
 	// Right now this is used by the auction test to setup the "environment"; additional testing
 	// of the FPC Admin API would be good here.
@@ -225,73 +179,58 @@ func installChaincode(client *fpcmgmt.Client, cc *chaincodeDetails, nw *networkD
 	}
 	logger.Infof("%s successfully packaged", cc.Id)
 
-	// install
-	installCCReq := resmgmt.LifecycleInstallCCRequest{
-		Label:   cc.Id,
-		Package: ccPkg,
+	certificate, err := adminidentity.ReadCertificate(filepath.Join(mspPath, "signcerts", "peer.pem"))
+	if err != nil {
+		return fmt.Errorf("failed to read admin certificate: %w", err)
 	}
-	resp, err := client.LifecycleInstallCC(installCCReq, resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+	privateKey, err := adminidentity.ReadPrivateKey(filepath.Join(mspPath, "keystore", "key.pem"))
+	if err != nil {
+		return fmt.Errorf("failed to read admin private key: %w", err)
+	}
+	admin, err := adminidentity.NewPrivateKeySigningIdentity(mspID, certificate, privateKey)
+	if err != nil {
+		return fmt.Errorf("failed to create admin identity: %w", err)
+	}
+
+	ctx := context.Background()
+
+	// install
+	resp, err := chaincode.NewPeer(conn, admin).Install(ctx, bytes.NewReader(ccPkg))
 	if err != nil {
 		return fmt.Errorf("failed to install chaincode: %w", err)
 	}
-	packageID := lifecyclepkg.ComputePackageID(installCCReq.Label, installCCReq.Package)
+	packageID := chaincode.GetPackageID(cc.Id, ccPkg)
 	logger.Infof("%s successfully installed: %v", cc.Id, resp)
 
-	// approveformyorg
-	approveCCReq := resmgmt.LifecycleApproveCCRequest{
+	definition := &chaincode.Definition{
+		ChannelName:       nw.ChannelID,
+		PackageID:         packageID,
 		Name:              cc.Id,
 		Version:           cc.Version,
-		PackageID:         packageID,
-		Sequence:          cc.Seq,
 		EndorsementPlugin: cc.Escc,
 		ValidationPlugin:  cc.Vscc,
-		SignaturePolicy:   cc.Policy,
+		Sequence:          cc.Seq,
+		ApplicationPolicy: cc.Policy,
 		InitRequired:      cc.InitRequired,
 	}
-	txid, err := client.LifecycleApproveCC(nw.ChannelID, approveCCReq,
-		resmgmt.WithRetry(retry.DefaultResMgmtOpts),
-		resmgmt.WithTargetEndpoints(nw.Peers...),
-		resmgmt.WithOrdererEndpoint(nw.Orderers[0]),
-	)
+	lifecycleGateway := chaincode.NewGateway(conn, admin)
+
+	// approveformyorg
+	err = lifecycleGateway.Approve(ctx, definition)
 	if err != nil {
 		return fmt.Errorf("failed to approve chaincode: %w", err)
 	}
-	logger.Infof("%s successfully approved with txid: %v", cc.Id, txid)
+	logger.Infof("%s successfully approved", cc.Id)
 
 	// checkcommitreadiness
-	checkCCReq := resmgmt.LifecycleCheckCCCommitReadinessRequest{
-		Name:              cc.Id,
-		Version:           cc.Version,
-		Sequence:          cc.Seq,
-		EndorsementPlugin: cc.Escc,
-		ValidationPlugin:  cc.Vscc,
-		SignaturePolicy:   cc.Policy,
-		InitRequired:      cc.InitRequired,
-	}
-	chkresp, err := client.LifecycleCheckCCCommitReadiness(nw.ChannelID, checkCCReq,
-		resmgmt.WithRetry(retry.DefaultResMgmtOpts),
-		resmgmt.WithTargetEndpoints(nw.Peers...),
-	)
+	chkresp, err := lifecycleGateway.CheckCommitReadiness(ctx, definition)
 	if err != nil {
 		return fmt.Errorf("failed to check chaincode commit readiness: %w", err)
 	}
 	logger.Infof("%s readiness check: %v", cc.Id, chkresp)
 
 	// commit
-	commitCCReq := resmgmt.LifecycleCommitCCRequest{
-		Name:              cc.Id,
-		Version:           cc.Version,
-		Sequence:          cc.Seq,
-		EndorsementPlugin: cc.Escc,
-		ValidationPlugin:  cc.Vscc,
-		SignaturePolicy:   cc.Policy,
-		InitRequired:      cc.InitRequired,
-	}
-	_, err = client.LifecycleCommitCC(nw.ChannelID, commitCCReq,
-		resmgmt.WithRetry(retry.DefaultResMgmtOpts),
-		resmgmt.WithTargetEndpoints(nw.Peers...),
-		resmgmt.WithOrdererEndpoint(nw.Orderers[0]),
-	)
+	err = lifecycleGateway.Commit(ctx, definition)
 	if err != nil {
 		return fmt.Errorf("failed to commit chaincode: %w", err)
 	}
@@ -311,12 +250,18 @@ func installChaincode(client *fpcmgmt.Client, cc *chaincodeDetails, nw *networkD
 			AttestationParams:   attestationParams,
 		}
 
-		initTxId, err := client.LifecycleInitEnclave(nw.ChannelID, initReq,
-			// Note that these options are currently ignored by our implementation
-			resmgmt.WithRetry(retry.DefaultResMgmtOpts),
-			resmgmt.WithTargetEndpoints(nw.Peers...), // peers that are responsible for enclave registration
-			resmgmt.WithOrdererEndpoint(nw.Orderers[0]),
-		)
+		gw, err := newGateway(conn)
+		if err != nil {
+			return err
+		}
+		defer gw.Close()
+
+		client, err := fpcmgmt.New(gw)
+		if err != nil {
+			return fmt.Errorf("failed to create FPC management client: %w", err)
+		}
+
+		initTxId, err := client.LifecycleInitEnclave(nw.ChannelID, initReq)
 		if err != nil {
 			return fmt.Errorf("failed to init enclave: %w", err)
 		}

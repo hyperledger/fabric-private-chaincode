@@ -5,14 +5,14 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 // Package fpcclientsdk enables Go developers to build solutions that interact with FPC chaincode for Hyperledger Fabric.
-// The FPC Client SDK builds on top of the Fabric Client SDK Go (https://godoc.org/github.com/hyperledger/fabric-sdk-go)
+// The FPC Client SDK builds on top of the Fabric Gateway client API (https://pkg.go.dev/github.com/hyperledger/fabric-gateway/pkg/client)
 // and provides FPC specific functionality such as enclave initialization and secure interaction with a FPC chaincode.
 // The main goal is to ease the interaction with a FPC chaincode and provide similar experience as offered by normal
 // chaincode interaction.
 //
 // # Packages for end developer usage
 //
-// pkg/client/resmgmt: Provides resource management capabilities such as installing FPC chaincode.
+// pkg/client/resmgmt: Provides FPC specific resource management capabilities such as enclave initialization.
 // Reference: https://godoc.org/github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt
 //
 // pkg/gateway: Enables Go developers to build client applications using the Hyperledger

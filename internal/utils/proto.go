@@ -144,6 +144,16 @@ func ExtractEndpoint(credentials *protos.Credentials) (string, error) {
 	return attestedData.HostParams.PeerEndpoint, nil
 }
 
+func ExtractPeerMspId(credentials *protos.Credentials) (string, error) {
+	attestedData := &protos.AttestedData{}
+	err := credentials.SerializedAttestedData.UnmarshalTo(attestedData)
+	if err != nil {
+		return "", err
+	}
+
+	return attestedData.HostParams.PeerMspId, nil
+}
+
 func GetChaincodeRequestMessageFromSignedProposal(signedProposal *pb.SignedProposal) (crmProtoBytes []byte, e error) {
 	// This function is based on the `newChaincodeStub` in
 	// https://github.com/hyperledger/fabric-chaincode-go/blob/9b3ae92d8664f398fe9846561fafde44864d55e3/shim/stub.go
