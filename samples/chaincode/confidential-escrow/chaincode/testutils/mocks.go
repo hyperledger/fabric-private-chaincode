@@ -9,7 +9,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/timestamp"
-	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
+	sw "github.com/hyperledger-labs/cc-tools/v2/stubwrapper"
 	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	"github.com/hyperledger/fabric-protos-go-apiv2/ledger/queryresult"
 	"github.com/hyperledger/fabric-protos-go-apiv2/msp"
@@ -365,7 +365,7 @@ func (m *MockStub) SetEvent(name string, payload []byte) error {
 }
 
 // InvokeChaincode simulates chaincode invocation (not implemented)
-func (m *MockStub) InvokeChaincode(chaincodeName string, args [][]byte, channel string) peer.Response {
+func (m *MockStub) InvokeChaincode(chaincodeName string, args [][]byte, channel string) *peer.Response {
 	return shim.Success(nil)
 }
 
@@ -379,8 +379,34 @@ func (m *MockStub) SetStateValidationParameter(key string, ep []byte) error {
 	return nil
 }
 
+// GetMultipleStates retrieves the values of the given keys in order
+func (m *MockStub) GetMultipleStates(keys ...string) ([][]byte, error) {
+	values := make([][]byte, len(keys))
+	for i, key := range keys {
+		value, err := m.GetState(key)
+		if err != nil {
+			return nil, err
+		}
+		values[i] = value
+	}
+	return values, nil
+}
+
+// StartWriteBatch is a no-op; writes are applied immediately
+func (m *MockStub) StartWriteBatch() {}
+
+// FinishWriteBatch is a no-op; writes are applied immediately
+func (m *MockStub) FinishWriteBatch() error {
+	return nil
+}
+
 // GetPrivateData returns nil
 func (m *MockStub) GetPrivateData(collection, key string) ([]byte, error) {
+	return nil, nil
+}
+
+// GetMultiplePrivateData returns nil
+func (m *MockStub) GetMultiplePrivateData(collection string, keys ...string) ([][]byte, error) {
 	return nil, nil
 }
 
@@ -426,6 +452,11 @@ func (m *MockStub) SetPrivateDataValidationParameter(collection, key string, ep 
 
 // GetQueryResultWithPagination is a no-op
 func (s *MockStub) GetQueryResultWithPagination(query string, pageSize int32, bookmark string) (shim.StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
+	return nil, nil, nil
+}
+
+// GetAllStatesCompositeKeyWithPagination is a no-op
+func (s *MockStub) GetAllStatesCompositeKeyWithPagination(pageSize int32, bookmark string) (shim.StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
 	return nil, nil, nil
 }
 
