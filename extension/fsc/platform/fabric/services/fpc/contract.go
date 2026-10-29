@@ -24,12 +24,8 @@ type transaction struct {
 }
 
 func (t *transaction) Evaluate(args ...string) ([]byte, error) {
-	var passedArgs []interface{}
-	for _, arg := range args {
-		passedArgs = append(passedArgs, arg)
-	}
 	raw, err := t.ch.Chaincode(t.id).Query(
-		t.function, passedArgs...,
+		t.function, StringsToArgs(args)...,
 	).WithInvokerIdentity(
 		t.invoker,
 	).WithDiscoveredEndorsersByEndpoints(
@@ -54,12 +50,8 @@ func (c *contract) Name() string {
 }
 
 func (c *contract) EvaluateTransaction(name string, args ...string) ([]byte, error) {
-	var passedArgs []interface{}
-	for _, arg := range args {
-		passedArgs = append(passedArgs, arg)
-	}
 	raw, err := c.ch.Chaincode(c.id).Query(
-		name, passedArgs...,
+		name, StringsToArgs(args)...,
 	).WithInvokerIdentity(
 		c.fns.IdentityProvider().DefaultIdentity(),
 	).Call()
@@ -70,12 +62,8 @@ func (c *contract) EvaluateTransaction(name string, args ...string) ([]byte, err
 }
 
 func (c *contract) SubmitTransaction(name string, args ...string) ([]byte, error) {
-	var passedArgs []interface{}
-	for _, arg := range args {
-		passedArgs = append(passedArgs, arg)
-	}
 	_, raw, err := c.ch.Chaincode(c.id).Invoke(
-		name, passedArgs...,
+		name, StringsToArgs(args)...,
 	).WithInvokerIdentity(
 		c.fns.IdentityProvider().DefaultIdentity(),
 	).Call()
@@ -120,11 +108,7 @@ type contractProviderForEndorsement struct {
 
 func (c *contractProviderForEndorsement) GetContract(id string) fpc.Contract {
 	if id == "ercc" {
-		return &contract{
-			fns: c.fns,
-			ch:  c.ch,
-			id:  id,
-		}
+		return (&contractProvider{fns: c.fns, ch: c.ch}).GetContract(id)
 	}
 	c.cid = id
 	return c
@@ -135,12 +119,8 @@ func (c *contractProviderForEndorsement) Name() string {
 }
 
 func (c *contractProviderForEndorsement) EvaluateTransaction(name string, args ...string) ([]byte, error) {
-	var passedArgs []interface{}
-	for _, arg := range args {
-		passedArgs = append(passedArgs, arg)
-	}
 	raw, err := c.ch.Chaincode(c.cid).Query(
-		name, passedArgs...,
+		name, StringsToArgs(args)...,
 	).WithInvokerIdentity(
 		c.invoker,
 	).WithTxID(
@@ -153,13 +133,9 @@ func (c *contractProviderForEndorsement) EvaluateTransaction(name string, args .
 }
 
 func (c *contractProviderForEndorsement) SubmitTransaction(name string, args ...string) ([]byte, error) {
-	var passedArgs []interface{}
-	for _, arg := range args {
-		passedArgs = append(passedArgs, arg)
-	}
 	var err error
 	c.env, err = c.ch.Chaincode(c.cid).Endorse(
-		name, passedArgs...,
+		name, StringsToArgs(args)...,
 	).WithInvokerIdentity(
 		c.invoker,
 	).WithTxID(
