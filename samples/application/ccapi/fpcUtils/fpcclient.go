@@ -19,14 +19,14 @@ func NewClient(config *Config) *Client {
 }
 
 func newContract(config *Config) fpc.Contract {
-	gw, _, err := connectGateway(config)
+	gw, _, sign, err := connectGateway(config)
 	if err != nil {
 		logger.Fatalf("Failed to connect to gateway: %v", err)
 	}
 
 	network := gw.GetNetwork(config.ChannelId)
 
-	contract := fpc.GetContract(network, config.ChaincodeId)
+	contract := fpc.GetContract(network, config.ChaincodeId, sign, peerDialer(config))
 	return contract
 }
 

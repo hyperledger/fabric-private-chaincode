@@ -23,18 +23,17 @@ type Gateway interface {
 
 type channelClient struct {
 	network *client.Network
-	mspID   string
+	sign    identity.Sign
+	dial    gateway.PeerDialer
 }
 
-// Query evaluates a chaincode function at the peers of the organization of the client identity.
-// The target endpoints are not used for routing, as the Fabric Gateway routes requests by organization
-// and prefers the peer it runs on; the gateway connection must therefore be established to the target peer.
+// Query evaluates a chaincode function directly at the target peer, as the Fabric Gateway routes requests
+// by organization rather than by peer.
 func (c *channelClient) Query(chaincodeID string, fcn string, args [][]byte, targetEndpoints ...string) ([]byte, error) {
-	result, err := c.network.GetContract(chaincodeID).Evaluate(fcn,
-		client.WithBytesArguments(args...),
-		client.WithEndorsingOrganizations(c.mspID),
-	)
-	return result, gateway.WithErrorDetails(err)
+	if len(targetEndpoints) != 1 {
+		return nil, errors.Errorf("exactly one target peer endpoint required, got %d", len(targetEndpoints))
+	}
+	return gateway.EvaluateAtPeer(c.network.GetContract(chaincodeID), c.sign, c.dial, targetEndpoints[0], fcn, args...)
 }
 
 // Execute submits a chaincode transaction, waits for it to be committed, and returns its transaction ID.
@@ -67,15 +66,18 @@ func (c *channelClient) Execute(chaincodeID string, fcn string, args [][]byte) (
 
 type ChannelClientProvider struct {
 	gateway Gateway
+	sign    identity.Sign
+	dial    gateway.PeerDialer
 }
 
-func NewChannelClientProvider(gateway Gateway) *ChannelClientProvider {
-	return &ChannelClientProvider{gateway: gateway}
+func NewChannelClientProvider(gw Gateway, sign identity.Sign, dial gateway.PeerDialer) *ChannelClientProvider {
+	return &ChannelClientProvider{gateway: gw, sign: sign, dial: dial}
 }
 
 func (c *ChannelClientProvider) ChannelClient(id string) (lifecycle.ChannelClient, error) {
 	return &channelClient{
 		network: c.gateway.GetNetwork(id),
-		mspID:   c.gateway.Identity().MspID(),
+		sign:    c.sign,
+		dial:    c.dial,
 	}, nil
 }

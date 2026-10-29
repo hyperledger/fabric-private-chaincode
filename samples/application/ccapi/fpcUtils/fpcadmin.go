@@ -28,12 +28,12 @@ func (a *Admin) Close() {
 }
 
 func NewAdmin(config *Config) *Admin {
-	gw, conn, err := connectGateway(config)
+	gw, conn, sign, err := connectGateway(config)
 	if err != nil {
 		logger.Fatalf("failed to connect to gateway: %v", err)
 	}
 
-	client, err := fpcmgmt.New(gw)
+	client, err := fpcmgmt.New(gw, sign, peerDialer(config))
 	if err != nil {
 		logger.Fatalf("failed to create context: %v", err)
 	}

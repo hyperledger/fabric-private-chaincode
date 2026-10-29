@@ -16,7 +16,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hyperledger/fabric-gateway/pkg/client"
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
 	testutils "github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
 	. "github.com/onsi/ginkgo"
@@ -34,7 +33,7 @@ const (
 )
 
 var (
-	network  *client.Network
+	network  *testutils.Network
 	contract fpc.Contract
 )
 
@@ -52,7 +51,7 @@ var _ = BeforeSuite(func() {
 	Expect(network).ShouldNot(BeNil())
 
 	// Get FPC Contract
-	contract = fpc.GetContract(network, ccID)
+	contract = testutils.GetContract(network, ccID)
 	Expect(contract).ShouldNot(BeNil())
 })
 

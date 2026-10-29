@@ -12,7 +12,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/hyperledger/fabric-gateway/pkg/client"
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
 	testutils "github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
 	. "github.com/onsi/ginkgo"
@@ -25,7 +24,7 @@ func TestGoClientSDK(t *testing.T) {
 }
 
 var (
-	network        *client.Network
+	network        *testutils.Network
 	contract       fpc.Contract
 	auctionCounter int
 	auctionName    string
@@ -51,7 +50,7 @@ var _ = BeforeSuite(func() {
 	Expect(network).ShouldNot(BeNil())
 
 	// Get FPC Contract (auction)
-	contract = fpc.GetContract(network, ccID)
+	contract = testutils.GetContract(network, ccID)
 	Expect(contract).ShouldNot(BeNil())
 })
 
@@ -204,7 +203,7 @@ var _ = Describe("Go Client SDK Test", func() {
 	Context("Base SDK Tests with Auction and Echo", func() {
 		When("invoking/querying a non-existing fpc chaincode", func() {
 			It("should return error", func() {
-				contract := fpc.GetContract(network, "not_installed")
+				contract := testutils.GetContract(network, "not_installed")
 				Expect(contract).ShouldNot(BeNil())
 
 				res, err := contract.EvaluateTransaction("do", "something")
@@ -219,7 +218,7 @@ var _ = Describe("Go Client SDK Test", func() {
 
 		When("invoking/querying a non-registered fpc chaincode (echo test)", func() {
 			It("should return error", func() {
-				contract := fpc.GetContract(network, "echo_test")
+				contract := testutils.GetContract(network, "echo_test")
 				Expect(contract).ShouldNot(BeNil())
 
 				res, err := contract.EvaluateTransaction("do", "something")

@@ -9,7 +9,9 @@ SPDX-License-Identifier: Apache-2.0
 package contract
 
 import (
+	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/hyperledger/fabric-private-chaincode/internal/crypto"
@@ -57,6 +59,7 @@ func GetContract(p Provider, chaincodeID string) *contractImpl {
 type contractImpl struct {
 	target        Contract
 	ercc          Contract
+	mu            sync.Mutex
 	peerEndpoints []string
 	ep            crypto.EncryptionProvider
 }
@@ -135,10 +138,16 @@ func (c *contractImpl) SubmitTransaction(name string, args ...string) ([]byte, e
 // getPeerEndpoints returns an array of peer endpoints that host the FPC chaincode enclave
 // An endpoint is a simple string with the format `host:port`
 func (c *contractImpl) getPeerEndpoints() ([]string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if len(c.peerEndpoints) == 0 {
 		resp, err := c.ercc.EvaluateTransaction("queryChaincodeEndPoints", c.Name())
 		if err != nil {
 			return nil, err
+		}
+		// do not cache an empty result, the enclave may not be registered yet
+		if len(resp) == 0 {
+			return nil, fmt.Errorf("no enclave registered for chaincode %s", c.Name())
 		}
 		c.peerEndpoints = strings.Split(string(resp), ",")
 	}
