@@ -7,8 +7,11 @@ SPDX-License-Identifier: Apache-2.0
 package fpc
 
 import (
+	"strconv"
+
 	"github.com/hyperledger-labs/fabric-smart-client/platform/fabric"
 	"github.com/hyperledger-labs/fabric-smart-client/platform/view/view"
+	"github.com/pkg/errors"
 )
 
 type invokerContract interface {
@@ -60,10 +63,6 @@ func NewChaincode(
 	}
 }
 
-func (c *Chaincode) IsPrivate() bool {
-	return true
-}
-
 // Invoke returns an object that models an FPC invocation for the passed function and arguments
 func (c *Chaincode) Invoke(function string, args ...interface{}) *ChaincodeInvocation {
 	return &ChaincodeInvocation{
@@ -89,7 +88,29 @@ func (c *Chaincode) Query(function string, args ...interface{}) *ChaincodeQuery 
 	}
 }
 
-// StringsToArgs converts a slice of strings into a slace of interface{}
+// argsToStrings converts the arguments of an invocation into the string arguments expected by the FPC client SDK
+func argsToStrings(args []interface{}) ([]string, error) {
+	var res []string
+	for _, arg := range args {
+		switch v := arg.(type) {
+		case []byte:
+			res = append(res, string(v))
+		case string:
+			res = append(res, v)
+		case int:
+			res = append(res, strconv.Itoa(v))
+		case int64:
+			res = append(res, strconv.FormatInt(v, 10))
+		case uint64:
+			res = append(res, strconv.FormatUint(v, 10))
+		default:
+			return nil, errors.Errorf("arg type [%T] not recognized.", v)
+		}
+	}
+	return res, nil
+}
+
+// StringsToArgs converts a slice of strings into a slice of interface{}
 func StringsToArgs(args []string) []interface{} {
 	var res []interface{}
 	for _, arg := range args {

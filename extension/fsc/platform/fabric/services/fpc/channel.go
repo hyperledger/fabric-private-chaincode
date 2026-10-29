@@ -64,17 +64,3 @@ func GetDefaultChannel(sp services.Provider) *Channel {
 	}
 	return newChannel(fns, ch, NewEnclaveRegistry(fns, ch))
 }
-
-// GetChannel returns the channel for the passed network and channel name on which to invoke an FPC.
-// Panics if the network or channel cannot be resolved (integration/test use only).
-func GetChannel(sp services.Provider, network, channelName string) *Channel {
-	fns, err := fabric.GetFabricNetworkService(sp, network)
-	if err != nil {
-		panic(err)
-	}
-	ch, err := fns.Channel(channelName)
-	if err != nil {
-		panic(err)
-	}
-	return newChannel(fns, ch, NewEnclaveRegistry(fns, ch))
-}
