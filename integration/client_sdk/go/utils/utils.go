@@ -88,11 +88,9 @@ func connect() (*grpc.ClientConn, error) {
 	return conn, nil
 }
 
-// dialPeer connects to an enclave peer; the test network has a single peer, registered under enclavePeer
-func dialPeer(endpoint string) (grpc.ClientConnInterface, error) {
-	if endpoint != enclavePeer {
-		return nil, fmt.Errorf("unknown peer %s", endpoint)
-	}
+// dialPeer connects to an enclave peer. The test network has a single peer, whose enclave may be
+// registered under different endpoints, e.g., enclavePeer by Setup or localhost:7051 by the peer CLI.
+func dialPeer(string) (grpc.ClientConnInterface, error) {
 	return connect()
 }
 
