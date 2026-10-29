@@ -107,18 +107,6 @@ func (n *Extension) GenerateArtifacts() {
 		}
 		n.preparePackage(chaincode)
 	}
-
-	for _, org := range n.network.PeerOrgs() {
-		var p *topology.Peer
-		for _, peer := range n.network.Peers {
-			if peer.Organization == org.Name {
-				p = peer
-				break
-			}
-		}
-		Expect(p).NotTo(BeNil())
-
-	}
 }
 
 func (n *Extension) PostRun(load bool) {
@@ -313,31 +301,11 @@ func validateSGXMode(mode string) error {
 }
 
 func validateSGXDevicesPaths(paths []string) error {
-	// remove duplicates
-	devicesPaths := make(map[string]bool, len(paths))
 	for _, p := range paths {
-		devicesPaths[p] = true
-	}
-
-	// check exists
-	for p := range devicesPaths {
-		if exists, err := pathExists(p); !exists || err != nil {
+		if _, err := os.Stat(p); err != nil {
 			return errors.Wrapf(err, "invalid SGX device path = %s", p)
 		}
 	}
-
-	// check some extra rules
-	allowedSettings := [][]string{
-		{"/dev/sgx/isgx"},
-		{"/dev/sgx/enclave"},
-		{"/dev/sgx/enclave", "/dev/sgx/provision"},
-	}
-
-	for _, setting := range allowedSettings {
-		// TODO implement me
-		_ = setting
-	}
-
 	return nil
 }
 
@@ -352,18 +320,8 @@ func pathExists(path string) (bool, error) {
 }
 
 func (n *Extension) initEnclave(chaincode *topology.ChannelChaincode) {
-	initOrgs := map[string]bool{}
-	var erccPeerAddresses []string
-	peers := n.network.PeersByName(n.FPCERCC.Peers)
-	for _, p := range peers {
-		if exists := initOrgs[p.Organization]; !exists {
-			erccPeerAddresses = append(erccPeerAddresses, n.network.PeerAddress(p, nnetwork.ListenPort))
-			initOrgs[p.Organization] = true
-		}
-	}
-
 	orderer := n.network.Orderer("orderer")
-	peers = n.network.PeersByName(chaincode.Peers)
+	peers := n.network.PeersByName(chaincode.Peers)
 	attestationParams := CreateSIMAttestationParams()
 	for _, peer := range peers {
 		lifecycleClient, err := lifecycle.New(func(channelID string) (lifecycle.ChannelClient, error) {
@@ -375,9 +333,10 @@ func (n *Extension) initEnclave(chaincode *topology.ChannelChaincode) {
 			}, nil
 		})
 		Expect(err).ToNot(HaveOccurred())
+		// the enclave is created at the peer that evaluates __initEnclave, so register that peer's endpoint
 		_, err = lifecycleClient.LifecycleInitEnclave(chaincode.Channel, lifecycle.LifecycleInitEnclaveRequest{
 			ChaincodeID:         chaincode.Chaincode.Name,
-			EnclavePeerEndpoint: erccPeerAddresses[0],
+			EnclavePeerEndpoint: n.network.PeerAddress(peer, nnetwork.ListenPort),
 			AttestationParams:   attestationParams,
 		})
 		Expect(err).ToNot(HaveOccurred())
