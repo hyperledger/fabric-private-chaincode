@@ -17,6 +17,7 @@ import (
 	"github.com/hyperledger/fabric-admin-sdk/pkg/chaincode"
 	adminidentity "github.com/hyperledger/fabric-admin-sdk/pkg/identity"
 	"github.com/hyperledger/fabric-gateway/pkg/client"
+	"github.com/hyperledger/fabric-gateway/pkg/identity"
 	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	fpcmgmt "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
 	fpcpackager "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/fab/ccpackager"
@@ -29,6 +30,8 @@ import (
 const (
 	mspID        = "SampleOrg"
 	peerEndpoint = "127.0.0.1:7051"
+	// enclavePeer is the endpoint under which the enclave of the test network peer is registered
+	enclavePeer = "jdoe_test.sampleorg.example.com"
 )
 
 var (
@@ -85,38 +88,57 @@ func connect() (*grpc.ClientConn, error) {
 	return conn, nil
 }
 
-func newGateway(conn *grpc.ClientConn) (*client.Gateway, error) {
+// dialPeer connects to an enclave peer; the test network has a single peer, registered under enclavePeer
+func dialPeer(endpoint string) (grpc.ClientConnInterface, error) {
+	if endpoint != enclavePeer {
+		return nil, fmt.Errorf("unknown peer %s", endpoint)
+	}
+	return connect()
+}
+
+func newGateway(conn *grpc.ClientConn) (*client.Gateway, identity.Sign, error) {
 	id, sign, err := fpc.NewIdentityFromMSP(mspID, mspPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load identity: %w", err)
+		return nil, nil, fmt.Errorf("failed to load identity: %w", err)
 	}
 
 	gw, err := client.Connect(id, client.WithSign(sign), client.WithClientConnection(conn))
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to gateway: %w", err)
+		return nil, nil, fmt.Errorf("failed to connect to gateway: %w", err)
 	}
-	return gw, nil
+	return gw, sign, nil
 }
 
-func SetupNetwork(channel string) (*client.Network, error) {
+// Network is a Fabric Gateway network together with the signing function of its identity
+type Network struct {
+	*client.Network
+	sign identity.Sign
+}
+
+func SetupNetwork(channel string) (*Network, error) {
 	conn, err := connect()
 	if err != nil {
 		return nil, err
 	}
 
-	gw, err := newGateway(conn)
+	gw, sign, err := newGateway(conn)
 	if err != nil {
 		return nil, err
 	}
 
-	return gw.GetNetwork(channel), nil
+	return &Network{Network: gw.GetNetwork(channel), sign: sign}, nil
+}
+
+// GetContract returns the FPC contract ccID, calling the enclave peer directly
+func GetContract(network *Network, ccID string) fpc.Contract {
+	return fpc.GetContract(network.Network, ccID, network.sign, dialPeer)
 }
 
 func Setup(ccID, ccPath string, initEnclave bool) error {
 
 	var enclavePeers []string
 	if initEnclave {
-		enclavePeers = append(enclavePeers, "jdoe_test.sampleorg.example.com")
+		enclavePeers = append(enclavePeers, enclavePeer)
 	}
 
 	nwDetails := &networkDetails{
@@ -250,13 +272,13 @@ func installChaincode(conn *grpc.ClientConn, cc *chaincodeDetails, nw *networkDe
 			AttestationParams:   attestationParams,
 		}
 
-		gw, err := newGateway(conn)
+		gw, sign, err := newGateway(conn)
 		if err != nil {
 			return err
 		}
 		defer gw.Close()
 
-		client, err := fpcmgmt.New(gw)
+		client, err := fpcmgmt.New(gw, sign, dialPeer)
 		if err != nil {
 			return fmt.Errorf("failed to create FPC management client: %w", err)
 		}

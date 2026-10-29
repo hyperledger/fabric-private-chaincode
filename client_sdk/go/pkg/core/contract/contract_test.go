@@ -8,6 +8,7 @@ package contract_test
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 
 	fpccontract "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/contract"
@@ -250,4 +251,64 @@ func TestContractSubmitTransaction(t *testing.T) {
 
 func asResponseBytes(input []byte) []byte {
 	return protoutil.MarshalOrPanic(&peer.Response{Payload: input, Status: 200})
+}
+
+func TestEvaluateTransactionConcurrent(t *testing.T) {
+	txn := &fakes.Transaction{}
+	txn.EvaluateReturns([]byte("result"), nil)
+	mockContract := &fakes.Contract{}
+	mockContract.CreateTransactionReturns(txn, nil)
+
+	mockERCC := &fakes.Contract{}
+	mockERCC.EvaluateTransactionReturns([]byte("peer1,peer2"), nil)
+
+	mockEncryptionContext := &fakes.EncryptionContext{}
+	mockEncryptionContext.RevealCalls(func(input []byte) ([]byte, error) {
+		return asResponseBytes(input), nil
+	})
+	mockEncryptionProvider := &fakes.EncryptionProvider{}
+	mockEncryptionProvider.NewEncryptionContextReturns(mockEncryptionContext, nil)
+
+	// a contract is shared between goroutines; run with -race to detect unsynchronized cache access
+	contract := fpccontract.New(mockContract, mockERCC, nil, mockEncryptionProvider)
+	var wg sync.WaitGroup
+	for i := 0; i < 8; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_, err := contract.EvaluateTransaction("someFunction")
+			assert.NoError(t, err)
+		}()
+	}
+	wg.Wait()
+	assert.Equal(t, 1, mockERCC.EvaluateTransactionCallCount())
+}
+
+func TestEvaluateTransactionBeforeEnclaveRegistration(t *testing.T) {
+	txn := &fakes.Transaction{}
+	txn.EvaluateReturns([]byte("result"), nil)
+	mockContract := &fakes.Contract{}
+	mockContract.CreateTransactionReturns(txn, nil)
+
+	// no enclave registered on the first call, one registered on the second
+	mockERCC := &fakes.Contract{}
+	mockERCC.EvaluateTransactionReturnsOnCall(0, []byte(""), nil)
+	mockERCC.EvaluateTransactionReturnsOnCall(1, []byte("peer1"), nil)
+
+	mockEncryptionContext := &fakes.EncryptionContext{}
+	mockEncryptionContext.RevealCalls(func(input []byte) ([]byte, error) {
+		return asResponseBytes(input), nil
+	})
+	mockEncryptionProvider := &fakes.EncryptionProvider{}
+	mockEncryptionProvider.NewEncryptionContextReturns(mockEncryptionContext, nil)
+
+	contract := fpccontract.New(mockContract, mockERCC, nil, mockEncryptionProvider)
+
+	_, err := contract.EvaluateTransaction("someFunction")
+	assert.ErrorContains(t, err, "no enclave registered")
+
+	_, err = contract.EvaluateTransaction("someFunction")
+	assert.NoError(t, err)
+	_, peers := mockContract.CreateTransactionArgsForCall(0)
+	assert.Equal(t, []string{"peer1"}, peers)
 }

@@ -9,11 +9,11 @@ SPDX-License-Identifier: Apache-2.0
 package gateway
 
 import (
-	"encoding/json"
+	"strings"
 
 	"github.com/hyperledger/fabric-gateway/pkg/client"
+	"github.com/hyperledger/fabric-gateway/pkg/identity"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/contract"
-	"github.com/hyperledger/fabric-private-chaincode/internal/utils"
 	"github.com/pkg/errors"
 )
 
@@ -59,8 +59,9 @@ type Network interface {
 }
 
 type gatewayContract struct {
-	c       *client.Contract
-	network Network
+	c    *client.Contract
+	sign identity.Sign
+	dial PeerDialer
 }
 
 func (c *gatewayContract) Name() string {
@@ -77,87 +78,47 @@ func (c *gatewayContract) SubmitTransaction(name string, args ...string) ([]byte
 	return result, WithErrorDetails(err)
 }
 
-// CreateTransaction returns a transaction that is evaluated at the given enclave peers.
-// The Fabric Gateway routes requests by organization rather than by peer, hence the
-// peer endpoints are mapped to the organizations that registered an enclave there.
+// CreateTransaction returns a transaction that is evaluated directly at the given enclave peers,
+// as the Fabric Gateway routes requests by organization rather than by peer.
 func (c *gatewayContract) CreateTransaction(name string, peerEndpoints ...string) (contract.Transaction, error) {
-	orgs, err := c.enclaveOrganizations(peerEndpoints)
-	if err != nil {
-		return nil, err
-	}
-	return &gatewayTransaction{c: c.c, name: name, orgs: orgs}, nil
-}
-
-func (c *gatewayContract) enclaveOrganizations(peerEndpoints []string) ([]string, error) {
 	if len(peerEndpoints) == 0 {
-		return nil, nil
+		return nil, errors.New("no enclave peer endpoints given")
 	}
-
-	resp, err := c.network.GetContract("ercc").EvaluateTransaction("queryListEnclaveCredentials", c.Name())
-	if err != nil {
-		return nil, errors.Wrap(WithErrorDetails(err), "failed to query enclave credentials")
-	}
-
-	var allCredentials []string
-	if len(resp) > 0 {
-		if err := json.Unmarshal(resp, &allCredentials); err != nil {
-			return nil, errors.Wrap(err, "failed to parse enclave credentials")
-		}
-	}
-
-	mspIdByEndpoint := make(map[string]string, len(allCredentials))
-	for _, credentialsBase64 := range allCredentials {
-		credentials, err := utils.UnmarshalCredentials(credentialsBase64)
-		if err != nil {
-			return nil, err
-		}
-		endpoint, err := utils.ExtractEndpoint(credentials)
-		if err != nil {
-			return nil, err
-		}
-		mspId, err := utils.ExtractPeerMspId(credentials)
-		if err != nil {
-			return nil, err
-		}
-		mspIdByEndpoint[endpoint] = mspId
-	}
-
-	var orgs []string
-	seen := make(map[string]bool)
-	for _, endpoint := range peerEndpoints {
-		mspId, ok := mspIdByEndpoint[endpoint]
-		if !ok {
-			return nil, errors.Errorf("no enclave registered at peer %s", endpoint)
-		}
-		if !seen[mspId] {
-			seen[mspId] = true
-			orgs = append(orgs, mspId)
-		}
-	}
-	return orgs, nil
+	return &peerTransaction{c: c, name: name, endpoints: peerEndpoints}, nil
 }
 
-type gatewayTransaction struct {
-	c    *client.Contract
-	name string
-	orgs []string
+// peerTransaction is evaluated at the first enclave peer that returns a successful response
+type peerTransaction struct {
+	c         *gatewayContract
+	name      string
+	endpoints []string
 }
 
-func (t *gatewayTransaction) Evaluate(args ...string) ([]byte, error) {
-	options := []client.ProposalOption{client.WithArguments(args...)}
-	if len(t.orgs) > 0 {
-		options = append(options, client.WithEndorsingOrganizations(t.orgs...))
+func (t *peerTransaction) Evaluate(args ...string) ([]byte, error) {
+	var byteArgs [][]byte
+	for _, arg := range args {
+		byteArgs = append(byteArgs, []byte(arg))
 	}
-	result, err := t.c.Evaluate(t.name, options...)
-	return result, WithErrorDetails(err)
+
+	var errs []string
+	for _, endpoint := range t.endpoints {
+		result, err := EvaluateAtPeer(t.c.c, t.c.sign, t.c.dial, endpoint, t.name, byteArgs...)
+		if err == nil {
+			return result, nil
+		}
+		errs = append(errs, err.Error())
+	}
+	return nil, errors.Errorf("failed to evaluate %s at enclave peers: %s", t.name, strings.Join(errs, "; "))
 }
 
 type contractProvider struct {
 	network Network
+	sign    identity.Sign
+	dial    PeerDialer
 }
 
 func (cp *contractProvider) GetContract(id string) contract.Contract {
-	return &gatewayContract{c: cp.network.GetContract(id), network: cp.network}
+	return &gatewayContract{c: cp.network.GetContract(id), sign: cp.sign, dial: cp.dial}
 }
 
 // GetContract is the factory method for creating FPC Contract objects.
@@ -165,9 +126,11 @@ func (cp *contractProvider) GetContract(id string) contract.Contract {
 //	Parameters:
 //	network is a Fabric Gateway network object, e.g., obtained via (*client.Gateway).GetNetwork
 //	chaincodeID is the ID of the target chaincode
+//	sign is the signing function of the gateway identity, used to sign the requests sent directly to the enclave peers
+//	dial returns a connection to an enclave peer, given its endpoint as registered at the enclave registry
 //
 //	Returns:
 //	The contract object
-func GetContract(network Network, chaincodeID string) Contract {
-	return contract.GetContract(&contractProvider{network: network}, chaincodeID)
+func GetContract(network Network, chaincodeID string, sign identity.Sign, dial PeerDialer) Contract {
+	return contract.GetContract(&contractProvider{network: network, sign: sign, dial: dial}, chaincodeID)
 }

@@ -547,7 +547,6 @@ package main
 import (
 	"os"
 
-	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
 	"github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
 	"github.com/hyperledger/fabric/common/flogging"
 )
@@ -565,7 +564,7 @@ func main() {
 	network, err := utils.SetupNetwork(channelID)
 
 	// Get FPC Contract
-	contract := fpc.GetContract(network, ccID)
+	contract := utils.GetContract(network, ccID)
 
 	// Invoke FPC Chaincode storeAsset
 	logger.Infof("--> Invoke FPC Chaincode: storeAsset")
@@ -585,15 +584,17 @@ func main() {
 }
 ```
 
-As you can see in the go imports, we are going to use the FPC Client SDK [gateway](https://pkg.go.dev/github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway) package named as `fpc` to better differentiate between the [gateway](https://pkg.go.dev/github.com/hyperledger/fabric-sdk-go/pkg/gateway) package provided by the Fabric SDK.
+We use the test utilities in `integration/client_sdk/go/utils`, which wrap the FPC Client SDK [gateway](https://pkg.go.dev/github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway) package.
 
 The main function consists just of a few lines of code.
 To focus on the use of the FPC Client SDK we omit to go through the entire process of setting up the Fabric Gateway.
-Instead, we create a `network` instance of the type [gateway.Network](https://pkg.go.dev/github.com/hyperledger/fabric-sdk-go/pkg/gateway#Network) by using `utils.SetupNetwork("mychannel")` which implements the normal gateway setup process.
+Instead, we create a `network` instance by using `utils.SetupNetwork("mychannel")`, which connects to the [Fabric Gateway](https://pkg.go.dev/github.com/hyperledger/fabric-gateway/pkg/client) and keeps the signing function of the client identity.
 The `network` instance represents a Fabric Network with the channel specified in `channelID`.
 
-Similar to the Fabric SDK, we create a `contract` instance by using `fpc.GetContract(network, ccID)`. 
-This function receives a `network` instance and the chaincode ID `ccID`.
+We then create a `contract` instance by using `utils.GetContract(network, ccID)`, which calls the FPC Client SDK's `GetContract(network, ccID, sign, dial)`.
+Besides the `network` instance and the chaincode ID `ccID`, the SDK takes the signing function of the client identity and a `dial` function.
+FPC sends requests for the enclave directly to the peer hosting it, as registered at the FPC Enclave Registry, rather than through the Fabric Gateway, which routes requests by organization rather than by peer.
+The `dial` function returns a gRPC connection to such a peer; the test utilities connect to the single peer of the test network.
 As you can see in the code, we read the chaincode ID and the channel ID from the environment variables `CC_ID` and `CHAN_ID`.
 
 The `contract` represents the FPC chaincode which we interact with using the `SubmitTransaction` and the `EvaluateTransaction` methods.

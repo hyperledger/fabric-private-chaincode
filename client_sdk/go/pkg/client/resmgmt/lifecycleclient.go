@@ -20,7 +20,9 @@ SPDX-License-Identifier: Apache-2.0
 //	}
 //	defer gw.Close()
 //
-//	client, err := resmgmt.New(gw)
+//	client, err := resmgmt.New(gw, adminSign, func(endpoint string) (grpc.ClientConnInterface, error) {
+//		return gateway.NewGrpcConnection(endpoint, tlsRootCertPEM, "")
+//	})
 //	if err != nil {
 //		log.Fatal(err)
 //	}
@@ -46,7 +48,9 @@ SPDX-License-Identifier: Apache-2.0
 package resmgmt
 
 import (
+	"github.com/hyperledger/fabric-gateway/pkg/identity"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/lifecycle"
+	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
 	"github.com/pkg/errors"
 )
@@ -61,19 +65,24 @@ type LifecycleInitEnclaveRequest struct {
 }
 
 // Client enables FPC specific resource management in a Fabric network.
-// It must operate on a connection to the Fabric Gateway of the target enclave peer,
-// as the Fabric Gateway routes requests by organization rather than by peer.
+// Enclaves are initialized by calling the target peer directly; the enclave registration is
+// submitted via the Fabric Gateway.
 type Client struct {
 	lifecycleClient *lifecycle.Client
 }
 
 // New returns a FPC resource management client instance.
-func New(gateway Gateway) (*Client, error) {
-	if gateway == nil {
-		return nil, errors.New("invalid arguments, gateway is nil")
+//
+//	Parameters:
+//	gw is a Fabric Gateway, e.g., obtained via client.Connect
+//	sign is the signing function of the gateway identity
+//	dial returns a connection to the peer given by LifecycleInitEnclaveRequest.EnclavePeerEndpoint
+func New(gw Gateway, sign identity.Sign, dial gateway.PeerDialer) (*Client, error) {
+	if gw == nil || sign == nil || dial == nil {
+		return nil, errors.New("invalid arguments, gateway, sign and dial are required")
 	}
 
-	lifecycleClient, err := lifecycle.New(NewChannelClientProvider(gateway).ChannelClient)
+	lifecycleClient, err := lifecycle.New(NewChannelClientProvider(gw, sign, dial).ChannelClient)
 	if err != nil {
 		return nil, err
 	}

@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/hyperledger/fabric-gateway/pkg/client"
+	"github.com/hyperledger/fabric-gateway/pkg/identity"
 	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
@@ -66,12 +67,13 @@ func newPeerConnection(ccpPath, peerName string) (*grpc.ClientConn, error) {
 }
 
 // connectGateway connects to the Fabric Gateway using the identity found in the given MSP folder
-func connectGateway(conn *grpc.ClientConn, mspId, mspPath string) (*client.Gateway, error) {
+func connectGateway(conn *grpc.ClientConn, mspId, mspPath string) (*client.Gateway, identity.Sign, error) {
 	id, sign, err := fpc.NewIdentityFromMSP(mspId, mspPath)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return client.Connect(id, client.WithSign(sign), client.WithClientConnection(conn))
+	gw, err := client.Connect(id, client.WithSign(sign), client.WithClientConnection(conn))
+	return gw, sign, err
 }
 
 func getEnvWithFallback(key, fallback string) string {
@@ -162,16 +164,22 @@ func main() {
 	}
 	defer conn.Close()
 
+	// enclave peers are called directly; their endpoints, as registered at the enclave registry,
+	// are the peer names of the connection profile
+	dialPeer := func(endpoint string) (grpc.ClientConnInterface, error) {
+		return newPeerConnection(ccpPath, endpoint)
+	}
+
 	// if we call this app with the "-withLifecycleInitEnclave" flag
 	if *withLifecycleInitEnclave {
 
-		adminGw, err := connectGateway(conn, mspId, adminMspPath)
+		adminGw, adminSign, err := connectGateway(conn, mspId, adminMspPath)
 		if err != nil {
 			logger.Fatalf("Failed to connect to gateway as admin: %v", err)
 		}
 		defer adminGw.Close()
 
-		adminClient, err := resmgmt.New(adminGw)
+		adminClient, err := resmgmt.New(adminGw, adminSign, dialPeer)
 		if err != nil {
 			logger.Fatal(err)
 		}
@@ -198,7 +206,7 @@ func main() {
 	// Setup Fabric Gateway
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	gw, err := connectGateway(conn, mspId, mspPath)
+	gw, sign, err := connectGateway(conn, mspId, mspPath)
 	if err != nil {
 		logger.Fatalf("Failed to connect to gateway: %v", err)
 	}
@@ -211,7 +219,7 @@ func main() {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// Get FPC Contract
-	contract := fpc.GetContract(network, ccID)
+	contract := fpc.GetContract(network, ccID, sign, dialPeer)
 
 	// Invoke FPC Chaincode
 	logger.Infof("--> Invoke FPC chaincode: %s", contract.Name())
