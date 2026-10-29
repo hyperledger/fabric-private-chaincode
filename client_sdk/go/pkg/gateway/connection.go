@@ -62,7 +62,7 @@ func NewIdentityFromMSP(mspID, mspPath string) (*identity.X509Identity, identity
 		return nil, nil, err
 	}
 
-	keyPath, err := findFile(filepath.Join(mspPath, "keystore"), "")
+	keyPath, err := singleFile(filepath.Join(mspPath, "keystore"))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -94,4 +94,23 @@ func findFile(dir, suffix string) (string, error) {
 		}
 	}
 	return "", errors.Errorf("no file found in %s", dir)
+}
+
+// singleFile returns the only file in dir, so that a stray file is never mistaken for the private key.
+// Hidden entries and directories are ignored, e.g., the ..data entries of a mounted Kubernetes secret.
+func singleFile(dir string) (string, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to read %s", dir)
+	}
+	var files []string
+	for _, e := range entries {
+		if !e.IsDir() && !strings.HasPrefix(e.Name(), ".") {
+			files = append(files, e.Name())
+		}
+	}
+	if len(files) != 1 {
+		return "", errors.Errorf("%s must contain exactly one file, found %d", dir, len(files))
+	}
+	return filepath.Join(dir, files[0]), nil
 }
