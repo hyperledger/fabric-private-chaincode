@@ -53,7 +53,7 @@ func (l *EchoViewFactory) NewView(in []byte) (view.View, error) {
 It is very simple to add an FPC to a Fabric topology and have it ready to be used for our integration tests.
 The important thing is to have already prepared the docker image with the FPC one wants to deploy.
 On how to build an FPC, please, refer to the [`Fabric Private Chaincode documentation`](https://github.com/hyperledger/fabric-private-chaincode#build-fabric-private-chaincode). 
-In our case, we will use the following docker image `fpc/fpc-echo-go`.
+In our case, we will use the following docker image `fpc/echo-go`.
 
 Here is the topology we use in this case, it is self-explanatory: 
 
@@ -64,7 +64,7 @@ func Topology(sdk api2.SDK, commType fsc.P2PCommunicationType, replicationOpts *
 	// Add two organizations
 	fabricTopology.AddOrganizationsByName("Org1", "Org2")
 	// Add an FPC by passing chaincode's id and docker image
-	fpctopo.AddFPC(fabricTopology, "echo", "fpc/fpc-echo-go")
+	fpctopo.AddFPC(fabricTopology, "echo", "fpc/echo-go")
 
 	// Create an empty FSC topology
 	fscTopology := fsc.NewTopology()
