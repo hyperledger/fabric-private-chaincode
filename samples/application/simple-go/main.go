@@ -14,53 +14,64 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/hyperledger/fabric-gateway/pkg/client"
 	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt"
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
-	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
-	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
-	"github.com/hyperledger/fabric-sdk-go/pkg/gateway"
+	"google.golang.org/grpc"
+	"gopkg.in/yaml.v2"
 )
 
 var logger = flogging.MustGetLogger("sdk-test")
 
-func firstFileInPath(dir string) (string, error) {
-	// there's a single file in this dir containing the private key
-	files, err := os.ReadDir(dir)
-	if err != nil {
-		return "", err
-	}
-	if len(files) != 1 {
-		return "", fmt.Errorf("folder should contain only a single file")
-	}
-	return filepath.Join(dir, files[0].Name()), nil
+// connectionProfile contains the subset of a Fabric connection profile needed to reach a peer
+type connectionProfile struct {
+	Peers map[string]struct {
+		URL        string `yaml:"url"`
+		TLSCACerts struct {
+			Pem string `yaml:"pem"`
+		} `yaml:"tlsCACerts"`
+		GRPCOptions struct {
+			SSLTargetNameOverride string `yaml:"ssl-target-name-override"`
+		} `yaml:"grpcOptions"`
+	} `yaml:"peers"`
 }
 
-func populateWallet(wallet *gateway.Wallet, mspPath, mspId, userId string) error {
-	certPath, err := firstFileInPath(filepath.Join(mspPath, "signcerts"))
+// newPeerConnection creates a gRPC connection to the given peer as defined in the connection profile
+func newPeerConnection(ccpPath, peerName string) (*grpc.ClientConn, error) {
+	data, err := os.ReadFile(filepath.Clean(ccpPath))
 	if err != nil {
-		return err
+		return nil, err
+	}
+	ccp := &connectionProfile{}
+	if err := yaml.Unmarshal(data, ccp); err != nil {
+		return nil, err
+	}
+	peer, ok := ccp.Peers[peerName]
+	if !ok {
+		return nil, fmt.Errorf("peer %s not found in %s", peerName, ccpPath)
 	}
 
-	cert, err := os.ReadFile(filepath.Clean(certPath))
-	if err != nil {
-		return err
+	endpoint := peer.URL
+	if i := strings.Index(endpoint, "://"); i >= 0 {
+		endpoint = endpoint[i+3:]
+	}
+	serverName := peer.GRPCOptions.SSLTargetNameOverride
+	if serverName == "" {
+		serverName = peerName
 	}
 
-	keyPath, err := firstFileInPath(filepath.Join(mspPath, "keystore"))
+	return fpc.NewGrpcConnection(endpoint, []byte(peer.TLSCACerts.Pem), serverName)
+}
+
+// connectGateway connects to the Fabric Gateway using the identity found in the given MSP folder
+func connectGateway(conn *grpc.ClientConn, mspId, mspPath string) (*client.Gateway, error) {
+	id, sign, err := fpc.NewIdentityFromMSP(mspId, mspPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	key, err := os.ReadFile(filepath.Clean(keyPath))
-	if err != nil {
-		return err
-	}
-
-	identity := gateway.NewX509Identity(mspId, string(cert), string(key))
-
-	return wallet.Put(userId, identity)
+	return client.Connect(id, client.WithSign(sign), client.WithClientConnection(conn))
 }
 
 func getEnvWithFallback(key, fallback string) string {
@@ -93,7 +104,6 @@ func main() {
 	setEnvWithPanic("GRPC_TRACE", "all")
 	setEnvWithPanic("GRPC_VERBOSITY", "DEBUG")
 	setEnvWithPanic("GRPC_GO_LOG_SEVERITY_LEVEL", "INFO")
-	setEnvWithPanic("DISCOVERY_AS_LOCALHOST", "true")
 
 	// let's make sure FPC_PATH is set
 	fpcPath := getEnvWithPanic("FPC_PATH")
@@ -119,7 +129,21 @@ func main() {
 		"msp",
 	))
 
-	// If not set we use the msp folder in the fabric-samples test network
+	// If not set we use the admin msp folder in the fabric-samples test network
+	adminMspPath := getEnvWithFallback("ADMIN_MSP_PATH", filepath.Join(
+		testNetworkPath,
+		"organizations",
+		"peerOrganizations",
+		orgNameFull,
+		"users",
+		fmt.Sprintf("Admin@%s", orgNameFull),
+		"msp",
+	))
+
+	// the peer that hosts the enclave and that we use as gateway
+	peerName := getEnvWithFallback("PEER_NAME", "peer0."+orgNameFull)
+
+	// If not set we use the connection profile in the fabric-samples test network
 	ccpPath := getEnvWithFallback("CCP_PATH", filepath.Join(
 		testNetworkPath,
 		"organizations",
@@ -132,19 +156,22 @@ func main() {
 	// FPC Client SDK Lifecycle API example
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	conn, err := newPeerConnection(ccpPath, peerName)
+	if err != nil {
+		logger.Fatalf("Failed to connect to peer: %v", err)
+	}
+	defer conn.Close()
+
 	// if we call this app with the "-withLifecycleInitEnclave" flag
 	if *withLifecycleInitEnclave {
 
-		sdk, err := fabsdk.New(config.FromFile(filepath.Clean(ccpPath)))
+		adminGw, err := connectGateway(conn, mspId, adminMspPath)
 		if err != nil {
-			logger.Fatalf("failed to create sdk: %v", err)
+			logger.Fatalf("Failed to connect to gateway as admin: %v", err)
 		}
-		defer sdk.Close()
+		defer adminGw.Close()
 
-		orgAdmin := "Admin"
-
-		adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
-		adminClient, err := resmgmt.New(adminContext)
+		adminClient, err := resmgmt.New(adminGw)
 		if err != nil {
 			logger.Fatal(err)
 		}
@@ -156,7 +183,7 @@ func main() {
 
 		initReq := resmgmt.LifecycleInitEnclaveRequest{
 			ChaincodeID:         ccID,
-			EnclavePeerEndpoint: "peer0." + orgNameFull, // define the peer where we wanna init our enclave
+			EnclavePeerEndpoint: peerName, // define the peer where we wanna init our enclave
 			AttestationParams:   attestationParams,
 		}
 
@@ -171,25 +198,13 @@ func main() {
 	// Setup Fabric Gateway
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	wallet := gateway.NewInMemoryWallet()
-	err := populateWallet(wallet, mspPath, mspId, userId)
-	if err != nil {
-		logger.Fatalf("Failed to populate wallet contents: %v", err)
-	}
-
-	gw, err := gateway.Connect(
-		gateway.WithConfig(config.FromFile(filepath.Clean(ccpPath))),
-		gateway.WithIdentity(wallet, userId),
-	)
+	gw, err := connectGateway(conn, mspId, mspPath)
 	if err != nil {
 		logger.Fatalf("Failed to connect to gateway: %v", err)
 	}
 	defer gw.Close()
 
-	network, err := gw.GetNetwork(channelID)
-	if err != nil {
-		logger.Fatalf("Failed to get network: %v", err)
-	}
+	network := gw.GetNetwork(channelID)
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// FPC Client SDK contract API example

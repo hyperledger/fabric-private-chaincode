@@ -66,6 +66,5 @@ func initConfig() {
 		OrdererCA:               getStrEnv("ORDERER_CA"),
 		ChaincodeId:             getStrEnv("CC_ID"),
 		ChannelId:               getStrEnv("CHANNEL_NAME"),
-		GatewayConfigPath:       getStrEnv("GATEWAY_CONFIG"),
 	}
 }

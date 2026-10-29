@@ -9,11 +9,18 @@ SPDX-License-Identifier: Apache-2.0
 // For more information on the FPC management commands and related constraints on chaincode versions and endorsement policies,
 // see `$FPC_PATH/docs/design/fabric-v2+/fpc-management.md`
 //
+// Chaincode lifecycle operations that are not FPC specific (install, approve, commit) are provided by
+// the Fabric Admin SDK (https://pkg.go.dev/github.com/hyperledger/fabric-admin-sdk).
+//
 // Example:
 //
-//	adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
+//	gw, err := client.Connect(adminIdentity, client.WithSign(adminSign), client.WithClientConnection(conn))
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//	defer gw.Close()
 //
-//	client, err := resmgmt.New(adminContext)
+//	client, err := resmgmt.New(gw)
 //	if err != nil {
 //		log.Fatal(err)
 //	}
@@ -41,9 +48,7 @@ package resmgmt
 import (
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/lifecycle"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/sgx"
-	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
-	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/context"
-	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
+	"github.com/pkg/errors"
 )
 
 // LifecycleInitEnclaveRequest contains init enclave request parameters.
@@ -55,42 +60,35 @@ type LifecycleInitEnclaveRequest struct {
 	AttestationParams   *sgx.AttestationParams
 }
 
-// Client enables managing resources in Fabric network.
-// It extends resmgmt.Client (https://pkg.go.dev/github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt#Client)
-// from the standard Fabric Client SDK with additional FPC-specific functionality.
+// Client enables FPC specific resource management in a Fabric network.
+// It must operate on a connection to the Fabric Gateway of the target enclave peer,
+// as the Fabric Gateway routes requests by organization rather than by peer.
 type Client struct {
-	*resmgmt.Client
 	lifecycleClient *lifecycle.Client
 }
 
 // New returns a FPC resource management client instance.
-func New(ctxProvider context.ClientProvider, opts ...resmgmt.ClientOption) (*Client, error) {
-	// get resource management client
-	client, err := resmgmt.New(ctxProvider, opts...)
-	if err != nil {
-		return nil, err
+func New(gateway Gateway) (*Client, error) {
+	if gateway == nil {
+		return nil, errors.New("invalid arguments, gateway is nil")
 	}
 
-	lifecycleClient, err := lifecycle.New(NewChannelClientProvider(ctxProvider).ChannelClient)
+	lifecycleClient, err := lifecycle.New(NewChannelClientProvider(gateway).ChannelClient)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Client{
-		Client:          client,
 		lifecycleClient: lifecycleClient,
 	}, nil
 }
 
 // LifecycleInitEnclave initializes and registers an enclave for a particular FPC chaincode.
-func (rc *Client) LifecycleInitEnclave(channelId string, req LifecycleInitEnclaveRequest, options ...resmgmt.RequestOption) (fab.TransactionID, error) {
-	txID, err := rc.lifecycleClient.LifecycleInitEnclave(channelId, lifecycle.LifecycleInitEnclaveRequest{
+// It returns the ID of the enclave registration transaction.
+func (rc *Client) LifecycleInitEnclave(channelId string, req LifecycleInitEnclaveRequest) (string, error) {
+	return rc.lifecycleClient.LifecycleInitEnclave(channelId, lifecycle.LifecycleInitEnclaveRequest{
 		ChaincodeID:         req.ChaincodeID,
 		EnclavePeerEndpoint: req.EnclavePeerEndpoint,
 		AttestationParams:   req.AttestationParams,
 	})
-	if err != nil {
-		return fab.EmptyTransactionID, err
-	}
-	return fab.TransactionID(txID), nil
 }
