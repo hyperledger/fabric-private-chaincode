@@ -7,12 +7,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/hyperledger-labs/cc-tools/accesscontrol"
-	"github.com/hyperledger-labs/cc-tools/assets"
-	"github.com/hyperledger-labs/cc-tools/errors"
-	"github.com/hyperledger-labs/cc-tools/events"
-	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
-	"github.com/hyperledger-labs/cc-tools/transactions"
+	"github.com/hyperledger-labs/cc-tools/v2/accesscontrol"
+	"github.com/hyperledger-labs/cc-tools/v2/assets"
+	"github.com/hyperledger-labs/cc-tools/v2/errors"
+	"github.com/hyperledger-labs/cc-tools/v2/events"
+	sw "github.com/hyperledger-labs/cc-tools/v2/stubwrapper"
+	"github.com/hyperledger-labs/cc-tools/v2/transactions"
 )
 
 // CreateUserDir registers a new user directory entry linking a public key hash to a wallet.
