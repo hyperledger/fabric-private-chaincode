@@ -14,10 +14,8 @@ import (
 	"fmt"
 	"strings"
 
-	//lint:ignore SA1019 old protos required for fpc.pb.go generated types
-	protoV1 "github.com/golang/protobuf/proto"
-
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger/fabric-private-chaincode/internal/protoutil"
 	"github.com/hyperledger/fabric-protos-go-apiv2/common"
 	pb "github.com/hyperledger/fabric-protos-go-apiv2/peer"
 	"github.com/hyperledger/fabric-protos-go-apiv2/peer/lifecycle"
@@ -166,10 +164,8 @@ func GetChaincodeRequestMessageFromSignedProposal(signedProposal *pb.SignedPropo
 		return nil, fmt.Errorf("no signed proposal to parse")
 	}
 
-	var err error
-
-	proposal := &pb.Proposal{}
-	if err = protoV1.Unmarshal(signedProposal.ProposalBytes, proposal); err != nil {
+	proposal, err := protoutil.UnmarshalProposal(signedProposal.ProposalBytes)
+	if err != nil {
 		return nil, fmt.Errorf("failed to extract Proposal from SignedProposal: %w", err)
 	}
 
@@ -179,14 +175,14 @@ func GetChaincodeRequestMessageFromSignedProposal(signedProposal *pb.SignedPropo
 	}
 
 	// extract header
-	hdr := &common.Header{}
-	if err = protoV1.Unmarshal(proposal.GetHeader(), hdr); err != nil {
+	hdr, err := protoutil.UnmarshalHeader(proposal.GetHeader())
+	if err != nil {
 		return nil, fmt.Errorf("failed to extract proposal header: %w", err)
 	}
 
 	// validate channel header
-	chdr := &common.ChannelHeader{}
-	if err = protoV1.Unmarshal(hdr.ChannelHeader, chdr); err != nil {
+	chdr, err := protoutil.UnmarshalChannelHeader(hdr.ChannelHeader)
+	if err != nil {
 		return nil, fmt.Errorf("failed to extract channel header: %w", err)
 	}
 	validTypes := map[common.HeaderType]bool{
@@ -201,16 +197,16 @@ func GetChaincodeRequestMessageFromSignedProposal(signedProposal *pb.SignedPropo
 	}
 
 	// extract args from proposal payload
-	payload := &pb.ChaincodeProposalPayload{}
-	if err = protoV1.Unmarshal(proposal.GetPayload(), payload); err != nil {
+	payload, err := protoutil.UnmarshalChaincodeProposalPayload(proposal.GetPayload())
+	if err != nil {
 		return nil, fmt.Errorf("failed to extract proposal payload: %w", err)
 	}
 	cppInput := payload.GetInput()
 	if cppInput == nil {
 		return nil, fmt.Errorf("failed to get chaincode proposal payload input")
 	}
-	chaincodeInvocationSpec := &pb.ChaincodeInvocationSpec{}
-	if err = protoV1.Unmarshal(cppInput, chaincodeInvocationSpec); err != nil {
+	chaincodeInvocationSpec, err := protoutil.UnmarshalChaincodeInvocationSpec(cppInput)
+	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal chaincodeInvocationSpec: %w", err)
 	}
 	chaincodeSpec := chaincodeInvocationSpec.GetChaincodeSpec()
@@ -246,7 +242,7 @@ func GetChaincodeRequestMessageFromSignedProposal(signedProposal *pb.SignedPropo
 // otherwise, the Message field is returned as an error
 func UnwrapResponse(responseBytes []byte) (payload []byte, err error) {
 	clearResponse := &pb.Response{}
-	if err = protoV1.Unmarshal(responseBytes, clearResponse); err != nil {
+	if err = proto.Unmarshal(responseBytes, clearResponse); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal peer.Response message")
 	}
 
