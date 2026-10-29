@@ -2,8 +2,8 @@ version: "2"
 services:
   ccapi.org1.example.com:
     build:
-      dockerfile: Dockerfile
-      context: .
+      dockerfile: samples/application/ccapi/Dockerfile
+      context: ../../..
     ports:
       - 80:80
     volumes:
@@ -42,8 +42,8 @@ services:
       - fabric_test
   ccapi.org2.example.com:
     build:
-      dockerfile: Dockerfile
-      context: .
+      dockerfile: samples/application/ccapi/Dockerfile
+      context: ../../..
     ports:
       - 980:80
     volumes:

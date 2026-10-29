@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: Apache-2.0
+# The ccapi image is built from the FPC repository root (see fpc-docker-compose.yaml);
+# only send what the build needs instead of applying the root .dockerignore
+*
+!go.mod
+!go.sum
+!client_sdk/
+!internal/
+!samples/application/ccapi/
