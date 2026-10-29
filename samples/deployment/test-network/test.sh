@@ -77,6 +77,12 @@ function test_deploy() {
 
   docker ps
 
+  # The peers start launching a chaincode as soon as its definition is committed, i.e., before the
+  # chaincode containers above are running. Such a launch only fails once the CCaaS dial timeout (10s)
+  # expires, and invocations arriving in the meantime fail with it. We wait for these stale launch
+  # attempts to expire, so that the first invocation launches the chaincode anew.
+  sleep 10
+
   echo "########################################"
   echo "Update connection details ..."
   echo "########################################"
