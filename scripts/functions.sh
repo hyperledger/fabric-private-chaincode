@@ -38,6 +38,7 @@ function filterExcludedAndGeneratedFiles {
         '(^|/)Pipfile\.lock$'
         '(^|/)tox\.ini$'
         'samples/deployment/test-network/fabric-samples/'
+        '(^|/)out/cmd/'
         'common/crypto/pdo'
     )
 

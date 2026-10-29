@@ -92,7 +92,6 @@ func (f *FpcStubInterface) StartWriteBatch() {
 
 func (f *FpcStubInterface) FinishWriteBatch() error {
 	panic("not supported")
-	return nil
 }
 
 func (f *FpcStubInterface) GetAllStatesCompositeKeyWithPagination(pageSize int32, bookmark string) (shim.StateQueryIteratorInterface, *pb.QueryResponseMetadata, error) {
