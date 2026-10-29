@@ -29,7 +29,7 @@ func Topology(sdk api2.SDK, commType fsc.P2PCommunicationType, replicationOpts *
 	// Note: do NOT use AddPostRunInvocation for FPC chaincodes — FSC's InvokeChaincode
 	// sends plain-text args which FPC's private chaincode wrapper rejects as "invalid
 	// invocation". The FPC extension's own PostRun already handles __initEnclave.
-	fpctopo.AddFPC(fabricTopology, "echo", "fpc/fpc-echo-go")
+	fpctopo.AddFPC(fabricTopology, "echo", "fpc/echo-go")
 
 	// Create an empty FSC topology
 	fscTopology := fsc.NewTopology()
