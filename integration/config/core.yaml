@@ -362,13 +362,13 @@ peer:
 
         # A list of orderer endpoint addresses which should be overridden
         # when found in channel configurations.
+        # FPC Change: the orderer client port has TLS disabled (see orderer.yaml), but the channel
+        # config carries the TLS root certificates of the orderer organization, which makes the
+        # peer gateway connect to the orderer via mutual TLS. An override without caCertsFile
+        # makes the peer connect to the orderer without TLS.
         addressOverrides:
-        #  - from:
-        #    to:
-        #    caCertsFile:
-        #  - from:
-        #    to:
-        #    caCertsFile:
+          - from: 127.0.0.1:7050
+            to: 127.0.0.1:7050
 
     # Type for the local MSP - by default it's of type bccsp
     localMspType: bccsp

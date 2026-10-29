@@ -28,6 +28,7 @@ ledger_precond_check() {
 	[ -x "${FABRIC_BIN_DIR}/peer" ] || die "peer command does not exist in '${FABRIC_BIN_DIR}'"
 	[ -x "${FABRIC_BIN_DIR}/orderer" ] || die "orderer command does not exist in '${FABRIC_BIN_DIR}'"
 	[ -x "${FABRIC_BIN_DIR}/configtxgen" ] || die "configtxgen command does not exist in '${FABRIC_BIN_DIR}'"
+	[ -x "${FABRIC_BIN_DIR}/osnadmin" ] || die "osnadmin command does not exist in '${FABRIC_BIN_DIR}'"
 	[ -x "${FABRIC_UTIL_BIN_DIR}/peer-cli-assist" ] || die "peer-cli-assist command does not exist in '${FABRIC_UTIL_BIN_DIR}'"
 	[ ! -z "${FABRIC_STATE_DIR}" ] || die "Undefined fabric ledger state directory '${FABRIC_STATE_DIR}'"
 }
@@ -46,6 +47,7 @@ define_common_vars() {
 
     # NOTE: following variables can be overriden by defining them _before_ sourcing common_ledger.sh ..
     : ${ORDERER_ADDR:="localhost:7050"}
+    : ${ORDERER_ADMIN_ADDR:="localhost:9444"}
     : ${CHAN_ID:="mychannel"}
     : ${ERCC_ID:="ercc"}
     : ${ERCC_VERSION:="0"}
@@ -58,7 +60,6 @@ define_common_vars() {
     PEER_LOG_OUT="${FABRIC_STATE_DIR}/peer.out"
     PEER_LOG_ERR="${FABRIC_STATE_DIR}/peer.err"
 
-    CHANNEL_TX="${FABRIC_STATE_DIR}/${CHAN_ID}.tx"
     CHANNEL_BLOCK="${FABRIC_STATE_DIR}/${CHAN_ID}.block"
 }
 
@@ -125,9 +126,8 @@ ledger_init() {
 
     try ${FABRIC_BIN_DIR}/cryptogen generate --config=./crypto-config.yaml --output="${FABRIC_STATE_DIR}/organizations"
     # 2. start orderer
-    # - Creating a genesisblock for orderer-system-channel......."
-    try ${CONFIGTXGEN_CMD} -outputBlock ${FABRIC_STATE_DIR}/genesisblock -profile SampleDevModeEtcdRaft -channelID orderer-system-channel
-    sleep 1
+    #    Note: Fabric v3.x has no system channel, the orderer starts without any channel
+    #    and joins the application channel via the channel participation API (see step 4)
     ${ORDERER_CMD} 1>${ORDERER_LOG_OUT} 2>${ORDERER_LOG_ERR} &
     export ORDERER_PID=$!
     echo "${ORDERER_PID}" > ${ORDERER_PID_FILE}
@@ -143,10 +143,10 @@ ledger_init() {
     kill -0 ${PEER_PID} || die "Peer quit too quickly: (for log see ${PEER_LOG_OUT} & ${PEER_LOG_ERR})"
 
     # 4. Setup channel
-    # - create channel tx
-    try ${CONFIGTXGEN_CMD} -channelID ${CHAN_ID} -profile SampleSingleMSPChannel -outputCreateChannelTx ${CHANNEL_TX}
-    # - create genesis block, only by one peer
-    try ${PEER_CMD} channel create -o ${ORDERER_ADDR} -c ${CHAN_ID} -f ${CHANNEL_TX} --outputBlock ${CHANNEL_BLOCK}
+    # - create channel genesis block
+    try ${CONFIGTXGEN_CMD} -channelID ${CHAN_ID} -profile SampleDevModeEtcdRaft -outputBlock ${CHANNEL_BLOCK}
+    # - the orderer joins the channel
+    try ${FABRIC_BIN_DIR}/osnadmin channel join --channelID ${CHAN_ID} --config-block ${CHANNEL_BLOCK} -o ${ORDERER_ADMIN_ADDR}
     # - every peer will have to join (after having received mychannel.block out-of-band)
     try ${PEER_CMD} channel join -b ${CHANNEL_BLOCK}
     sleep 3
