@@ -1,7 +1,7 @@
 package assets
 
 import (
-	"github.com/hyperledger-labs/cc-tools/assets"
+	"github.com/hyperledger-labs/cc-tools/v2/assets"
 )
 
 // Wallet represents a confidential user account for holding multiple digital assets.

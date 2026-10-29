@@ -1,7 +1,7 @@
 package assets
 
 import (
-	"github.com/hyperledger-labs/cc-tools/assets"
+	"github.com/hyperledger-labs/cc-tools/v2/assets"
 )
 
 // Escrow defines the asset type for programmable conditional payment contracts.

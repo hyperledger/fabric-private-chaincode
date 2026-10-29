@@ -1,7 +1,7 @@
 package assets
 
 import (
-	"github.com/hyperledger-labs/cc-tools/assets"
+	"github.com/hyperledger-labs/cc-tools/v2/assets"
 )
 
 // DigitalAssetToken defines the asset type for fungible digital tokens.

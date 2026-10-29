@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/hyperledger-labs/cc-tools/assets"
+	"github.com/hyperledger-labs/cc-tools/v2/assets"
 	"github.com/hyperledger/fabric-private-chaincode/samples/chaincode/confidential-escrow/chaincode/testutils"
 )
 

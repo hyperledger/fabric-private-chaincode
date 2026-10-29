@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hyperledger-labs/cc-tools/accesscontrol"
-	"github.com/hyperledger-labs/cc-tools/assets"
-	"github.com/hyperledger-labs/cc-tools/errors"
-	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
-	"github.com/hyperledger-labs/cc-tools/transactions"
+	"github.com/hyperledger-labs/cc-tools/v2/accesscontrol"
+	"github.com/hyperledger-labs/cc-tools/v2/assets"
+	"github.com/hyperledger-labs/cc-tools/v2/errors"
+	sw "github.com/hyperledger-labs/cc-tools/v2/stubwrapper"
+	"github.com/hyperledger-labs/cc-tools/v2/transactions"
 )
 
 // CreateAndLockEscrow creates a new escrow contract and immediately locks funds.

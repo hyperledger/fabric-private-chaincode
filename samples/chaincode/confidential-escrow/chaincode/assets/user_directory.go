@@ -1,7 +1,7 @@
 package assets
 
 import (
-	"github.com/hyperledger-labs/cc-tools/assets"
+	"github.com/hyperledger-labs/cc-tools/v2/assets"
 )
 
 // UserDirectory provides a mapping between user public key hashes and wallet UUIDs.

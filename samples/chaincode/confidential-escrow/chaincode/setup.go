@@ -1,8 +1,8 @@
 package chaincode
 
 import (
-	"github.com/hyperledger-labs/cc-tools/assets"
-	tx "github.com/hyperledger-labs/cc-tools/transactions"
+	"github.com/hyperledger-labs/cc-tools/v2/assets"
+	tx "github.com/hyperledger-labs/cc-tools/v2/transactions"
 
 	asset "github.com/hyperledger/fabric-private-chaincode/samples/chaincode/confidential-escrow/chaincode/assets"
 	header "github.com/hyperledger/fabric-private-chaincode/samples/chaincode/confidential-escrow/chaincode/header"

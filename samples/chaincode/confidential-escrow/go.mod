@@ -4,7 +4,7 @@ go 1.26.3
 
 require (
 	github.com/golang/protobuf v1.5.4
-	github.com/hyperledger-labs/cc-tools v1.0.2
+	github.com/hyperledger-labs/cc-tools/v2 v2.0.0-20261013171908-897c551b01ab
 	github.com/hyperledger/fabric-chaincode-go/v2 v2.3.0
 	github.com/hyperledger/fabric-private-chaincode v0.0.0-00010101000000-000000000000
 	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7
@@ -13,9 +13,7 @@ require (
 require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hyperledger/fabric v2.1.1+incompatible // indirect
-	github.com/hyperledger/fabric-chaincode-go v0.0.0-20230228194215-b84622ba6a7a // indirect
 	github.com/hyperledger/fabric-lib-go v1.1.3 // indirect
-	github.com/hyperledger/fabric-protos-go v0.3.0 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

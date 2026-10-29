@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/hyperledger-labs/cc-tools/errors"
+	"github.com/hyperledger-labs/cc-tools/v2/errors"
 )
 
 func AssertNoError(t *testing.T, err errors.ICCError, args ...any) {
