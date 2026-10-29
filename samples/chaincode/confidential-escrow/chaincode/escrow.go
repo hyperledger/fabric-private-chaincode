@@ -4,8 +4,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/hyperledger-labs/cc-tools/assets"
-	tx "github.com/hyperledger-labs/cc-tools/transactions"
+	"github.com/hyperledger-labs/cc-tools/v2/assets"
+	tx "github.com/hyperledger-labs/cc-tools/v2/transactions"
 
 	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	pb "github.com/hyperledger/fabric-protos-go-apiv2/peer"
@@ -28,7 +28,7 @@ type ConfidentialEscrowCC struct{}
 // Returns:
 //
 //	response: Peer response indicating success or failure of initialization
-func (t *ConfidentialEscrowCC) Init(stub shim.ChaincodeStubInterface) (response pb.Response) {
+func (t *ConfidentialEscrowCC) Init(stub shim.ChaincodeStubInterface) (response *pb.Response) {
 	log.Println("ConfidentialEscrowCC: Init called")
 
 	res := InitFunc(stub)
@@ -51,7 +51,7 @@ func (t *ConfidentialEscrowCC) Init(stub shim.ChaincodeStubInterface) (response 
 // Returns:
 //
 //	response: Peer response with status 200 on success, error response otherwise
-func InitFunc(stub shim.ChaincodeStubInterface) (response pb.Response) {
+func InitFunc(stub shim.ChaincodeStubInterface) (response *pb.Response) {
 	defer logTx(stub, time.Now(), &response)
 
 	// Run cc-tools startup checks
@@ -82,7 +82,7 @@ func InitFunc(stub shim.ChaincodeStubInterface) (response pb.Response) {
 // Returns:
 //
 //	response: Peer response containing transaction result or error detail
-func (t *ConfidentialEscrowCC) Invoke(stub shim.ChaincodeStubInterface) (response pb.Response) {
+func (t *ConfidentialEscrowCC) Invoke(stub shim.ChaincodeStubInterface) (response *pb.Response) {
 	defer logTx(stub, time.Now(), &response)
 
 	// Ensure startup check is executed
@@ -113,7 +113,7 @@ func (t *ConfidentialEscrowCC) Invoke(stub shim.ChaincodeStubInterface) (respons
 //	stub: The chaincode stub for accessing transaction context
 //	beginTime: Transaction start time for duration calculation
 //	response: Pointer to the peer response for status logging
-func logTx(stub shim.ChaincodeStubInterface, beginTime time.Time, response *pb.Response) {
+func logTx(stub shim.ChaincodeStubInterface, beginTime time.Time, response **pb.Response) {
 	fn, _ := stub.GetFunctionAndParameters()
-	log.Printf("%d %s %s %s\n", response.Status, fn, time.Since(beginTime), response.Message)
+	log.Printf("%d %s %s %s\n", (*response).Status, fn, time.Since(beginTime), (*response).Message)
 }
