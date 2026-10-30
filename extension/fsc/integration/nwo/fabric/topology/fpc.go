@@ -8,6 +8,7 @@ package topology
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/topology"
@@ -105,7 +106,14 @@ func AddFPCAtOrgs(t *topology.Topology, name, image string, orgs []string, optio
 	if t.ExtraParams == nil {
 		t.ExtraParams = map[string]any{}
 	}
-	t.ExtraParams[extraParamsKey] = append(Chaincodes(t), cc)
+	// replace a chaincode with the same name in place, as topology.AddChaincode does
+	ccs := Chaincodes(t)
+	if i := slices.IndexFunc(ccs, func(c *Chaincode) bool { return c.Chaincode.Name == name }); i >= 0 {
+		ccs[i] = cc
+	} else {
+		ccs = append(ccs, cc)
+	}
+	t.ExtraParams[extraParamsKey] = ccs
 
 	return cc
 }
