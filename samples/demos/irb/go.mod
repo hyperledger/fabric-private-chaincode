@@ -13,14 +13,13 @@ replace (
 replace github.com/hyperledger/fabric-private-chaincode => ../../..
 
 require (
-	github.com/docker/go-connections v0.8.2
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/hyperledger-labs/fabric-smart-client v0.27.0
 	github.com/hyperledger-labs/fabric-smart-client/integration v0.27.0
 	github.com/hyperledger/fabric-private-chaincode/extension/fsc v0.0.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.12.1
-	github.com/testcontainers/testcontainers-go v0.41.0
+	github.com/testcontainers/testcontainers-go v0.44.0
 	google.golang.org/protobuf v1.36.12
 )
 
@@ -55,6 +54,7 @@ require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.1 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/docker v28.5.2+incompatible // indirect
+	github.com/docker/go-connections v0.8.2 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dunglas/httpsfv v1.1.2 // indirect
 	github.com/dustin/go-humanize v1.1.0 // indirect
@@ -150,7 +150,6 @@ require (
 	github.com/moby/term v0.5.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/morikuni/aec v1.1.0 // indirect
 	github.com/mr-tron/base58 v1.3.0 // indirect
 	github.com/multiformats/go-base32 v0.1.0 // indirect
 	github.com/multiformats/go-base36 v0.2.0 // indirect

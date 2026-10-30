@@ -12,7 +12,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/docker/go-connections/nat"
 	"github.com/hyperledger-labs/fabric-smart-client/integration"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/common"
 	fpcnwo "github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/fpc"
@@ -70,7 +69,7 @@ func TestFlow(t *testing.T) {
 
 	redisHost, err := redis.Host(ctx)
 	require.NoError(t, err)
-	redisPort, err := redis.MappedPort(ctx, nat.Port(fmt.Sprintf("%d/tcp", storage.DefaultRedisPort)))
+	redisPort, err := redis.MappedPort(ctx, fmt.Sprintf("%d/tcp", storage.DefaultRedisPort))
 	require.NoError(t, err)
 
 	// experiment
@@ -136,7 +135,7 @@ func TestFlow(t *testing.T) {
 		PatientUUID: patientIdentities[0].GetUuid(),
 		PatientVK:   patientIdentities[0].GetPublicKey(),
 		StorageHost: redisHost,
-		StoragePort: redisPort.Int(),
+		StoragePort: int(redisPort.Num()),
 	}))
 	require.NoError(t, err)
 
