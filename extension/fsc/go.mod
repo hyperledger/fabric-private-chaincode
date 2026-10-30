@@ -59,8 +59,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gopherjs/gopherjs v1.21.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.32.0 // indirect
-	github.com/hashicorp/go-uuid v1.0.3 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.33.0 // indirect
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
 	github.com/huin/goupnp v1.3.0 // indirect
 	github.com/hyperledger-labs/fabric-smart-client/platform/view/services/comm/host/libp2p v0.0.0-00010101000000-000000000000 // indirect
@@ -80,6 +79,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.3 // indirect
 	github.com/jackpal/go-nat-pmp v1.1.0 // indirect
 	github.com/jbenet/go-temp-err-catcher v0.1.0 // indirect
+	github.com/klauspost/compress v1.20.3 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.1 // indirect
 	github.com/knadh/koanf/maps v0.1.3 // indirect
 	github.com/knadh/koanf/parsers/yaml v1.1.1 // indirect
@@ -95,7 +95,7 @@ require (
 	github.com/libp2p/go-flow-metrics v0.3.0 // indirect
 	github.com/libp2p/go-libp2p v0.51.0 // indirect
 	github.com/libp2p/go-libp2p-asn-util v0.4.1 // indirect
-	github.com/libp2p/go-libp2p-kad-dht v0.42.2 // indirect
+	github.com/libp2p/go-libp2p-kad-dht v0.43.0 // indirect
 	github.com/libp2p/go-libp2p-kbucket v0.9.0 // indirect
 	github.com/libp2p/go-libp2p-record v0.3.1 // indirect
 	github.com/libp2p/go-libp2p-routing-helpers v0.7.5 // indirect
@@ -134,7 +134,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.33.1 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
-	github.com/pandatix/go-abnf v0.5.1 // indirect
+	github.com/pandatix/go-abnf v0.5.3 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/pion/datachannel v1.6.3 // indirect
 	github.com/pion/dtls/v3 v3.1.15 // indirect
@@ -157,7 +157,7 @@ require (
 	github.com/polydawn/refmt v0.90.0 // indirect
 	github.com/prometheus/client_golang v1.25.0 // indirect
 	github.com/prometheus/client_model v0.6.3 // indirect
-	github.com/prometheus/common v0.73.0 // indirect
+	github.com/prometheus/common v0.73.1 // indirect
 	github.com/prometheus/procfs v0.23.0 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.64.1 // indirect
@@ -179,6 +179,7 @@ require (
 	go.opentelemetry.io/otel v1.47.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.47.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.47.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.47.0 // indirect
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.47.0 // indirect
 	go.opentelemetry.io/otel/log v1.47.0 // indirect
 	go.opentelemetry.io/otel/metric v1.47.0 // indirect
@@ -207,7 +208,7 @@ require (
 	google.golang.org/grpc v1.85.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	lukechampine.com/blake3 v1.4.1 // indirect
-	modernc.org/cc/v4 v4.30.4 // indirect
+	modernc.org/cc/v4 v4.30.5 // indirect
 	modernc.org/ccgo/v4 v4.38.0 // indirect
 	modernc.org/libc v1.79.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
