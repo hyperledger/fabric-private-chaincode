@@ -15,8 +15,8 @@ replace github.com/hyperledger/fabric-private-chaincode => ../../..
 require (
 	github.com/docker/go-connections v0.8.2
 	github.com/go-redis/redis v6.15.9+incompatible
-	github.com/hyperledger-labs/fabric-smart-client v0.26.0
-	github.com/hyperledger-labs/fabric-smart-client/integration v0.26.0
+	github.com/hyperledger-labs/fabric-smart-client v0.27.0
+	github.com/hyperledger-labs/fabric-smart-client/integration v0.27.0
 	github.com/hyperledger/fabric-private-chaincode/extension/fsc v0.0.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.12.1
@@ -96,7 +96,6 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.11.0 // indirect
-	github.com/jackc/pgxlisten v0.0.0-20250802141604-12b92425684c // indirect
 	github.com/jackc/puddle/v2 v2.2.3 // indirect
 	github.com/jackpal/go-nat-pmp v1.1.0 // indirect
 	github.com/jaegertracing/jaeger-idl v0.14.0 // indirect
@@ -249,8 +248,8 @@ require (
 	modernc.org/sqlite v1.61.0 // indirect
 )
 
-replace github.com/hyperledger-labs/fabric-smart-client v0.0.0-00010101000000-000000000000 => github.com/hyperledger-labs/fabric-smart-client v0.26.0
+replace github.com/hyperledger-labs/fabric-smart-client v0.0.0-00010101000000-000000000000 => github.com/hyperledger-labs/fabric-smart-client v0.27.0
 
-replace github.com/hyperledger-labs/fabric-smart-client/platform/view/services/comm/host/libp2p v0.0.0-00010101000000-000000000000 => github.com/hyperledger-labs/fabric-smart-client/platform/view/services/comm/host/libp2p v0.26.0
+replace github.com/hyperledger-labs/fabric-smart-client/platform/view/services/comm/host/libp2p v0.0.0-00010101000000-000000000000 => github.com/hyperledger-labs/fabric-smart-client/platform/view/services/comm/host/libp2p v0.27.0
 
-replace github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/state/cc/query v0.0.0-00010101000000-000000000000 => github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/state/cc/query v0.26.0
+replace github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/state/cc/query v0.0.0-00010101000000-000000000000 => github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/state/cc/query v0.27.0
