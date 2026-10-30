@@ -5,7 +5,7 @@ go 1.27.3
 require (
 	github.com/golang/protobuf v1.5.4
 	github.com/hyperledger-labs/cc-tools/v2 v2.0.0-20261013171908-897c551b01ab
-	github.com/hyperledger/fabric-chaincode-go/v2 v2.3.1-0.20260319210430-56968fdc7833
+	github.com/hyperledger/fabric-chaincode-go/v2 v2.3.1-0.20260831054443-83a556592560
 	github.com/hyperledger/fabric-private-chaincode v0.0.0-00010101000000-000000000000
 	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7
 )
@@ -32,5 +32,3 @@ require (
 )
 
 replace github.com/hyperledger/fabric-private-chaincode => ../../../
-
-replace github.com/Shopify/sarama => github.com/IBM/sarama v1.45.2

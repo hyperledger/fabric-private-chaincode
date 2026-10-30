@@ -17,7 +17,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/docker/go-connections/nat"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/crypto"
 	pb "github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/protos"
 	"github.com/hyperledger/fabric-private-chaincode/samples/demos/irb/pkg/storage"
@@ -197,7 +196,7 @@ func TestWorker(t *testing.T) {
 
 	redisHost, err := redis.Host(ctx)
 	require.NoError(t, err)
-	redisPort, err := redis.MappedPort(ctx, nat.Port(redisExportedPort))
+	redisPort, err := redis.MappedPort(ctx, redisExportedPort)
 	require.NoError(t, err)
 	t.Logf("redisHost: %s:%s", redisHost, redisPort.Port())
 
