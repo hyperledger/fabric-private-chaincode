@@ -13,7 +13,6 @@ import (
 
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/api"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric"
-	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/topology"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fsc"
 	fabric2 "github.com/hyperledger-labs/fabric-smart-client/platform/fabric/sdk/dig"
 	fpctopo "github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/topology"
@@ -31,7 +30,7 @@ const (
 
 func Topology() []api.Topology {
 	chaincodeImageName := fmt.Sprintf("%s:%s", ChaincodeImageName, ChaincodeImageTag)
-	var fpcOptions []func(chaincode *topology.ChannelChaincode)
+	var fpcOptions []func(chaincode *fpctopo.Chaincode)
 
 	if strings.ToUpper(os.Getenv("SGX_MODE")) == "HW" {
 		chaincodeImageName = fmt.Sprintf("%s-hw:%s", ChaincodeImageName, ChaincodeImageTag)
