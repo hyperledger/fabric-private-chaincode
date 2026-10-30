@@ -3,11 +3,8 @@ module the-simple-testing-network
 go 1.27.3
 
 replace (
-	github.com/hyperledger-labs/orion-sdk-go => github.com/hyperledger-labs/orion-sdk-go v0.2.5
-	github.com/hyperledger-labs/orion-server => github.com/hyperledger-labs/orion-server v0.2.5
 	github.com/hyperledger/fabric-private-chaincode => ../../../../
 	github.com/hyperledger/fabric-private-chaincode/extension/fsc => ../../../../extension/fsc
-	kilic/bls12-377 => github.com/kilic/bls12-377 v0.0.0-20201230075656-5449decbf102
 )
 
 require (

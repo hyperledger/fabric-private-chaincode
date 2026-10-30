@@ -32,5 +32,3 @@ require (
 )
 
 replace github.com/hyperledger/fabric-private-chaincode => ../../../
-
-replace github.com/Shopify/sarama => github.com/IBM/sarama v1.45.2
