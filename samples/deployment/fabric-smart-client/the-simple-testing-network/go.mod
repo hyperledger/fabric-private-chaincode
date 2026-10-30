@@ -44,6 +44,7 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dunglas/httpsfv v1.1.2 // indirect
 	github.com/dustin/go-humanize v1.1.0 // indirect
+	github.com/expr-lang/expr v1.17.8 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/filecoin-project/go-clock v0.1.0 // indirect
 	github.com/flynn/noise v1.1.0 // indirect
@@ -72,6 +73,7 @@ require (
 	github.com/hyperledger/fabric-lib-go v1.1.5 // indirect
 	github.com/hyperledger/fabric-private-chaincode v1.0.0-rc3.0.20231026135044-67a19b0fcda0 // indirect
 	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7 // indirect
+	github.com/hyperledger/fabric-x-common v0.2.12 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/ipfs/boxo v0.43.0 // indirect
 	github.com/ipfs/go-cid v0.6.2 // indirect
@@ -223,3 +225,8 @@ replace github.com/hyperledger-labs/fabric-smart-client v0.0.0-00010101000000-00
 replace github.com/hyperledger-labs/fabric-smart-client/platform/view/services/comm/host/libp2p v0.0.0-00010101000000-000000000000 => github.com/hyperledger-labs/fabric-smart-client/platform/view/services/comm/host/libp2p v0.27.0
 
 replace github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/state/cc/query v0.0.0-00010101000000-000000000000 => github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/state/cc/query v0.27.0
+
+tool (
+	github.com/IBM/idemix/tools/idemixgen
+	github.com/hyperledger-labs/fabric-smart-client/integration/nwo/cmd/fsccli
+)

@@ -82,6 +82,8 @@ github.com/dustin/go-humanize v1.1.0 h1:dbKTrvD0klcbBV/h4AWJdMuZogJACoMlvWIWZ5b2
 github.com/dustin/go-humanize v1.1.0/go.mod h1:hc1CvRkJMsgxqjmjMQF3QNRAZBwY8AXBAzKYoSX9sFI=
 github.com/ebitengine/purego v0.11.2 h1:WWiTx8rD8zYdOwSj8O/NiNbsOvSAgJMTlyV1XlbUSeU=
 github.com/ebitengine/purego v0.11.2/go.mod h1:DCHPP08djqhNSoTfImcnHYQRZmd0qhakvrozqaEYhGQ=
+github.com/expr-lang/expr v1.17.8 h1:W1loDTT+0PQf5YteHSTpju2qfUfNoBt4yw9+wOEU9VM=
+github.com/expr-lang/expr v1.17.8/go.mod h1:8/vRC7+7HBzESEqt5kKpYXxrxkr31SaO8r40VO/1IT4=
 github.com/felixge/httpsnoop v1.1.0 h1:3YtUj32ZZkqZtt3sZZsClsymw/QDuVfpNhoA31zeORc=
 github.com/felixge/httpsnoop v1.1.0/go.mod h1:Zqxgdd+1Rkcz8euOqdr7lqgCRJztwr5hp9vDSi5UZCE=
 github.com/filecoin-project/go-clock v0.1.0 h1:SFbYIM75M8NnFm1yMHhN9Ahy3W5bEZV9gd6MPfXbKVU=
@@ -155,6 +157,8 @@ github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/state/c
 github.com/hyperledger-labs/fabric-smart-client/platform/fabric/services/state/cc/query v0.27.0/go.mod h1:JwUh3vhafA9wJlGbJJOJbElPe7tOCDXNUJI7NKxEYCQ=
 github.com/hyperledger-labs/fabric-smart-client/platform/view/services/comm/host/libp2p v0.27.0 h1:sHBOL1T09gJYt12g+V8hS/nhmJdfYOihkCcyQZwqqDU=
 github.com/hyperledger-labs/fabric-smart-client/platform/view/services/comm/host/libp2p v0.27.0/go.mod h1:YA7hawV0A7J5Bh+q17poBagv+B2plcGsO+zYWud+iGc=
+github.com/hyperledger/SmartBFT v1.0.2 h1:CPNeo6OmnOBQv+jaYeHiw64ZBdtq/TIRcpQpe60M5tU=
+github.com/hyperledger/SmartBFT v1.0.2/go.mod h1:4GaOkmA7N7TKfZuPX6M6O3q/jMowprHWJjCP2n/6CPI=
 github.com/hyperledger/fabric-amcl v0.0.0-20230602173724-9e02669dceb2 h1:B1Nt8hKb//KvgGRprk0h1t4lCnwhE9/ryb1WqfZbV+M=
 github.com/hyperledger/fabric-amcl v0.0.0-20230602173724-9e02669dceb2/go.mod h1:X+DIyUsaTmalOpmpQfIvFZjKHQedrURQ5t4YqquX7lE=
 github.com/hyperledger/fabric-chaincode-go/v2 v2.3.1-0.20260831054443-83a556592560 h1:VajFD7pOMyHos2Nw7zfmJbwmkeNGdozYsu4JNT/sjqI=
@@ -163,6 +167,8 @@ github.com/hyperledger/fabric-lib-go v1.1.5 h1:9GY8NEqyuRlJRDVgFRTcpSad/q7yiJD8+
 github.com/hyperledger/fabric-lib-go v1.1.5/go.mod h1:H30DO/EzSAtSIIzWZGXotV/M+RN0xIjFv22dPgtk4bc=
 github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7 h1:sQ5qv8vQQfwewa1JlCiSCC8dLElmaU2/frLolpgibEY=
 github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7/go.mod h1:bJnwzfv03oZQeCc863pdGTDgf5nmCy6Za3RAE7d2XsQ=
+github.com/hyperledger/fabric-x-common v0.2.12 h1:IcJAj7K/QRMdDX2og3Ry/01ulVHv/YCX8ATSwa+b8/A=
+github.com/hyperledger/fabric-x-common v0.2.12/go.mod h1:RBL32bDQaqWlerialpNYH6DIVq3yFDUTokIKwejFlaU=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/ipfs/boxo v0.43.0 h1:nhIbfBBxgLoAxUi8upOIO5RATy++2WigMVWniRJFjnw=
