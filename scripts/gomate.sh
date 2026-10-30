@@ -25,6 +25,7 @@ Commands:
   initwork      creates go workspace for this project (\`go work init\` and \`go work use\` everywhere)
   tidy          runs \`go mod tidy\` everywhere
   update [XYZ]  updates a specific dep (\`go get XYZ\`) everywhere; if no dep argument given, \`go get -u\` is called
+  aligncheck    checks that all modules build each dependency with the same version
   help          shows this help
   "
   exit 1
@@ -56,6 +57,42 @@ function tidy() {
   find "$repo_dir" -iname "go.mod" -execdir sh -c "go mod tidy" \;
 }
 
+# check that every module of the repository builds each dependency with the same version;
+# only dependencies whose packages are compiled count, as go mod tidy drops pins of any other module.
+# The check covers the current platform; for another one, set GOOS and CGO_ENABLED=1 (cgo packages).
+function align_check() {
+  # each module resolves its own build list; a go.work would resolve all modules together
+  export GOWORK=off
+  # a replaced module counts with its replacement version; local path replaces are skipped
+  local format='{{if .Error}}ERROR {{.ImportPath}}: {{.Error}}{{else}}{{with .Module}}{{if not .Main}}{{if .Replace}}{{if .Replace.Version}}{{.Path}} {{.Replace.Path}}@{{.Replace.Version}}{{end}}{{else}}{{.Path}} {{.Version}}{{end}}{{end}}{{end}}{{end}}'
+  local versions="" mod dir out pkgs
+  while read -r mod; do
+    dir=$(dirname "$mod")
+    pkgs=./...
+    grep -q '^tool' "$repo_dir/$mod" && pkgs="./... tool"
+    # tools and deps tags include the files that only keep dependencies in go.mod
+    # shellcheck disable=SC2086 # pkgs is a list of package patterns
+    if ! out=$(cd "$repo_dir/$dir" && IFS=' ' && go list -e -deps -test -tags tools,deps -f "$format" $pkgs); then
+      echo "go list failed in $dir"
+      return 1
+    fi
+    # a blank import of a main package in a tools.go file is the intended use of the tools tag
+    if grep '^ERROR ' <<<"$out" | grep -v 'is a program, not an importable package'; then
+      echo "cannot load the packages of $dir"
+      return 1
+    fi
+    versions+=$(grep -v '^ERROR ' <<<"$out" | sort -u | sed "s|^|$dir |")$'\n'
+  done < <(git -C "$repo_dir" ls-files '*go.mod')
+  local mismatches
+  mismatches=$(echo "$versions" | awk '{v[$2] = v[$2] " " $3 "(" $1 ")"; seen[$2 " " $3] = 1} END {for (k in seen) {split(k, a, " "); n[a[1]]++} for (p in n) if (n[p] > 1) print p ":" v[p]}' | sort)
+  if [[ -n $mismatches ]]; then
+    echo "dependencies built with different versions:"
+    echo "$mismatches"
+    return 1
+  fi
+  echo "all modules build their dependencies with the same versions"
+}
+
 main() {
   case "${1-""}" in
     initwork)
@@ -66,6 +103,9 @@ main() {
       ;;
     update)
       update "${2-""}"
+      ;;
+    aligncheck)
+      align_check
       ;;
     *)
       usage
