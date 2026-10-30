@@ -11,8 +11,8 @@ require (
 	github.com/hyperledger/fabric-private-chaincode v1.0.0-rc3.0.20241027225741-54c22bdd71b6
 	github.com/hyperledger/fabric-sdk-go v1.0.1-0.20240123083657-5d6ca326e01b
 	github.com/pkg/errors v0.9.1
-	github.com/swaggo/swag v1.8.12
-	google.golang.org/grpc v1.84.0
+	github.com/swaggo/swag v1.16.6
+	google.golang.org/grpc v1.85.0
 )
 
 replace github.com/hyperledger/fabric-private-chaincode => ../../../
@@ -99,7 +99,9 @@ require (
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/arch v0.32.0 // indirect
 	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/mod v0.42.0 // indirect
 	golang.org/x/net v0.62.0 // indirect
+	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 	golang.org/x/tools v0.52.0 // indirect
