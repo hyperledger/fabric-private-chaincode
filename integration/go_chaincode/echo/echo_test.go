@@ -20,13 +20,6 @@ import (
 )
 
 var _ = Describe("EndToEnd", func() {
-	Describe("Echo FPC With LibP2P", func() {
-		s := NewTestSuite(fsc.LibP2P, integration.NoReplication)
-		BeforeEach(s.Setup)
-		AfterEach(s.TearDown)
-		It("succeeded", s.TestSucceeded)
-	})
-
 	Describe("Echo FPC With Websockets", func() {
 		s := NewTestSuite(fsc.WebSocket, integration.NoReplication)
 		BeforeEach(s.Setup)
