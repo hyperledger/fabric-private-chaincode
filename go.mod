@@ -6,9 +6,9 @@ require (
 	github.com/client9/misspell v0.3.4
 	github.com/golang/protobuf v1.5.4
 	github.com/hyperledger/fabric-admin-sdk v0.1.0
-	github.com/hyperledger/fabric-chaincode-go/v2 v2.3.1-0.20260319210430-56968fdc7833
-	github.com/hyperledger/fabric-contract-api-go/v2 v2.2.2
-	github.com/hyperledger/fabric-gateway v1.10.1
+	github.com/hyperledger/fabric-chaincode-go/v2 v2.3.1-0.20260831054443-83a556592560
+	github.com/hyperledger/fabric-contract-api-go/v2 v2.2.4
+	github.com/hyperledger/fabric-gateway v1.13.0
 	github.com/hyperledger/fabric-lib-go v1.1.5
 	github.com/hyperledger/fabric-protos-go-apiv2 v0.3.7
 	github.com/hyperledger/fabric-samples/asset-transfer-basic/chaincode-go v0.0.0-20230505123407-84f9ba1dc4ec
