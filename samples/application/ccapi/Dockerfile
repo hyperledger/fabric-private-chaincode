@@ -1,5 +1,5 @@
 # Use an official Golang runtime as a parent image
-FROM golang:1.26.3-alpine AS build
+FROM golang:1.27.3-alpine AS build
 
 ENV PATH="${PATH}:/usr/bin/"
 

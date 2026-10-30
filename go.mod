@@ -1,6 +1,6 @@
 module github.com/hyperledger/fabric-private-chaincode
 
-go 1.26.3
+go 1.27.3
 
 require (
 	github.com/client9/misspell v0.3.4
