@@ -82,7 +82,7 @@ func (c *SubmitExperimentView) waitForApprovals(context view.Context) error {
 		return err
 	}
 
-	if err = session.Send(raw); err != nil {
+	if err = session.Send(context.Context(), raw); err != nil {
 		return err
 	}
 

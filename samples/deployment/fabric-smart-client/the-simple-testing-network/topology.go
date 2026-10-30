@@ -13,7 +13,6 @@ import (
 
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/api"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric"
-	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/topology"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fsc"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/monitoring"
 	fpctopo "github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/topology"
@@ -54,7 +53,7 @@ type config struct {
 	chaincodeName      string
 	chaincodeImage     string
 	blockchainExplorer string
-	fpcOptions         []func(chaincode *topology.ChannelChaincode)
+	fpcOptions         []func(chaincode *fpctopo.Chaincode)
 }
 
 // setup prepares a config helper struct, containing some additional configuration that can be injected via environment variables

@@ -13,11 +13,31 @@ import (
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/topology"
 )
 
+// extraParamsKey is the key of the FPC chaincodes in topology.Topology.ExtraParams
+const extraParamsKey = "fpc.chaincodes"
+
+// Chaincode is a Fabric Private Chaincode. FPC chaincodes are not added to topology.Topology.Chaincodes,
+// as FSC deploys every chaincode listed there itself; the FPC NWO extension deploys them instead.
+type Chaincode struct {
+	topology.ChannelChaincode
+	// Image is the docker image of the chaincode, which runs as an external chaincode
+	Image string
+	// SGXMode is either SIM or HW
+	SGXMode string
+	// SGXDevicesPaths are the SGX devices to attach to the chaincode container in HW mode
+	SGXDevicesPaths []string
+}
+
+// Chaincodes returns the FPC chaincodes of t
+func Chaincodes(t *topology.Topology) []*Chaincode {
+	ccs, _ := t.ExtraParams[extraParamsKey].([]*Chaincode)
+	return ccs
+}
+
 // EnableFPC registers the Enclave Registry Chaincode (ERCC) on the topology.
-// Does not set topology.FPC - that field is dead code after FSC PR #696.
 // Safe to call multiple times; ERCC is registered only once.
 func EnableFPC(t *topology.Topology) {
-	for _, cc := range t.Chaincodes {
+	for _, cc := range Chaincodes(t) {
 		if cc.Chaincode.Name == "ercc" {
 			return
 		}
@@ -28,7 +48,7 @@ func EnableFPC(t *topology.Topology) {
 // AddFPCAtOrgs adds a Fabric Private Chaincode to t, installing only on the listed orgs.
 // If orgs is empty, installs on all registered organizations.
 // The endorsement policy is set to majority of the organizations on which the chaincode is installed.
-func AddFPCAtOrgs(t *topology.Topology, name, image string, orgs []string, options ...func(*topology.ChannelChaincode)) *topology.ChannelChaincode {
+func AddFPCAtOrgs(t *topology.Topology, name, image string, orgs []string, options ...func(*Chaincode)) *Chaincode {
 	// EnableFPC registers ercc; skip when we are adding ercc itself to avoid recursion.
 	if name != "ercc" {
 		EnableFPC(t)
@@ -58,60 +78,61 @@ func AddFPCAtOrgs(t *topology.Topology, name, image string, orgs []string, optio
 		}
 	}
 
-	cc := &topology.ChannelChaincode{
-		Chaincode: topology.Chaincode{
-			Name:            name,
-			Version:         "Version-1.0",
-			Sequence:        "1",
-			InitRequired:    false,
-			Path:            name,
-			Lang:            "external", // FPC CC runs as a separate docker container (Doesnt't run inside Fabric peer process)
-			Label:           fmt.Sprintf("%s_1.0", name),
-			Ctor:            `{"Args":["init"]}`,
-			Policy:          policy,
-			SignaturePolicy: policy,
+	cc := &Chaincode{
+		ChannelChaincode: topology.ChannelChaincode{
+			Chaincode: topology.Chaincode{
+				Name:            name,
+				Version:         "Version-1.0",
+				Sequence:        "1",
+				InitRequired:    false,
+				Path:            name,
+				Lang:            "external", // FPC CC runs as a separate docker container (Doesnt't run inside Fabric peer process)
+				Label:           fmt.Sprintf("%s_1.0", name),
+				Ctor:            `{"Args":["init"]}`,
+				SignaturePolicy: policy,
+			},
+			Channel: t.Channels[0].Name,
+			Peers:   peers,
 		},
-		PrivateChaincode: topology.PrivateChaincode{
-			Image:   image,
-			SGXMode: "sim",
-		},
-		Channel: t.Channels[0].Name,
-		Private: true,
-		Peers:   peers,
+		Image:   image,
+		SGXMode: "sim",
 	}
 
 	for _, o := range options {
 		o(cc)
 	}
 
-	t.AddChaincode(cc)
+	if t.ExtraParams == nil {
+		t.ExtraParams = map[string]any{}
+	}
+	t.ExtraParams[extraParamsKey] = append(Chaincodes(t), cc)
 
 	return cc
 }
 
 // AddFPC adds a Fabric Private Chaincode to t, installing on all registered organizations.
 // The endorsement policy is set to majority of the organizations on which the chaincode is installed.
-func AddFPC(t *topology.Topology, name, image string, options ...func(*topology.ChannelChaincode)) *topology.ChannelChaincode {
+func AddFPC(t *topology.Topology, name, image string, options ...func(*Chaincode)) *Chaincode {
 	return AddFPCAtOrgs(t, name, image, nil, options...)
 }
 
 // WithSGXMode sets the SGX mode (HW or SIM) for the chaincode.
-func WithSGXMode(mode string) func(*topology.ChannelChaincode) {
-	return func(cc *topology.ChannelChaincode) {
-		cc.PrivateChaincode.SGXMode = mode
+func WithSGXMode(mode string) func(*Chaincode) {
+	return func(cc *Chaincode) {
+		cc.SGXMode = mode
 	}
 }
 
 // WithSGXDevicesPaths sets the SGX device paths for hardware mode.
-func WithSGXDevicesPaths(paths []string) func(*topology.ChannelChaincode) {
-	return func(cc *topology.ChannelChaincode) {
-		cc.PrivateChaincode.SGXDevicesPaths = paths
+func WithSGXDevicesPaths(paths []string) func(*Chaincode) {
+	return func(cc *Chaincode) {
+		cc.SGXDevicesPaths = paths
 	}
 }
 
 // WithMREnclave sets the MRENCLAVE measurement as the chaincode version.
-func WithMREnclave(mrenclave string) func(*topology.ChannelChaincode) {
-	return func(cc *topology.ChannelChaincode) {
+func WithMREnclave(mrenclave string) func(*Chaincode) {
+	return func(cc *Chaincode) {
 		cc.Chaincode.Version = mrenclave
 	}
 }

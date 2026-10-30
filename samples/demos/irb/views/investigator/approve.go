@@ -41,11 +41,11 @@ func (c *ApprovalView) Call(context view.Context) (interface{}, error) {
 
 	if err := c.reviewAndApprove(context, msg.ExperimentID); err != nil {
 		msg := fmt.Sprintf("something went wrong, cannot approve, sorry! reason: %v", err)
-		_ = session.SendError([]byte(msg))
+		_ = session.SendError(context.Context(), []byte(msg))
 		return nil, errors.Wrap(err, msg)
 	}
 
-	if err := session.Send([]byte("great experimenter! approved!")); err != nil {
+	if err := session.Send(context.Context(), []byte("great experimenter! approved!")); err != nil {
 		return nil, errors.Wrap(err, "cannot send reply")
 	}
 

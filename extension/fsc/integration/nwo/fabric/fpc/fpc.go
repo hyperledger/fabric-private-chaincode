@@ -28,6 +28,7 @@ import (
 	"github.com/hyperledger-labs/fabric-smart-client/platform/common/services/logging"
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/lifecycle"
 	"github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/fpc/externalbuilders"
+	fpctopo "github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/topology"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 )
@@ -35,14 +36,8 @@ import (
 var logger = logging.MustGetLogger("integration.nwo.fabric.fpc")
 
 // hasFPCEnabled reports whether any FPC chaincode is registered on the topology.
-// Replaces the removed topology.Topology.FPC boolean field (dropped in FSC PR #696).
 func hasFPCEnabled(t *topology.Topology) bool {
-	for _, cc := range t.Chaincodes {
-		if cc.Private {
-			return true
-		}
-	}
-	return false
+	return len(fpctopo.Chaincodes(t)) > 0
 }
 
 type ChaincodeInput struct {
@@ -59,7 +54,7 @@ type Extension struct {
 	network *nnetwork.Network
 
 	ports   map[string][]uint16
-	FPCERCC *topology.ChannelChaincode
+	FPCERCC *fpctopo.Chaincode
 }
 
 func NewExtension(network *nnetwork.Network) *Extension {
@@ -82,11 +77,7 @@ func (n *Extension) CheckTopology() {
 	})
 
 	// Reserve ports for each private chaincode
-	for _, chaincode := range n.network.Topology().Chaincodes {
-		if !chaincode.Private {
-			continue
-		}
-
+	for _, chaincode := range fpctopo.Chaincodes(n.network.Topology()) {
 		if chaincode.Chaincode.Name == "ercc" {
 			n.FPCERCC = chaincode
 		}
@@ -101,10 +92,7 @@ func (n *Extension) CheckTopology() {
 }
 
 func (n *Extension) GenerateArtifacts() {
-	for _, chaincode := range n.network.Topology().Chaincodes {
-		if !chaincode.Private {
-			continue
-		}
+	for _, chaincode := range fpctopo.Chaincodes(n.network.Topology()) {
 		n.preparePackage(chaincode)
 	}
 }
@@ -119,14 +107,10 @@ func (n *Extension) PostRun(load bool) {
 	}
 
 	// deploy and run containers
-	if len(n.network.Topology().Chaincodes) != 0 {
-		for _, chaincode := range n.network.Topology().Chaincodes {
-			if chaincode.Private {
-				n.reservePorts(chaincode)
-				n.preparePackage(chaincode)
-				n.deployChaincode(chaincode)
-			}
-		}
+	for _, chaincode := range fpctopo.Chaincodes(n.network.Topology()) {
+		n.reservePorts(chaincode)
+		n.preparePackage(chaincode)
+		n.deployChaincode(chaincode)
 	}
 
 	// generate connection profiles
@@ -139,7 +123,7 @@ func (n *Extension) PostRun(load bool) {
 	time.Sleep(3 * time.Second)
 }
 
-func (n *Extension) deployChaincode(chaincode *topology.ChannelChaincode) {
+func (n *Extension) deployChaincode(chaincode *fpctopo.Chaincode) {
 	if !hasFPCEnabled(n.network.Topology()) {
 		return
 	}
@@ -186,7 +170,7 @@ func (n *Extension) packagePath(suffix string) string {
 	return filepath.Join(n.network.Context.RootDir(), n.network.Prefix, "fpc", suffix)
 }
 
-func (n *Extension) runDockerContainers(chaincode *topology.ChannelChaincode, packageIDs []string) {
+func (n *Extension) runDockerContainers(chaincode *fpctopo.Chaincode, packageIDs []string) {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	Expect(err).ToNot(HaveOccurred())
@@ -194,7 +178,7 @@ func (n *Extension) runDockerContainers(chaincode *topology.ChannelChaincode, pa
 	var mounts []mount.Mount
 	var devices []container.DeviceMapping
 
-	sgxMode := strings.ToUpper(chaincode.PrivateChaincode.SGXMode)
+	sgxMode := strings.ToUpper(chaincode.SGXMode)
 	err = validateSGXMode(sgxMode)
 	Expect(err).ToNot(HaveOccurred())
 
@@ -205,12 +189,12 @@ func (n *Extension) runDockerContainers(chaincode *topology.ChannelChaincode, pa
 			Target: "/var/run/aesmd",
 		})
 
-		err := validateSGXDevicesPaths(chaincode.PrivateChaincode.SGXDevicesPaths)
+		err := validateSGXDevicesPaths(chaincode.SGXDevicesPaths)
 		Expect(err).ToNot(HaveOccurred())
 
 		// add sgx devices to the container depending on the driver installed on the platform
 		// we may attach /dev/isgx, or /dev/sgx/enclave and /dev/sgx/provision
-		for _, devicePath := range chaincode.PrivateChaincode.SGXDevicesPaths {
+		for _, devicePath := range chaincode.SGXDevicesPaths {
 			devices = append(devices, container.DeviceMapping{
 				PathOnHost:        devicePath,
 				PathInContainer:   devicePath,
@@ -238,7 +222,7 @@ func (n *Extension) runDockerContainers(chaincode *topology.ChannelChaincode, pa
 			n.network.Organization(peer.Organization).Domain)
 
 		resp, err := cli.ContainerCreate(ctx, &container.Config{
-			Image: chaincode.PrivateChaincode.Image,
+			Image: chaincode.Image,
 			Tty:   false,
 			Env: []string{
 				"CHAINCODE_SERVER_ADDRESS=0.0.0.0:" + port,
@@ -319,7 +303,7 @@ func pathExists(path string) (bool, error) {
 	}
 }
 
-func (n *Extension) initEnclave(chaincode *topology.ChannelChaincode) {
+func (n *Extension) initEnclave(chaincode *fpctopo.Chaincode) {
 	orderer := n.network.Orderer("orderer")
 	peers := n.network.PeersByName(chaincode.Peers)
 	attestationParams := CreateSIMAttestationParams()
@@ -329,7 +313,7 @@ func (n *Extension) initEnclave(chaincode *topology.ChannelChaincode) {
 				n:         n,
 				peer:      peer,
 				orderer:   orderer,
-				chaincode: chaincode,
+				chaincode: &chaincode.ChannelChaincode,
 			}, nil
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -346,7 +330,7 @@ func (n *Extension) initEnclave(chaincode *topology.ChannelChaincode) {
 	}
 }
 
-func (n *Extension) preparePackage(chaincode *topology.ChannelChaincode) {
+func (n *Extension) preparePackage(chaincode *fpctopo.Chaincode) {
 	// Generate Enclave Registry CC package for each peer that will conn
 	Expect(os.MkdirAll(n.packagePath(chaincode.Chaincode.Name), 0770)).NotTo(HaveOccurred())
 
@@ -378,7 +362,7 @@ func (n *Extension) preparePackage(chaincode *topology.ChannelChaincode) {
 	}
 }
 
-func (n *Extension) reservePorts(chaincode *topology.ChannelChaincode) {
+func (n *Extension) reservePorts(chaincode *fpctopo.Chaincode) {
 	if ports, ok := n.ports[chaincode.Chaincode.Name]; ok && len(ports) != 0 {
 		return
 	}
