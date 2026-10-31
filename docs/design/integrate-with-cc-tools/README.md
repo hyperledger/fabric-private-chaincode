@@ -44,8 +44,8 @@ In developing the chaincode for the integration of FPC and cc-tools, there are s
    package stubwrapper
 
    import (
-       "github.com/hyperledger-labs/cc-tools/errors"
-       "github.com/hyperledger/fabric-chaincode-go/shim"
+       "github.com/hyperledger-labs/cc-tools/v2/errors"
+       "github.com/hyperledger/fabric-chaincode-go/v2/shim"
    )
 
    type StubWrapper struct {
@@ -76,8 +76,8 @@ In developing the chaincode for the integration of FPC and cc-tools, there are s
    package enclave_go
 
    import (
-       "github.com/hyperledger/fabric-chaincode-go/shim"
-       pb "github.com/hyperledger/fabric-protos-go/peer"
+       "github.com/hyperledger/fabric-chaincode-go/v2/shim"
+       pb "github.com/hyperledger/fabric-protos-go-apiv2/peer"
    )
 
    type FpcStubInterface struct {

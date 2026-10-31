@@ -47,18 +47,18 @@ package chaincode
 import (
 	"fmt"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
-	pb "github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
+	pb "github.com/hyperledger/fabric-protos-go-apiv2/peer"
 )
 
 type SimpleAsset struct {
 }
 
-func (t *SimpleAsset) Init(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *SimpleAsset) Init(stub shim.ChaincodeStubInterface) *pb.Response {
 	return shim.Success(nil)
 }
 
-func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) *pb.Response {
 	switch f, _ := stub.GetFunctionAndParameters(); f {
 	case "store":
 		return storeAsset(stub)
@@ -69,7 +69,7 @@ func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Error("unknown function")
 }
 
-func storeAsset(stub shim.ChaincodeStubInterface) pb.Response {
+func storeAsset(stub shim.ChaincodeStubInterface) *pb.Response {
 	_, args := stub.GetFunctionAndParameters()
 
 	if len(args) < 2 {
@@ -85,7 +85,7 @@ func storeAsset(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Success([]byte("OK"))
 }
 
-func retrieveAsset(stub shim.ChaincodeStubInterface) pb.Response {
+func retrieveAsset(stub shim.ChaincodeStubInterface) *pb.Response {
 	_, args := stub.GetFunctionAndParameters()
 
 	if len(args) < 1 {
@@ -100,7 +100,7 @@ func retrieveAsset(stub shim.ChaincodeStubInterface) pb.Response {
 	}
 
 	if len(value) == 0 {
-		shim.Success([]byte("NOT FOUND"))
+		return shim.Success([]byte("NOT FOUND"))
 	}
 
 	return shim.Success([]byte(fmt.Sprintf("%s:%s", assetName, value)))
@@ -118,7 +118,7 @@ So far the code presented here is not different from traditional Go Chaincode. A
 are handled by the FPC framework transparently.
 
 To complete the code, we need to add some logic to instantiate our private chaincode and start it.
-To do so, we use `fpc.NewPrivateChaincode(&chaincode.AssetExample{})`.
+To do so, we use `fpc.NewPrivateChaincode(&chaincode.SimpleAsset{})`.
 Add the following code to `$FPC_PATH/samples/chaincode/simple-asset-go/main.go`:
 ```go
 package main
@@ -126,7 +126,7 @@ package main
 import (
 	"os"
 
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
 	"github.com/hyperledger/fabric-private-chaincode/samples/chaincode/simple-asset-go/chaincode"
 )

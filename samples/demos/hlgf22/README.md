@@ -16,7 +16,7 @@ chaincode := fpc.NewPrivateChaincode(assetChaincode)
 
 Make sure you import:
 ```go
-"github.com/hyperledger/fabric-contract-api-go/contractapi"
+"github.com/hyperledger/fabric-contract-api-go/v2/contractapi"
 fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
 "github.com/hyperledger/fabric-samples/asset-transfer-basic/chaincode-go/chaincode"
 ```
