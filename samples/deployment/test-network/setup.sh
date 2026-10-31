@@ -96,9 +96,9 @@ fi
 mkdir -p "${BE_PATH}/connection-profile"
 
 # download configuration files
-wget -O "${BE_CONFIG}" https://raw.githubusercontent.com/hyperledger/blockchain-explorer/main/examples/net1/config.json
-wget -O "${BE_CONNECTIONS_PROFILE}" https://raw.githubusercontent.com/hyperledger/blockchain-explorer/main/examples/net1/connection-profile/test-network.json
-wget -O "${BE_DOCKER_COMPOSE}" https://raw.githubusercontent.com/hyperledger/blockchain-explorer/main/docker-compose.yaml
+wget -O "${BE_CONFIG}" https://raw.githubusercontent.com/hyperledger-labs/blockchain-explorer/v2.0.0/examples/net1/config.json
+wget -O "${BE_CONNECTIONS_PROFILE}" https://raw.githubusercontent.com/hyperledger-labs/blockchain-explorer/v2.0.0/examples/net1/connection-profile/test-network.json
+wget -O "${BE_DOCKER_COMPOSE}" https://raw.githubusercontent.com/hyperledger-labs/blockchain-explorer/v2.0.0/docker-compose.yaml
 
 yq '(. | .networks."mynetwork.com" ) |= . + {"external": true}' -i "${BE_DOCKER_COMPOSE}"
 
