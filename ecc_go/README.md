@@ -30,7 +30,7 @@ To use FPC, you simply need to wrap your chaincode with the FPC Go Library. Here
 package main
 
 import (
-	"github.com/hyperledger/fabric-chaincode-go/shim"
+	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
 	"github.com/your-project/project/chaincode"
 )
