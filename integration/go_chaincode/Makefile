@@ -3,7 +3,7 @@
 TOP = ../..
 include $(TOP)/build.mk
 
-GO_TEST_DIRS=echo auction kv_test
+GO_TEST_DIRS=echo auction kv_test simulation
 
 deps: ercc images
 

@@ -25,7 +25,7 @@ build clean clobber:
 # network and runs as a separate CI job; `make suites` lists them for the CI
 # matrix. `make test` runs everything, sequentially, as before.
 UNIT_TEST_DIRS = protos common internal ercc ecc_enclave ecc fabric client_sdk samples/application samples/chaincode utils
-SUITES = auction echo kv deployment client_sdk stress go_echo go_auction go_kv crash irb test_network
+SUITES = auction echo kv deployment client_sdk stress go_echo go_auction go_kv go_simulation crash irb test_network
 
 .PHONY: test unit-test suites $(addprefix suite-,$(SUITES))
 
@@ -35,6 +35,7 @@ test:
 
 unit-test:
 	$(foreach DIR, $(UNIT_TEST_DIRS), $(MAKE) -C $(DIR) test || exit;)
+	cd extension/fsc && $(GO) test ./...
 
 suites:
 	@echo $(SUITES)
@@ -62,6 +63,9 @@ suite-go_auction:
 suite-go_kv:
 	$(MAKE) -C integration/go_chaincode deps
 	$(MAKE) -C integration/go_chaincode/kv_test
+suite-go_simulation:
+	$(MAKE) -C integration/go_chaincode deps
+	$(MAKE) -C integration/go_chaincode/simulation
 suite-irb:
 	$(MAKE) -C samples/demos/irb build test
 suite-test_network:
