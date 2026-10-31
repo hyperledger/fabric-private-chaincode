@@ -1,3 +1,7 @@
+/*
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package chaincode
 
 import (
@@ -24,16 +28,16 @@ func TestWrongSignature(t *testing.T) {
 	falseSig := "falseSignature"
 	fakeSecret := "fakeSecret"
 	err = secretKeeper.AddUser(transactionContext, falseSig, falseSig)
-	require.EqualError(t, err, "User are not allowed to perform this action.")
+	require.EqualError(t, err, "user are not allowed to perform this action")
 
 	err = secretKeeper.RemoveUser(transactionContext, falseSig, falseSig)
-	require.EqualError(t, err, "User are not allowed to perform this action.")
+	require.EqualError(t, err, "user are not allowed to perform this action")
 
 	err = secretKeeper.LockSecret(transactionContext, falseSig, fakeSecret)
-	require.EqualError(t, err, "User are not allowed to perform this action.")
+	require.EqualError(t, err, "user are not allowed to perform this action")
 
 	secret, err := secretKeeper.RevealSecret(transactionContext, falseSig)
-	require.EqualError(t, err, "User are not allowed to perform this action.")
+	require.EqualError(t, err, "user are not allowed to perform this action")
 	require.Nil(t, secret)
 }
 
@@ -211,7 +215,7 @@ func TestNormalBehavior(t *testing.T) {
 	chaincodeStub.GetStateReturnsOnCall(8, authSetByte, nil)
 	chaincodeStub.GetStateReturnsOnCall(9, secretByte, nil)
 	secret, err = secretKeeper.RevealSecret(transactionContext, aliceSig)
-	require.EqualError(t, err, "User are not allowed to perform this action.")
+	require.EqualError(t, err, "user are not allowed to perform this action")
 	require.Nil(t, secret)
 }
 

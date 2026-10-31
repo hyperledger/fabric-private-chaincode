@@ -41,6 +41,9 @@ ecc_dependencies:
 	# hard to list explicitly, so just leave empty target,
 	# which forces ecc to always be built
 
+test:
+	$(GO) test $(GOTAGS) ./...
+
 env:
 	echo "export CC_ID=$(CC_ID)" > details.env
 	echo "export FPC_MRENCLAVE=$(shell cat mrenclave)" >> details.env
