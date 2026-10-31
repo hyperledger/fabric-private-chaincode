@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hyperledger-labs/cc-tools-demo/ccapi/common"
 	fpcChaincode "github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/chaincode"
+	"github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/common"
 )
 
 func QueryFpcDefault(c *gin.Context) {
