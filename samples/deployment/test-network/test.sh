@@ -6,6 +6,8 @@
 
 set -Eeuo pipefail
 
+. "$FPC_PATH/samples/deployment/test-network/wait_for.sh"
+
 # test settings
 CC_PATH="$FPC_PATH/samples/chaincode/echo-go"
 # this test runs echo-go without SGX; it uses its own chaincode id, image names
@@ -25,6 +27,29 @@ function cleanup() {
   echo "########################################"
 
   make -C "$FPC_PATH/samples/deployment/test-network" clean
+}
+
+# peer CLI environment for Org1's peer, used by fpcclient and to poll the network
+function org1_cli_env() {
+  local test_network="$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network"
+  local org1="$test_network/organizations/peerOrganizations/org1.example.com"
+
+  export PATH="$FPC_PATH/samples/deployment/test-network/fabric-samples/bin:$PATH"
+  export FABRIC_CFG_PATH="$FPC_PATH/samples/deployment/test-network/fabric-samples/config"
+  export CC_ID=$CC_ID
+  export CHANNEL_NAME=$CHANNEL_NAME
+  export CORE_PEER_ADDRESS=localhost:7051
+  export CORE_PEER_ID=peer0.org1.example.com
+  export CORE_PEER_ORG_NAME=org1
+  export CORE_PEER_LOCALMSPID=Org1MSP
+  export CORE_PEER_MSPCONFIGPATH="$org1/users/Admin@org1.example.com/msp"
+  export CORE_PEER_TLS_CERT_FILE="$org1/peers/peer0.org1.example.com/tls/server.crt"
+  export CORE_PEER_TLS_ENABLED="true"
+  export CORE_PEER_TLS_KEY_FILE="$org1/peers/peer0.org1.example.com/tls/server.key"
+  export CORE_PEER_TLS_ROOTCERT_FILE="$org1/peers/peer0.org1.example.com/tls/ca.crt"
+  export ORDERER_CA="$test_network/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"
+  export GATEWAY_CONFIG="$org1/connection-org1.yaml"
+  export SGX_CREDENTIALS_PATH="$FPC_PATH/config/ias"
 }
 
 function test_network_setup() {
@@ -83,9 +108,11 @@ function test_deploy() {
 
   # The peers start launching a chaincode as soon as its definition is committed, i.e., before the
   # chaincode containers above are running. Such a launch only fails once the CCaaS dial timeout (10s)
-  # expires, and invocations arriving in the meantime fail with it. We wait for these stale launch
-  # attempts to expire, so that the first invocation launches the chaincode anew.
-  sleep 10
+  # expires, and invocations arriving in the meantime fail with it. We wait until a read-only query
+  # to ercc succeeds, i.e., until the peer has launched the chaincode anew.
+  org1_cli_env
+  wait_for 60 "ercc to answer queries" \
+    peer chaincode query -C "$CHANNEL_NAME" -n ercc -c "{\"Args\":[\"queryListEnclaveCredentials\",\"$CC_ID\"]}"
 
   echo "########################################"
   echo "Update connection details ..."
@@ -115,20 +142,7 @@ function test_simple_cli() {
   cd "$FPC_PATH/samples/application/simple-cli-go"
   make
 
-  export CC_ID=$CC_ID
-  export CHANNEL_NAME=$CHANNEL_NAME
-  export CORE_PEER_ADDRESS=localhost:7051
-  export CORE_PEER_ID=peer0.org1.example.com
-  export CORE_PEER_ORG_NAME=org1
-  export CORE_PEER_LOCALMSPID=Org1MSP
-  export CORE_PEER_MSPCONFIGPATH="$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp"
-  export CORE_PEER_TLS_CERT_FILE="$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt"
-  export CORE_PEER_TLS_ENABLED="true"
-  export CORE_PEER_TLS_KEY_FILE="$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.key"
-  export CORE_PEER_TLS_ROOTCERT_FILE="$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt"
-  export ORDERER_CA="$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem"
-  export GATEWAY_CONFIG="$FPC_PATH/samples/deployment/test-network/fabric-samples/test-network/organizations/peerOrganizations/org1.example.com/connection-org1.yaml"
-  export SGX_CREDENTIALS_PATH="$FPC_PATH/config/ias"
+  org1_cli_env
 
   # note that we skip the init here as this is done in test_simple_go already
   #./fpcclient init $CORE_PEER_ID
@@ -145,9 +159,12 @@ function test_blockchain_explorer() {
    cd "$FPC_PATH/samples/deployment/test-network/blockchain-explorer"
    docker compose up -d
 
-   #curl http://localhost:8080/
+   local explorer_ok=0
+   wait_for 120 "blockchain explorer on :${EXPLORER_PORT:-8080}" \
+     curl -fsS "http://localhost:${EXPLORER_PORT:-8080}/" || explorer_ok=$?
 
    docker compose down -v
+   return "$explorer_ok"
 }
 
 function test_shutdown() {
