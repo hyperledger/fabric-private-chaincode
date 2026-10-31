@@ -17,6 +17,11 @@ EGO_CONFIG_FILE ?= $(FPC_PATH)/ecc_go/enclave.json
 ECC_MAIN_FILES ?= main.go
 ECC_BINARY ?= ecc
 ECC_BUNDLE ?= $(ECC_BINARY)-bundle
+# WITH_GO_OUT lets a caller build the plain go (non-SGX) bundle into its own
+# directory, so it never overwrites the ego bundle and mrenclave in the sample
+WITH_GO_OUT ?= .
+# docker build context: where the bundle to package lives
+DOCKER_CONTEXT ?= .
 
 build: ecc docker env
 
@@ -29,8 +34,9 @@ ecc: ecc_dependencies
 
 .PHONY: with_go
 with_go: ecc_dependencies
-	$(GO) build $(GOTAGS) -o $(ECC_BUNDLE) $(ECC_MAIN_FILES)
-	echo "fake_mrenclave" > mrenclave
+	mkdir -p $(WITH_GO_OUT)
+	$(GO) build $(GOTAGS) -o $(WITH_GO_OUT)/$(ECC_BUNDLE) $(ECC_MAIN_FILES)
+	echo "fake_mrenclave" > $(WITH_GO_OUT)/mrenclave
 
 ecc_dependencies:
 	# hard to list explicitly, so just leave empty target,
@@ -64,7 +70,7 @@ docker:
 		$(shell if [ "${SGX_MODE}" = "SIM" ]; then echo "--build-arg OE_SIMULATION=1"; fi) \
 		-t $(DOCKER_IMAGE):$(FPC_VERSION) \
 		-f $(DOCKER_FILE) \
-		. \
+		$(DOCKER_CONTEXT) \
 	&& $(DOCKER) tag $(DOCKER_IMAGE):$(FPC_VERSION) $(DOCKER_IMAGE):latest
 
 clean:

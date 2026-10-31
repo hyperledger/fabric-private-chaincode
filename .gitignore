@@ -5,6 +5,8 @@ make.log
 cscope.*
 *~
 **/_build/*
+# non-SGX builds of tests that must not overwrite the SGX ones
+**/_nosgx/
 # generate protos
 common/protos
 internal/protos

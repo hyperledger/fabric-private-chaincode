@@ -8,7 +8,11 @@ set -Eeuo pipefail
 
 # test settings
 CC_PATH="$FPC_PATH/samples/chaincode/echo-go"
-CC_ID=echo-go
+# this test runs echo-go without SGX; it uses its own chaincode id, image names
+# and build directory so it never overwrites the SGX builds other tests use
+CC_ID=echo-go-nosgx
+NOSGX_OUT="$FPC_PATH/samples/deployment/test-network/_nosgx"
+export ERCC_IMAGE=fpc/ercc-nosgx
 CHANNEL_NAME=mychannel
 
 trap cleanup SIGINT SIGTERM ERR EXIT
@@ -51,13 +55,13 @@ function test_deploy() {
   export ERCC_GOTAGS=
 
   # build ercc
-  GOOS=linux make -C "$FPC_PATH/ercc" build docker
+  GOOS=linux ERCC_OUT="$NOSGX_OUT/ercc" DOCKER_IMAGE="$ERCC_IMAGE" make -C "$FPC_PATH/ercc" build docker
 
   # build fpc chaincode
-  GOOS=linux CC_NAME=$CC_ID make -C "$CC_PATH" with_go docker
+  GOOS=linux CC_NAME=$CC_ID WITH_GO_OUT="$NOSGX_OUT/ecc" DOCKER_CONTEXT="$NOSGX_OUT/ecc" make -C "$CC_PATH" with_go docker
 
   local ccver
-  ccver=$(cat "$CC_PATH/mrenclave")
+  ccver=$(cat "$NOSGX_OUT/ecc/mrenclave")
 
   export CC_VER=$ccver
 
