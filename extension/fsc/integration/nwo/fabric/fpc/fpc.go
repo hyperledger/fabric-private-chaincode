@@ -11,16 +11,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/netip"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/mount"
-	"github.com/docker/docker/client"
-	"github.com/docker/go-connections/nat"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/fabricconfig"
 	nnetwork "github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/network"
 	"github.com/hyperledger-labs/fabric-smart-client/integration/nwo/fabric/packager"
@@ -29,6 +26,10 @@ import (
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/lifecycle"
 	"github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/fpc/externalbuilders"
 	fpctopo "github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/topology"
+	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/api/types/mount"
+	"github.com/moby/moby/api/types/network"
+	"github.com/moby/moby/client"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 )
@@ -221,41 +222,47 @@ func (n *Extension) runDockerContainers(chaincode *fpctopo.Chaincode, packageIDs
 			chaincode.Chaincode.Name, peer.Name,
 			n.network.Organization(peer.Organization).Domain)
 
-		resp, err := cli.ContainerCreate(ctx, &container.Config{
-			Image: chaincode.Image,
-			Tty:   false,
-			Env: []string{
-				"CHAINCODE_SERVER_ADDRESS=0.0.0.0:" + port,
-				"CHAINCODE_PKG_ID=" + packageIDs[i],
-				"FABRIC_LOGGING_SPEC=debug",
-				fmt.Sprintf("SGX_MODE=%s", sgxMode),
+		containerPort, err := network.ParsePort(port + "/tcp")
+		Expect(err).ToNot(HaveOccurred())
+
+		resp, err := cli.ContainerCreate(ctx, client.ContainerCreateOptions{
+			Name: containerName,
+			Config: &container.Config{
+				Image: chaincode.Image,
+				Tty:   false,
+				Env: []string{
+					"CHAINCODE_SERVER_ADDRESS=0.0.0.0:" + port,
+					"CHAINCODE_PKG_ID=" + packageIDs[i],
+					"FABRIC_LOGGING_SPEC=debug",
+					fmt.Sprintf("SGX_MODE=%s", sgxMode),
+				},
+				ExposedPorts: network.PortSet{
+					containerPort: struct{}{},
+				},
 			},
-			ExposedPorts: nat.PortSet{
-				nat.Port(port + "/tcp"): struct{}{},
-			},
-		}, &container.HostConfig{
-			Mounts: mounts,
-			Resources: container.Resources{
-				Devices: devices,
-			},
-			PortBindings: nat.PortMap{
-				nat.Port(port + "/tcp"): []nat.PortBinding{
-					{
-						HostIP:   "127.0.0.1",
-						HostPort: port,
+			HostConfig: &container.HostConfig{
+				Mounts: mounts,
+				Resources: container.Resources{
+					Devices: devices,
+				},
+				PortBindings: network.PortMap{
+					containerPort: []network.PortBinding{
+						{
+							HostIP:   netip.MustParseAddr("127.0.0.1"),
+							HostPort: port,
+						},
 					},
 				},
 			},
-		},
-			nil, nil, containerName,
-		)
+		})
 		Expect(err).ToNot(HaveOccurred())
-		Expect(cli.ContainerStart(ctx, resp.ID, container.StartOptions{})).ToNot(HaveOccurred())
+		_, err = cli.ContainerStart(ctx, resp.ID, client.ContainerStartOptions{})
+		Expect(err).ToNot(HaveOccurred())
 		time.Sleep(3 * time.Second)
 
 		dockerLogger := logging.MustGetLogger("fpc.container." + containerName)
 		go func() {
-			reader, err := cli.ContainerLogs(context.Background(), resp.ID, container.LogsOptions{
+			reader, err := cli.ContainerLogs(context.Background(), resp.ID, client.ContainerLogsOptions{
 				ShowStdout: true,
 				ShowStderr: true,
 				Follow:     true,
