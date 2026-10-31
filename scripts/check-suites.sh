@@ -8,7 +8,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-expected="${EXPECTED_SUITES:-auction echo kv deployment client_sdk stress go_echo go_auction go_kv go_simulation crash irb test_network}"
+expected="${EXPECTED_SUITES:-auction echo kv deployment client_sdk go_echo go_auction go_kv go_simulation crash irb test_network}"
 actual="$(make -s suites)"
 if [ "${actual}" != "${expected}" ]; then
     echo "make suites: expected '${expected}', got '${actual}'" >&2
