@@ -81,6 +81,9 @@ DOCKER_BUILD_CMD ?= build
 # allows to mount host gomodcache into the container
 GOMODCACHE_PATH ?=
 DOCKER_GOMODCACHE=/project/pkg/mod
+# allows to mount a host go build cache into the container
+GOCACHE_PATH ?=
+DOCKER_GOCACHE=/project/.cache/go-build
 
 # Docker run options
 # ------------------
@@ -89,6 +92,10 @@ DOCKER_DEV_RUN_OPTS += --rm
 # - mount local gomodcache from the host
 ifneq ($(GOMODCACHE_PATH),)
 	DOCKER_DEV_RUN_OPTS += -v "$(GOMODCACHE_PATH)":"$(DOCKER_GOMODCACHE)"
+endif
+# - mount local go build cache from the host
+ifneq ($(GOCACHE_PATH),)
+	DOCKER_DEV_RUN_OPTS += -v "$(GOCACHE_PATH)":"$(DOCKER_GOCACHE)" --env GOCACHE=$(DOCKER_GOCACHE)
 endif
 # - import docker daemon socket (so dev container can run docker)
 DOCKER_DEV_RUN_OPTS += -v "$(DOCKER_DAEMON_SOCKET)":"$(DOCKER_SOCKET)"
