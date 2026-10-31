@@ -4,14 +4,12 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hyperledger-labs/cc-tools-demo/ccapi/common"
-	"github.com/hyperledger-labs/cc-tools-demo/ccapi/routes"
-	fpcCommon "github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/common"
+	"github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/common"
+	"github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/routes"
 )
 
 func defaultServer(r *gin.Engine) *http.Server {
@@ -24,12 +22,7 @@ func defaultServer(r *gin.Engine) *http.Server {
 // Serve starts the server with gin's default engine.
 // Server gracefully shut's down
 func Serve(r *gin.Engine, ctx context.Context) {
-	// Defer close sdk to clear cache and free memory
-	defer common.CloseSDK()
-
-	if os.Getenv("FPC_ENABLED") == "true" {
-		fpcCommon.InitFpcConfig()
-	}
+	common.InitFpcConfig()
 
 	// Register routes and handlers
 	routes.AddRoutesToEngine(r)

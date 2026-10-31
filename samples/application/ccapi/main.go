@@ -2,15 +2,12 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 	"os/signal"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/hyperledger-labs/cc-tools-demo/ccapi/chaincode"
 	fpcServer "github.com/hyperledger/fabric-private-chaincode/samples/application/ccapi/server"
-	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 )
 
 func main() {
@@ -28,16 +25,6 @@ func main() {
 		AllowCredentials: true,
 	}))
 	go fpcServer.Serve(r, ctx)
-	// Events are not integrated with FPC
-	if os.Getenv("FPC_ENABLED") != "true" {
-
-		// Register to chaincode events
-		go chaincode.WaitForEvent(os.Getenv("CHANNEL"), os.Getenv("CCNAME"), "eventName", func(ccEvent *fab.CCEvent) {
-			log.Println("Received CC event: ", ccEvent)
-		})
-
-		chaincode.RegisterForEvents()
-	}
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)

@@ -14,16 +14,8 @@ services:
       options:
         max-size: 50m  
     environment:
-      - SDK_PATH=./config/configsdk-org1.yaml
-      - USER=Admin
-      - ORG=org1
-      - DOMAIN=example.com
       - CHANNEL=mychannel
       - CCNAME=cc-tools-demo
-      - FABRIC_GATEWAY_ENDPOINT=peer0.org1.example.com:7051
-      - FABRIC_GATEWAY_NAME=peer0.org1.example.com
-      - GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn
-      - FPC_ENABLED=true
       - SGX_MODE=SIM
       - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
       - CORE_PEER_ID=peer0.org1.example.com
@@ -54,16 +46,8 @@ services:
       options:
         max-size: 50m  
     environment:
-      - SDK_PATH=./config/configsdk-org2.yaml
-      - USER=Admin
-      - ORG=org2
-      - DOMAIN=example.com
       - CHANNEL=mychannel
       - CCNAME=cc-tools-demo
-      - FABRIC_GATEWAY_ENDPOINT=peer0.org2.example.com:9051
-      - FABRIC_GATEWAY_NAME=peer0.org2.example.com
-      - GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn
-      - FPC_MODE=true
       - SGX_MODE=SIM
       - CORE_PEER_ADDRESS=peer0.org2.example.com:9051
       - CORE_PEER_ID=peer0.org2.example.com
