@@ -138,7 +138,8 @@ build: ccenv
 
 build-dev: base-dev
 
-run-dev: dev
+# DOCKER_DEV_SKIP_BUILD: use an existing dev image (e.g. loaded in CI) as is
+run-dev: $(if $(DOCKER_DEV_SKIP_BUILD),,dev)
 	# Cleanup existing but non-running (note absence of --force in rm!) old dev containers
 	dev_container_id=$$(docker ps -a | grep ${DOCKER_DEV_CONTAINER_NAME} | awk '{ print $$1 }'); \
 	   [ -z  "$${dev_container_id}" ] || ${DOCKER} rm "$${dev_container_id}"

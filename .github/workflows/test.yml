@@ -2,37 +2,45 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
+# One build job compiles everything inside the dev container once. Each test
+# suite then runs as its own job on its own runner, using the build outputs and
+# images of the build job. The suites come from `make suites`; `all-tests` is
+# the single check to require.
+
 name: FPC test
 on:
-  workflow_dispatch: 
+  workflow_dispatch:
   push:
-    paths-ignore: 
+    paths-ignore:
       - '**.md'
-      - '.github/workflows/**'
   pull_request:
-     paths-ignore: 
-       - '**.md'
-       - '.github/workflows/**'
+    paths-ignore:
+      - '**.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
-  packages: write
 
 env:
   DOCKER_REGISTRY: 'ghcr.io'
-  PUSH_TO_MAIN: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+  DOCKER_QUIET_BUILD: 1
+  DOCKER_DEV_CI_MODE: 1
+  DOCKER_BUILD_OPTS: '--build-arg UBUNTU_VERSION=22.04 --build-arg UBUNTU_NAME=jammy'
+  # images the test jobs and the publish job need from the build job
+  FPC_IMAGES: >-
+    hyperledger/fabric-private-chaincode-dev:main
+    hyperledger/fabric-private-chaincode-ccenv:main
+    hyperledger/fabric-private-chaincode-base-dev:main
 
 jobs:
-  docker:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-22.04
-            os-version: 22.04
-            os-name: jammy
-
+  build:
+    runs-on: ubuntu-22.04
+    outputs:
+      docker: ${{ steps.filter.outputs.docker }}
+      tests: ${{ steps.tests.outputs.tests }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -40,51 +48,111 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
-      
+          cache-dependency-path: '**/go.sum'
+
       - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
             docker:
               - 'utils/docker/**'
-      - name: build dev image
+      - name: build base images
         if: steps.filter.outputs.docker == 'true'
-        env:
-          DOCKER_QUIET_BUILD: 1
-        run: |
-          DOCKER_BUILD_OPTS="--build-arg UBUNTU_VERSION=${{ matrix.os-version }} --build-arg UBUNTU_NAME=${{ matrix.os-name }}" \
-          make -C utils/docker build build-dev
-
-      - name: fetch dev image
+        run: make -C utils/docker build build-dev
+      - name: fetch base images
         if: steps.filter.outputs.docker == 'false'
-        env:
-          DOCKER_QUIET_BUILD: 1
-        run: |
-          DOCKER_BUILD_OPTS="--build-arg UBUNTU_VERSION=${{ matrix.os-version }} --build-arg UBUNTU_NAME=${{ matrix.os-name }}" \
-          make -C utils/docker pull pull-dev
+        run: make -C utils/docker pull pull-dev
+      - name: build dev image
+        run: make -C utils/docker dev
 
-      - name: run make inside dev container
-        env:
-          DOCKER_DEV_CI_MODE: 1
-          DOCKER_QUIET_BUILD: 1
+      - name: build
         run: |
-          DOCKER_BUILD_OPTS="--build-arg UBUNTU_VERSION=${{ matrix.os-version }} --build-arg UBUNTU_NAME=${{ matrix.os-name }}" \
-          GOMODCACHE_PATH=$(go env GOMODCACHE) \
-          make -C utils/docker run-dev DOCKER_DEV_OPTIONAL_CMD='env IS_CI_RUNNING=true \
-                                                                make all'
+          mkdir -p "$HOME/.cache/go-build"
+          make -C utils/docker run-dev DOCKER_DEV_SKIP_BUILD=1 \
+            GOMODCACHE_PATH="$(go env GOMODCACHE)" GOCACHE_PATH="$HOME/.cache/go-build" \
+            DOCKER_DEV_OPTIONAL_CMD='env IS_CI_RUNNING=true make build'
 
-      #
-      # continue only if we push to main and rebuild docker images
-      #
-      - name: Login to the ${{ env.DOCKER_REGISTRY }} Container Registry
-        if: env.PUSH_TO_MAIN == 'true' && steps.filter.outputs.docker == 'true'
-        uses: docker/login-action@v4
+      # Everything the build produced is untracked; pack it as a tar so that
+      # symlinks and executable bits survive the artifact upload.
+      - name: pack build outputs and images
+        run: |
+          git ls-files --others -z | tar --null -T - --zstd -cf build.tar.zst
+          # shellcheck disable=SC2086
+          docker save $FPC_IMAGES | zstd -T0 -q -o images.tar.zst
+          ls -lh build.tar.zst images.tar.zst
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: |
+            build.tar.zst
+            images.tar.zst
+          retention-days: 1
+
+      - name: list tests
+        id: tests
+        run: echo "tests=$(make -s suites | jq -Rc 'split(" ") | ["unit"] + .')" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: build
+    runs-on: ubuntu-22.04
+    name: test (${{ matrix.test }})
+    strategy:
+      fail-fast: false
+      matrix:
+        test: ${{ fromJSON(needs.build.outputs.tests) }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: 'recursive'
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: 'go.mod'
+          cache-dependency-path: '**/go.sum'
+      - uses: actions/download-artifact@v4
+        with:
+          name: build
+      - name: unpack build outputs and images
+        run: |
+          tar --zstd -xf build.tar.zst
+          zstd -dc images.tar.zst | docker load
+          rm build.tar.zst images.tar.zst
+
+      - name: test
+        run: |
+          if [ "${{ matrix.test }}" = unit ]; then target='unit-test checks'; else target='suite-${{ matrix.test }}'; fi
+          mkdir -p "$HOME/.cache/go-build"
+          make -C utils/docker run-dev DOCKER_DEV_SKIP_BUILD=1 \
+            GOMODCACHE_PATH="$(go env GOMODCACHE)" GOCACHE_PATH="$HOME/.cache/go-build" \
+            DOCKER_DEV_OPTIONAL_CMD="env IS_CI_RUNNING=true make $target"
+
+  all-tests:
+    needs: test
+    if: always()
+    runs-on: ubuntu-22.04
+    steps:
+      # needs.test.result is 'skipped' if the build failed, 'failure' if any
+      # test failed; only 'success' means every test ran and passed
+      - name: check that every test passed
+        run: '[ "${{ needs.test.result }}" = success ]'
+
+  # Publish the base images only on push to main, only if they were rebuilt,
+  # and only after every test passed.
+  publish:
+    needs: [build, all-tests]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.build.outputs.docker == 'true'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v4
+        with:
+          name: build
+      - run: zstd -dc images.tar.zst | docker load
+      - uses: docker/login-action@v4
         with:
           registry: ${{ env.DOCKER_REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: publish images
-        if: env.PUSH_TO_MAIN == 'true' && steps.filter.outputs.docker == 'true'
-        run: |
-          make -C utils/docker publish
+      - run: make -C utils/docker publish
