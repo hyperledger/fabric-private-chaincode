@@ -23,7 +23,7 @@ services:
 
   ercc.peer0.org1.example.com:
     container_name: peer0org1_ercc_ccaas
-    image: fpc/ercc:${FPC_VERSION}
+    image: ${ERCC_IMAGE:-fpc/ercc}:${FPC_VERSION}
     environment:
       - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
       - CHAINCODE_PKG_ID=${ORG1_ERCC_PKG_ID}
@@ -51,7 +51,7 @@ services:
 
   ercc.peer0.org2.example.com:
     container_name: peer0org2_ercc_ccaas
-    image: fpc/ercc:${FPC_VERSION}
+    image: ${ERCC_IMAGE:-fpc/ercc}:${FPC_VERSION}
     environment:
       - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
       - CHAINCODE_PKG_ID=${ORG2_ERCC_PKG_ID}

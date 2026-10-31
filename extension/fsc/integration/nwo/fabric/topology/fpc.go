@@ -8,6 +8,7 @@ package topology
 
 import (
 	"fmt"
+	"os"
 	"slices"
 	"strconv"
 
@@ -43,7 +44,17 @@ func EnableFPC(t *topology.Topology) {
 			return
 		}
 	}
-	AddFPCAtOrgs(t, "ercc", "fpc/ercc", nil)
+	AddFPCAtOrgs(t, "ercc", ErccImage(), nil)
+}
+
+// ErccImage returns the docker image of ERCC: FPC_ERCC_IMAGE if set, fpc/ercc otherwise.
+// Tests that build a differently configured ERCC (e.g. without SGX) set FPC_ERCC_IMAGE
+// so they do not overwrite the default image.
+func ErccImage() string {
+	if image := os.Getenv("FPC_ERCC_IMAGE"); image != "" {
+		return image
+	}
+	return "fpc/ercc"
 }
 
 // AddFPCAtOrgs adds a Fabric Private Chaincode to t, installing only on the listed orgs.

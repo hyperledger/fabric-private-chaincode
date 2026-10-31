@@ -33,3 +33,21 @@ func TestAddFPCReplacesChaincodeWithSameName(t *testing.T) {
 		t.Fatalf("got image %q, want img2", img)
 	}
 }
+
+func TestErccImage(t *testing.T) {
+	t.Setenv("FPC_ERCC_IMAGE", "")
+	if img := ErccImage(); img != "fpc/ercc" {
+		t.Fatalf("got %q, want fpc/ercc", img)
+	}
+
+	t.Setenv("FPC_ERCC_IMAGE", "fpc/ercc-nosgx")
+	top := &topology.Topology{
+		Consortiums: []*topology.Consortium{{Organizations: []string{"Org1"}}},
+		Channels:    []*topology.Channel{{Name: "testchannel"}},
+		Peers:       []*topology.Peer{{Name: "peer0", Organization: "Org1"}},
+	}
+	EnableFPC(top)
+	if img := Chaincodes(top)[0].Image; img != "fpc/ercc-nosgx" {
+		t.Fatalf("got ercc image %q, want fpc/ercc-nosgx", img)
+	}
+}

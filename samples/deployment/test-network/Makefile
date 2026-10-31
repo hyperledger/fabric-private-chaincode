@@ -30,7 +30,7 @@ ercc-ecc-stop:
 clean:
 	docker compose down -v
 	./fabric-samples/test-network/network.sh down || true
-	rm -rf blockchain-explorer fabric-samples .env
+	rm -rf blockchain-explorer fabric-samples .env _nosgx
 	docker system prune --force
 	docker network prune --force
 	docker volume prune --force
