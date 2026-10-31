@@ -13,7 +13,9 @@ FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
-TEST_NAME=TestGoClientSDK
+# the client SDK test and the stress test share one ledger; they use
+# different chaincodes (auction_test/echo_test and kv-test)
+TEST_NAME="TestGoClientSDK and TestStress"
 CHAINCODES=(auction_test echo_test)
 CC_PATH=${FPC_PATH}/samples/chaincode/auction/_build/lib/
 CC_LANG=fpc-c
@@ -23,10 +25,13 @@ CC_EP="OR('SampleOrg.member')" # note that we use .member as NodeOUs is disabled
 
 run_test() {
     # call sdk test
-    try cd client_sdk/go
-    try go test -v -run ${TEST_NAME}
+    try cd "${SCRIPTDIR}/client_sdk/go"
+    try go test -v -run TestGoClientSDK
+    rm -rf keystore wallet
 
-    # cleanup
+    # call stress test
+    try cd "${SCRIPTDIR}/client_sdk/go/stress_test"
+    try go test -v .
     rm -rf keystore wallet
 }
 
