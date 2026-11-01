@@ -23,6 +23,11 @@ $(FABS_FETCHED):
 	&& curl -sSL https://bit.ly/2ysbOFE | bash -s -- $(FABRIC_VERSION) $(FABRIC_CA_VERSION) -s \
 	&& touch .fetched
 
+# pulls (and tags) only the Fabric docker images that `fetch` pulls along with
+# the binaries; for a machine that has the binaries but not the images
+images:
+	curl -sSL https://bit.ly/2ysbOFE | bash -s -- $(FABRIC_VERSION) $(FABRIC_CA_VERSION) -s -b
+
 
 # this target applies all fabric patches in the patches folder;
 # these patches are not required for FPC but may be helpful for 

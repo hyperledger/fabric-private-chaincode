@@ -124,6 +124,9 @@ jobs:
           zstd -dc build.tar.zst | tar -xf -
           zstd -dc images.tar.zst | docker load
           rm build.tar.zst images.tar.zst
+          # the Fabric images (peer, orderer, ccenv, baseos, ca) that `make build`
+          # pulled in the build job; pulling is faster than shipping them
+          make -C fabric images
 
       - name: test
         run: |
