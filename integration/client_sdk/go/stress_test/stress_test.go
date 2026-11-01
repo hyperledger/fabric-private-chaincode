@@ -1,3 +1,5 @@
+//go:build fpc_network
+
 /*
 Copyright IBM Corp. All Rights Reserved.
 Copyright 2020 Intel Corporation

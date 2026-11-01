@@ -1,3 +1,9 @@
+//go:build fpc_network
+
+/*
+SPDX-License-Identifier: Apache-2.0
+*/
+
 package test_test
 
 import (

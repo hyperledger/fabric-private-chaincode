@@ -23,22 +23,16 @@ func TestGoClientSDK(t *testing.T) {
 }
 
 var (
-	fpcPath   string
 	ccId      string
 	ccPath    string
 	mrenclave string
 )
 
-var _ = BeforeSuite(func() {
-	fpcPath = os.Getenv("FPC_PATH")
-	if fpcPath == "" {
-		panic("FPC_PATH not set")
-	}
-})
-
 var _ = Describe("Go Client SDK Test", func() {
 	BeforeEach(func() {
-		ccPath = filepath.Join(fpcPath, "samples", "chaincode", "auction", "_build", "lib")
+		// a minimal FPC C chaincode build output: the packager only reads the
+		// mrenclave and enclave.signed.so files
+		ccPath = filepath.Join("testdata", "lib")
 		var err error
 		mrenclave, err = ccpackager.ReadMrenclave(ccPath)
 		Expect(err).ShouldNot(HaveOccurred())
