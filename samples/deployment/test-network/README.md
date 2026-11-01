@@ -7,6 +7,22 @@ This guide works also with the FPC Dev docker container.
 
 ## Prepare FPC Containers
 
+### Without SGX (e.g. on a Mac)
+
+With only Go and Docker, build the chaincode and the FPC Enclave Registry as plain Go images on `ubuntu:22.04`; you don't need the `fabric-private-chaincode-ccenv` image. Without SGX, FPC gives no confidentiality; use this for development only.
+
+```bash
+export CC_ID=echo-go
+export CC_NAME=echo-go
+make -C $FPC_PATH/samples/chaincode/echo-go docker
+export CC_VER=$(cat $FPC_PATH/samples/chaincode/echo-go/mrenclave)
+make -C $FPC_PATH/ercc docker
+```
+
+Then continue with [Prepare the Test Network](#prepare-the-test-network). On a Mac, use a recent bash (`brew install bash`) for the scripts.
+
+### With SGX (dev container)
+
 FPC requires a special docker container to execute a FPC chaincode, similar to Fabric's `ccenv` container image but with additional support for Intel SGX.  
 You can pull the FPC chaincode environment image (`fabric-private-chaincode-ccenv`) from our Github repository or build them manually as follows:
 
@@ -19,8 +35,7 @@ make -C $FPC_PATH/utils/docker build
 ```
 
 Next, we package the FPC chaincode as a docker image which are deployed on the test-network using the chaincode as a service method.
-Please refer to the section on how to play with FPC in non-SGX environments of the main [README](../../../README.md#fpc-playground-for-non-sgx-environments) and change the following commands accordingly.
-The following snippet builds the `echo-go` FPC chaincode. 
+The following snippet builds the `echo-go` FPC chaincode, inside the dev container (`FPC_CGO=1`). 
 Note that we export `CC_ID`, `CC_NAME`, and `CC_VER` variables, which we will need.
 
 ```bash

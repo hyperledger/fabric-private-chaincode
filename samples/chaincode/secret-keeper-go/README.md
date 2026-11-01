@@ -16,6 +16,19 @@ Secret Keeper provides the following functionalities:
 
 - **RemoveUser**: Allows authorized users to remove an existing user from the authorization list, revoking their access.
 
+## Run without SGX
+
+The sample has two mains: `cmd/naive` (the default) stores each key as is, `cmd/skvs` stores all state as one encrypted key (`fpc.WithSKVS()`). With only Go and Docker (also on a Mac):
+```bash
+make             # compile cmd/naive with plain go
+make docker      # build the fpc/secret-keeper-go image
+# or, for cmd/skvs:
+make docker ECC_MAIN_FILES=cmd/skvs/main.go
+```
+Then deploy it as described in [samples/deployment/test-network](../../deployment/test-network/README.md#without-sgx-eg-on-a-mac), with `CC_ID=secret-keeper-go` and `CC_NAME=secret-keeper-go`, or with [the-simple-testing-network](../../deployment/fabric-smart-client/the-simple-testing-network) as below.
+
+Without SGX, FPC gives no confidentiality; the chaincode says so in its log at startup. Use this for development only. FPC-go's attestation is always simulated today.
+
 ## Example Usage
 
 To demonstrate Secret Keeper's capabilities, you can deploy the chaincode to [the-simple-testing-network](https://github.com/hyperledger/fabric-private-chaincode/tree/main/samples/deployment/fabric-smart-client/the-simple-testing-network) and then invoke it with the [simple-cli-go](https://github.com/hyperledger/fabric-private-chaincode/tree/main/samples/application/simple-cli-go).

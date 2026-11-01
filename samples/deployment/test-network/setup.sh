@@ -63,10 +63,13 @@ echo "set FABRIC_SAMPLES_HOST = ${FABRIC_SAMPLES_HOST}"
 echo "set TEST_NETWORK_HOST = ${TEST_NETWORK_HOST}"
 echo "Resolving relative docker volume paths"
 
+# (sed -E -i.bak works with both GNU and BSD/macOS sed; `sed -i -E` makes BSD
+# sed take -E as the backup suffix)
 # replace "../" with absolute path
-find "${TEST_NETWORK}/compose" -maxdepth 1 \( -name '*compose*.yaml' -o -name '*compose*.yml' \) -exec sed -i -E 's+(- )(\.\.)(/)+\1'"${TEST_NETWORK_HOST}"'\3+g' {} \;
+find "${TEST_NETWORK}/compose" -maxdepth 1 \( -name '*compose*.yaml' -o -name '*compose*.yml' \) -exec sed -E -i.bak 's+(- )(\.\.)(/)+\1'"${TEST_NETWORK_HOST}"'\3+g' {} \;
 # replace "./" with absolute path
-find "${TEST_NETWORK}/compose" -mindepth 2 -maxdepth 2 \( -name '*compose*.yaml' -o -name '*compose*.yml' \) -exec sed -i -E 's+(- )(\.)(/)+\1'"${TEST_NETWORK_HOST}/compose"'\3+g' {} \;
+find "${TEST_NETWORK}/compose" -mindepth 2 -maxdepth 2 \( -name '*compose*.yaml' -o -name '*compose*.yml' \) -exec sed -E -i.bak 's+(- )(\.)(/)+\1'"${TEST_NETWORK_HOST}/compose"'\3+g' {} \;
+find "${TEST_NETWORK}/compose" -name '*compose*.y*ml.bak' -delete
 
 
 ##############################################################################################
