@@ -169,7 +169,9 @@ Please make sure that in the file above the variable `TOP` points to the FPC roo
 In `$FPC_PATH/samples/chaincode/simple-asset-go` directory, to build the chaincode and package it as docker image, execute:
 ```bash
 make
+make docker
 ```
+Inside the dev container (`FPC_CGO=1`), `make` alone builds the chaincode with ego and packages it into an SGX image. With only Go and Docker (also on a Mac), `make` compiles it with plain go and `make docker` packages it; without SGX there is no confidentiality, so use that for development only.
 
 After building, you can check that the `fpc/simple-asset-go` image exists in your local docker registry using:
 ```bash
@@ -186,7 +188,7 @@ To invoke the chaincode, we will use the `simple-cli` application in [`$FPC_PATH
 ### Enclave Registry
 
 To run any FPC chaincode we need to prepare the docker images for the FPC Enclave Registry (ERCC).
-In case you have not yet created them, run `make -C $FPC_PATH/ercc build docker`.
+In case you have not yet created them, run `make -C $FPC_PATH/ercc docker`.
 
 ### Prepare the test network
 
