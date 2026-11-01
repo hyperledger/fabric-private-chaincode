@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# SPDX-License-Identifier: Apache-2.0
+
 if [[ -z "${FPC_PATH}" ]]; then
   echo "Error: FPC_PATH not set"; exit 1
 fi
@@ -36,7 +38,7 @@ run_test() {
 
     export CC_ID
     export CHAN_ID
-    try go test -v ./test
+    try go test -tags fpc_network -v ./test
 }
 
 trap ledger_shutdown EXIT
