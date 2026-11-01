@@ -1,27 +1,25 @@
 # FPC Playground for non-SGX environments
 
-Here we explain how you can tinker with FPC even without Intel SGX hardware. That is, you can write your first FPC Chaincode compile it, and run it on almost any machine.
+Here we explain how you can tinker with FPC even without Intel SGX hardware. That is, you can write your first FPC Chaincode, compile it, and run it on almost any machine, including a Mac with Apple Silicon. You need Go (the version in `go.mod`) and Docker.
 
-In your `config.override.mk` set the following to variables:
-```Makefile
-FPC_CCENV_IMAGE=ubuntu:22.04
-ERCC_GOTAGS=
-```
-This configuration sets a standard Ubuntu image as alternative to our `fabric-private-chaincode-ccenv` image and overrides the default build tags we use to build `ercc`.
+Without SGX, FPC-go runs as plain Go and gives no confidentiality. Use it for development only.
 
-Next you can build `ercc` using the following command:
+This is the default: without `FPC_CGO=1`, the build uses plain Go instead of ego and a standard `ubuntu:22.04` base image instead of the SGX-based `fabric-private-chaincode-ccenv`, and ercc builds without the PDO crypto.
+
+Build `ercc` and its image:
 ```bash
-GOOS=linux make -C $FPC_PATH/ercc build docker
+make -C $FPC_PATH/ercc docker
 ```
 
-For building a chaincode, for instance `$FPC_PATH/samples/chaincode/kv-test-go`, just run: 
+For building a chaincode, for instance `$FPC_PATH/samples/chaincode/kv-test-go`, run:
 ```bash
-GOOS=linux make -C $FPC_PATH/samples/chaincode/kv-test-go with_go docker
+make -C $FPC_PATH/samples/chaincode/kv-test-go
+make -C $FPC_PATH/samples/chaincode/kv-test-go docker
 ```
+The first command compiles the chaincode for your machine. `docker` compiles it again for Linux and packages it, so the image also works when you build on a Mac.
 
 You can test your FPC chaincode easily with one of the [sample deployments](../samples/deployment) tutorials.
 We recommend to start with [the-simple-testing-network](../samples/deployment/fabric-smart-client/the-simple-testing-network).
 
 Notes:
 - On Mac use a recent version of bash (`brew install bash`).
-- TODO more to come
