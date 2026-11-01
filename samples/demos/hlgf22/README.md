@@ -25,15 +25,18 @@ fpc "github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode"
 ### Build chaincode
 
 In order to build the chaincode, we will use the tools provided by FPC.
-Note that you can use the FPC docker-based development environment.
+You can do this with only Go and Docker (also on a Mac), or in the FPC docker-based development environment for SGX.
 
 Set `CC_NAME ?= basic-asset-transfer` inside the `Makefile`.
 
 ```bash
 make
-docker images | grep fpc-basic
+make docker
+make env
+docker images | grep basic-asset-transfer
 cat details.env
 ```
+Inside the dev container (`FPC_CGO=1`), `make` alone builds with ego, packages the SGX image and writes `details.env`. Without SGX there is no confidentiality; use that for development only.
 
 ### Start a Fabric network
 
