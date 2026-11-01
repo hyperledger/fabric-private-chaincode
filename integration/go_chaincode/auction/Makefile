@@ -13,7 +13,7 @@ test:
 	FABRIC_LOGGING_SPEC=fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info go test -v -failfast .
 
 build:
-	make -C $(CHAINCODE_PATH)
+	make -C $(CHAINCODE_PATH) $(if $(filter 1,$(FPC_CGO)),,docker)
 	cp $(CHAINCODE_PATH)/mrenclave .
 
 clean:

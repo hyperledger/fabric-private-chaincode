@@ -7,12 +7,13 @@ TOP = .
 include $(TOP)/build.mk
 
 # The Go side builds anywhere Go runs. The C side (C/C++ code, enclaves, the
-# ecc binary, the Fabric binaries the integration suites use) needs the SGX
-# toolchain and is built only with FPC_CGO=1, which the dev container sets.
+# ecc binary, the shell integration suites) needs the SGX toolchain and is
+# built only with FPC_CGO=1, which the dev container sets.
 ifeq ($(FPC_CGO),1)
 SUB_DIRS = protos common internal ercc ecc_enclave ecc fabric client_sdk samples utils integration # docs
 else
-SUB_DIRS = internal ercc client_sdk samples utils
+# fabric fetches the Fabric release binaries the FSC test networks run on
+SUB_DIRS = internal ercc fabric client_sdk samples utils
 endif
 
 FPC_SDK_DEP_DIRS = protos common utils/fabric ecc_enclave ecc

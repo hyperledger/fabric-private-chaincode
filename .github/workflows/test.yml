@@ -137,15 +137,40 @@ jobs:
             GOMODCACHE_PATH="$(go env GOMODCACHE)" GOCACHE_PATH="$HOME/.cache/go-build" \
             DOCKER_DEV_OPTIONAL_CMD="env IS_CI_RUNNING=true make $target"
 
+  # The Go side with only Go and Docker, as a developer without the SGX
+  # toolchain has it (e.g. on a Mac): no dev container, no FPC_CGO.
+  native:
+    runs-on: ubuntu-latest
+    name: native (${{ matrix.test }})
+    strategy:
+      fail-fast: false
+      matrix:
+        test: [unit, go_echo, go_auction, go_kv, go_simulation]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: 'recursive'
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: 'go.mod'
+          cache-dependency-path: '**/go.sum'
+      - name: test
+        run: |
+          if [ "${{ matrix.test }}" = unit ]; then
+            go build ./... && go vet ./... && go test ./... && make build test checks
+          else
+            make build suite-${{ matrix.test }}
+          fi
+
   all-tests:
-    needs: test
+    needs: [test, native]
     if: always()
     runs-on: ubuntu-22.04
     steps:
-      # needs.test.result is 'skipped' if the build failed, 'failure' if any
-      # test failed; only 'success' means every test ran and passed
+      # a result is 'skipped' if the build failed, 'failure' if any test
+      # failed; only 'success' means every test ran and passed
       - name: check that every test passed
-        run: '[ "${{ needs.test.result }}" = success ]'
+        run: '[ "${{ needs.test.result }}" = success ] && [ "${{ needs.native.result }}" = success ]'
 
   # Publish the base images only on push to main, only if they were rebuilt,
   # and only after every test passed.

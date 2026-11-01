@@ -27,7 +27,14 @@ ECC_BUNDLE ?= $(ECC_BINARY)-bundle
 # `docker` packages the bundle found there
 WITH_GO_OUT ?= .
 
+# With FPC_CGO=1 (dev container) the chaincode is built with ego, for SGX.
+# Without it, `build` compiles it with plain go (no SGX, no confidentiality)
+# and builds no image; `docker` builds a linux image of it on request.
+ifeq ($(FPC_CGO),1)
 build: ecc docker env
+else
+build: with_go
+endif
 
 ecc: ecc_dependencies
 	ego-go build $(GOTAGS) -o $(ECC_BINARY) $(ECC_MAIN_FILES)
@@ -73,6 +80,10 @@ DOCKER_BUILD_OPTS += --build-arg SGX_MODE=$(SGX_MODE)
 DOCKER_BUILD_OPTS += --build-arg CAAS_PORT=$(CAAS_PORT)
 
 docker:
+ifneq ($(FPC_CGO),1)
+	# the image runs linux: (re)build the plain go bundle for it, statically
+	GOOS=linux CGO_ENABLED=0 $(MAKE) with_go
+endif
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
 		$(shell if [ "${SGX_MODE}" = "SIM" ]; then echo "--build-arg OE_SIMULATION=1"; fi) \
 		-t $(DOCKER_IMAGE):$(FPC_VERSION) \
