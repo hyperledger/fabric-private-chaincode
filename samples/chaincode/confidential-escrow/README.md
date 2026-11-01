@@ -51,6 +51,17 @@ confidential-escrow/
 3. **Condition Verification**: SHA-256 hash of `(secret + parcelId)` ensures only authorized parties can release funds
 4. **Confidential Execution**: FPC ensures transaction details remain private within SGX enclaves
 
+## Run without SGX
+
+With only Go and Docker (also on a Mac), build the chaincode and its image:
+```bash
+make -C $FPC_PATH/samples/chaincode/confidential-escrow             # compile with plain go
+make -C $FPC_PATH/samples/chaincode/confidential-escrow docker      # build the fpc/confidential-escrow image
+```
+and deploy it on the Fabric test network as described in [samples/deployment/test-network](../../deployment/test-network/README.md#without-sgx-eg-on-a-mac), with `CC_ID=confidential-escrow` and `CC_NAME=confidential-escrow`. The interactive `multi_user_dashboard.sh` below runs inside the dev container.
+
+Without SGX, FPC gives no confidentiality; the chaincode says so in its log at startup. Use this for development only. FPC-go's attestation is always simulated today.
+
 ## Running Procedure
 
 ### Prerequisites
