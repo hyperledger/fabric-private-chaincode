@@ -46,7 +46,7 @@ ecc: ecc_dependencies
 .PHONY: with_go
 with_go: ecc_dependencies
 	mkdir -p $(WITH_GO_OUT)
-	$(GO) build $(GOTAGS) -o $(WITH_GO_OUT)/$(ECC_BUNDLE) $(ECC_MAIN_FILES)
+	$(GO) build $(GOTAGS) -ldflags "-X github.com/hyperledger/fabric-private-chaincode/ecc_go/chaincode.noSGX=true" -o $(WITH_GO_OUT)/$(ECC_BUNDLE) $(ECC_MAIN_FILES)
 	echo "fake_mrenclave" > $(WITH_GO_OUT)/mrenclave
 
 ecc_dependencies:
