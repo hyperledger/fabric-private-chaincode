@@ -20,7 +20,12 @@ ECC_ENCLAVE_BUILD = ../ecc_enclave/_build
 ERR_MSG = "ecc_enclave build does not exist!"
 DOCKER_ENCLAVE_SO_PATH ?= $(ENCLAVE_SO_PATH)
 
-build: ecc sym-links
+build: hw-check ecc sym-links
+
+hw-check:
+ifeq ($(SGX_MODE)$(FPC_CGO),HW)
+	@echo "SGX_MODE=HW requires FPC_CGO=1 (hardware mode is only supported inside the dev container)" >&2; exit 1
+endif
 
 ecc_enclave: sym-links
 	@if [ ! -d $(ECC_ENCLAVE_BUILD)/lib ]; then echo $(ERR_MSG); exit 1; fi
@@ -30,7 +35,12 @@ sym-links:
 	ln -sfn ../../../ecc_enclave/_build/lib chaincode/enclave/ecc-enclave-lib
 	ln -sfn ../../../ecc_enclave/_build/include chaincode/enclave/ecc-enclave-include
 
+# the ecc binary is what C chaincode runs with (the external builder copies it
+# into the chaincode); without fpc_cgo it would contain the mock enclave
 ecc: ecc_dependencies
+ifneq ($(FPC_CGO),1)
+	@echo "ecc: building the ecc binary needs the C enclave; run with FPC_CGO=1 (e.g. make in-container)" >&2; exit 1
+endif
 	$(GO) build $(GOTAGS) -o ecc main.go
 
 ecc_dependencies:

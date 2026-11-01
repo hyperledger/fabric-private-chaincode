@@ -6,7 +6,14 @@
 TOP = .
 include $(TOP)/build.mk
 
+# The Go side builds anywhere Go runs. The C side (C/C++ code, enclaves, the
+# ecc binary, the Fabric binaries the integration suites use) needs the SGX
+# toolchain and is built only with FPC_CGO=1, which the dev container sets.
+ifeq ($(FPC_CGO),1)
 SUB_DIRS = protos common internal ercc ecc_enclave ecc fabric client_sdk samples utils integration # docs
+else
+SUB_DIRS = internal ercc client_sdk samples utils
+endif
 
 FPC_SDK_DEP_DIRS = protos common utils/fabric ecc_enclave ecc
 FPC_PEER_DEP_DIRS = protos common ercc fabric ecc_enclave ecc
@@ -24,8 +31,14 @@ build clean clobber:
 # Tests are split into unit tests and suites. Each suite starts its own
 # network and runs as a separate CI job; `make suites` lists them for the CI
 # matrix. `make test` runs everything, sequentially, as before.
+ifeq ($(FPC_CGO),1)
 UNIT_TEST_DIRS = protos common internal ercc ecc_enclave ecc fabric client_sdk samples/application samples/chaincode utils
 SUITES = auction echo kv deployment client_sdk go_echo go_auction go_kv go_simulation crash irb test_network
+else
+# the ecc unit tests use the mock enclave, so they run without the C side
+UNIT_TEST_DIRS = internal ercc ecc client_sdk samples/application samples/chaincode utils
+SUITES =
+endif
 
 .PHONY: test unit-test suites $(addprefix suite-,$(SUITES))
 
@@ -78,8 +91,10 @@ license:
 linter: gotools
 	@echo "LINT: Running code checks for Go files..."
 	@./scripts/golinter.sh ${FPC_PATH}
+ifeq ($(FPC_CGO),1)
 	@echo "LINT: Running code checks for Cpp/header files..."
 	@./scripts/cpplinter.sh ${FPC_PATH}
+endif
 	@echo "LINT completed."
 
 gotools:
@@ -108,3 +123,8 @@ fpc-peer-cli: godeps
 
 docker:
 	$(MAKE) -C utils/docker
+
+# runs a make target (default: all) in the dev container, which has the SGX
+# toolchain and sets FPC_CGO=1, e.g. `make in-container TARGET=suite-echo`
+in-container:
+	$(MAKE) -C utils/docker run-dev DOCKER_DEV_OPTIONAL_CMD='make $(or $(TARGET),all)'

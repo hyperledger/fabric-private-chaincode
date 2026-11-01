@@ -75,6 +75,8 @@ RUN GO_TAR=go${GO_VERSION}.linux-amd64.tar.gz \
   && rm ${GO_TAR} \
   && mkdir -p /project
 ENV PATH=${GOPATH}/bin:${GOROOT}/bin:${PATH}
+# images built from base-dev have the SGX toolchain, so they build FPC's C side
+ENV FPC_CGO=1
 
 #  Go tools we need
 RUN go install golang.org/x/tools/cmd/goimports@latest \
