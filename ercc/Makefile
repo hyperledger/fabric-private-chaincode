@@ -38,7 +38,11 @@ generate:
 
 DOCKER_IMAGE?=fpc/ercc
 
-docker: ercc
+# the image runs linux: without the C side (e.g. on a Mac), build ercc for it
+docker: $(if $(filter 1,$(FPC_CGO)),ercc)
+ifneq ($(FPC_CGO),1)
+	GOOS=linux CGO_ENABLED=0 $(MAKE) ercc
+endif
 	$(DOCKER) build $(DOCKER_BUILD_OPTS) \
 		--build-arg FPC_CCENV_IMAGE=$(FPC_CCENV_IMAGE) \
 		-t $(DOCKER_IMAGE):$(FPC_VERSION) \

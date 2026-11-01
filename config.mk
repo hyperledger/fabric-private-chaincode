@@ -69,7 +69,13 @@ export FABRIC_VERSION ?= 3.1.4
 export FABRIC_CA_VERSION ?= 1.5.12
 
 export FPC_VERSION := main
+# base image of the chaincode and ercc images: the SGX runtime when building
+# the C side, otherwise plain (multi-arch) ubuntu, e.g. for a Mac
+ifeq ($(FPC_CGO),1)
 export FPC_CCENV_IMAGE ?= hyperledger/fabric-private-chaincode-ccenv:$(FPC_VERSION)
+else
+export FPC_CCENV_IMAGE ?= ubuntu:22.04
+endif
 
 export FABRIC_PATH ?= ${GOPATH}/src/github.com/hyperledger/fabric
 
