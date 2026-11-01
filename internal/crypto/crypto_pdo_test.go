@@ -1,5 +1,4 @@
-//go:build WITH_PDO_CRYPTO
-// +build WITH_PDO_CRYPTO
+//go:build fpc_cgo
 
 /*
 Copyright IBM Corp. All Rights Reserved.

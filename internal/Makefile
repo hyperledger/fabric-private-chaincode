@@ -5,8 +5,7 @@
 TOP = ..
 include $(TOP)/build.mk
 
-# this is needed to run the crypto compatibility test for the go-crypto impl
-GOTAGS += -tags WITH_PDO_CRYPTO
-
+# with FPC_CGO=1 (fpc_cgo), the tests also cover the PDO crypto and its
+# compatibility with the go crypto implementation
 test:
 	$(GO) test $(GOTAGS) $(GOTESTFLAGS) ./...

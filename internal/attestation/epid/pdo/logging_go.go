@@ -1,5 +1,4 @@
-//go:build WITH_PDO_CRYPTO
-// +build WITH_PDO_CRYPTO
+//go:build fpc_cgo
 
 /*
    Copyright 2019 Intel Corporation

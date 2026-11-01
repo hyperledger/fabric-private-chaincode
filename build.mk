@@ -11,9 +11,15 @@ include $(TOP)/config.mk
 DOCKER := $(DOCKER_CMD) $(DOCKERFLAGS)
 DOCKER_COMPOSE := $(DOCKER_CMD) compose
 
-ifeq (${SGX_MODE}, HW)
-	GOTAGS = -tags sgx_hw_mode
-endif
+# Go build tags. Makefiles add tags with `GO_TAG_LIST += <tag>`; GOTAGS passes
+# them as one comma-separated -tags flag, since go honours only the last -tags.
+# fpc_cgo: the C side (cgo against FPC's C code) is built, see FPC_CGO.
+GO_TAG_LIST += $(if $(filter 1,$(FPC_CGO)),fpc_cgo)
+GO_TAG_LIST += $(if $(filter HW,$(SGX_MODE)),sgx_hw_mode)
+comma := ,
+empty :=
+space := $(empty) $(empty)
+GOTAGS = $(if $(strip $(GO_TAG_LIST)),-tags $(subst $(space),$(comma),$(strip $(GO_TAG_LIST))))
 GO := $(GO_CMD) $(GOFLAGS)
 
 GOTESTFLAGS := -v -race -covermode=atomic -coverprofile=coverage.out

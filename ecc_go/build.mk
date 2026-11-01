@@ -6,6 +6,11 @@
 #TOP = ../
 include $(TOP)/build.mk
 
+# FPC-go chaincode never links FPC's C code: with ego it runs in its own enclave
+# and uses the Go crypto, so drop fpc_cgo (ego would pull the PDO crypto, and
+# with it OpenSSL, into the enclave, which then fails to load)
+GO_TAG_LIST := $(filter-out fpc_cgo,$(GO_TAG_LIST))
+
 CAAS_PORT ?= 9999
 
 # the following are the required docker build parameters

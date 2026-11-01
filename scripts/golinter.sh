@@ -62,7 +62,8 @@ if [ -n "$OUTPUT" ]; then
 fi
 
 echo "Checking with go vet"
-GOTAGS=WITH_PDO_CRYPTO
+# with FPC_CGO=1 also vet the C side (cgo enclave, PDO crypto)
+GOTAGS="$([ "${FPC_CGO:-}" = 1 ] && echo fpc_cgo || true)"
 PRINTFUNCS="Debug,Debugf,Print,Printf,Info,Infof,Warning,Warningf,Error,Errorf,Critical,Criticalf,Sprint,Sprintf,Log,Logf,Panic,Panicf,Fatal,Fatalf,Notice,Noticef,Wrap,Wrapf,WithMessage"
 OUTPUT="$(go vet -all -tags "$GOTAGS" -printfuncs "$PRINTFUNCS" $1/...)"
 if [ -n "$OUTPUT" ]; then

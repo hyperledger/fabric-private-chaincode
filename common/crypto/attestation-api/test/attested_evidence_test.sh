@@ -75,7 +75,7 @@ function orchestrate_with_go_verification()
     echo ${EVIDENCE} > ${EVIDENCE_FILE}
 
     #verify evidence
-    go run -tags WITH_PDO_CRYPTO ${FPC_PATH}/common/crypto/attestation-api/test/verify_evidence_app_go/main.go
+    go run -tags fpc_cgo ${FPC_PATH}/common/crypto/attestation-api/test/verify_evidence_app_go/main.go
 }
 
 #######################################

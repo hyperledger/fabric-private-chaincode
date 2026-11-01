@@ -87,7 +87,7 @@ function test_deploy() {
 
   export CC_ID=$CC_ID
   export FPC_CCENV_IMAGE=ubuntu:22.04
-  export ERCC_GOTAGS=
+  export FPC_CGO=
 
   # build ercc
   CGO_ENABLED=0 GOOS=linux ERCC_OUT="$NOSGX_OUT/ercc" DOCKER_IMAGE="$ERCC_IMAGE" make -C "$FPC_PATH/ercc" build docker

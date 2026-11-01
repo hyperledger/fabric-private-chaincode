@@ -6,8 +6,6 @@
 TOP = ..
 include $(TOP)/build.mk
 
-GOTAGS += -tags WITH_PDO_CRYPTO
-
 CC_NAME ?= ecc
 NET_ID ?=dev
 PEER_ID ?=jdoe
@@ -39,9 +37,11 @@ ecc_dependencies:
 	# hard to list explicitly, so just leave empty target,
 	# which forces ecc to always be built
 
-test: build
-	# note that we run unit test with a mock enclave
-	$(GO) test $(GOTAGS) -tags mock_ecc $(GOTESTFLAGS) ./...
+# unit tests always run with the mock enclave, i.e., without fpc_cgo; they
+# don't need the ecc binary, so `test` doesn't depend on `build`
+ECC_TEST_TAG_LIST = $(filter-out fpc_cgo,$(GO_TAG_LIST))
+test:
+	$(GO) test $(if $(strip $(ECC_TEST_TAG_LIST)),-tags $(subst $(space),$(comma),$(strip $(ECC_TEST_TAG_LIST)))) $(GOTESTFLAGS) ./...
 
 # Note:
 # - docker images are not necessarily rebuild if they exist but are outdated.
