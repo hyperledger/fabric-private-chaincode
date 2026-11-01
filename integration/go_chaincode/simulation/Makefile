@@ -15,6 +15,8 @@ ERCC_IMAGE=fpc/ercc-nosgx
 
 BUILD_OPT += FPC_CCENV_IMAGE=ubuntu:20.04
 BUILD_OPT += GOOS=linux
+# static binaries: the dev container's glibc is newer than ubuntu:20.04's
+BUILD_OPT += CGO_ENABLED=0
 BUILD_OPT += ERCC_GOTAGS=
 
 all: build test clean

@@ -55,10 +55,10 @@ function test_deploy() {
   export ERCC_GOTAGS=
 
   # build ercc
-  GOOS=linux ERCC_OUT="$NOSGX_OUT/ercc" DOCKER_IMAGE="$ERCC_IMAGE" make -C "$FPC_PATH/ercc" build docker
+  CGO_ENABLED=0 GOOS=linux ERCC_OUT="$NOSGX_OUT/ercc" DOCKER_IMAGE="$ERCC_IMAGE" make -C "$FPC_PATH/ercc" build docker
 
   # build fpc chaincode
-  GOOS=linux CC_NAME=$CC_ID WITH_GO_OUT="$NOSGX_OUT/ecc" DOCKER_CONTEXT="$NOSGX_OUT/ecc" make -C "$CC_PATH" with_go docker
+  CGO_ENABLED=0 GOOS=linux CC_NAME=$CC_ID WITH_GO_OUT="$NOSGX_OUT/ecc" DOCKER_CONTEXT="$NOSGX_OUT/ecc" make -C "$CC_PATH" with_go docker
 
   local ccver
   ccver=$(cat "$NOSGX_OUT/ecc/mrenclave")
