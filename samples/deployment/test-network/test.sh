@@ -52,6 +52,16 @@ function org1_cli_env() {
   export SGX_CREDENTIALS_PATH="$FPC_PATH/config/ias"
 }
 
+# An FPC chaincode rejects a plain query with "invalid invocation"; getting that
+# error back proves the chaincode was launched and answers.
+function ecc_answers() {
+  # peer exits non-zero on that error, so capture its output instead of piping
+  # it (with pipefail, a pipe would report failure even when grep matches)
+  local out
+  out="$(peer chaincode query -C "$CHANNEL_NAME" -n "$CC_ID" -c '{"Args":["ping"]}' 2>&1 || true)"
+  grep -q "invalid invocation" <<<"$out"
+}
+
 function test_network_setup() {
   echo "########################################"
   echo "Run setup"
@@ -108,11 +118,12 @@ function test_deploy() {
 
   # The peers start launching a chaincode as soon as its definition is committed, i.e., before the
   # chaincode containers above are running. Such a launch only fails once the CCaaS dial timeout (10s)
-  # expires, and invocations arriving in the meantime fail with it. We wait until a read-only query
-  # to ercc succeeds, i.e., until the peer has launched the chaincode anew.
+  # expires, and invocations arriving in the meantime fail with it. We wait until both chaincodes
+  # answer a read-only query, i.e., until the peer has launched each of them anew.
   org1_cli_env
   wait_for 60 "ercc to answer queries" \
     peer chaincode query -C "$CHANNEL_NAME" -n ercc -c "{\"Args\":[\"queryListEnclaveCredentials\",\"$CC_ID\"]}"
+  wait_for 60 "$CC_ID to answer queries" ecc_answers
 
   echo "########################################"
   echo "Update connection details ..."
@@ -163,6 +174,10 @@ function test_blockchain_explorer() {
    wait_for 120 "blockchain explorer on :${EXPLORER_PORT:-8080}" \
      curl -fsS "http://localhost:${EXPLORER_PORT:-8080}/" || explorer_ok=$?
 
+   if [ "$explorer_ok" -ne 0 ]; then
+     docker compose ps
+     docker compose logs --tail=100
+   fi
    docker compose down -v
    return "$explorer_ok"
 }
