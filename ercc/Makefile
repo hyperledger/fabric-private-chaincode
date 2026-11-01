@@ -6,9 +6,6 @@
 TOP = ..
 include $(TOP)/build.mk
 
-ERCC_GOTAGS ?= -tags WITH_PDO_CRYPTO
-GOTAGS += $(ERCC_GOTAGS)
-
 # ERCC_OUT lets a caller build a differently configured ercc (e.g. without
 # PDO crypto) into its own directory, without overwriting ./ercc
 ERCC_OUT ?= .

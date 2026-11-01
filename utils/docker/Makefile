@@ -115,6 +115,8 @@ ifneq ($(SGX_DEVICE_PATH),)
 endif
 # - pass host sgx mode
 DOCKER_DEV_RUN_OPTS += --env SGX_MODE=$(SGX_MODE)
+# - the dev container has the SGX toolchain, so it builds the C side
+DOCKER_DEV_RUN_OPTS += --env FPC_CGO=1
 
 ifeq (${DOCKER_DEV_CI_MODE},)
 DOCKER_DEV_RUN_OPTS += -i

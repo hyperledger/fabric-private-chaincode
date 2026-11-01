@@ -1,3 +1,5 @@
+//go:build fpc_cgo
+
 /*
 Copyright IBM Corp. All Rights Reserved.
 

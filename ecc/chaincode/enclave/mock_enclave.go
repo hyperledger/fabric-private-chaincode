@@ -1,5 +1,4 @@
-//go:build mock_ecc
-// +build mock_ecc
+//go:build !fpc_cgo
 
 /*
 Copyright IBM Corp. All Rights Reserved.

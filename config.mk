@@ -37,6 +37,9 @@ DOCKER_CMD := docker
 # SGX related settings
 #--------------------------------------------------
 # (Note: vars are exported as env variables as we also need them in various scripts)
+# FPC_CGO=1 builds the C/C++ side (enclaves, PDO crypto, C++ chaincode), which
+# needs the SGX toolchain; the dev container sets it. Empty means pure Go.
+export FPC_CGO ?=
 # alternatives for SGX_MODE: SIM or HW
 export SGX_MODE ?= SIM
 export SGX_BUILD ?= DEBUG
