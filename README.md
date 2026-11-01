@@ -168,12 +168,21 @@ As an alternative to the Docker-based FPC development environment you can instal
 Once you have your development environment up and running (i.e., using our docker-based setup or install all dependencies on your machine) you can build FPC and start developing your own FPC application.
 Note by default we build FPC with SGX simulation mode. For SGX hardware-mode support please also read the [Intel SGX Attestation Support](#intel-sgx-attestation-support) Section below. 
 
-To build all required FPC components and run the integration tests run the following:
+FPC has two sides. The Go side (ercc, the ecc wrapper, FPC-go, the client SDK, the Go samples) builds with only Go and Docker, on Linux or a Mac. The C side (the C/C++ enclave, C++ chaincode, PDO crypto) needs the Intel SGX SDK and runs in the [dev container](docs/setup-option1.md).
+
+By default, `make` builds and tests the Go side:
 ```bash
 cd $FPC_PATH
-make docker
 make
- ```
+```
+
+To build and test everything, including the C side and the integration tests, set `FPC_CGO=1`. The dev container sets it for you. From the host, `make in-container` runs a target there (`all` by default, or e.g. `make in-container TARGET=suite-echo`):
+```bash
+make docker
+make in-container
+```
+
+Without SGX, FPC-go runs as plain Go and gives no confidentiality. Use it for development only.
 
 Besides the default target, there are also following make targets:
 - `build`: build all FPC build artifacts
@@ -182,6 +191,8 @@ Besides the default target, there are also following make targets:
 - `clean`: remove most build artifacts (but no docker images)
 - `clobber`: remove all build artifacts including built docker images
 - `checks`: do license and linting checks on source
+- `unit-test`, `suite-<name>`, `suites`: run the unit tests, run one integration suite, list the suites
+- `in-container`: run a target in the dev container (`TARGET=...`, default `all`)
 
 Also note that the file `config.mk` contains various defaults which
 can all be redefined in an optional file `config.override.mk`.
@@ -202,13 +213,8 @@ FPC leverages Intel SGX as the Confidential Computing technology to guard Fabric
 Even though the Intel SGX SDK supports a simulation mode, where you can run applications in a simulated enclave, it still requires an x86-based platform to run and compile the enclave code.
 Another limitation comes from the fact that the Intel SGX SDK is only available for Linux and Windows.
 
-To overcome these limitations and allow developers to toy around with the FPC API, we provide two ways to getting started with FPC.
-
-1) Using the [Docker-based FPC Development Environment](#setup-your-development-environment) (works well on x86-based platforms on Linux and Mac).
-2) FPC builds without SGX SDK dependencies (targets x86/arm-based platforms on Linux and Mac).
-
-We now elaborate on how to build the FPC components without the SGX SDK [here](docs/playground-nonsgx.md).
-Note that this is indented for developing purpose only and does not provide any protection at all.
+FPC-go therefore also builds without the SGX SDK, which is the default (see [Build Fabric Private Chaincode](#build-fabric-private-chaincode)). It works on x86 and Arm, on Linux and Mac. [docs/playground-nonsgx.md](docs/playground-nonsgx.md) explains how to build and run an FPC-go chaincode this way.
+This is meant for development only and gives no protection at all.
 
 ### Troubleshooting
 

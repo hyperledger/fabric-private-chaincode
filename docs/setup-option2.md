@@ -2,6 +2,8 @@
 
 In this document we explain how to setup your FPC development environment by installing all required software components on your machine. We refer to this setup as `Option 2`. An alternative setup with docker you can find in [Option 1](setup-option1.md).
 
+If you only work on the Go side of FPC (ercc, the ecc wrapper, FPC-go, the client SDK, the Go samples), you need none of this: Go and Docker are enough, on Linux or a Mac, and `make` builds and tests the Go side. This document is for building the C side (`FPC_CGO=1`) on your machine instead of in the dev container.
+
 
 ## Requirements
 
