@@ -73,19 +73,21 @@ jobs:
             DOCKER_DEV_OPTIONAL_CMD='env IS_CI_RUNNING=true make build'
 
       # Everything the build produced is untracked; pack it as a tar so that
-      # symlinks and executable bits survive the artifact upload.
+      # symlinks and executable bits survive the artifact upload. The dev
+      # container ran as root and some outputs are 0600 keys, so pack with
+      # sudo; the archive goes to RUNNER_TEMP so it never packs itself.
       - name: pack build outputs and images
         run: |
-          git ls-files --others -z | tar --null -T - --zstd -cf build.tar.zst
+          set -o pipefail
+          mkdir -p "$RUNNER_TEMP/artifact"
+          git ls-files --others -z | sudo tar --null -T - -cf - | zstd -T0 -q -o "$RUNNER_TEMP/artifact/build.tar.zst"
           # shellcheck disable=SC2086
-          docker save $FPC_IMAGES | zstd -T0 -q -o images.tar.zst
-          ls -lh build.tar.zst images.tar.zst
+          docker save $FPC_IMAGES | zstd -T0 -q -o "$RUNNER_TEMP/artifact/images.tar.zst"
+          ls -lh "$RUNNER_TEMP/artifact"
       - uses: actions/upload-artifact@v4
         with:
           name: build
-          path: |
-            build.tar.zst
-            images.tar.zst
+          path: ${{ runner.temp }}/artifact
           retention-days: 1
 
       - name: list tests
@@ -111,9 +113,15 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: build
+      # The checkout gave every tracked file a fresh mtime, newer than the
+      # build outputs; backdate the tracked files so make and cmake see the
+      # outputs as up to date instead of reconfiguring and rebuilding.
       - name: unpack build outputs and images
         run: |
-          tar --zstd -xf build.tar.zst
+          set -o pipefail
+          git ls-files -z | xargs -0 touch -h -d @1
+          git submodule foreach --recursive --quiet 'git ls-files -z | xargs -0 touch -h -d @1'
+          zstd -dc build.tar.zst | tar -xf -
           zstd -dc images.tar.zst | docker load
           rm build.tar.zst images.tar.zst
 
