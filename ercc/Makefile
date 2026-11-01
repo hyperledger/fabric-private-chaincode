@@ -13,6 +13,9 @@ ERCC_OUT ?= .
 build: ercc
 
 ercc: ercc_dependencies
+ifeq ($(SGX_MODE)$(FPC_CGO),HW)
+	@echo "SGX_MODE=HW requires FPC_CGO=1 (hardware mode is only supported inside the dev container)" >&2; exit 1
+endif
 	# ERCC's binary is created here.
 	# The binary is then referenced by the fpc-peer cli, inserted in the ERCC package,
 	# and eventually run by the external launcher.

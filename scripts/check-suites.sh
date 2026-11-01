@@ -7,6 +7,8 @@
 # `make suites` has a target, and `make test` runs all of them.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+# the suites run in the dev container, which sets FPC_CGO=1
+export FPC_CGO=1
 
 expected="${EXPECTED_SUITES:-auction echo kv deployment client_sdk go_echo go_auction go_kv go_simulation crash irb test_network}"
 actual="$(make -s suites)"

@@ -92,7 +92,8 @@ jobs:
 
       - name: list tests
         id: tests
-        run: echo "tests=$(make -s suites | jq -Rc 'split(" ") | ["unit"] + .')" >> "$GITHUB_OUTPUT"
+        # the suites run in the dev container, which builds the C side
+        run: echo "tests=$(FPC_CGO=1 make -s suites | jq -Rc 'split(" ") | ["unit"] + .')" >> "$GITHUB_OUTPUT"
 
   test:
     needs: build
