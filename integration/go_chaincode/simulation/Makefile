@@ -34,7 +34,7 @@ ercc:
 
 ecc:
 	$(BUILD_OPT) \
-	CC_NAME=$(CC_NAME) WITH_GO_OUT=$(NOSGX_OUT)/ecc DOCKER_CONTEXT=$(NOSGX_OUT)/ecc \
+	CC_NAME=$(CC_NAME) WITH_GO_OUT=$(NOSGX_OUT)/ecc \
 	make -C $(CHAINCODE_PATH) with_go docker
 
 clean:

@@ -18,10 +18,9 @@ ECC_MAIN_FILES ?= main.go
 ECC_BINARY ?= ecc
 ECC_BUNDLE ?= $(ECC_BINARY)-bundle
 # WITH_GO_OUT lets a caller build the plain go (non-SGX) bundle into its own
-# directory, so it never overwrites the ego bundle and mrenclave in the sample
+# directory, so it never overwrites the ego bundle and mrenclave in the sample;
+# `docker` packages the bundle found there
 WITH_GO_OUT ?= .
-# docker build context: where the bundle to package lives
-DOCKER_CONTEXT ?= .
 
 build: ecc docker env
 
@@ -70,7 +69,7 @@ docker:
 		$(shell if [ "${SGX_MODE}" = "SIM" ]; then echo "--build-arg OE_SIMULATION=1"; fi) \
 		-t $(DOCKER_IMAGE):$(FPC_VERSION) \
 		-f $(DOCKER_FILE) \
-		$(DOCKER_CONTEXT) \
+		$(WITH_GO_OUT) \
 	&& $(DOCKER) tag $(DOCKER_IMAGE):$(FPC_VERSION) $(DOCKER_IMAGE):latest
 
 clean:
