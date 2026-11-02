@@ -3,25 +3,6 @@
 # ############################## Commands in order #######################################
 
 
-# ################################### For CC-tools inside the fpc
-
-# - Copy all chaincode files using the same way as simple-asset-go
-# - replace the "CHAINCODE_ID" env with "CHAINCODE_PKG_ID" in main.go
-# - Run `go get` inside the cc-tools-demo folder after putting it inside the fpc repo
-# ------ There are huge problem with using FPC outside the FPC repository. Even go get doesn't work and you need to specify a certain version and there are conflicting packages-----------------'
-# # - You have to add dummy implementation for the PurgePrivate data method in the MockStup of cc-tools but be careful you need to do it in the package installed inside the FPC dev env not your local
-# # 	For example do: vim /project/pkg/mod/github.com/hyperledger-labs/cc-tools@v1.0.0/mock/mockstub.go and add this:
-# # 	// PurgePrivateData ...
-# # 	func (stub *MockStub) PurgePrivateData(collection, key string) error {
-# # 		return errors.New("Not Implemented")
-# # 	}.
-# # A good idea is to use go mod vendor and download all go packages in the vendor directory and edit it one time there. 
-# # nano $FPC_PATH/vendor/github.com/hyperledger-labs/cc-tools/mock/mockstub.go
-# # 	// PurgePrivateData ...
-# # 	func (stub *MockStub) PurgePrivateData(collection, key string) error {
-# # 		return errors.New("Not Implemented")
-# # 	}
-
 cd $FPC_PATH/samples/deployment/test-network
 docker compose down
 
