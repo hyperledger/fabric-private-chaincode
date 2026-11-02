@@ -84,7 +84,7 @@ jobs:
           # shellcheck disable=SC2086
           docker save $FPC_IMAGES | zstd -T0 -q -o "$RUNNER_TEMP/artifact/images.tar.zst"
           ls -lh "$RUNNER_TEMP/artifact"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: build
           path: ${{ runner.temp }}/artifact
@@ -110,7 +110,7 @@ jobs:
         with:
           go-version-file: 'go.mod'
           cache-dependency-path: '**/go.sum'
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: build
       # The checkout gave every tracked file a fresh mtime, newer than the
@@ -157,7 +157,7 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: build
       - run: zstd -dc images.tar.zst | docker load
