@@ -9,7 +9,7 @@ include $(TOP)/build.mk
 .PHONY: ercc-ecc-start
 ercc-ecc-start:
 	if [ ! -z "${DOCKERD_FPC_PATH}" ]; then \
-  		export SGX_CREDENTIALS_PATH="${DOCKERD_FPC_PATH}/integration/config/ias"; \
+  		export SGX_CREDENTIALS_PATH="${DOCKERD_FPC_PATH}/sgx/integration/config/ias"; \
   	fi && \
 	if [ "${SGX_MODE}" = "HW" ]; then \
 		export HW_EXTENSION="-hw" \

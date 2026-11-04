@@ -16,7 +16,7 @@ DOCKER_CONTAINER_ID?=$$(docker ps | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | a
 DOCKER_IMAGE ?= $$(docker images | grep -- ${NET_ID}-${PEER_ID}-$(CC_NAME)- | awk '{print $$1;}')
 HW_EXTENSION=$(shell if [ "${SGX_MODE}" = "HW" ]; then echo "-hw"; fi)
 DOCKER_BOILERPLATE_ECC_IMAGE ?= hyperledger/$(PROJECT_NAME)-boilerplate-ecc${HW_EXTENSION}
-ECC_ENCLAVE_BUILD = ../ecc_enclave/_build
+ECC_ENCLAVE_BUILD = ../sgx/ecc_enclave/_build
 ERR_MSG = "ecc_enclave build does not exist!"
 DOCKER_ENCLAVE_SO_PATH ?= $(ENCLAVE_SO_PATH)
 
@@ -32,8 +32,8 @@ ecc_enclave: sym-links
 	@if [ ! -d $(ECC_ENCLAVE_BUILD)/include ]; then echo $(ERR_MSG); exit 1; fi
 
 sym-links:
-	ln -sfn ../../../ecc_enclave/_build/lib chaincode/enclave/ecc-enclave-lib
-	ln -sfn ../../../ecc_enclave/_build/include chaincode/enclave/ecc-enclave-include
+	ln -sfn ../../ecc_enclave/_build/lib ../sgx/ecc/enclave/ecc-enclave-lib
+	ln -sfn ../../ecc_enclave/_build/include ../sgx/ecc/enclave/ecc-enclave-include
 
 # the ecc binary is what C chaincode runs with (the external builder copies it
 # into the chaincode); without fpc_cgo it would contain the mock enclave

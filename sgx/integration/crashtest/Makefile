@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
-TOP = ../..
+TOP = ../../..
 include $(TOP)/build.mk
 
 GO_TEST_DIRS=unmarshal_values

@@ -7,7 +7,7 @@
 execute_process(COMMAND getconf LONG_BIT OUTPUT_VARIABLE VAR_LONG_BIT)
 
 # Check for the existence of common required SGX variables,
-# and fail if these are not defined. Note global build defaults are defined `../config.mk`.
+# and fail if these are not defined. Note global build defaults are defined `../../config.mk`.
 set(SGX_SDK "$ENV{SGX_SDK}")
 if("${SGX_SDK} " STREQUAL " ")
     message(FATAL_ERROR "SGX_SDK: undefined environment variable")

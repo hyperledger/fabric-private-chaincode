@@ -5,14 +5,14 @@ https://creativecommons.org/licenses/by/4.0/
 # Chaincode wrapper (ecc)
 
 Before your continue here make sure you have build ``ecc_enclave`` before.
-We refer to [ecc_enclave/README.md](../ecc_enclave). Otherwise, the build
+We refer to [sgx/ecc_enclave/README.md](../sgx/ecc_enclave). Otherwise, the build
 might fail with the message `ecc_enclave build does not exist!`.
 
 This is a go chaincode that is used to invoke the enclave (and hence
 FPC chaincode). The chaincode logic is implemented in C++ as enclave
 code and is loaded by by the go chaincode as C library
 (``ecc/enclave/lib/enclave.signed.so``).  For more details on the 
-chaincode implementation see [ecc_enclave](../ecc_enclave).
+chaincode implementation see [sgx/ecc_enclave](../sgx/ecc_enclave).
 
 The FPC chaincode can be run in two modes, as a normal chaincode
 (where the lifecycle of the chaincode is controlled by the peer) and

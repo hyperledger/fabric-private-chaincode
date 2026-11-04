@@ -35,7 +35,7 @@ Furthermore, for docker-compose networks to work properly with proxies, the `noP
 variable in your `~/.docker/config.json` should at least contain `127.0.0.1,127.0.1.1,localhost,.org1.example.com,.example.com`.
 
 Another problem you might encounter when running the integration tests
-insofar that some '0.0.0.0' in `integration/config/core.yaml` used by
+insofar that some '0.0.0.0' in `sgx/integration/config/core.yaml` used by
 clients -- e.g., the peer CLI using the `address: 0.0.0.0:7051` config
 as part of the `peer` section -- result in the client being unable
 to find the server. The likely error you will see is
@@ -95,7 +95,7 @@ above error.
 
 ## No Raft leader
 
-The following error message sometimes appears when running the integration tests in the `$FPC_PATH/integration` folder.
+The following error message sometimes appears when running the integration tests in the `$FPC_PATH/sgx/integration` folder.
 The output contains the following:
 ```
 got unexpected status: SERVICE_UNAVAILABLE -- no Raft leader

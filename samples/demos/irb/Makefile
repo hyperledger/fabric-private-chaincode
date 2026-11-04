@@ -5,7 +5,7 @@
 TOP = ../../..
 include $(TOP)/build.mk
 
-COMPONENTS = protos chaincode experimenter
+COMPONENTS = protos $(FPC_PATH)/sgx/samples/demos/irb/chaincode experimenter
 
 pull-images:
 	$(DOCKER) pull redis:latest

@@ -32,7 +32,7 @@ SPDX-License-Identifier: Apache-2.0
 //		log.Fatal(err)
 //	}
 //
-// See also https://github.com/hyperledger/fabric-private-chaincode/blob/main/integration/client_sdk/go/utils.go
+// See also https://github.com/hyperledger/fabric-private-chaincode/blob/main/sgx/integration/client_sdk/go/utils/utils.go
 // for a running example.
 package lifecycle
 

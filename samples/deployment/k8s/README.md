@@ -39,13 +39,13 @@ make -C $FPC_PATH/ercc docker
 
 ### Build your FPC Chaincode
 
-For this demo we use the FPC Echo Chaincode in `$FPC_PATH/samples/chaincode/echo`.
+For this demo we use the FPC Echo Chaincode in `$FPC_PATH/sgx/samples/chaincode/echo`.
 Alternatively, you can also use another example or your own FPC Chaincode.
 We build the chaincode and package the enclave binary in a FPC Chaincode docker image using the following command:
 
 ```bash
 # TODO SETUP and test with SGX HW mode
-export TEST_CC_PATH=$FPC_PATH/samples/chaincode/echo
+export TEST_CC_PATH=$FPC_PATH/sgx/samples/chaincode/echo
 
 make -C $TEST_CC_PATH
 make -C $FPC_PATH/ecc DOCKER_IMAGE=fpc/fpccc DOCKER_ENCLAVE_SO_PATH=$TEST_CC_PATH/_build/lib all docker
@@ -135,7 +135,7 @@ Use the `generate.sh` script to create the crypto material for the peer organiza
 script create the genesis block, the client connection profiles, and packages the FPC Chaincode and the FPC Enclave Registry.
 ```bash
 cd $FPC_PATH/samples/deployment/k8s
-export TEST_CC_PATH=$FPC_PATH/samples/chaincode/echo
+export TEST_CC_PATH=$FPC_PATH/sgx/samples/chaincode/echo
 ./generate.sh
 ````
 

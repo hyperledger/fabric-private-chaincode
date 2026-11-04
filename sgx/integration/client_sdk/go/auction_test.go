@@ -15,7 +15,7 @@ import (
 	"testing"
 
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
-	testutils "github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
+	testutils "github.com/hyperledger/fabric-private-chaincode/sgx/integration/client_sdk/go/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -35,7 +35,7 @@ var (
 
 var _ = BeforeSuite(func() {
 	ccID := "auction_test"
-	ccPath := filepath.Join(testutils.FPCPath, "samples", "chaincode", "auction", "_build", "lib")
+	ccPath := filepath.Join(testutils.FPCPath, "sgx", "samples", "chaincode", "auction", "_build", "lib")
 
 	// setup auction chaincode (install, approve, commit)
 	initEnclave := true
@@ -43,7 +43,7 @@ var _ = BeforeSuite(func() {
 	Expect(err).ShouldNot(HaveOccurred())
 
 	// setup echo chaincode (install, approve, commit)
-	err = testutils.Setup("echo_test", filepath.Join(testutils.FPCPath, "samples", "chaincode", "echo", "_build", "lib"), false)
+	err = testutils.Setup("echo_test", filepath.Join(testutils.FPCPath, "sgx", "samples", "chaincode", "echo", "_build", "lib"), false)
 	Expect(err).ShouldNot(HaveOccurred())
 
 	// get network

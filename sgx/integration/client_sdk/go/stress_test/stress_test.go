@@ -19,7 +19,7 @@ import (
 	"testing"
 
 	fpc "github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway"
-	testutils "github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
+	testutils "github.com/hyperledger/fabric-private-chaincode/sgx/integration/client_sdk/go/utils"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -41,7 +41,7 @@ var (
 
 var _ = BeforeSuite(func() {
 	ccID := "kv-test"
-	ccPath := filepath.Join(testutils.FPCPath, "samples", "chaincode", ccID, "_build", "lib")
+	ccPath := filepath.Join(testutils.FPCPath, "sgx", "samples", "chaincode", ccID, "_build", "lib")
 
 	// setup stress test chaincode(s) (install, approve, commit)
 	err := testutils.Setup(ccID, ccPath, true)

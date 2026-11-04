@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-TOP = ../../../..
+TOP = ../../../../..
 include $(TOP)/build.mk
 
 BUILD_DIR := _build
@@ -28,11 +28,11 @@ docker: build
 	if [ "${SGX_MODE}" = "HW" ]; then \
 		export HW_EXTENSION="-hw" ; \
 	fi && \
-	make -C ${FPC_PATH}/ecc DOCKER_IMAGE=${DOCKER_IMAGE_NAME}$${HW_EXTENSION} DOCKER_ENCLAVE_SO_PATH=${FPC_PATH}/samples/demos/irb/chaincode/${BUILD_DIR}/lib all docker && \
+	make -C ${FPC_PATH}/ecc DOCKER_IMAGE=${DOCKER_IMAGE_NAME}$${HW_EXTENSION} DOCKER_ENCLAVE_SO_PATH=${FPC_PATH}/sgx/samples/demos/irb/chaincode/${BUILD_DIR}/lib all docker && \
 	$(DOCKER) image tag ${DOCKER_IMAGE_NAME}$${HW_EXTENSION}:${FPC_VERSION} ${DOCKER_IMAGE_NAME}$${HW_EXTENSION}:latest
 
 PROTO_BUILD_DIR := _protos
-PROTO_PATH := ../protos
+PROTO_PATH := $(FPC_PATH)/samples/demos/irb/protos
 PROTO_FILES := irb.proto
 
 .PHONY: protos

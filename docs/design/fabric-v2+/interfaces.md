@@ -438,4 +438,4 @@ void log_notice(const char* format, ...);
 void log_info(const char* format, ...);
 void log_debug(const char* format, ...);
 ```
-See [shim.h](../../../ecc_enclave/enclave/shim.h)
+See [shim.h](../../../sgx/ecc_enclave/enclave/shim.h)

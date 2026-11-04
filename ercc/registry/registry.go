@@ -185,7 +185,7 @@ func (rs *Contract) QueryChaincodeEndPoints(ctx contractapi.TransactionContextIn
 
 // QueryChaincodeEncryptionKey returns the chaincode encryption key for a given chaincode id
 func (rs *Contract) QueryChaincodeEncryptionKey(ctx contractapi.TransactionContextInterface, chaincodeId string) (string, error) {
-	// NOTE: This is a (momentary) short-cut over the FPC and FPC Lite specification in `docs/design/fabric-v2+/fpc-registration.puml` and `docs/design/fabric-v2+/fpc-key-dist.puml`.  See also `common/enclave/cc_data.cpp` and `protos/fpc/fpc.proto`
+	// NOTE: This is a (momentary) short-cut over the FPC and FPC Lite specification in `docs/design/fabric-v2+/fpc-registration.puml` and `docs/design/fabric-v2+/fpc-key-dist.puml`.  See also `sgx/common/enclave/cc_data.cpp` and `protos/fpc/fpc.proto`
 	// TODO: remove short cut (see also RegisterEnclave and RegisterCCKeys (Post-MVP)
 
 	// retrieve the enclave id

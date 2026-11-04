@@ -6,4 +6,4 @@ and our [sample applications](../../samples/application/) which illustrate the u
 The FPC [Helloworld Tutorial](../../samples/chaincode/helloworld) also demonstrates the usage of the FPC Client SDK for Go.
 
 ## Testing
-Before running tests, please make sure you have built the chaincode samples (i.e., run `make -C $FPC_PATH/samples/chaincode`) as they are used for testing.
+Before running tests, please make sure you have built the chaincode samples (i.e., run `make -C $FPC_PATH/sgx/samples`) as they are used for testing.

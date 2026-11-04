@@ -39,7 +39,7 @@ Note that the patient data is encrypted in a way that only an approved experimen
 More details on that, see the HLGF21 presentation.
 
 ## Code structure
-- `/chaincode` contains the FPC chaincode that implements the IRV approval service
+- `$FPC_PATH/sgx/samples/demos/irb/chaincode` contains the FPC chaincode that implements the IRV approval service
 - `/experimenter` contains the analytic experiment code based on [PyTorch](https://pytorch.org/).
 - `/pkg` contains implementations for various components, including crypto, container management, etc. 
 - `/protos` contains the message definitions used in this application

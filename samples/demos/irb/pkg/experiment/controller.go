@@ -27,7 +27,7 @@ func toEvidence(attestation []byte) ([]byte, error) {
 		return nil, fmt.Errorf("FPC_PATH not set")
 	}
 
-	convertScript := filepath.Join(fpcPath, "common/crypto/attestation-api/conversion/attestation_to_evidence.sh")
+	convertScript := filepath.Join(fpcPath, "sgx/common/crypto/attestation-api/conversion/attestation_to_evidence.sh")
 	cmd := exec.Command(convertScript, string(attestation))
 
 	if out, err := cmd.Output(); err != nil {

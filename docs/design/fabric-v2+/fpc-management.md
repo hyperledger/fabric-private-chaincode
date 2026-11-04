@@ -64,7 +64,7 @@ func LifecycleInitEnclave(channelId string, req LifecycleInitEnclaveRequest, opt
 ```
 
 See the details of the API in [godoc](https://pkg.go.dev/github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/client/resmgmt)
-and an example of its use in  [`integration/client_sdk/go/utils.go`](../../../integration/client_sdk/go/utils.go).
+and an example of its use in  [`sgx/integration/client_sdk/go/utils/utils.go`](../../../sgx/integration/client_sdk/go/utils/utils.go).
 
 ### Key Distribution
 

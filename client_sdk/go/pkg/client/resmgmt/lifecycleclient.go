@@ -43,7 +43,7 @@ SPDX-License-Identifier: Apache-2.0
 //		log.Fatal(err)
 //	}
 //
-// See also `lifecycle_test.go` and `$FPC_PATH/integration/client_sdk/go/utils/utils.go`
+// See also `lifecycle_test.go` and `$FPC_PATH/sgx/integration/client_sdk/go/utils/utils.go`
 // for a running example.
 package resmgmt
 

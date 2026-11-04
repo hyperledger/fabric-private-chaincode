@@ -1,0 +1,29 @@
+# Copyright 2020 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+TOP = ../..
+include $(TOP)/build.mk
+
+all: test
+
+test: auction_test echo_test kv_test deployment_test client_sdk_test crash_test
+
+auction_test:
+	./auction_test.sh
+
+echo_test:
+	./echo_test.sh
+
+kv_test:
+	./kv_test.sh
+
+deployment_test:
+	./deployment_test.sh
+
+# also runs the stress test, on the same ledger
+client_sdk_test:
+	./client_sdk_test.sh
+
+crash_test:
+	$(MAKE) -C crashtest

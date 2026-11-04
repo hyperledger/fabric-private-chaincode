@@ -1,6 +1,6 @@
 # Echo (FPC-go)
 
-A minimal FPC chaincode written in Go: every invocation returns the name of the function it was called with. It is the Go counterpart of the C++ [echo](../echo) sample.
+A minimal FPC chaincode written in Go: every invocation returns the name of the function it was called with. It is the Go counterpart of the C++ [echo](../../../sgx/samples/chaincode/echo) sample.
 
 ## Run without SGX
 

@@ -8,7 +8,7 @@ cscope.*
 # non-SGX builds of tests that must not overwrite the SGX ones
 **/_nosgx/
 # generate protos
-common/protos
+sgx/common/protos
 internal/protos
 coverage.out
 vendor

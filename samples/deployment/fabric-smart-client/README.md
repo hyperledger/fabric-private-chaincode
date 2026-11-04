@@ -11,7 +11,7 @@ The FPC developer just packages the FPC Chaincode as a docker image and points t
 ## Getting started
 
 The Fabric Smart Client (FSC) repository contains a neat tutorial how FSC can be used with FPC.
-It shows how to setup a Fabric network, deploy the FPC echo chaincode (see [/samples/chaincode/echo](../../chaincode/echo)), and invoke it from a FSC view.
+It shows how to setup a Fabric network, deploy the FPC echo chaincode (see [/sgx/samples/chaincode/echo](../../../sgx/samples/chaincode/echo)), and invoke it from a FSC view.
 You can find the tutorial [here](https://github.com/hyperledger-labs/fabric-smart-client/tree/main/integration/fabric/fpc/echo).
 
 ## More advanced example

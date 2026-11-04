@@ -8,7 +8,7 @@
 set -a
 
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
-FPC_PATH="${SCRIPTDIR}/.."
+FPC_PATH="${SCRIPTDIR}/../.."
 FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 
 : ${FABRIC_CFG_PATH:="${SCRIPTDIR}/config"}
@@ -33,8 +33,8 @@ download_chaincode() {
 
 run_test() {
 
-    # install samples/chaincode/auction
-    CC_PATH=${FPC_PATH}/samples/chaincode/auction/_build/lib/
+    # install sgx/samples/chaincode/auction
+    CC_PATH=${FPC_PATH}/sgx/samples/chaincode/auction/_build/lib/
     CC_VER="$(cat ${CC_PATH}/mrenclave)"
     CC_SEQ="1"
     PKG=/tmp/auction_test.tar.gz
@@ -78,13 +78,13 @@ run_test() {
     try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n basic -c '{"Args":["InitLedger"]}' --waitForEvent
     try_out_r ${PEER_CMD} chaincode invoke -o ${ORDERER_ADDR} -C ${CHAN_ID} -n basic -c '{"Args":["CreateAsset","marble1","blue","35","tom", "500"]}' --waitForEvent
 
-    # install samples/chaincode/echo
-    CC_PATH=${FPC_PATH}/samples/chaincode/echo/_build/lib/
+    # install sgx/samples/chaincode/echo
+    CC_PATH=${FPC_PATH}/sgx/samples/chaincode/echo/_build/lib/
     CC_VER="$(cat ${CC_PATH}/mrenclave)"
     CC_SEQ="1"
     PKG=/tmp/echo_test.tar.gz
 
-    try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label echo_test --path ${FPC_PATH}/samples/chaincode/echo/_build/lib ${PKG}
+    try ${PEER_CMD} lifecycle chaincode package --lang fpc-c --label echo_test --path ${FPC_PATH}/sgx/samples/chaincode/echo/_build/lib ${PKG}
     try ${PEER_CMD} lifecycle chaincode install ${PKG}
     PKG_ID=$(${PEER_CMD} lifecycle chaincode queryinstalled | awk "/Package ID: echo_test/{print}" | sed -n 's/^Package ID: //; s/, Label:.*$//;p')
 

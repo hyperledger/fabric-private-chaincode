@@ -1,4 +1,8 @@
-TOP = ../../..
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+TOP = ../../../..
 include $(TOP)/build.mk
 
 TEST_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))

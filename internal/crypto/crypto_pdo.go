@@ -14,8 +14,8 @@ import (
 	"fmt"
 )
 
-// #cgo CFLAGS: -I${SRCDIR}/../../common/crypto
-// #cgo LDFLAGS: -L${SRCDIR}/../../common/crypto/_build -L${SRCDIR}/../../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++ -lgcov
+// #cgo CFLAGS: -I${SRCDIR}/../../sgx/common/crypto
+// #cgo LDFLAGS: -L${SRCDIR}/../../sgx/common/crypto/_build -L${SRCDIR}/../../sgx/common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++ -lgcov
 // #include <stdio.h>
 // #include <stdlib.h>
 // #include <stdbool.h>
@@ -23,7 +23,7 @@ import (
 // #include "pdo-crypto-c-wrapper.h"
 import "C"
 
-// PDOCrypto implements CSP using the PDO crypto library in common/crypto
+// PDOCrypto implements CSP using the PDO crypto library in sgx/common/crypto
 type PDOCrypto struct {
 }
 

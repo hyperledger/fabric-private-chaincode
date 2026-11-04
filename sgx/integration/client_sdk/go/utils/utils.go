@@ -70,7 +70,7 @@ func init() {
 		panic("FPC_PATH not set")
 	}
 
-	testNetworkPath = filepath.Join(FPCPath, "integration")
+	testNetworkPath = filepath.Join(FPCPath, "sgx", "integration")
 
 	mspPath = filepath.Join(
 		testNetworkPath,
