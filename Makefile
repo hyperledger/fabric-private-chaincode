@@ -10,14 +10,17 @@ include $(TOP)/build.mk
 # ecc binary, the shell integration suites) needs the SGX toolchain and is
 # built only with FPC_CGO=1, which the dev container sets.
 ifeq ($(FPC_CGO),1)
-SUB_DIRS = protos common internal ercc ecc_enclave ecc fabric client_sdk samples utils integration # docs
+# the C/C++ code lives in sgx/; its parts are listed where they were built
+# before the move, as the order matters (protos before sgx/common, the enclave
+# before ecc, ecc before the C++ samples' images)
+SUB_DIRS = protos sgx/common internal ercc sgx/ecc_enclave ecc fabric client_sdk samples sgx/samples utils integration sgx/integration # docs
 else
 # fabric fetches the Fabric release binaries the FSC test networks run on
 SUB_DIRS = internal ercc fabric client_sdk samples utils
 endif
 
-FPC_SDK_DEP_DIRS = protos common utils/fabric ecc_enclave ecc
-FPC_PEER_DEP_DIRS = protos common ercc fabric ecc_enclave ecc
+FPC_SDK_DEP_DIRS = protos sgx/common utils/fabric sgx/ecc_enclave ecc
+FPC_PEER_DEP_DIRS = protos sgx/common ercc fabric sgx/ecc_enclave ecc
 # FPC_PEER_DEP_DIRS has to include protos, ecc, ecc_enclave, common and ercc only if we run chaincode in external builder directly on host and not indirectly via docker
 FPC_PEER_CLI_WRAPPER_DEP_DIRS = utils/fabric
 
@@ -33,7 +36,7 @@ build clean clobber:
 # network and runs as a separate CI job; `make suites` lists them for the CI
 # matrix. `make test` runs everything, sequentially, as before.
 ifeq ($(FPC_CGO),1)
-UNIT_TEST_DIRS = protos common internal ercc ecc_enclave ecc fabric client_sdk samples/application samples/chaincode utils
+UNIT_TEST_DIRS = protos sgx/common internal ercc sgx/ecc_enclave ecc fabric client_sdk samples/application samples/chaincode sgx/samples utils
 SUITES = auction echo kv deployment client_sdk go_echo go_auction go_kv go_simulation crash irb test_network
 else
 # the ecc unit tests use the mock enclave, so they run without the C side
@@ -55,17 +58,17 @@ suites:
 	@echo $(SUITES)
 
 suite-auction:
-	$(MAKE) -C integration auction_test
+	$(MAKE) -C sgx/integration auction_test
 suite-echo:
-	$(MAKE) -C integration echo_test
+	$(MAKE) -C sgx/integration echo_test
 suite-kv:
-	$(MAKE) -C integration kv_test
+	$(MAKE) -C sgx/integration kv_test
 suite-deployment:
-	$(MAKE) -C integration deployment_test
+	$(MAKE) -C sgx/integration deployment_test
 suite-client_sdk:
-	$(MAKE) -C integration client_sdk_test
+	$(MAKE) -C sgx/integration client_sdk_test
 suite-crash:
-	$(MAKE) -C integration crash_test
+	$(MAKE) -C sgx/integration crash_test
 suite-go_echo:
 	$(MAKE) -C integration/go_chaincode deps
 	$(MAKE) -C integration/go_chaincode/echo

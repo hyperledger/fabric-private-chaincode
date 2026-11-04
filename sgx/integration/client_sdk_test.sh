@@ -6,10 +6,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 SCRIPTDIR="$(dirname $(readlink --canonicalize ${BASH_SOURCE}))"
-FPC_PATH="${SCRIPTDIR}/.."
+FPC_PATH="${SCRIPTDIR}/../.."
 FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 
-: ${FABRIC_CFG_PATH:="${FPC_PATH}/integration/config"}
+: ${FABRIC_CFG_PATH:="${FPC_PATH}/sgx/integration/config"}
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
 . ${FABRIC_SCRIPTDIR}/lib/common_ledger.sh
@@ -17,7 +17,7 @@ FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 # different chaincodes (auction_test/echo_test and kv-test)
 TEST_NAME="TestGoClientSDK and TestStress"
 CHAINCODES=(auction_test echo_test)
-CC_PATH=${FPC_PATH}/samples/chaincode/auction/_build/lib/
+CC_PATH=${FPC_PATH}/sgx/samples/chaincode/auction/_build/lib/
 CC_LANG=fpc-c
 CC_VER="$(cat ${CC_PATH}/mrenclave)"
 CC_SEQ="1"

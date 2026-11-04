@@ -55,7 +55,7 @@ cc_build_for_host() {
 
     # - ecc shims
     try cp "${FPC_PATH}/ecc/ecc" "${CC_PATH}/chaincode"
-    try cp "${FPC_PATH}/ecc_enclave/_build/lib/libsgxcc.so" "${CC_LIB_PATH}/"
+    try cp "${FPC_PATH}/sgx/ecc_enclave/_build/lib/libsgxcc.so" "${CC_LIB_PATH}/"
 
     # - chaincode specific stuff
     try cp "${CC_SOURCE_DIR}/${MRENCLAVE_FILE}" "${CC_PATH}"

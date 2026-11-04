@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-INCLUDE ("$ENV{FPC_PATH}/cmake/ConfigSGX.cmake")
+INCLUDE ("$ENV{FPC_PATH}/sgx/cmake/ConfigSGX.cmake")
 
 ##################################################################################################
 ## LOG test app:

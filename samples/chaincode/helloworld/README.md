@@ -2,7 +2,7 @@
 This tutorial shows how to create, build, install and test chaincode using the Fabric Private Chaincode (FPC) framework.  This assumes familiarity with the [concepts](https://hyperledger-fabric.readthedocs.io/en/release-2.3/whatis.html#) and [the programming model](https://hyperledger-fabric.readthedocs.io/en/release-2.3/developapps/smartcontract.html) in Hyperledger Fabric v2.3.
 
 
-Refer to [package shim](https://pkg.go.dev/github.com/hyperledger/fabric-chaincode-go/shim?tab=doc) for the GoDoc for shim interface provided by Fabric.  The FPC programming model for chaincode provides a simpler version of the _shim_ SDK provided by Hyperledger Fabric in Go and node.js.  FPC provides a C++ interface  to access its state variables and transaction context through [shim.h](../../../ecc_enclave/enclave/shim.h).  The standard commands are similar to the ones in Fabric.  To ensure confidentiality of the arguments passed to the chaincode, the arguments are transparently encrypted while using the FPC SDK.
+Refer to [package shim](https://pkg.go.dev/github.com/hyperledger/fabric-chaincode-go/shim?tab=doc) for the GoDoc for shim interface provided by Fabric.  The FPC programming model for chaincode provides a simpler version of the _shim_ SDK provided by Hyperledger Fabric in Go and node.js.  FPC provides a C++ interface  to access its state variables and transaction context through [shim.h](../../../sgx/ecc_enclave/enclave/shim.h).  The standard commands are similar to the ones in Fabric.  To ensure confidentiality of the arguments passed to the chaincode, the arguments are transparently encrypted while using the FPC SDK.
 
 Regarding management functionally such as chaincode installation and alike, please refer to [FPC Management API document](../../../docs/design/fabric-v2%2B/fpc-management.md) for details.
 
@@ -259,10 +259,10 @@ set(SOURCE_FILES
     helloworld_cc.cpp
     )
 
-include($ENV{FPC_PATH}/ecc_enclave/enclave/CMakeLists-common-app-enclave.txt)
+include($ENV{FPC_PATH}/sgx/ecc_enclave/enclave/CMakeLists-common-app-enclave.txt)
 ```
 
-Create `Makefile` with the following content.  For your convenience, you can copy the `Makefile` from `$FPC_PATH/samples/chaincode/auction` folder.
+Create `Makefile` with the following content.  For your convenience, you can copy the `Makefile` from `$FPC_PATH/sgx/samples/chaincode/auction` folder (and set `TOP = ../../..`, as below).
 
 File: `$FPC_PATH/samples/chaincode/helloworld/Makefile`
 ```Makefile
@@ -303,10 +303,10 @@ make[1]: Leaving directory '/home/bcuser/work/src/github.com/hyperledger/fabric-
 
 
 ## Time to test!
-Next step is to test the chaincode by invoking transactions, for which you need a basic Fabric network with a channel. You will use the FPC test framework to bring up a Fabric network in which the helloworld code can be executed as a chaincode _in an SGX enclave_.  The Fabric network contains just a single peer and orderer node as defined in `$FPC_PATH/integration/config/`.  Please note the FPC-specific additions to the `core.yaml` to the standard Fabric configurations.  These are marked as `FPC Addition`;  these enable the integration points with Fabric and have to be replicated if you want to use your own Fabric configuration.
+Next step is to test the chaincode by invoking transactions, for which you need a basic Fabric network with a channel. You will use the FPC test framework to bring up a Fabric network in which the helloworld code can be executed as a chaincode _in an SGX enclave_.  The Fabric network contains just a single peer and orderer node as defined in `$FPC_PATH/sgx/integration/config/`.  Please note the FPC-specific additions to the `core.yaml` to the standard Fabric configurations.  These are marked as `FPC Addition`;  these enable the integration points with Fabric and have to be replicated if you want to use your own Fabric configuration.
 
 Create a file `test.sh` in `$FPC_PATH/samples/chaincode/helloworld` folder as follows.  Note that the initial lines in the script points to files and folders in FPC framework.
-- `FABRIC_CFG_PATH` points to the `$FPC_PATH/integration/config/, which contains yaml files that define the Fabric network
+- `FABRIC_CFG_PATH` points to the `$FPC_PATH/sgx/integration/config/, which contains yaml files that define the Fabric network
 - `FABRIC_SCRIPTDIR` points to scripts with custom FPC wrappers and utility scripts.
 
 File:  `test.sh`
@@ -317,7 +317,7 @@ if [[ -z "${FPC_PATH}" ]]; then
   echo "Error: FPC_PATH not set"; exit 1
 fi
 
-FABRIC_CFG_PATH="${FPC_PATH}/integration/config"
+FABRIC_CFG_PATH="${FPC_PATH}/sgx/integration/config"
 FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
@@ -413,7 +413,7 @@ if [[ -z "${FPC_PATH}" ]]; then
   echo "Error: FPC_PATH not set"; exit 1
 fi
 
-FABRIC_CFG_PATH="${FPC_PATH}/integration/config"
+FABRIC_CFG_PATH="${FPC_PATH}/sgx/integration/config"
 FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 
 . ${FABRIC_SCRIPTDIR}/lib/common_utils.sh
@@ -547,7 +547,7 @@ package main
 import (
 	"os"
 
-	"github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
+	"github.com/hyperledger/fabric-private-chaincode/sgx/integration/client_sdk/go/utils"
 	"github.com/hyperledger/fabric/common/flogging"
 )
 
@@ -584,7 +584,7 @@ func main() {
 }
 ```
 
-We use the test utilities in `integration/client_sdk/go/utils`, which wrap the FPC Client SDK [gateway](https://pkg.go.dev/github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway) package.
+We use the test utilities in `sgx/integration/client_sdk/go/utils`, which wrap the FPC Client SDK [gateway](https://pkg.go.dev/github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/gateway) package.
 
 The main function consists just of a few lines of code.
 To focus on the use of the FPC Client SDK we omit to go through the entire process of setting up the Fabric Gateway.

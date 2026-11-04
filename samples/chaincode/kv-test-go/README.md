@@ -1,6 +1,6 @@
 # KV test (FPC-go)
 
-A key-value store as an FPC chaincode written in Go, used by the integration tests. It is the Go counterpart of the C++ [kv-test](../kv-test) sample.
+A key-value store as an FPC chaincode written in Go, used by the integration tests. It is the Go counterpart of the C++ [kv-test](../../../sgx/samples/chaincode/kv-test) sample.
 
 ## Run without SGX
 

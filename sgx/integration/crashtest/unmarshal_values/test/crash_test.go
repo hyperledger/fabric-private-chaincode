@@ -10,7 +10,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hyperledger/fabric-private-chaincode/integration/client_sdk/go/utils"
+	"github.com/hyperledger/fabric-private-chaincode/sgx/integration/client_sdk/go/utils"
 	"github.com/stretchr/testify/assert"
 )
 

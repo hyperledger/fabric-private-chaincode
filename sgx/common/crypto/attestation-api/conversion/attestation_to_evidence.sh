@@ -24,7 +24,7 @@ CUR_SCRIPT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd
 #   output: tag string variable (e.g., TAG_X)
 ###########################################################
 function get_tag_make_variable() {
-    TAGS_PATH="${FPC_PATH}/common/crypto/attestation-api/attestation/attestation_tags.h"
+    TAGS_PATH="${FPC_PATH}/sgx/common/crypto/attestation-api/attestation/attestation_tags.h"
     define_to_variable "$TAGS_PATH" "$1"
 }
 

@@ -11,12 +11,12 @@ These are detailed separately in the **[FPC Management API document](design/fabr
 ## FPC Shim
 
 The FPC Shim follows the programming model used in the standard Fabric Go shim and offers a C++ based FPC Shim to FPC chaincode developers. It currently comprises only a subset of the standard Fabric Shim and is complemented in the future.
-These details are documented separately in the Shim header file itself: **[`../ecc_enclave/enclave/shim.h`](../ecc_enclave/enclave/shim.h)**
+These details are documented separately in the Shim header file itself: **[`../sgx/ecc_enclave/enclave/shim.h`](../sgx/ecc_enclave/enclave/shim.h)**
 
 *Important*: The initial version of FPC, FPC 1.0 (aka FPC Lite), has a
 few constraints in applicability and programming model.  Hence, study carefully the
 [section discussing this in the FPC RFC](https://github.com/hyperledger/fabric-rfcs/blob/main/text/0000-fabric-private-chaincode-1.0.md#fpc-10-application-domain)
-and the comments at the top of [`shim.h`](../ecc_enclave/enclave/shim.h)
+and the comments at the top of [`shim.h`](../sgx/ecc_enclave/enclave/shim.h)
 before designing, implementing and deploying an FPC-based solution.
 <!-- could also mention
 	[FPC for Health use  case](https://docs.google.com/document/d/1jbiOY6Eq7OLpM_s3nb-4X4AJXROgfRHOrNLQDLxVnsc/)

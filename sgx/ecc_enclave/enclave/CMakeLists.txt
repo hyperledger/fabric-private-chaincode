@@ -66,12 +66,12 @@ include_directories(
     ${SGX_SDK}/include/tlibc
     ${SGX_SDK}/include/libcxx
     ${SGX_SSL}/include
-    ${FPC_PATH}/common/crypto
-    ${FPC_PATH}/common/protos
-    ${FPC_PATH}/common/protos/fpc
-    ${FPC_PATH}/common/protos/fabric
-    ${FPC_PATH}/common/logging/trusted
-    ${FPC_PATH}/common/crypto/pdo/common
+    ${FPC_PATH}/sgx/common/crypto
+    ${FPC_PATH}/sgx/common/protos
+    ${FPC_PATH}/sgx/common/protos/fpc
+    ${FPC_PATH}/sgx/common/protos/fabric
+    ${FPC_PATH}/sgx/common/logging/trusted
+    ${FPC_PATH}/sgx/common/crypto/pdo/common
     ${NANOPB_PATH}
     )
 

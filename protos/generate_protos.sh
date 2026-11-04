@@ -36,7 +36,7 @@ fi
 if [ "$1" != "" ]; then
     BUILD_DIR=$1
 else
-    BUILD_DIR=${FPC_PATH}/common/protos
+    BUILD_DIR=${FPC_PATH}/sgx/common/protos
 fi
 rm -rf $BUILD_DIR
 mkdir -p $BUILD_DIR

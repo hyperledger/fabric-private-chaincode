@@ -14,7 +14,7 @@ unset FPC_CGO
 fail() { echo "FAIL: $*" >&2; exit 1; }
 
 # 1. without FPC_CGO, make never enters the C side
-c_dirs='(protos|common|ecc_enclave|integration|cmake)( |$|/)'
+c_dirs='(protos|sgx|cmake)( |$|/)'
 for t in build test; do
     out="$(make -n "$t" 2>&1 || true)"
     if grep -qE "\-C ${c_dirs}" <<<"${out}"; then
@@ -25,7 +25,7 @@ done
 # 2. with FPC_CGO=1, it does, in today's order
 # (read from make's database: macOS ships make 3.81, which has no --eval)
 order="$(FPC_CGO=1 make -pRrq -f Makefile : 2>/dev/null | sed -n 's/^SUB_DIRS = //p' | sed 's/ *#.*//; s/ *$//' || true)"
-[ "${order}" = "protos common internal ercc ecc_enclave ecc fabric client_sdk samples utils integration" ] ||
+[ "${order}" = "protos sgx/common internal ercc sgx/ecc_enclave ecc fabric client_sdk samples sgx/samples utils integration sgx/integration" ] ||
     fail "FPC_CGO=1 SUB_DIRS changed: ${order}"
 
 # 3. no ecc binary without the C side

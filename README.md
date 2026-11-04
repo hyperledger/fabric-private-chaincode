@@ -95,12 +95,15 @@ More design information can be found [here](docs/architecture-design.md)
 ### Source organization
 
 - [`client_sdk`](client_sdk/go/): The FPC Go Client SDK
-- [`cmake`](cmake/): CMake build rules shared across the project
-- [`common`](common/): Shared C/C++ code
 - [`config`](config/): SGX configuration
 - [`docs`](docs/): Documentation and design documents
-- [`ecc_enclave`](ecc_enclave/): C/C++ code for chaincode enclave
-    (including the trusted code running inside an enclave)
+- [`sgx`](sgx/): everything that needs the Intel SGX toolchain, built only with `FPC_CGO=1`:
+    - [`sgx/cmake`](sgx/cmake/): CMake build rules shared across the C/C++ code
+    - [`sgx/common`](sgx/common/): Shared C/C++ code
+    - [`sgx/ecc_enclave`](sgx/ecc_enclave/): C/C++ code for chaincode enclave
+      (including the trusted code running inside an enclave)
+    - [`sgx/ecc`](sgx/ecc/), [`sgx/attestation`](sgx/attestation/): the Go packages that link the C code
+    - [`sgx/samples`](sgx/samples/), [`sgx/integration`](sgx/integration/): the C++ chaincode samples and their integration tests
 - [`ecc`](ecc/): Go code for FPC chaincode package, including
     dispatcher and (high-level code for) enclave endorsement validation.
 - [`ecc_go`](ecc_go/): Go code for FPC Go Chaincode Support
@@ -109,7 +112,7 @@ More design information can be found [here](docs/architecture-design.md)
 - [`fabric`](fabric/): FPC wrapper for Fabric peer and utilities to
     start and stop a simple Fabric test network with FPC enabled, used
     by integration tests.
-- [`integration`](integration/): FPC integration tests.
+- [`integration`](integration/): FPC-go integration tests (the C++ ones are in `sgx/integration`).
 - [`internal`](internal/): Shared Go code
 - [`protos`](protos/): Protobuf definitions
 - [`scripts`](scripts/): Scripts used in build process.

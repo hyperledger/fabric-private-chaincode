@@ -22,11 +22,11 @@ set(SOURCE_FILES
     )
 
 # NANOPB for protos
-include($ENV{FPC_PATH}/cmake/NanoPB.cmake)
+include($ENV{FPC_PATH}/sgx/cmake/NanoPB.cmake)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${NANOPB_PATH}
     )
 
 # FPC Common chaincode
-include($ENV{FPC_PATH}/ecc_enclave/enclave/CMakeLists-common-app-enclave.txt)
+include($ENV{FPC_PATH}/sgx/ecc_enclave/enclave/CMakeLists-common-app-enclave.txt)

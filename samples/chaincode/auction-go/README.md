@@ -1,6 +1,6 @@
 # Auction (FPC-go)
 
-A sealed-bid auction as an FPC chaincode written in Go, with the functions `init`, `create`, `submit`, `close` and `eval`. It is the Go counterpart of the C++ [auction](../auction) sample.
+A sealed-bid auction as an FPC chaincode written in Go, with the functions `init`, `create`, `submit`, `close` and `eval`. It is the Go counterpart of the C++ [auction](../../../sgx/samples/chaincode/auction) sample.
 
 ## Run without SGX
 

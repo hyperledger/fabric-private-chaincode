@@ -145,7 +145,7 @@ COPY --from=peer-builder ${FPC_PATH}/ercc/ercc ${FPC_PATH}/ercc/ercc
 COPY --from=peer-builder ${FPC_PATH}/fabric/externalBuilder/chaincode ${FPC_PATH}/fabric/externalBuilder/chaincode
 # - and for host-based run also ecc and libs
 COPY --from=peer-builder ${FPC_PATH}/ecc/ecc ${FPC_PATH}/ecc/ecc
-COPY --from=peer-builder ${FPC_PATH}/ecc_enclave/_build/lib/libsgxcc.so ${FPC_PATH}/ecc_enclave/_build/lib/libsgxcc.so
+COPY --from=peer-builder ${FPC_PATH}/sgx/ecc_enclave/_build/lib/libsgxcc.so ${FPC_PATH}/sgx/ecc_enclave/_build/lib/libsgxcc.so
 
 CMD [${FPC_CMDS}/peer.sh node start]
 

@@ -4,8 +4,8 @@ Copyright IBM Corp. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-// this tool is meant to be used in `$FPC_PATH/common/crypto/attestation-api/test` to ensure compatibility
-// with the shell-based attestation conversion implementation in `$FPC_PATH/common/crypto/attestation-api/conversion`.
+// this tool is meant to be used in `$FPC_PATH/sgx/common/crypto/attestation-api/test` to ensure compatibility
+// with the shell-based attestation conversion implementation in `$FPC_PATH/sgx/common/crypto/attestation-api/conversion`.
 package main
 
 import (

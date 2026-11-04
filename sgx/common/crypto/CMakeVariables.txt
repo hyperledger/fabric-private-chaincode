@@ -9,7 +9,7 @@ SET(U_CRYPTO_LIB_NAME updo-crypto)
 SET(T_CRYPTO_LIB_NAME tpdo-crypto)
 
 # load logging library variables
-SET(LOGGING_PATH "$ENV{FPC_PATH}/common/logging")
+SET(LOGGING_PATH "$ENV{FPC_PATH}/sgx/common/logging")
 INCLUDE("${LOGGING_PATH}/CMakeVariables.txt")
 
 FUNCTION(COND_ENABLE_COVERAGE TARGET_LIB)

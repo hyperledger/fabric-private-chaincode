@@ -6,14 +6,14 @@ if [[ -z "${FPC_PATH}" ]]; then
   echo "Error: FPC_PATH not set"; exit 1
 fi
 
-FABRIC_CFG_PATH="${FPC_PATH}/integration/config"
+FABRIC_CFG_PATH="${FPC_PATH}/sgx/integration/config"
 FABRIC_SCRIPTDIR="${FPC_PATH}/fabric/bin/"
 
 . "${FABRIC_SCRIPTDIR}"/lib/common_utils.sh
 . "${FABRIC_SCRIPTDIR}"/lib/common_ledger.sh
 
 # this is the path points to FPC chaincode binary
-CC_PATH=${FPC_PATH}/integration/crashtest/unmarshal_values/_build/lib/
+CC_PATH=${FPC_PATH}/sgx/integration/crashtest/unmarshal_values/_build/lib/
 
 CC_ID="${CC_ID-crash}"
 CC_VER="$(cat "${CC_PATH}"/mrenclave)"

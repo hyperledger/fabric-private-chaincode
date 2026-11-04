@@ -5,7 +5,7 @@
 TOP = ..
 include $(TOP)/build.mk
 
-PROTO_C_BUILD_DIR := $(TOP)/common/protos
+PROTO_C_BUILD_DIR := $(TOP)/sgx/common/protos
 PROTO_GO_BUILD_DIR := $(TOP)/internal/protos
 
 .PHONY: protos

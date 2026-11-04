@@ -15,8 +15,8 @@ set -e
 . ../conversion/define_to_variable.sh
 . ../conversion/enclave_to_mrenclave.sh
 
-DEFINES_FILEPATH="${FPC_PATH}/common/crypto/attestation-api/test/common/test-defines.h"
-TAGS_FILEPATH="${FPC_PATH}/common/crypto/attestation-api/attestation/attestation_tags.h"
+DEFINES_FILEPATH="${FPC_PATH}/sgx/common/crypto/attestation-api/test/common/test-defines.h"
+TAGS_FILEPATH="${FPC_PATH}/sgx/common/crypto/attestation-api/attestation/attestation_tags.h"
 
 function remove_artifacts()
 {
@@ -50,7 +50,7 @@ function orchestrate_with_go_conversion()
 
     #translate attestation (note: attestation_to_evidence defines the EVIDENCE variable)
     ATTESTATION=$(cat ${GET_ATTESTATION_OUTPUT})
-    GO_CONVERSION_CMD="go run ${FPC_PATH}/common/crypto/attestation-api/test/conversion_app_go/main.go"
+    GO_CONVERSION_CMD="go run ${FPC_PATH}/sgx/common/crypto/attestation-api/test/conversion_app_go/main.go"
     EVIDENCE=$(${GO_CONVERSION_CMD} "${ATTESTATION}")
 
     define_to_variable "${DEFINES_FILEPATH}" "EVIDENCE_FILE"
@@ -75,7 +75,7 @@ function orchestrate_with_go_verification()
     echo ${EVIDENCE} > ${EVIDENCE_FILE}
 
     #verify evidence
-    go run -tags fpc_cgo ${FPC_PATH}/common/crypto/attestation-api/test/verify_evidence_app_go/main.go
+    go run -tags fpc_cgo ${FPC_PATH}/sgx/common/crypto/attestation-api/test/verify_evidence_app_go/main.go
 }
 
 #######################################
