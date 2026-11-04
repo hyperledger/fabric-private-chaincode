@@ -18,7 +18,15 @@ func InvokeFpc(channelName string, chaincodeName string, txname string, args [][
 		stringArgs[i] = string(b)
 	}
 
-	client := common.NewFpcClient(channelName, chaincodeName)
-	res := client.Invoke(txname, stringArgs[0:]...)
+	client, err := common.NewFpcClient(channelName, chaincodeName)
+	if err != nil {
+		return nil, http.StatusBadGateway, err
+	}
+	defer client.Close()
+
+	res, err := client.Invoke(txname, stringArgs...)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
 	return []byte(res), http.StatusOK, nil
 }
