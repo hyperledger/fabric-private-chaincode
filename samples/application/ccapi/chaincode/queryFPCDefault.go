@@ -18,7 +18,15 @@ func QueryFpcDefault(txName string, args [][]byte) ([]byte, int, error) {
 		stringArgs[i] = string(b)
 	}
 
-	client := common.NewDefaultFpcClient()
-	res := client.Query(txName, stringArgs[0:]...)
+	client, err := common.NewDefaultFpcClient()
+	if err != nil {
+		return nil, http.StatusBadGateway, err
+	}
+	defer client.Close()
+
+	res, err := client.Query(txName, stringArgs...)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
 	return []byte(res), http.StatusOK, nil
 }

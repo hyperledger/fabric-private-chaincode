@@ -18,7 +18,15 @@ func QueryFpc(chaincodeName string, channelName string, txName string, args [][]
 		stringArgs[i] = string(b)
 	}
 
-	client := common.NewFpcClient(chaincodeName, channelName)
-	res := client.Query(txName, stringArgs[0:]...)
+	client, err := common.NewFpcClient(channelName, chaincodeName)
+	if err != nil {
+		return nil, http.StatusBadGateway, err
+	}
+	defer client.Close()
+
+	res, err := client.Query(txName, stringArgs...)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
 	return []byte(res), http.StatusOK, nil
 }

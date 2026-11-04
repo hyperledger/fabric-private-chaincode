@@ -57,11 +57,11 @@ func InitFpcConfig() {
 
 }
 
-func NewDefaultFpcClient() *pkgFpc.Client {
+func NewDefaultFpcClient() (*pkgFpc.Client, error) {
 	return pkgFpc.NewClient(defaultFpcConfig)
 }
 
-func NewFpcClient(channelName string, chaincodeName string) *pkgFpc.Client {
+func NewFpcClient(channelName string, chaincodeName string) (*pkgFpc.Client, error) {
 	fpcConfig := defaultFpcConfig
 	fpcConfig.ChannelId = channelName
 	fpcConfig.ChaincodeId = chaincodeName
