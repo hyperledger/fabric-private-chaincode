@@ -13,7 +13,7 @@ import (
 	"github.com/hyperledger/fabric-lib-go/common/flogging"
 )
 
-// #cgo CFLAGS: -I${SRCDIR}/../../../common/logging/untrusted
+// #cgo CFLAGS: -I${SRCDIR}/../../common/logging/untrusted
 // #include "logging.h"
 //
 // extern int golog_cgo_wrapper(const char* str);

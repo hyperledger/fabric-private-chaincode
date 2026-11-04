@@ -13,7 +13,6 @@ import (
 	"github.com/hyperledger/fabric-chaincode-go/v2/shim"
 	"github.com/hyperledger/fabric-lib-go/common/flogging"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode"
-	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/enclave"
 	"github.com/hyperledger/fabric-private-chaincode/ecc/chaincode/ercc"
 	"github.com/hyperledger/fabric-private-chaincode/internal/endorsement"
 )
@@ -28,7 +27,7 @@ func main() {
 
 	// create enclave chaincode
 	ecc := &chaincode.EnclaveChaincode{
-		Enclave:   enclave.NewEnclaveStub(),
+		Enclave:   newEnclave(),
 		Validator: endorsement.NewValidator(),
 		Extractor: &chaincode.ExtractorImpl{},
 		Ercc:      &ercc.StubImpl{},

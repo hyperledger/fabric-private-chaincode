@@ -41,7 +41,9 @@ ecc: ecc_dependencies
 ifneq ($(FPC_CGO),1)
 	@echo "ecc: building the ecc binary needs the C enclave; run with FPC_CGO=1 (e.g. make in-container)" >&2; exit 1
 endif
-	$(GO) build $(GOTAGS) -o ecc main.go
+	# build the package (not main.go alone): main picks the enclave from the
+	# fpc_cgo-tagged enclave_cgo.go or enclave_mock.go
+	$(GO) build $(GOTAGS) -o ecc .
 
 ecc_dependencies:
 	# hard to list explicitly, so just leave empty target,

@@ -17,8 +17,8 @@ import (
 	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/types"
 )
 
-// #cgo CFLAGS: -I${SRCDIR}/../../../../common/crypto
-// #cgo LDFLAGS: -L${SRCDIR}/../../../../common/crypto/_build -L${SRCDIR}/../../../../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++ -lgcov
+// #cgo CFLAGS: -I${SRCDIR}/../../../common/crypto
+// #cgo LDFLAGS: -L${SRCDIR}/../../../common/crypto/_build -L${SRCDIR}/../../../common/logging/_build -Wl,--start-group -lupdo-crypto-adapt -lupdo-crypto -Wl,--end-group -lcrypto -lulogging -lstdc++ -lgcov
 // #include <stdio.h> /* needed for free */
 // #include <stdlib.h>
 // #include <string.h>
