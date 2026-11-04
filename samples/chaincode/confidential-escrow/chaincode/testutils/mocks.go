@@ -80,39 +80,7 @@ func (m *MockStub) GetState(key string) ([]byte, error) {
 	fmt.Printf("DEBUG GetState called with key: %q\n", key)
 	m.Invocations = append(m.Invocations, fmt.Sprintf("GetState:%s", key))
 
-	// First: Always try direct lookup
-	if value, exists := m.State[key]; exists {
-		fmt.Printf("DEBUG Direct lookup SUCCESS for key: %q\n", key)
-		return value, nil
-	}
-	fmt.Printf("DEBUG Direct lookup FAILED for key: %q\n", key)
-
-	// Second: If key matches "assetType:uuid" pattern, search composite keys
-	if strings.Contains(key, ":") {
-		parts := strings.Split(key, ":")
-		if len(parts) == 2 {
-			assetType := parts[0]
-			fmt.Printf("DEBUG Searching composite keys for assetType: %q\n", assetType)
-
-			// Search all composite keys for this asset type
-			compositePrefix := assetType + "\x00"
-			fmt.Printf("DEBUG Composite prefix: %q\n", compositePrefix)
-
-			// Just return the FIRST matching composite key
-			// Don't try to match @key since CCTools generates different UUIDs
-			for stateKey, value := range m.State {
-				if strings.HasPrefix(stateKey, compositePrefix) {
-					fmt.Printf("DEBUG Found composite key: %q - RETURNING IT\n", stateKey)
-					return value, nil
-				}
-			}
-
-			fmt.Printf("DEBUG No composite keys found with prefix: %q\n", compositePrefix)
-		}
-	}
-
-	fmt.Printf("DEBUG GetState returning nil for key: %q\n", key)
-	return nil, nil
+	return m.State[key], nil
 }
 
 // PutState stores a key-value pair in mock state

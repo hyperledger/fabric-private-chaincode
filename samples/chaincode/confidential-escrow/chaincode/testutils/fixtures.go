@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
+
+	"github.com/hyperledger-labs/cc-tools/v2/assets"
 )
 
 // TestFixtures provides common test data for unit tests
@@ -133,11 +135,14 @@ func (f *TestFixtures) CreateMockWallet(mockStub *MockStub, pubKey, certHash, wa
 // CreateMockUserDir creates a user directory entry in the mock state
 // The UserDirectory maps publicKeyHash -> walletUUID (NOT walletID)
 func (f *TestFixtures) CreateMockUserDir(mockStub *MockStub, pubKeyHash, walletUUID, certHash string) error {
-	// Generate UUID for @key
-	hash := sha256.Sum256([]byte("userdir" + pubKeyHash))
-	uuidStr := fmt.Sprintf("%x-%x-%x-%x-%x",
-		hash[0:4], hash[4:6], hash[6:8], hash[8:10], hash[10:16])
-	uuidKey := "userdir:" + uuidStr
+	// Derive @key the same way cc-tools does, so that lookups by publicKeyHash hit it directly
+	uuidKey, keyErr := assets.GenerateKey(map[string]any{
+		"@assetType":    "userdir",
+		"publicKeyHash": pubKeyHash,
+	})
+	if keyErr != nil {
+		return keyErr
+	}
 
 	userDirMap := map[string]any{
 		"@assetType":    "userdir",

@@ -212,6 +212,12 @@ func TestMintTokens_NewAssetInWallet(t *testing.T) {
 		t.Fatalf("Failed to create mock digital asset: %v", err)
 	}
 
+	// Setup: Create the asset the wallet already holds
+	err = fixtures.CreateMockDigitalAsset(mockStub, "other-asset-id", "OTH", "Other Token", fixtures.IssuerCertHash, 1000.0)
+	if err != nil {
+		t.Fatalf("Failed to create other mock digital asset: %v", err)
+	}
+
 	// Setup: Create wallet WITHOUT this asset
 	err = fixtures.CreateMockWallet(
 		mockStub,
