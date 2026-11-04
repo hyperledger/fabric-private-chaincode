@@ -11,6 +11,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/netip"
 	"os"
 	"path/filepath"
@@ -26,6 +27,7 @@ import (
 	"github.com/hyperledger/fabric-private-chaincode/client_sdk/go/pkg/core/lifecycle"
 	"github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/fpc/externalbuilders"
 	fpctopo "github.com/hyperledger/fabric-private-chaincode/extension/fsc/integration/nwo/fabric/topology"
+	"github.com/moby/moby/api/pkg/stdcopy"
 	"github.com/moby/moby/api/types/container"
 	"github.com/moby/moby/api/types/mount"
 	"github.com/moby/moby/api/types/network"
@@ -271,7 +273,14 @@ func (n *Extension) runDockerContainers(chaincode *fpctopo.Chaincode, packageIDs
 			Expect(err).ToNot(HaveOccurred())
 			defer reader.Close()
 
-			scanner := bufio.NewScanner(reader)
+			// without a TTY, the log stream multiplexes stdout and stderr behind 8-byte frame headers
+			pr, pw := io.Pipe()
+			go func() {
+				_, err := stdcopy.StdCopy(pw, pw, reader)
+				pw.CloseWithError(err)
+			}()
+
+			scanner := bufio.NewScanner(pr)
 			for scanner.Scan() {
 				dockerLogger.Debugf("%s", scanner.Text())
 			}
