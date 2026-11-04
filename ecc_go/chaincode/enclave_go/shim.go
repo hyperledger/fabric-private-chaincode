@@ -126,7 +126,19 @@ func (f *FpcStubInterface) GetMultipleStates(keys ...string) ([][]byte, error) {
 }
 
 func (f *FpcStubInterface) GetPublicState(key string) ([]byte, error) {
-	value, err := f.stub.GetState(key)
+	// composite keys created by CreateCompositeKey use the FPC format, so we
+	// turn them back into Fabric composite keys before reading the ledger
+	ledgerKey := key
+	if utils.IsFPCCompositeKey(key) {
+		comp := utils.SplitFPCCompositeKey(key)
+		var err error
+		ledgerKey, err = f.stub.CreateCompositeKey(comp[0], comp[1:])
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	value, err := f.stub.GetState(ledgerKey)
 	if err != nil {
 		return nil, err
 	}
