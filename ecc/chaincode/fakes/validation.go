@@ -11,11 +11,8 @@ import (
 type Validator struct {
 	ReplayReadWritesStub        func(shim.ChaincodeStubInterface, *protos.FPCKVSet) error
 	replayReadWritesMutex       sync.RWMutex
-	replayReadWritesArgsForCall []struct {
-		arg1 shim.ChaincodeStubInterface
-		arg2 *protos.FPCKVSet
-	}
-	replayReadWritesReturns struct {
+	replayReadWritesArgsForCall []ValidatorReplayReadWritesArgs
+	replayReadWritesReturns     struct {
 		result1 error
 	}
 	replayReadWritesReturnsOnCall map[int]struct {
@@ -23,27 +20,34 @@ type Validator struct {
 	}
 	ValidateStub        func(*protos.SignedChaincodeResponseMessage, *protos.AttestedData) error
 	validateMutex       sync.RWMutex
-	validateArgsForCall []struct {
-		arg1 *protos.SignedChaincodeResponseMessage
-		arg2 *protos.AttestedData
-	}
-	validateReturns struct {
+	validateArgsForCall []ValidatorValidateArgs
+	validateReturns     struct {
 		result1 error
 	}
 	validateReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
+}
+
+// ValidatorReplayReadWritesArgs holds the arguments of one call to ReplayReadWrites.
+type ValidatorReplayReadWritesArgs struct {
+	Arg1 shim.ChaincodeStubInterface
+	Arg2 *protos.FPCKVSet
+}
+
+// ValidatorValidateArgs holds the arguments of one call to Validate.
+type ValidatorValidateArgs struct {
+	Arg1 *protos.SignedChaincodeResponseMessage
+	Arg2 *protos.AttestedData
 }
 
 func (fake *Validator) ReplayReadWrites(arg1 shim.ChaincodeStubInterface, arg2 *protos.FPCKVSet) error {
 	fake.replayReadWritesMutex.Lock()
 	ret, specificReturn := fake.replayReadWritesReturnsOnCall[len(fake.replayReadWritesArgsForCall)]
-	fake.replayReadWritesArgsForCall = append(fake.replayReadWritesArgsForCall, struct {
-		arg1 shim.ChaincodeStubInterface
-		arg2 *protos.FPCKVSet
-	}{arg1, arg2})
+	fake.replayReadWritesArgsForCall = append(fake.replayReadWritesArgsForCall, ValidatorReplayReadWritesArgs{arg1, arg2})
 	stub := fake.ReplayReadWritesStub
 	fakeReturns := fake.replayReadWritesReturns
 	fake.recordInvocation("ReplayReadWrites", []interface{}{arg1, arg2})
@@ -73,7 +77,15 @@ func (fake *Validator) ReplayReadWritesArgsForCall(i int) (shim.ChaincodeStubInt
 	fake.replayReadWritesMutex.RLock()
 	defer fake.replayReadWritesMutex.RUnlock()
 	argsForCall := fake.replayReadWritesArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *Validator) ReplayReadWritesArgs() []ValidatorReplayReadWritesArgs {
+	fake.replayReadWritesMutex.RLock()
+	defer fake.replayReadWritesMutex.RUnlock()
+	args := make([]ValidatorReplayReadWritesArgs, len(fake.replayReadWritesArgsForCall))
+	copy(args, fake.replayReadWritesArgsForCall)
+	return args
 }
 
 func (fake *Validator) ReplayReadWritesReturns(result1 error) {
@@ -102,10 +114,7 @@ func (fake *Validator) ReplayReadWritesReturnsOnCall(i int, result1 error) {
 func (fake *Validator) Validate(arg1 *protos.SignedChaincodeResponseMessage, arg2 *protos.AttestedData) error {
 	fake.validateMutex.Lock()
 	ret, specificReturn := fake.validateReturnsOnCall[len(fake.validateArgsForCall)]
-	fake.validateArgsForCall = append(fake.validateArgsForCall, struct {
-		arg1 *protos.SignedChaincodeResponseMessage
-		arg2 *protos.AttestedData
-	}{arg1, arg2})
+	fake.validateArgsForCall = append(fake.validateArgsForCall, ValidatorValidateArgs{arg1, arg2})
 	stub := fake.ValidateStub
 	fakeReturns := fake.validateReturns
 	fake.recordInvocation("Validate", []interface{}{arg1, arg2})
@@ -135,7 +144,15 @@ func (fake *Validator) ValidateArgsForCall(i int) (*protos.SignedChaincodeRespon
 	fake.validateMutex.RLock()
 	defer fake.validateMutex.RUnlock()
 	argsForCall := fake.validateArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *Validator) ValidateArgs() []ValidatorValidateArgs {
+	fake.validateMutex.RLock()
+	defer fake.validateMutex.RUnlock()
+	args := make([]ValidatorValidateArgs, len(fake.validateArgsForCall))
+	copy(args, fake.validateArgsForCall)
+	return args
 }
 
 func (fake *Validator) ValidateReturns(result1 error) {
@@ -171,9 +188,18 @@ func (fake *Validator) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *Validator) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *Validator) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

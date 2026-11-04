@@ -8,11 +8,8 @@ import (
 type CryptoProvider struct {
 	DecryptMessageStub        func([]byte, []byte) ([]byte, error)
 	decryptMessageMutex       sync.RWMutex
-	decryptMessageArgsForCall []struct {
-		arg1 []byte
-		arg2 []byte
-	}
-	decryptMessageReturns struct {
+	decryptMessageArgsForCall []CryptoProviderDecryptMessageArgs
+	decryptMessageReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -22,11 +19,8 @@ type CryptoProvider struct {
 	}
 	EncryptMessageStub        func([]byte, []byte) ([]byte, error)
 	encryptMessageMutex       sync.RWMutex
-	encryptMessageArgsForCall []struct {
-		arg1 []byte
-		arg2 []byte
-	}
-	encryptMessageReturns struct {
+	encryptMessageArgsForCall []CryptoProviderEncryptMessageArgs
+	encryptMessageReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -36,9 +30,8 @@ type CryptoProvider struct {
 	}
 	NewECDSAKeysStub        func() ([]byte, []byte, error)
 	newECDSAKeysMutex       sync.RWMutex
-	newECDSAKeysArgsForCall []struct {
-	}
-	newECDSAKeysReturns struct {
+	newECDSAKeysArgsForCall []struct{}
+	newECDSAKeysReturns     struct {
 		result1 []byte
 		result2 []byte
 		result3 error
@@ -50,9 +43,8 @@ type CryptoProvider struct {
 	}
 	NewRSAKeysStub        func() ([]byte, []byte, error)
 	newRSAKeysMutex       sync.RWMutex
-	newRSAKeysArgsForCall []struct {
-	}
-	newRSAKeysReturns struct {
+	newRSAKeysArgsForCall []struct{}
+	newRSAKeysReturns     struct {
 		result1 []byte
 		result2 []byte
 		result3 error
@@ -64,9 +56,8 @@ type CryptoProvider struct {
 	}
 	NewSymmetricKeyStub        func() ([]byte, error)
 	newSymmetricKeyMutex       sync.RWMutex
-	newSymmetricKeyArgsForCall []struct {
-	}
-	newSymmetricKeyReturns struct {
+	newSymmetricKeyArgsForCall []struct{}
+	newSymmetricKeyReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -76,11 +67,8 @@ type CryptoProvider struct {
 	}
 	PkDecryptMessageStub        func([]byte, []byte) ([]byte, error)
 	pkDecryptMessageMutex       sync.RWMutex
-	pkDecryptMessageArgsForCall []struct {
-		arg1 []byte
-		arg2 []byte
-	}
-	pkDecryptMessageReturns struct {
+	pkDecryptMessageArgsForCall []CryptoProviderPkDecryptMessageArgs
+	pkDecryptMessageReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -90,11 +78,8 @@ type CryptoProvider struct {
 	}
 	PkEncryptMessageStub        func([]byte, []byte) ([]byte, error)
 	pkEncryptMessageMutex       sync.RWMutex
-	pkEncryptMessageArgsForCall []struct {
-		arg1 []byte
-		arg2 []byte
-	}
-	pkEncryptMessageReturns struct {
+	pkEncryptMessageArgsForCall []CryptoProviderPkEncryptMessageArgs
+	pkEncryptMessageReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -104,11 +89,8 @@ type CryptoProvider struct {
 	}
 	SignMessageStub        func([]byte, []byte) ([]byte, error)
 	signMessageMutex       sync.RWMutex
-	signMessageArgsForCall []struct {
-		arg1 []byte
-		arg2 []byte
-	}
-	signMessageReturns struct {
+	signMessageArgsForCall []CryptoProviderSignMessageArgs
+	signMessageReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -118,19 +100,53 @@ type CryptoProvider struct {
 	}
 	VerifyMessageStub        func([]byte, []byte, []byte) error
 	verifyMessageMutex       sync.RWMutex
-	verifyMessageArgsForCall []struct {
-		arg1 []byte
-		arg2 []byte
-		arg3 []byte
-	}
-	verifyMessageReturns struct {
+	verifyMessageArgsForCall []CryptoProviderVerifyMessageArgs
+	verifyMessageReturns     struct {
 		result1 error
 	}
 	verifyMessageReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
+}
+
+// CryptoProviderDecryptMessageArgs holds the arguments of one call to DecryptMessage.
+type CryptoProviderDecryptMessageArgs struct {
+	Arg1 []byte
+	Arg2 []byte
+}
+
+// CryptoProviderEncryptMessageArgs holds the arguments of one call to EncryptMessage.
+type CryptoProviderEncryptMessageArgs struct {
+	Arg1 []byte
+	Arg2 []byte
+}
+
+// CryptoProviderPkDecryptMessageArgs holds the arguments of one call to PkDecryptMessage.
+type CryptoProviderPkDecryptMessageArgs struct {
+	Arg1 []byte
+	Arg2 []byte
+}
+
+// CryptoProviderPkEncryptMessageArgs holds the arguments of one call to PkEncryptMessage.
+type CryptoProviderPkEncryptMessageArgs struct {
+	Arg1 []byte
+	Arg2 []byte
+}
+
+// CryptoProviderSignMessageArgs holds the arguments of one call to SignMessage.
+type CryptoProviderSignMessageArgs struct {
+	Arg1 []byte
+	Arg2 []byte
+}
+
+// CryptoProviderVerifyMessageArgs holds the arguments of one call to VerifyMessage.
+type CryptoProviderVerifyMessageArgs struct {
+	Arg1 []byte
+	Arg2 []byte
+	Arg3 []byte
 }
 
 func (fake *CryptoProvider) DecryptMessage(arg1 []byte, arg2 []byte) ([]byte, error) {
@@ -146,10 +162,7 @@ func (fake *CryptoProvider) DecryptMessage(arg1 []byte, arg2 []byte) ([]byte, er
 	}
 	fake.decryptMessageMutex.Lock()
 	ret, specificReturn := fake.decryptMessageReturnsOnCall[len(fake.decryptMessageArgsForCall)]
-	fake.decryptMessageArgsForCall = append(fake.decryptMessageArgsForCall, struct {
-		arg1 []byte
-		arg2 []byte
-	}{arg1Copy, arg2Copy})
+	fake.decryptMessageArgsForCall = append(fake.decryptMessageArgsForCall, CryptoProviderDecryptMessageArgs{arg1Copy, arg2Copy})
 	stub := fake.DecryptMessageStub
 	fakeReturns := fake.decryptMessageReturns
 	fake.recordInvocation("DecryptMessage", []interface{}{arg1Copy, arg2Copy})
@@ -179,7 +192,15 @@ func (fake *CryptoProvider) DecryptMessageArgsForCall(i int) ([]byte, []byte) {
 	fake.decryptMessageMutex.RLock()
 	defer fake.decryptMessageMutex.RUnlock()
 	argsForCall := fake.decryptMessageArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *CryptoProvider) DecryptMessageArgs() []CryptoProviderDecryptMessageArgs {
+	fake.decryptMessageMutex.RLock()
+	defer fake.decryptMessageMutex.RUnlock()
+	args := make([]CryptoProviderDecryptMessageArgs, len(fake.decryptMessageArgsForCall))
+	copy(args, fake.decryptMessageArgsForCall)
+	return args
 }
 
 func (fake *CryptoProvider) DecryptMessageReturns(result1 []byte, result2 error) {
@@ -221,10 +242,7 @@ func (fake *CryptoProvider) EncryptMessage(arg1 []byte, arg2 []byte) ([]byte, er
 	}
 	fake.encryptMessageMutex.Lock()
 	ret, specificReturn := fake.encryptMessageReturnsOnCall[len(fake.encryptMessageArgsForCall)]
-	fake.encryptMessageArgsForCall = append(fake.encryptMessageArgsForCall, struct {
-		arg1 []byte
-		arg2 []byte
-	}{arg1Copy, arg2Copy})
+	fake.encryptMessageArgsForCall = append(fake.encryptMessageArgsForCall, CryptoProviderEncryptMessageArgs{arg1Copy, arg2Copy})
 	stub := fake.EncryptMessageStub
 	fakeReturns := fake.encryptMessageReturns
 	fake.recordInvocation("EncryptMessage", []interface{}{arg1Copy, arg2Copy})
@@ -254,7 +272,15 @@ func (fake *CryptoProvider) EncryptMessageArgsForCall(i int) ([]byte, []byte) {
 	fake.encryptMessageMutex.RLock()
 	defer fake.encryptMessageMutex.RUnlock()
 	argsForCall := fake.encryptMessageArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *CryptoProvider) EncryptMessageArgs() []CryptoProviderEncryptMessageArgs {
+	fake.encryptMessageMutex.RLock()
+	defer fake.encryptMessageMutex.RUnlock()
+	args := make([]CryptoProviderEncryptMessageArgs, len(fake.encryptMessageArgsForCall))
+	copy(args, fake.encryptMessageArgsForCall)
+	return args
 }
 
 func (fake *CryptoProvider) EncryptMessageReturns(result1 []byte, result2 error) {
@@ -286,8 +312,7 @@ func (fake *CryptoProvider) EncryptMessageReturnsOnCall(i int, result1 []byte, r
 func (fake *CryptoProvider) NewECDSAKeys() ([]byte, []byte, error) {
 	fake.newECDSAKeysMutex.Lock()
 	ret, specificReturn := fake.newECDSAKeysReturnsOnCall[len(fake.newECDSAKeysArgsForCall)]
-	fake.newECDSAKeysArgsForCall = append(fake.newECDSAKeysArgsForCall, struct {
-	}{})
+	fake.newECDSAKeysArgsForCall = append(fake.newECDSAKeysArgsForCall, struct{}{})
 	stub := fake.NewECDSAKeysStub
 	fakeReturns := fake.newECDSAKeysReturns
 	fake.recordInvocation("NewECDSAKeys", []interface{}{})
@@ -345,8 +370,7 @@ func (fake *CryptoProvider) NewECDSAKeysReturnsOnCall(i int, result1 []byte, res
 func (fake *CryptoProvider) NewRSAKeys() ([]byte, []byte, error) {
 	fake.newRSAKeysMutex.Lock()
 	ret, specificReturn := fake.newRSAKeysReturnsOnCall[len(fake.newRSAKeysArgsForCall)]
-	fake.newRSAKeysArgsForCall = append(fake.newRSAKeysArgsForCall, struct {
-	}{})
+	fake.newRSAKeysArgsForCall = append(fake.newRSAKeysArgsForCall, struct{}{})
 	stub := fake.NewRSAKeysStub
 	fakeReturns := fake.newRSAKeysReturns
 	fake.recordInvocation("NewRSAKeys", []interface{}{})
@@ -404,8 +428,7 @@ func (fake *CryptoProvider) NewRSAKeysReturnsOnCall(i int, result1 []byte, resul
 func (fake *CryptoProvider) NewSymmetricKey() ([]byte, error) {
 	fake.newSymmetricKeyMutex.Lock()
 	ret, specificReturn := fake.newSymmetricKeyReturnsOnCall[len(fake.newSymmetricKeyArgsForCall)]
-	fake.newSymmetricKeyArgsForCall = append(fake.newSymmetricKeyArgsForCall, struct {
-	}{})
+	fake.newSymmetricKeyArgsForCall = append(fake.newSymmetricKeyArgsForCall, struct{}{})
 	stub := fake.NewSymmetricKeyStub
 	fakeReturns := fake.newSymmetricKeyReturns
 	fake.recordInvocation("NewSymmetricKey", []interface{}{})
@@ -470,10 +493,7 @@ func (fake *CryptoProvider) PkDecryptMessage(arg1 []byte, arg2 []byte) ([]byte, 
 	}
 	fake.pkDecryptMessageMutex.Lock()
 	ret, specificReturn := fake.pkDecryptMessageReturnsOnCall[len(fake.pkDecryptMessageArgsForCall)]
-	fake.pkDecryptMessageArgsForCall = append(fake.pkDecryptMessageArgsForCall, struct {
-		arg1 []byte
-		arg2 []byte
-	}{arg1Copy, arg2Copy})
+	fake.pkDecryptMessageArgsForCall = append(fake.pkDecryptMessageArgsForCall, CryptoProviderPkDecryptMessageArgs{arg1Copy, arg2Copy})
 	stub := fake.PkDecryptMessageStub
 	fakeReturns := fake.pkDecryptMessageReturns
 	fake.recordInvocation("PkDecryptMessage", []interface{}{arg1Copy, arg2Copy})
@@ -503,7 +523,15 @@ func (fake *CryptoProvider) PkDecryptMessageArgsForCall(i int) ([]byte, []byte) 
 	fake.pkDecryptMessageMutex.RLock()
 	defer fake.pkDecryptMessageMutex.RUnlock()
 	argsForCall := fake.pkDecryptMessageArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *CryptoProvider) PkDecryptMessageArgs() []CryptoProviderPkDecryptMessageArgs {
+	fake.pkDecryptMessageMutex.RLock()
+	defer fake.pkDecryptMessageMutex.RUnlock()
+	args := make([]CryptoProviderPkDecryptMessageArgs, len(fake.pkDecryptMessageArgsForCall))
+	copy(args, fake.pkDecryptMessageArgsForCall)
+	return args
 }
 
 func (fake *CryptoProvider) PkDecryptMessageReturns(result1 []byte, result2 error) {
@@ -545,10 +573,7 @@ func (fake *CryptoProvider) PkEncryptMessage(arg1 []byte, arg2 []byte) ([]byte, 
 	}
 	fake.pkEncryptMessageMutex.Lock()
 	ret, specificReturn := fake.pkEncryptMessageReturnsOnCall[len(fake.pkEncryptMessageArgsForCall)]
-	fake.pkEncryptMessageArgsForCall = append(fake.pkEncryptMessageArgsForCall, struct {
-		arg1 []byte
-		arg2 []byte
-	}{arg1Copy, arg2Copy})
+	fake.pkEncryptMessageArgsForCall = append(fake.pkEncryptMessageArgsForCall, CryptoProviderPkEncryptMessageArgs{arg1Copy, arg2Copy})
 	stub := fake.PkEncryptMessageStub
 	fakeReturns := fake.pkEncryptMessageReturns
 	fake.recordInvocation("PkEncryptMessage", []interface{}{arg1Copy, arg2Copy})
@@ -578,7 +603,15 @@ func (fake *CryptoProvider) PkEncryptMessageArgsForCall(i int) ([]byte, []byte) 
 	fake.pkEncryptMessageMutex.RLock()
 	defer fake.pkEncryptMessageMutex.RUnlock()
 	argsForCall := fake.pkEncryptMessageArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *CryptoProvider) PkEncryptMessageArgs() []CryptoProviderPkEncryptMessageArgs {
+	fake.pkEncryptMessageMutex.RLock()
+	defer fake.pkEncryptMessageMutex.RUnlock()
+	args := make([]CryptoProviderPkEncryptMessageArgs, len(fake.pkEncryptMessageArgsForCall))
+	copy(args, fake.pkEncryptMessageArgsForCall)
+	return args
 }
 
 func (fake *CryptoProvider) PkEncryptMessageReturns(result1 []byte, result2 error) {
@@ -620,10 +653,7 @@ func (fake *CryptoProvider) SignMessage(arg1 []byte, arg2 []byte) ([]byte, error
 	}
 	fake.signMessageMutex.Lock()
 	ret, specificReturn := fake.signMessageReturnsOnCall[len(fake.signMessageArgsForCall)]
-	fake.signMessageArgsForCall = append(fake.signMessageArgsForCall, struct {
-		arg1 []byte
-		arg2 []byte
-	}{arg1Copy, arg2Copy})
+	fake.signMessageArgsForCall = append(fake.signMessageArgsForCall, CryptoProviderSignMessageArgs{arg1Copy, arg2Copy})
 	stub := fake.SignMessageStub
 	fakeReturns := fake.signMessageReturns
 	fake.recordInvocation("SignMessage", []interface{}{arg1Copy, arg2Copy})
@@ -653,7 +683,15 @@ func (fake *CryptoProvider) SignMessageArgsForCall(i int) ([]byte, []byte) {
 	fake.signMessageMutex.RLock()
 	defer fake.signMessageMutex.RUnlock()
 	argsForCall := fake.signMessageArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *CryptoProvider) SignMessageArgs() []CryptoProviderSignMessageArgs {
+	fake.signMessageMutex.RLock()
+	defer fake.signMessageMutex.RUnlock()
+	args := make([]CryptoProviderSignMessageArgs, len(fake.signMessageArgsForCall))
+	copy(args, fake.signMessageArgsForCall)
+	return args
 }
 
 func (fake *CryptoProvider) SignMessageReturns(result1 []byte, result2 error) {
@@ -700,11 +738,7 @@ func (fake *CryptoProvider) VerifyMessage(arg1 []byte, arg2 []byte, arg3 []byte)
 	}
 	fake.verifyMessageMutex.Lock()
 	ret, specificReturn := fake.verifyMessageReturnsOnCall[len(fake.verifyMessageArgsForCall)]
-	fake.verifyMessageArgsForCall = append(fake.verifyMessageArgsForCall, struct {
-		arg1 []byte
-		arg2 []byte
-		arg3 []byte
-	}{arg1Copy, arg2Copy, arg3Copy})
+	fake.verifyMessageArgsForCall = append(fake.verifyMessageArgsForCall, CryptoProviderVerifyMessageArgs{arg1Copy, arg2Copy, arg3Copy})
 	stub := fake.VerifyMessageStub
 	fakeReturns := fake.verifyMessageReturns
 	fake.recordInvocation("VerifyMessage", []interface{}{arg1Copy, arg2Copy, arg3Copy})
@@ -734,7 +768,15 @@ func (fake *CryptoProvider) VerifyMessageArgsForCall(i int) ([]byte, []byte, []b
 	fake.verifyMessageMutex.RLock()
 	defer fake.verifyMessageMutex.RUnlock()
 	argsForCall := fake.verifyMessageArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.Arg1, argsForCall.Arg2, argsForCall.Arg3
+}
+
+func (fake *CryptoProvider) VerifyMessageArgs() []CryptoProviderVerifyMessageArgs {
+	fake.verifyMessageMutex.RLock()
+	defer fake.verifyMessageMutex.RUnlock()
+	args := make([]CryptoProviderVerifyMessageArgs, len(fake.verifyMessageArgsForCall))
+	copy(args, fake.verifyMessageArgsForCall)
+	return args
 }
 
 func (fake *CryptoProvider) VerifyMessageReturns(result1 error) {
@@ -770,9 +812,18 @@ func (fake *CryptoProvider) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *CryptoProvider) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *CryptoProvider) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

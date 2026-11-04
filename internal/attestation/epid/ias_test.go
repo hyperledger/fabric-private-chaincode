@@ -18,7 +18,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//go:generate counterfeiter -o fakes/httpclient.go -fake-name HTTPClient . httpClient
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+
+//counterfeiter:generate -o ../fakes/httpclient.go -fake-name HTTPClient . httpClient
 //lint:ignore U1000 This is just used to generate fake
 type httpClient interface {
 	HTTPClient

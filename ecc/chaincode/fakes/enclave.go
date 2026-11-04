@@ -10,11 +10,8 @@ import (
 type EnclaveStub struct {
 	ChaincodeInvokeStub        func(shim.ChaincodeStubInterface, []byte) ([]byte, error)
 	chaincodeInvokeMutex       sync.RWMutex
-	chaincodeInvokeArgsForCall []struct {
-		arg1 shim.ChaincodeStubInterface
-		arg2 []byte
-	}
-	chaincodeInvokeReturns struct {
+	chaincodeInvokeArgsForCall []EnclaveStubChaincodeInvokeArgs
+	chaincodeInvokeReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -24,10 +21,8 @@ type EnclaveStub struct {
 	}
 	ExportCCKeysStub        func([]byte) ([]byte, error)
 	exportCCKeysMutex       sync.RWMutex
-	exportCCKeysArgsForCall []struct {
-		arg1 []byte
-	}
-	exportCCKeysReturns struct {
+	exportCCKeysArgsForCall []EnclaveStubExportCCKeysArgs
+	exportCCKeysReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -37,9 +32,8 @@ type EnclaveStub struct {
 	}
 	GenerateCCKeysStub        func() ([]byte, error)
 	generateCCKeysMutex       sync.RWMutex
-	generateCCKeysArgsForCall []struct {
-	}
-	generateCCKeysReturns struct {
+	generateCCKeysArgsForCall []struct{}
+	generateCCKeysReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -49,9 +43,8 @@ type EnclaveStub struct {
 	}
 	GetEnclaveIdStub        func() (string, error)
 	getEnclaveIdMutex       sync.RWMutex
-	getEnclaveIdArgsForCall []struct {
-	}
-	getEnclaveIdReturns struct {
+	getEnclaveIdArgsForCall []struct{}
+	getEnclaveIdReturns     struct {
 		result1 string
 		result2 error
 	}
@@ -61,9 +54,8 @@ type EnclaveStub struct {
 	}
 	ImportCCKeysStub        func() ([]byte, error)
 	importCCKeysMutex       sync.RWMutex
-	importCCKeysArgsForCall []struct {
-	}
-	importCCKeysReturns struct {
+	importCCKeysArgsForCall []struct{}
+	importCCKeysReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -73,12 +65,8 @@ type EnclaveStub struct {
 	}
 	InitStub        func([]byte, []byte, []byte) ([]byte, error)
 	initMutex       sync.RWMutex
-	initArgsForCall []struct {
-		arg1 []byte
-		arg2 []byte
-		arg3 []byte
-	}
-	initReturns struct {
+	initArgsForCall []EnclaveStubInitArgs
+	initReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -87,7 +75,26 @@ type EnclaveStub struct {
 		result2 error
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
+}
+
+// EnclaveStubChaincodeInvokeArgs holds the arguments of one call to ChaincodeInvoke.
+type EnclaveStubChaincodeInvokeArgs struct {
+	Arg1 shim.ChaincodeStubInterface
+	Arg2 []byte
+}
+
+// EnclaveStubExportCCKeysArgs holds the arguments of one call to ExportCCKeys.
+type EnclaveStubExportCCKeysArgs struct {
+	Arg1 []byte
+}
+
+// EnclaveStubInitArgs holds the arguments of one call to Init.
+type EnclaveStubInitArgs struct {
+	Arg1 []byte
+	Arg2 []byte
+	Arg3 []byte
 }
 
 func (fake *EnclaveStub) ChaincodeInvoke(arg1 shim.ChaincodeStubInterface, arg2 []byte) ([]byte, error) {
@@ -98,10 +105,7 @@ func (fake *EnclaveStub) ChaincodeInvoke(arg1 shim.ChaincodeStubInterface, arg2 
 	}
 	fake.chaincodeInvokeMutex.Lock()
 	ret, specificReturn := fake.chaincodeInvokeReturnsOnCall[len(fake.chaincodeInvokeArgsForCall)]
-	fake.chaincodeInvokeArgsForCall = append(fake.chaincodeInvokeArgsForCall, struct {
-		arg1 shim.ChaincodeStubInterface
-		arg2 []byte
-	}{arg1, arg2Copy})
+	fake.chaincodeInvokeArgsForCall = append(fake.chaincodeInvokeArgsForCall, EnclaveStubChaincodeInvokeArgs{arg1, arg2Copy})
 	stub := fake.ChaincodeInvokeStub
 	fakeReturns := fake.chaincodeInvokeReturns
 	fake.recordInvocation("ChaincodeInvoke", []interface{}{arg1, arg2Copy})
@@ -131,7 +135,15 @@ func (fake *EnclaveStub) ChaincodeInvokeArgsForCall(i int) (shim.ChaincodeStubIn
 	fake.chaincodeInvokeMutex.RLock()
 	defer fake.chaincodeInvokeMutex.RUnlock()
 	argsForCall := fake.chaincodeInvokeArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *EnclaveStub) ChaincodeInvokeArgs() []EnclaveStubChaincodeInvokeArgs {
+	fake.chaincodeInvokeMutex.RLock()
+	defer fake.chaincodeInvokeMutex.RUnlock()
+	args := make([]EnclaveStubChaincodeInvokeArgs, len(fake.chaincodeInvokeArgsForCall))
+	copy(args, fake.chaincodeInvokeArgsForCall)
+	return args
 }
 
 func (fake *EnclaveStub) ChaincodeInvokeReturns(result1 []byte, result2 error) {
@@ -168,9 +180,7 @@ func (fake *EnclaveStub) ExportCCKeys(arg1 []byte) ([]byte, error) {
 	}
 	fake.exportCCKeysMutex.Lock()
 	ret, specificReturn := fake.exportCCKeysReturnsOnCall[len(fake.exportCCKeysArgsForCall)]
-	fake.exportCCKeysArgsForCall = append(fake.exportCCKeysArgsForCall, struct {
-		arg1 []byte
-	}{arg1Copy})
+	fake.exportCCKeysArgsForCall = append(fake.exportCCKeysArgsForCall, EnclaveStubExportCCKeysArgs{arg1Copy})
 	stub := fake.ExportCCKeysStub
 	fakeReturns := fake.exportCCKeysReturns
 	fake.recordInvocation("ExportCCKeys", []interface{}{arg1Copy})
@@ -200,7 +210,15 @@ func (fake *EnclaveStub) ExportCCKeysArgsForCall(i int) []byte {
 	fake.exportCCKeysMutex.RLock()
 	defer fake.exportCCKeysMutex.RUnlock()
 	argsForCall := fake.exportCCKeysArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *EnclaveStub) ExportCCKeysArgs() []EnclaveStubExportCCKeysArgs {
+	fake.exportCCKeysMutex.RLock()
+	defer fake.exportCCKeysMutex.RUnlock()
+	args := make([]EnclaveStubExportCCKeysArgs, len(fake.exportCCKeysArgsForCall))
+	copy(args, fake.exportCCKeysArgsForCall)
+	return args
 }
 
 func (fake *EnclaveStub) ExportCCKeysReturns(result1 []byte, result2 error) {
@@ -232,8 +250,7 @@ func (fake *EnclaveStub) ExportCCKeysReturnsOnCall(i int, result1 []byte, result
 func (fake *EnclaveStub) GenerateCCKeys() ([]byte, error) {
 	fake.generateCCKeysMutex.Lock()
 	ret, specificReturn := fake.generateCCKeysReturnsOnCall[len(fake.generateCCKeysArgsForCall)]
-	fake.generateCCKeysArgsForCall = append(fake.generateCCKeysArgsForCall, struct {
-	}{})
+	fake.generateCCKeysArgsForCall = append(fake.generateCCKeysArgsForCall, struct{}{})
 	stub := fake.GenerateCCKeysStub
 	fakeReturns := fake.generateCCKeysReturns
 	fake.recordInvocation("GenerateCCKeys", []interface{}{})
@@ -288,8 +305,7 @@ func (fake *EnclaveStub) GenerateCCKeysReturnsOnCall(i int, result1 []byte, resu
 func (fake *EnclaveStub) GetEnclaveId() (string, error) {
 	fake.getEnclaveIdMutex.Lock()
 	ret, specificReturn := fake.getEnclaveIdReturnsOnCall[len(fake.getEnclaveIdArgsForCall)]
-	fake.getEnclaveIdArgsForCall = append(fake.getEnclaveIdArgsForCall, struct {
-	}{})
+	fake.getEnclaveIdArgsForCall = append(fake.getEnclaveIdArgsForCall, struct{}{})
 	stub := fake.GetEnclaveIdStub
 	fakeReturns := fake.getEnclaveIdReturns
 	fake.recordInvocation("GetEnclaveId", []interface{}{})
@@ -344,8 +360,7 @@ func (fake *EnclaveStub) GetEnclaveIdReturnsOnCall(i int, result1 string, result
 func (fake *EnclaveStub) ImportCCKeys() ([]byte, error) {
 	fake.importCCKeysMutex.Lock()
 	ret, specificReturn := fake.importCCKeysReturnsOnCall[len(fake.importCCKeysArgsForCall)]
-	fake.importCCKeysArgsForCall = append(fake.importCCKeysArgsForCall, struct {
-	}{})
+	fake.importCCKeysArgsForCall = append(fake.importCCKeysArgsForCall, struct{}{})
 	stub := fake.ImportCCKeysStub
 	fakeReturns := fake.importCCKeysReturns
 	fake.recordInvocation("ImportCCKeys", []interface{}{})
@@ -415,11 +430,7 @@ func (fake *EnclaveStub) Init(arg1 []byte, arg2 []byte, arg3 []byte) ([]byte, er
 	}
 	fake.initMutex.Lock()
 	ret, specificReturn := fake.initReturnsOnCall[len(fake.initArgsForCall)]
-	fake.initArgsForCall = append(fake.initArgsForCall, struct {
-		arg1 []byte
-		arg2 []byte
-		arg3 []byte
-	}{arg1Copy, arg2Copy, arg3Copy})
+	fake.initArgsForCall = append(fake.initArgsForCall, EnclaveStubInitArgs{arg1Copy, arg2Copy, arg3Copy})
 	stub := fake.InitStub
 	fakeReturns := fake.initReturns
 	fake.recordInvocation("Init", []interface{}{arg1Copy, arg2Copy, arg3Copy})
@@ -449,7 +460,15 @@ func (fake *EnclaveStub) InitArgsForCall(i int) ([]byte, []byte, []byte) {
 	fake.initMutex.RLock()
 	defer fake.initMutex.RUnlock()
 	argsForCall := fake.initArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.Arg1, argsForCall.Arg2, argsForCall.Arg3
+}
+
+func (fake *EnclaveStub) InitArgs() []EnclaveStubInitArgs {
+	fake.initMutex.RLock()
+	defer fake.initMutex.RUnlock()
+	args := make([]EnclaveStubInitArgs, len(fake.initArgsForCall))
+	copy(args, fake.initArgsForCall)
+	return args
 }
 
 func (fake *EnclaveStub) InitReturns(result1 []byte, result2 error) {
@@ -488,9 +507,18 @@ func (fake *EnclaveStub) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *EnclaveStub) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *EnclaveStub) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}
