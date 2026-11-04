@@ -10,9 +10,8 @@ import (
 type StateQueryIterator struct {
 	CloseStub        func() error
 	closeMutex       sync.RWMutex
-	closeArgsForCall []struct {
-	}
-	closeReturns struct {
+	closeArgsForCall []struct{}
+	closeReturns     struct {
 		result1 error
 	}
 	closeReturnsOnCall map[int]struct {
@@ -20,9 +19,8 @@ type StateQueryIterator struct {
 	}
 	HasNextStub        func() bool
 	hasNextMutex       sync.RWMutex
-	hasNextArgsForCall []struct {
-	}
-	hasNextReturns struct {
+	hasNextArgsForCall []struct{}
+	hasNextReturns     struct {
 		result1 bool
 	}
 	hasNextReturnsOnCall map[int]struct {
@@ -30,9 +28,8 @@ type StateQueryIterator struct {
 	}
 	NextStub        func() (*queryresult.KV, error)
 	nextMutex       sync.RWMutex
-	nextArgsForCall []struct {
-	}
-	nextReturns struct {
+	nextArgsForCall []struct{}
+	nextReturns     struct {
 		result1 *queryresult.KV
 		result2 error
 	}
@@ -41,14 +38,14 @@ type StateQueryIterator struct {
 		result2 error
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *StateQueryIterator) Close() error {
 	fake.closeMutex.Lock()
 	ret, specificReturn := fake.closeReturnsOnCall[len(fake.closeArgsForCall)]
-	fake.closeArgsForCall = append(fake.closeArgsForCall, struct {
-	}{})
+	fake.closeArgsForCall = append(fake.closeArgsForCall, struct{}{})
 	stub := fake.CloseStub
 	fakeReturns := fake.closeReturns
 	fake.recordInvocation("Close", []interface{}{})
@@ -100,8 +97,7 @@ func (fake *StateQueryIterator) CloseReturnsOnCall(i int, result1 error) {
 func (fake *StateQueryIterator) HasNext() bool {
 	fake.hasNextMutex.Lock()
 	ret, specificReturn := fake.hasNextReturnsOnCall[len(fake.hasNextArgsForCall)]
-	fake.hasNextArgsForCall = append(fake.hasNextArgsForCall, struct {
-	}{})
+	fake.hasNextArgsForCall = append(fake.hasNextArgsForCall, struct{}{})
 	stub := fake.HasNextStub
 	fakeReturns := fake.hasNextReturns
 	fake.recordInvocation("HasNext", []interface{}{})
@@ -153,8 +149,7 @@ func (fake *StateQueryIterator) HasNextReturnsOnCall(i int, result1 bool) {
 func (fake *StateQueryIterator) Next() (*queryresult.KV, error) {
 	fake.nextMutex.Lock()
 	ret, specificReturn := fake.nextReturnsOnCall[len(fake.nextArgsForCall)]
-	fake.nextArgsForCall = append(fake.nextArgsForCall, struct {
-	}{})
+	fake.nextArgsForCall = append(fake.nextArgsForCall, struct{}{})
 	stub := fake.NextStub
 	fakeReturns := fake.nextReturns
 	fake.recordInvocation("Next", []interface{}{})
@@ -216,9 +211,18 @@ func (fake *StateQueryIterator) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *StateQueryIterator) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *StateQueryIterator) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

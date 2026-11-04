@@ -11,13 +11,8 @@ import (
 type ErccStub struct {
 	QueryEnclaveCredentialsStub        func(shim.ChaincodeStubInterface, string, string, string) (*protos.Credentials, error)
 	queryEnclaveCredentialsMutex       sync.RWMutex
-	queryEnclaveCredentialsArgsForCall []struct {
-		arg1 shim.ChaincodeStubInterface
-		arg2 string
-		arg3 string
-		arg4 string
-	}
-	queryEnclaveCredentialsReturns struct {
+	queryEnclaveCredentialsArgsForCall []ErccStubQueryEnclaveCredentialsArgs
+	queryEnclaveCredentialsReturns     struct {
 		result1 *protos.Credentials
 		result2 error
 	}
@@ -26,18 +21,22 @@ type ErccStub struct {
 		result2 error
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
+}
+
+// ErccStubQueryEnclaveCredentialsArgs holds the arguments of one call to QueryEnclaveCredentials.
+type ErccStubQueryEnclaveCredentialsArgs struct {
+	Arg1 shim.ChaincodeStubInterface
+	Arg2 string
+	Arg3 string
+	Arg4 string
 }
 
 func (fake *ErccStub) QueryEnclaveCredentials(arg1 shim.ChaincodeStubInterface, arg2 string, arg3 string, arg4 string) (*protos.Credentials, error) {
 	fake.queryEnclaveCredentialsMutex.Lock()
 	ret, specificReturn := fake.queryEnclaveCredentialsReturnsOnCall[len(fake.queryEnclaveCredentialsArgsForCall)]
-	fake.queryEnclaveCredentialsArgsForCall = append(fake.queryEnclaveCredentialsArgsForCall, struct {
-		arg1 shim.ChaincodeStubInterface
-		arg2 string
-		arg3 string
-		arg4 string
-	}{arg1, arg2, arg3, arg4})
+	fake.queryEnclaveCredentialsArgsForCall = append(fake.queryEnclaveCredentialsArgsForCall, ErccStubQueryEnclaveCredentialsArgs{arg1, arg2, arg3, arg4})
 	stub := fake.QueryEnclaveCredentialsStub
 	fakeReturns := fake.queryEnclaveCredentialsReturns
 	fake.recordInvocation("QueryEnclaveCredentials", []interface{}{arg1, arg2, arg3, arg4})
@@ -67,7 +66,15 @@ func (fake *ErccStub) QueryEnclaveCredentialsArgsForCall(i int) (shim.ChaincodeS
 	fake.queryEnclaveCredentialsMutex.RLock()
 	defer fake.queryEnclaveCredentialsMutex.RUnlock()
 	argsForCall := fake.queryEnclaveCredentialsArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+	return argsForCall.Arg1, argsForCall.Arg2, argsForCall.Arg3, argsForCall.Arg4
+}
+
+func (fake *ErccStub) QueryEnclaveCredentialsArgs() []ErccStubQueryEnclaveCredentialsArgs {
+	fake.queryEnclaveCredentialsMutex.RLock()
+	defer fake.queryEnclaveCredentialsMutex.RUnlock()
+	args := make([]ErccStubQueryEnclaveCredentialsArgs, len(fake.queryEnclaveCredentialsArgsForCall))
+	copy(args, fake.queryEnclaveCredentialsArgsForCall)
+	return args
 }
 
 func (fake *ErccStub) QueryEnclaveCredentialsReturns(result1 *protos.Credentials, result2 error) {
@@ -106,9 +113,18 @@ func (fake *ErccStub) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *ErccStub) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *ErccStub) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

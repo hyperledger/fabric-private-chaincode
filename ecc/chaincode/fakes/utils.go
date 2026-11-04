@@ -11,10 +11,8 @@ import (
 type Extractors struct {
 	GetChaincodeParamsStub        func(shim.ChaincodeStubInterface) (*protos.CCParameters, error)
 	getChaincodeParamsMutex       sync.RWMutex
-	getChaincodeParamsArgsForCall []struct {
-		arg1 shim.ChaincodeStubInterface
-	}
-	getChaincodeParamsReturns struct {
+	getChaincodeParamsArgsForCall []ExtractorsGetChaincodeParamsArgs
+	getChaincodeParamsReturns     struct {
 		result1 *protos.CCParameters
 		result2 error
 	}
@@ -24,10 +22,8 @@ type Extractors struct {
 	}
 	GetChaincodeResponseMessagesStub        func(shim.ChaincodeStubInterface) (*protos.SignedChaincodeResponseMessage, *protos.ChaincodeResponseMessage, error)
 	getChaincodeResponseMessagesMutex       sync.RWMutex
-	getChaincodeResponseMessagesArgsForCall []struct {
-		arg1 shim.ChaincodeStubInterface
-	}
-	getChaincodeResponseMessagesReturns struct {
+	getChaincodeResponseMessagesArgsForCall []ExtractorsGetChaincodeResponseMessagesArgs
+	getChaincodeResponseMessagesReturns     struct {
 		result1 *protos.SignedChaincodeResponseMessage
 		result2 *protos.ChaincodeResponseMessage
 		result3 error
@@ -39,10 +35,8 @@ type Extractors struct {
 	}
 	GetHostParamsStub        func(shim.ChaincodeStubInterface) (*protos.HostParameters, error)
 	getHostParamsMutex       sync.RWMutex
-	getHostParamsArgsForCall []struct {
-		arg1 shim.ChaincodeStubInterface
-	}
-	getHostParamsReturns struct {
+	getHostParamsArgsForCall []ExtractorsGetHostParamsArgs
+	getHostParamsReturns     struct {
 		result1 *protos.HostParameters
 		result2 error
 	}
@@ -52,10 +46,8 @@ type Extractors struct {
 	}
 	GetInitEnclaveMessageStub        func(shim.ChaincodeStubInterface) (*protos.InitEnclaveMessage, error)
 	getInitEnclaveMessageMutex       sync.RWMutex
-	getInitEnclaveMessageArgsForCall []struct {
-		arg1 shim.ChaincodeStubInterface
-	}
-	getInitEnclaveMessageReturns struct {
+	getInitEnclaveMessageArgsForCall []ExtractorsGetInitEnclaveMessageArgs
+	getInitEnclaveMessageReturns     struct {
 		result1 *protos.InitEnclaveMessage
 		result2 error
 	}
@@ -65,10 +57,8 @@ type Extractors struct {
 	}
 	GetSerializedChaincodeRequestStub        func(shim.ChaincodeStubInterface) ([]byte, error)
 	getSerializedChaincodeRequestMutex       sync.RWMutex
-	getSerializedChaincodeRequestArgsForCall []struct {
-		arg1 shim.ChaincodeStubInterface
-	}
-	getSerializedChaincodeRequestReturns struct {
+	getSerializedChaincodeRequestArgsForCall []ExtractorsGetSerializedChaincodeRequestArgs
+	getSerializedChaincodeRequestReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -77,15 +67,39 @@ type Extractors struct {
 		result2 error
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
+}
+
+// ExtractorsGetChaincodeParamsArgs holds the arguments of one call to GetChaincodeParams.
+type ExtractorsGetChaincodeParamsArgs struct {
+	Arg1 shim.ChaincodeStubInterface
+}
+
+// ExtractorsGetChaincodeResponseMessagesArgs holds the arguments of one call to GetChaincodeResponseMessages.
+type ExtractorsGetChaincodeResponseMessagesArgs struct {
+	Arg1 shim.ChaincodeStubInterface
+}
+
+// ExtractorsGetHostParamsArgs holds the arguments of one call to GetHostParams.
+type ExtractorsGetHostParamsArgs struct {
+	Arg1 shim.ChaincodeStubInterface
+}
+
+// ExtractorsGetInitEnclaveMessageArgs holds the arguments of one call to GetInitEnclaveMessage.
+type ExtractorsGetInitEnclaveMessageArgs struct {
+	Arg1 shim.ChaincodeStubInterface
+}
+
+// ExtractorsGetSerializedChaincodeRequestArgs holds the arguments of one call to GetSerializedChaincodeRequest.
+type ExtractorsGetSerializedChaincodeRequestArgs struct {
+	Arg1 shim.ChaincodeStubInterface
 }
 
 func (fake *Extractors) GetChaincodeParams(arg1 shim.ChaincodeStubInterface) (*protos.CCParameters, error) {
 	fake.getChaincodeParamsMutex.Lock()
 	ret, specificReturn := fake.getChaincodeParamsReturnsOnCall[len(fake.getChaincodeParamsArgsForCall)]
-	fake.getChaincodeParamsArgsForCall = append(fake.getChaincodeParamsArgsForCall, struct {
-		arg1 shim.ChaincodeStubInterface
-	}{arg1})
+	fake.getChaincodeParamsArgsForCall = append(fake.getChaincodeParamsArgsForCall, ExtractorsGetChaincodeParamsArgs{arg1})
 	stub := fake.GetChaincodeParamsStub
 	fakeReturns := fake.getChaincodeParamsReturns
 	fake.recordInvocation("GetChaincodeParams", []interface{}{arg1})
@@ -115,7 +129,15 @@ func (fake *Extractors) GetChaincodeParamsArgsForCall(i int) shim.ChaincodeStubI
 	fake.getChaincodeParamsMutex.RLock()
 	defer fake.getChaincodeParamsMutex.RUnlock()
 	argsForCall := fake.getChaincodeParamsArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *Extractors) GetChaincodeParamsArgs() []ExtractorsGetChaincodeParamsArgs {
+	fake.getChaincodeParamsMutex.RLock()
+	defer fake.getChaincodeParamsMutex.RUnlock()
+	args := make([]ExtractorsGetChaincodeParamsArgs, len(fake.getChaincodeParamsArgsForCall))
+	copy(args, fake.getChaincodeParamsArgsForCall)
+	return args
 }
 
 func (fake *Extractors) GetChaincodeParamsReturns(result1 *protos.CCParameters, result2 error) {
@@ -147,9 +169,7 @@ func (fake *Extractors) GetChaincodeParamsReturnsOnCall(i int, result1 *protos.C
 func (fake *Extractors) GetChaincodeResponseMessages(arg1 shim.ChaincodeStubInterface) (*protos.SignedChaincodeResponseMessage, *protos.ChaincodeResponseMessage, error) {
 	fake.getChaincodeResponseMessagesMutex.Lock()
 	ret, specificReturn := fake.getChaincodeResponseMessagesReturnsOnCall[len(fake.getChaincodeResponseMessagesArgsForCall)]
-	fake.getChaincodeResponseMessagesArgsForCall = append(fake.getChaincodeResponseMessagesArgsForCall, struct {
-		arg1 shim.ChaincodeStubInterface
-	}{arg1})
+	fake.getChaincodeResponseMessagesArgsForCall = append(fake.getChaincodeResponseMessagesArgsForCall, ExtractorsGetChaincodeResponseMessagesArgs{arg1})
 	stub := fake.GetChaincodeResponseMessagesStub
 	fakeReturns := fake.getChaincodeResponseMessagesReturns
 	fake.recordInvocation("GetChaincodeResponseMessages", []interface{}{arg1})
@@ -179,7 +199,15 @@ func (fake *Extractors) GetChaincodeResponseMessagesArgsForCall(i int) shim.Chai
 	fake.getChaincodeResponseMessagesMutex.RLock()
 	defer fake.getChaincodeResponseMessagesMutex.RUnlock()
 	argsForCall := fake.getChaincodeResponseMessagesArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *Extractors) GetChaincodeResponseMessagesArgs() []ExtractorsGetChaincodeResponseMessagesArgs {
+	fake.getChaincodeResponseMessagesMutex.RLock()
+	defer fake.getChaincodeResponseMessagesMutex.RUnlock()
+	args := make([]ExtractorsGetChaincodeResponseMessagesArgs, len(fake.getChaincodeResponseMessagesArgsForCall))
+	copy(args, fake.getChaincodeResponseMessagesArgsForCall)
+	return args
 }
 
 func (fake *Extractors) GetChaincodeResponseMessagesReturns(result1 *protos.SignedChaincodeResponseMessage, result2 *protos.ChaincodeResponseMessage, result3 error) {
@@ -214,9 +242,7 @@ func (fake *Extractors) GetChaincodeResponseMessagesReturnsOnCall(i int, result1
 func (fake *Extractors) GetHostParams(arg1 shim.ChaincodeStubInterface) (*protos.HostParameters, error) {
 	fake.getHostParamsMutex.Lock()
 	ret, specificReturn := fake.getHostParamsReturnsOnCall[len(fake.getHostParamsArgsForCall)]
-	fake.getHostParamsArgsForCall = append(fake.getHostParamsArgsForCall, struct {
-		arg1 shim.ChaincodeStubInterface
-	}{arg1})
+	fake.getHostParamsArgsForCall = append(fake.getHostParamsArgsForCall, ExtractorsGetHostParamsArgs{arg1})
 	stub := fake.GetHostParamsStub
 	fakeReturns := fake.getHostParamsReturns
 	fake.recordInvocation("GetHostParams", []interface{}{arg1})
@@ -246,7 +272,15 @@ func (fake *Extractors) GetHostParamsArgsForCall(i int) shim.ChaincodeStubInterf
 	fake.getHostParamsMutex.RLock()
 	defer fake.getHostParamsMutex.RUnlock()
 	argsForCall := fake.getHostParamsArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *Extractors) GetHostParamsArgs() []ExtractorsGetHostParamsArgs {
+	fake.getHostParamsMutex.RLock()
+	defer fake.getHostParamsMutex.RUnlock()
+	args := make([]ExtractorsGetHostParamsArgs, len(fake.getHostParamsArgsForCall))
+	copy(args, fake.getHostParamsArgsForCall)
+	return args
 }
 
 func (fake *Extractors) GetHostParamsReturns(result1 *protos.HostParameters, result2 error) {
@@ -278,9 +312,7 @@ func (fake *Extractors) GetHostParamsReturnsOnCall(i int, result1 *protos.HostPa
 func (fake *Extractors) GetInitEnclaveMessage(arg1 shim.ChaincodeStubInterface) (*protos.InitEnclaveMessage, error) {
 	fake.getInitEnclaveMessageMutex.Lock()
 	ret, specificReturn := fake.getInitEnclaveMessageReturnsOnCall[len(fake.getInitEnclaveMessageArgsForCall)]
-	fake.getInitEnclaveMessageArgsForCall = append(fake.getInitEnclaveMessageArgsForCall, struct {
-		arg1 shim.ChaincodeStubInterface
-	}{arg1})
+	fake.getInitEnclaveMessageArgsForCall = append(fake.getInitEnclaveMessageArgsForCall, ExtractorsGetInitEnclaveMessageArgs{arg1})
 	stub := fake.GetInitEnclaveMessageStub
 	fakeReturns := fake.getInitEnclaveMessageReturns
 	fake.recordInvocation("GetInitEnclaveMessage", []interface{}{arg1})
@@ -310,7 +342,15 @@ func (fake *Extractors) GetInitEnclaveMessageArgsForCall(i int) shim.ChaincodeSt
 	fake.getInitEnclaveMessageMutex.RLock()
 	defer fake.getInitEnclaveMessageMutex.RUnlock()
 	argsForCall := fake.getInitEnclaveMessageArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *Extractors) GetInitEnclaveMessageArgs() []ExtractorsGetInitEnclaveMessageArgs {
+	fake.getInitEnclaveMessageMutex.RLock()
+	defer fake.getInitEnclaveMessageMutex.RUnlock()
+	args := make([]ExtractorsGetInitEnclaveMessageArgs, len(fake.getInitEnclaveMessageArgsForCall))
+	copy(args, fake.getInitEnclaveMessageArgsForCall)
+	return args
 }
 
 func (fake *Extractors) GetInitEnclaveMessageReturns(result1 *protos.InitEnclaveMessage, result2 error) {
@@ -342,9 +382,7 @@ func (fake *Extractors) GetInitEnclaveMessageReturnsOnCall(i int, result1 *proto
 func (fake *Extractors) GetSerializedChaincodeRequest(arg1 shim.ChaincodeStubInterface) ([]byte, error) {
 	fake.getSerializedChaincodeRequestMutex.Lock()
 	ret, specificReturn := fake.getSerializedChaincodeRequestReturnsOnCall[len(fake.getSerializedChaincodeRequestArgsForCall)]
-	fake.getSerializedChaincodeRequestArgsForCall = append(fake.getSerializedChaincodeRequestArgsForCall, struct {
-		arg1 shim.ChaincodeStubInterface
-	}{arg1})
+	fake.getSerializedChaincodeRequestArgsForCall = append(fake.getSerializedChaincodeRequestArgsForCall, ExtractorsGetSerializedChaincodeRequestArgs{arg1})
 	stub := fake.GetSerializedChaincodeRequestStub
 	fakeReturns := fake.getSerializedChaincodeRequestReturns
 	fake.recordInvocation("GetSerializedChaincodeRequest", []interface{}{arg1})
@@ -374,7 +412,15 @@ func (fake *Extractors) GetSerializedChaincodeRequestArgsForCall(i int) shim.Cha
 	fake.getSerializedChaincodeRequestMutex.RLock()
 	defer fake.getSerializedChaincodeRequestMutex.RUnlock()
 	argsForCall := fake.getSerializedChaincodeRequestArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *Extractors) GetSerializedChaincodeRequestArgs() []ExtractorsGetSerializedChaincodeRequestArgs {
+	fake.getSerializedChaincodeRequestMutex.RLock()
+	defer fake.getSerializedChaincodeRequestMutex.RUnlock()
+	args := make([]ExtractorsGetSerializedChaincodeRequestArgs, len(fake.getSerializedChaincodeRequestArgsForCall))
+	copy(args, fake.getSerializedChaincodeRequestArgsForCall)
+	return args
 }
 
 func (fake *Extractors) GetSerializedChaincodeRequestReturns(result1 []byte, result2 error) {
@@ -413,9 +459,18 @@ func (fake *Extractors) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *Extractors) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *Extractors) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

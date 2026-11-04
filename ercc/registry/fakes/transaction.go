@@ -11,9 +11,8 @@ import (
 type TransactionContext struct {
 	GetClientIdentityStub        func() cid.ClientIdentity
 	getClientIdentityMutex       sync.RWMutex
-	getClientIdentityArgsForCall []struct {
-	}
-	getClientIdentityReturns struct {
+	getClientIdentityArgsForCall []struct{}
+	getClientIdentityReturns     struct {
 		result1 cid.ClientIdentity
 	}
 	getClientIdentityReturnsOnCall map[int]struct {
@@ -21,23 +20,22 @@ type TransactionContext struct {
 	}
 	GetStubStub        func() shim.ChaincodeStubInterface
 	getStubMutex       sync.RWMutex
-	getStubArgsForCall []struct {
-	}
-	getStubReturns struct {
+	getStubArgsForCall []struct{}
+	getStubReturns     struct {
 		result1 shim.ChaincodeStubInterface
 	}
 	getStubReturnsOnCall map[int]struct {
 		result1 shim.ChaincodeStubInterface
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
 }
 
 func (fake *TransactionContext) GetClientIdentity() cid.ClientIdentity {
 	fake.getClientIdentityMutex.Lock()
 	ret, specificReturn := fake.getClientIdentityReturnsOnCall[len(fake.getClientIdentityArgsForCall)]
-	fake.getClientIdentityArgsForCall = append(fake.getClientIdentityArgsForCall, struct {
-	}{})
+	fake.getClientIdentityArgsForCall = append(fake.getClientIdentityArgsForCall, struct{}{})
 	stub := fake.GetClientIdentityStub
 	fakeReturns := fake.getClientIdentityReturns
 	fake.recordInvocation("GetClientIdentity", []interface{}{})
@@ -89,8 +87,7 @@ func (fake *TransactionContext) GetClientIdentityReturnsOnCall(i int, result1 ci
 func (fake *TransactionContext) GetStub() shim.ChaincodeStubInterface {
 	fake.getStubMutex.Lock()
 	ret, specificReturn := fake.getStubReturnsOnCall[len(fake.getStubArgsForCall)]
-	fake.getStubArgsForCall = append(fake.getStubArgsForCall, struct {
-	}{})
+	fake.getStubArgsForCall = append(fake.getStubArgsForCall, struct{}{})
 	stub := fake.GetStubStub
 	fakeReturns := fake.getStubReturns
 	fake.recordInvocation("GetStub", []interface{}{})
@@ -149,9 +146,18 @@ func (fake *TransactionContext) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *TransactionContext) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *TransactionContext) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

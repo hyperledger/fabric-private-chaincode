@@ -8,18 +8,22 @@ import (
 type IdentityEvaluator struct {
 	EvaluateCreatorIdentityStub        func([]byte, string) error
 	evaluateCreatorIdentityMutex       sync.RWMutex
-	evaluateCreatorIdentityArgsForCall []struct {
-		arg1 []byte
-		arg2 string
-	}
-	evaluateCreatorIdentityReturns struct {
+	evaluateCreatorIdentityArgsForCall []IdentityEvaluatorEvaluateCreatorIdentityArgs
+	evaluateCreatorIdentityReturns     struct {
 		result1 error
 	}
 	evaluateCreatorIdentityReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
+}
+
+// IdentityEvaluatorEvaluateCreatorIdentityArgs holds the arguments of one call to EvaluateCreatorIdentity.
+type IdentityEvaluatorEvaluateCreatorIdentityArgs struct {
+	Arg1 []byte
+	Arg2 string
 }
 
 func (fake *IdentityEvaluator) EvaluateCreatorIdentity(arg1 []byte, arg2 string) error {
@@ -30,10 +34,7 @@ func (fake *IdentityEvaluator) EvaluateCreatorIdentity(arg1 []byte, arg2 string)
 	}
 	fake.evaluateCreatorIdentityMutex.Lock()
 	ret, specificReturn := fake.evaluateCreatorIdentityReturnsOnCall[len(fake.evaluateCreatorIdentityArgsForCall)]
-	fake.evaluateCreatorIdentityArgsForCall = append(fake.evaluateCreatorIdentityArgsForCall, struct {
-		arg1 []byte
-		arg2 string
-	}{arg1Copy, arg2})
+	fake.evaluateCreatorIdentityArgsForCall = append(fake.evaluateCreatorIdentityArgsForCall, IdentityEvaluatorEvaluateCreatorIdentityArgs{arg1Copy, arg2})
 	stub := fake.EvaluateCreatorIdentityStub
 	fakeReturns := fake.evaluateCreatorIdentityReturns
 	fake.recordInvocation("EvaluateCreatorIdentity", []interface{}{arg1Copy, arg2})
@@ -63,7 +64,15 @@ func (fake *IdentityEvaluator) EvaluateCreatorIdentityArgsForCall(i int) ([]byte
 	fake.evaluateCreatorIdentityMutex.RLock()
 	defer fake.evaluateCreatorIdentityMutex.RUnlock()
 	argsForCall := fake.evaluateCreatorIdentityArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *IdentityEvaluator) EvaluateCreatorIdentityArgs() []IdentityEvaluatorEvaluateCreatorIdentityArgs {
+	fake.evaluateCreatorIdentityMutex.RLock()
+	defer fake.evaluateCreatorIdentityMutex.RUnlock()
+	args := make([]IdentityEvaluatorEvaluateCreatorIdentityArgs, len(fake.evaluateCreatorIdentityArgsForCall))
+	copy(args, fake.evaluateCreatorIdentityArgsForCall)
+	return args
 }
 
 func (fake *IdentityEvaluator) EvaluateCreatorIdentityReturns(result1 error) {
@@ -99,9 +108,18 @@ func (fake *IdentityEvaluator) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *IdentityEvaluator) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *IdentityEvaluator) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

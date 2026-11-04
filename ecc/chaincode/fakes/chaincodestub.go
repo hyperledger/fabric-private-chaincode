@@ -12,11 +12,8 @@ import (
 type ChaincodeStub struct {
 	CreateCompositeKeyStub        func(string, []string) (string, error)
 	createCompositeKeyMutex       sync.RWMutex
-	createCompositeKeyArgsForCall []struct {
-		arg1 string
-		arg2 []string
-	}
-	createCompositeKeyReturns struct {
+	createCompositeKeyArgsForCall []ChaincodeStubCreateCompositeKeyArgs
+	createCompositeKeyReturns     struct {
 		result1 string
 		result2 error
 	}
@@ -26,11 +23,8 @@ type ChaincodeStub struct {
 	}
 	DelPrivateDataStub        func(string, string) error
 	delPrivateDataMutex       sync.RWMutex
-	delPrivateDataArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	delPrivateDataReturns struct {
+	delPrivateDataArgsForCall []ChaincodeStubDelPrivateDataArgs
+	delPrivateDataReturns     struct {
 		result1 error
 	}
 	delPrivateDataReturnsOnCall map[int]struct {
@@ -38,10 +32,8 @@ type ChaincodeStub struct {
 	}
 	DelStateStub        func(string) error
 	delStateMutex       sync.RWMutex
-	delStateArgsForCall []struct {
-		arg1 string
-	}
-	delStateReturns struct {
+	delStateArgsForCall []ChaincodeStubDelStateArgs
+	delStateReturns     struct {
 		result1 error
 	}
 	delStateReturnsOnCall map[int]struct {
@@ -49,9 +41,8 @@ type ChaincodeStub struct {
 	}
 	FinishWriteBatchStub        func() error
 	finishWriteBatchMutex       sync.RWMutex
-	finishWriteBatchArgsForCall []struct {
-	}
-	finishWriteBatchReturns struct {
+	finishWriteBatchArgsForCall []struct{}
+	finishWriteBatchReturns     struct {
 		result1 error
 	}
 	finishWriteBatchReturnsOnCall map[int]struct {
@@ -59,11 +50,8 @@ type ChaincodeStub struct {
 	}
 	GetAllStatesCompositeKeyWithPaginationStub        func(int32, string) (shim.StateQueryIteratorInterface, *peer.QueryResponseMetadata, error)
 	getAllStatesCompositeKeyWithPaginationMutex       sync.RWMutex
-	getAllStatesCompositeKeyWithPaginationArgsForCall []struct {
-		arg1 int32
-		arg2 string
-	}
-	getAllStatesCompositeKeyWithPaginationReturns struct {
+	getAllStatesCompositeKeyWithPaginationArgsForCall []ChaincodeStubGetAllStatesCompositeKeyWithPaginationArgs
+	getAllStatesCompositeKeyWithPaginationReturns     struct {
 		result1 shim.StateQueryIteratorInterface
 		result2 *peer.QueryResponseMetadata
 		result3 error
@@ -75,9 +63,8 @@ type ChaincodeStub struct {
 	}
 	GetArgsStub        func() [][]byte
 	getArgsMutex       sync.RWMutex
-	getArgsArgsForCall []struct {
-	}
-	getArgsReturns struct {
+	getArgsArgsForCall []struct{}
+	getArgsReturns     struct {
 		result1 [][]byte
 	}
 	getArgsReturnsOnCall map[int]struct {
@@ -85,9 +72,8 @@ type ChaincodeStub struct {
 	}
 	GetArgsSliceStub        func() ([]byte, error)
 	getArgsSliceMutex       sync.RWMutex
-	getArgsSliceArgsForCall []struct {
-	}
-	getArgsSliceReturns struct {
+	getArgsSliceArgsForCall []struct{}
+	getArgsSliceReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -97,9 +83,8 @@ type ChaincodeStub struct {
 	}
 	GetBindingStub        func() ([]byte, error)
 	getBindingMutex       sync.RWMutex
-	getBindingArgsForCall []struct {
-	}
-	getBindingReturns struct {
+	getBindingArgsForCall []struct{}
+	getBindingReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -109,9 +94,8 @@ type ChaincodeStub struct {
 	}
 	GetChannelIDStub        func() string
 	getChannelIDMutex       sync.RWMutex
-	getChannelIDArgsForCall []struct {
-	}
-	getChannelIDReturns struct {
+	getChannelIDArgsForCall []struct{}
+	getChannelIDReturns     struct {
 		result1 string
 	}
 	getChannelIDReturnsOnCall map[int]struct {
@@ -119,9 +103,8 @@ type ChaincodeStub struct {
 	}
 	GetCreatorStub        func() ([]byte, error)
 	getCreatorMutex       sync.RWMutex
-	getCreatorArgsForCall []struct {
-	}
-	getCreatorReturns struct {
+	getCreatorArgsForCall []struct{}
+	getCreatorReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -131,9 +114,8 @@ type ChaincodeStub struct {
 	}
 	GetDecorationsStub        func() map[string][]byte
 	getDecorationsMutex       sync.RWMutex
-	getDecorationsArgsForCall []struct {
-	}
-	getDecorationsReturns struct {
+	getDecorationsArgsForCall []struct{}
+	getDecorationsReturns     struct {
 		result1 map[string][]byte
 	}
 	getDecorationsReturnsOnCall map[int]struct {
@@ -141,9 +123,8 @@ type ChaincodeStub struct {
 	}
 	GetFunctionAndParametersStub        func() (string, []string)
 	getFunctionAndParametersMutex       sync.RWMutex
-	getFunctionAndParametersArgsForCall []struct {
-	}
-	getFunctionAndParametersReturns struct {
+	getFunctionAndParametersArgsForCall []struct{}
+	getFunctionAndParametersReturns     struct {
 		result1 string
 		result2 []string
 	}
@@ -153,10 +134,8 @@ type ChaincodeStub struct {
 	}
 	GetHistoryForKeyStub        func(string) (shim.HistoryQueryIteratorInterface, error)
 	getHistoryForKeyMutex       sync.RWMutex
-	getHistoryForKeyArgsForCall []struct {
-		arg1 string
-	}
-	getHistoryForKeyReturns struct {
+	getHistoryForKeyArgsForCall []ChaincodeStubGetHistoryForKeyArgs
+	getHistoryForKeyReturns     struct {
 		result1 shim.HistoryQueryIteratorInterface
 		result2 error
 	}
@@ -166,11 +145,8 @@ type ChaincodeStub struct {
 	}
 	GetMultiplePrivateDataStub        func(string, ...string) ([][]byte, error)
 	getMultiplePrivateDataMutex       sync.RWMutex
-	getMultiplePrivateDataArgsForCall []struct {
-		arg1 string
-		arg2 []string
-	}
-	getMultiplePrivateDataReturns struct {
+	getMultiplePrivateDataArgsForCall []ChaincodeStubGetMultiplePrivateDataArgs
+	getMultiplePrivateDataReturns     struct {
 		result1 [][]byte
 		result2 error
 	}
@@ -180,10 +156,8 @@ type ChaincodeStub struct {
 	}
 	GetMultipleStatesStub        func(...string) ([][]byte, error)
 	getMultipleStatesMutex       sync.RWMutex
-	getMultipleStatesArgsForCall []struct {
-		arg1 []string
-	}
-	getMultipleStatesReturns struct {
+	getMultipleStatesArgsForCall []ChaincodeStubGetMultipleStatesArgs
+	getMultipleStatesReturns     struct {
 		result1 [][]byte
 		result2 error
 	}
@@ -193,11 +167,8 @@ type ChaincodeStub struct {
 	}
 	GetPrivateDataStub        func(string, string) ([]byte, error)
 	getPrivateDataMutex       sync.RWMutex
-	getPrivateDataArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	getPrivateDataReturns struct {
+	getPrivateDataArgsForCall []ChaincodeStubGetPrivateDataArgs
+	getPrivateDataReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -207,12 +178,8 @@ type ChaincodeStub struct {
 	}
 	GetPrivateDataByPartialCompositeKeyStub        func(string, string, []string) (shim.StateQueryIteratorInterface, error)
 	getPrivateDataByPartialCompositeKeyMutex       sync.RWMutex
-	getPrivateDataByPartialCompositeKeyArgsForCall []struct {
-		arg1 string
-		arg2 string
-		arg3 []string
-	}
-	getPrivateDataByPartialCompositeKeyReturns struct {
+	getPrivateDataByPartialCompositeKeyArgsForCall []ChaincodeStubGetPrivateDataByPartialCompositeKeyArgs
+	getPrivateDataByPartialCompositeKeyReturns     struct {
 		result1 shim.StateQueryIteratorInterface
 		result2 error
 	}
@@ -222,12 +189,8 @@ type ChaincodeStub struct {
 	}
 	GetPrivateDataByRangeStub        func(string, string, string) (shim.StateQueryIteratorInterface, error)
 	getPrivateDataByRangeMutex       sync.RWMutex
-	getPrivateDataByRangeArgsForCall []struct {
-		arg1 string
-		arg2 string
-		arg3 string
-	}
-	getPrivateDataByRangeReturns struct {
+	getPrivateDataByRangeArgsForCall []ChaincodeStubGetPrivateDataByRangeArgs
+	getPrivateDataByRangeReturns     struct {
 		result1 shim.StateQueryIteratorInterface
 		result2 error
 	}
@@ -237,11 +200,8 @@ type ChaincodeStub struct {
 	}
 	GetPrivateDataHashStub        func(string, string) ([]byte, error)
 	getPrivateDataHashMutex       sync.RWMutex
-	getPrivateDataHashArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	getPrivateDataHashReturns struct {
+	getPrivateDataHashArgsForCall []ChaincodeStubGetPrivateDataHashArgs
+	getPrivateDataHashReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -251,11 +211,8 @@ type ChaincodeStub struct {
 	}
 	GetPrivateDataQueryResultStub        func(string, string) (shim.StateQueryIteratorInterface, error)
 	getPrivateDataQueryResultMutex       sync.RWMutex
-	getPrivateDataQueryResultArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	getPrivateDataQueryResultReturns struct {
+	getPrivateDataQueryResultArgsForCall []ChaincodeStubGetPrivateDataQueryResultArgs
+	getPrivateDataQueryResultReturns     struct {
 		result1 shim.StateQueryIteratorInterface
 		result2 error
 	}
@@ -265,11 +222,8 @@ type ChaincodeStub struct {
 	}
 	GetPrivateDataValidationParameterStub        func(string, string) ([]byte, error)
 	getPrivateDataValidationParameterMutex       sync.RWMutex
-	getPrivateDataValidationParameterArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	getPrivateDataValidationParameterReturns struct {
+	getPrivateDataValidationParameterArgsForCall []ChaincodeStubGetPrivateDataValidationParameterArgs
+	getPrivateDataValidationParameterReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -279,10 +233,8 @@ type ChaincodeStub struct {
 	}
 	GetQueryResultStub        func(string) (shim.StateQueryIteratorInterface, error)
 	getQueryResultMutex       sync.RWMutex
-	getQueryResultArgsForCall []struct {
-		arg1 string
-	}
-	getQueryResultReturns struct {
+	getQueryResultArgsForCall []ChaincodeStubGetQueryResultArgs
+	getQueryResultReturns     struct {
 		result1 shim.StateQueryIteratorInterface
 		result2 error
 	}
@@ -292,12 +244,8 @@ type ChaincodeStub struct {
 	}
 	GetQueryResultWithPaginationStub        func(string, int32, string) (shim.StateQueryIteratorInterface, *peer.QueryResponseMetadata, error)
 	getQueryResultWithPaginationMutex       sync.RWMutex
-	getQueryResultWithPaginationArgsForCall []struct {
-		arg1 string
-		arg2 int32
-		arg3 string
-	}
-	getQueryResultWithPaginationReturns struct {
+	getQueryResultWithPaginationArgsForCall []ChaincodeStubGetQueryResultWithPaginationArgs
+	getQueryResultWithPaginationReturns     struct {
 		result1 shim.StateQueryIteratorInterface
 		result2 *peer.QueryResponseMetadata
 		result3 error
@@ -309,9 +257,8 @@ type ChaincodeStub struct {
 	}
 	GetSignedProposalStub        func() (*peer.SignedProposal, error)
 	getSignedProposalMutex       sync.RWMutex
-	getSignedProposalArgsForCall []struct {
-	}
-	getSignedProposalReturns struct {
+	getSignedProposalArgsForCall []struct{}
+	getSignedProposalReturns     struct {
 		result1 *peer.SignedProposal
 		result2 error
 	}
@@ -321,10 +268,8 @@ type ChaincodeStub struct {
 	}
 	GetStateStub        func(string) ([]byte, error)
 	getStateMutex       sync.RWMutex
-	getStateArgsForCall []struct {
-		arg1 string
-	}
-	getStateReturns struct {
+	getStateArgsForCall []ChaincodeStubGetStateArgs
+	getStateReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -334,11 +279,8 @@ type ChaincodeStub struct {
 	}
 	GetStateByPartialCompositeKeyStub        func(string, []string) (shim.StateQueryIteratorInterface, error)
 	getStateByPartialCompositeKeyMutex       sync.RWMutex
-	getStateByPartialCompositeKeyArgsForCall []struct {
-		arg1 string
-		arg2 []string
-	}
-	getStateByPartialCompositeKeyReturns struct {
+	getStateByPartialCompositeKeyArgsForCall []ChaincodeStubGetStateByPartialCompositeKeyArgs
+	getStateByPartialCompositeKeyReturns     struct {
 		result1 shim.StateQueryIteratorInterface
 		result2 error
 	}
@@ -348,13 +290,8 @@ type ChaincodeStub struct {
 	}
 	GetStateByPartialCompositeKeyWithPaginationStub        func(string, []string, int32, string) (shim.StateQueryIteratorInterface, *peer.QueryResponseMetadata, error)
 	getStateByPartialCompositeKeyWithPaginationMutex       sync.RWMutex
-	getStateByPartialCompositeKeyWithPaginationArgsForCall []struct {
-		arg1 string
-		arg2 []string
-		arg3 int32
-		arg4 string
-	}
-	getStateByPartialCompositeKeyWithPaginationReturns struct {
+	getStateByPartialCompositeKeyWithPaginationArgsForCall []ChaincodeStubGetStateByPartialCompositeKeyWithPaginationArgs
+	getStateByPartialCompositeKeyWithPaginationReturns     struct {
 		result1 shim.StateQueryIteratorInterface
 		result2 *peer.QueryResponseMetadata
 		result3 error
@@ -366,11 +303,8 @@ type ChaincodeStub struct {
 	}
 	GetStateByRangeStub        func(string, string) (shim.StateQueryIteratorInterface, error)
 	getStateByRangeMutex       sync.RWMutex
-	getStateByRangeArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	getStateByRangeReturns struct {
+	getStateByRangeArgsForCall []ChaincodeStubGetStateByRangeArgs
+	getStateByRangeReturns     struct {
 		result1 shim.StateQueryIteratorInterface
 		result2 error
 	}
@@ -380,13 +314,8 @@ type ChaincodeStub struct {
 	}
 	GetStateByRangeWithPaginationStub        func(string, string, int32, string) (shim.StateQueryIteratorInterface, *peer.QueryResponseMetadata, error)
 	getStateByRangeWithPaginationMutex       sync.RWMutex
-	getStateByRangeWithPaginationArgsForCall []struct {
-		arg1 string
-		arg2 string
-		arg3 int32
-		arg4 string
-	}
-	getStateByRangeWithPaginationReturns struct {
+	getStateByRangeWithPaginationArgsForCall []ChaincodeStubGetStateByRangeWithPaginationArgs
+	getStateByRangeWithPaginationReturns     struct {
 		result1 shim.StateQueryIteratorInterface
 		result2 *peer.QueryResponseMetadata
 		result3 error
@@ -398,10 +327,8 @@ type ChaincodeStub struct {
 	}
 	GetStateValidationParameterStub        func(string) ([]byte, error)
 	getStateValidationParameterMutex       sync.RWMutex
-	getStateValidationParameterArgsForCall []struct {
-		arg1 string
-	}
-	getStateValidationParameterReturns struct {
+	getStateValidationParameterArgsForCall []ChaincodeStubGetStateValidationParameterArgs
+	getStateValidationParameterReturns     struct {
 		result1 []byte
 		result2 error
 	}
@@ -411,9 +338,8 @@ type ChaincodeStub struct {
 	}
 	GetStringArgsStub        func() []string
 	getStringArgsMutex       sync.RWMutex
-	getStringArgsArgsForCall []struct {
-	}
-	getStringArgsReturns struct {
+	getStringArgsArgsForCall []struct{}
+	getStringArgsReturns     struct {
 		result1 []string
 	}
 	getStringArgsReturnsOnCall map[int]struct {
@@ -421,9 +347,8 @@ type ChaincodeStub struct {
 	}
 	GetTransientStub        func() (map[string][]byte, error)
 	getTransientMutex       sync.RWMutex
-	getTransientArgsForCall []struct {
-	}
-	getTransientReturns struct {
+	getTransientArgsForCall []struct{}
+	getTransientReturns     struct {
 		result1 map[string][]byte
 		result2 error
 	}
@@ -433,9 +358,8 @@ type ChaincodeStub struct {
 	}
 	GetTxIDStub        func() string
 	getTxIDMutex       sync.RWMutex
-	getTxIDArgsForCall []struct {
-	}
-	getTxIDReturns struct {
+	getTxIDArgsForCall []struct{}
+	getTxIDReturns     struct {
 		result1 string
 	}
 	getTxIDReturnsOnCall map[int]struct {
@@ -443,9 +367,8 @@ type ChaincodeStub struct {
 	}
 	GetTxTimestampStub        func() (*timestamppb.Timestamp, error)
 	getTxTimestampMutex       sync.RWMutex
-	getTxTimestampArgsForCall []struct {
-	}
-	getTxTimestampReturns struct {
+	getTxTimestampArgsForCall []struct{}
+	getTxTimestampReturns     struct {
 		result1 *timestamppb.Timestamp
 		result2 error
 	}
@@ -455,12 +378,8 @@ type ChaincodeStub struct {
 	}
 	InvokeChaincodeStub        func(string, [][]byte, string) *peer.Response
 	invokeChaincodeMutex       sync.RWMutex
-	invokeChaincodeArgsForCall []struct {
-		arg1 string
-		arg2 [][]byte
-		arg3 string
-	}
-	invokeChaincodeReturns struct {
+	invokeChaincodeArgsForCall []ChaincodeStubInvokeChaincodeArgs
+	invokeChaincodeReturns     struct {
 		result1 *peer.Response
 	}
 	invokeChaincodeReturnsOnCall map[int]struct {
@@ -468,11 +387,8 @@ type ChaincodeStub struct {
 	}
 	PurgePrivateDataStub        func(string, string) error
 	purgePrivateDataMutex       sync.RWMutex
-	purgePrivateDataArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	purgePrivateDataReturns struct {
+	purgePrivateDataArgsForCall []ChaincodeStubPurgePrivateDataArgs
+	purgePrivateDataReturns     struct {
 		result1 error
 	}
 	purgePrivateDataReturnsOnCall map[int]struct {
@@ -480,12 +396,8 @@ type ChaincodeStub struct {
 	}
 	PutPrivateDataStub        func(string, string, []byte) error
 	putPrivateDataMutex       sync.RWMutex
-	putPrivateDataArgsForCall []struct {
-		arg1 string
-		arg2 string
-		arg3 []byte
-	}
-	putPrivateDataReturns struct {
+	putPrivateDataArgsForCall []ChaincodeStubPutPrivateDataArgs
+	putPrivateDataReturns     struct {
 		result1 error
 	}
 	putPrivateDataReturnsOnCall map[int]struct {
@@ -493,11 +405,8 @@ type ChaincodeStub struct {
 	}
 	PutStateStub        func(string, []byte) error
 	putStateMutex       sync.RWMutex
-	putStateArgsForCall []struct {
-		arg1 string
-		arg2 []byte
-	}
-	putStateReturns struct {
+	putStateArgsForCall []ChaincodeStubPutStateArgs
+	putStateReturns     struct {
 		result1 error
 	}
 	putStateReturnsOnCall map[int]struct {
@@ -505,11 +414,8 @@ type ChaincodeStub struct {
 	}
 	SetEventStub        func(string, []byte) error
 	setEventMutex       sync.RWMutex
-	setEventArgsForCall []struct {
-		arg1 string
-		arg2 []byte
-	}
-	setEventReturns struct {
+	setEventArgsForCall []ChaincodeStubSetEventArgs
+	setEventReturns     struct {
 		result1 error
 	}
 	setEventReturnsOnCall map[int]struct {
@@ -517,12 +423,8 @@ type ChaincodeStub struct {
 	}
 	SetPrivateDataValidationParameterStub        func(string, string, []byte) error
 	setPrivateDataValidationParameterMutex       sync.RWMutex
-	setPrivateDataValidationParameterArgsForCall []struct {
-		arg1 string
-		arg2 string
-		arg3 []byte
-	}
-	setPrivateDataValidationParameterReturns struct {
+	setPrivateDataValidationParameterArgsForCall []ChaincodeStubSetPrivateDataValidationParameterArgs
+	setPrivateDataValidationParameterReturns     struct {
 		result1 error
 	}
 	setPrivateDataValidationParameterReturnsOnCall map[int]struct {
@@ -530,11 +432,8 @@ type ChaincodeStub struct {
 	}
 	SetStateValidationParameterStub        func(string, []byte) error
 	setStateValidationParameterMutex       sync.RWMutex
-	setStateValidationParameterArgsForCall []struct {
-		arg1 string
-		arg2 []byte
-	}
-	setStateValidationParameterReturns struct {
+	setStateValidationParameterArgsForCall []ChaincodeStubSetStateValidationParameterArgs
+	setStateValidationParameterReturns     struct {
 		result1 error
 	}
 	setStateValidationParameterReturnsOnCall map[int]struct {
@@ -542,10 +441,8 @@ type ChaincodeStub struct {
 	}
 	SplitCompositeKeyStub        func(string) (string, []string, error)
 	splitCompositeKeyMutex       sync.RWMutex
-	splitCompositeKeyArgsForCall []struct {
-		arg1 string
-	}
-	splitCompositeKeyReturns struct {
+	splitCompositeKeyArgsForCall []ChaincodeStubSplitCompositeKeyArgs
+	splitCompositeKeyReturns     struct {
 		result1 string
 		result2 []string
 		result3 error
@@ -557,10 +454,187 @@ type ChaincodeStub struct {
 	}
 	StartWriteBatchStub        func()
 	startWriteBatchMutex       sync.RWMutex
-	startWriteBatchArgsForCall []struct {
-	}
-	invocations      map[string][][]interface{}
-	invocationsMutex sync.RWMutex
+	startWriteBatchArgsForCall []struct{}
+	invocations                map[string][][]interface{}
+	callOrder                  []string
+	invocationsMutex           sync.RWMutex
+}
+
+// ChaincodeStubCreateCompositeKeyArgs holds the arguments of one call to CreateCompositeKey.
+type ChaincodeStubCreateCompositeKeyArgs struct {
+	Arg1 string
+	Arg2 []string
+}
+
+// ChaincodeStubDelPrivateDataArgs holds the arguments of one call to DelPrivateData.
+type ChaincodeStubDelPrivateDataArgs struct {
+	Arg1 string
+	Arg2 string
+}
+
+// ChaincodeStubDelStateArgs holds the arguments of one call to DelState.
+type ChaincodeStubDelStateArgs struct {
+	Arg1 string
+}
+
+// ChaincodeStubGetAllStatesCompositeKeyWithPaginationArgs holds the arguments of one call to GetAllStatesCompositeKeyWithPagination.
+type ChaincodeStubGetAllStatesCompositeKeyWithPaginationArgs struct {
+	Arg1 int32
+	Arg2 string
+}
+
+// ChaincodeStubGetHistoryForKeyArgs holds the arguments of one call to GetHistoryForKey.
+type ChaincodeStubGetHistoryForKeyArgs struct {
+	Arg1 string
+}
+
+// ChaincodeStubGetMultiplePrivateDataArgs holds the arguments of one call to GetMultiplePrivateData.
+type ChaincodeStubGetMultiplePrivateDataArgs struct {
+	Arg1 string
+	Arg2 []string
+}
+
+// ChaincodeStubGetMultipleStatesArgs holds the arguments of one call to GetMultipleStates.
+type ChaincodeStubGetMultipleStatesArgs struct {
+	Arg1 []string
+}
+
+// ChaincodeStubGetPrivateDataArgs holds the arguments of one call to GetPrivateData.
+type ChaincodeStubGetPrivateDataArgs struct {
+	Arg1 string
+	Arg2 string
+}
+
+// ChaincodeStubGetPrivateDataByPartialCompositeKeyArgs holds the arguments of one call to GetPrivateDataByPartialCompositeKey.
+type ChaincodeStubGetPrivateDataByPartialCompositeKeyArgs struct {
+	Arg1 string
+	Arg2 string
+	Arg3 []string
+}
+
+// ChaincodeStubGetPrivateDataByRangeArgs holds the arguments of one call to GetPrivateDataByRange.
+type ChaincodeStubGetPrivateDataByRangeArgs struct {
+	Arg1 string
+	Arg2 string
+	Arg3 string
+}
+
+// ChaincodeStubGetPrivateDataHashArgs holds the arguments of one call to GetPrivateDataHash.
+type ChaincodeStubGetPrivateDataHashArgs struct {
+	Arg1 string
+	Arg2 string
+}
+
+// ChaincodeStubGetPrivateDataQueryResultArgs holds the arguments of one call to GetPrivateDataQueryResult.
+type ChaincodeStubGetPrivateDataQueryResultArgs struct {
+	Arg1 string
+	Arg2 string
+}
+
+// ChaincodeStubGetPrivateDataValidationParameterArgs holds the arguments of one call to GetPrivateDataValidationParameter.
+type ChaincodeStubGetPrivateDataValidationParameterArgs struct {
+	Arg1 string
+	Arg2 string
+}
+
+// ChaincodeStubGetQueryResultArgs holds the arguments of one call to GetQueryResult.
+type ChaincodeStubGetQueryResultArgs struct {
+	Arg1 string
+}
+
+// ChaincodeStubGetQueryResultWithPaginationArgs holds the arguments of one call to GetQueryResultWithPagination.
+type ChaincodeStubGetQueryResultWithPaginationArgs struct {
+	Arg1 string
+	Arg2 int32
+	Arg3 string
+}
+
+// ChaincodeStubGetStateArgs holds the arguments of one call to GetState.
+type ChaincodeStubGetStateArgs struct {
+	Arg1 string
+}
+
+// ChaincodeStubGetStateByPartialCompositeKeyArgs holds the arguments of one call to GetStateByPartialCompositeKey.
+type ChaincodeStubGetStateByPartialCompositeKeyArgs struct {
+	Arg1 string
+	Arg2 []string
+}
+
+// ChaincodeStubGetStateByPartialCompositeKeyWithPaginationArgs holds the arguments of one call to GetStateByPartialCompositeKeyWithPagination.
+type ChaincodeStubGetStateByPartialCompositeKeyWithPaginationArgs struct {
+	Arg1 string
+	Arg2 []string
+	Arg3 int32
+	Arg4 string
+}
+
+// ChaincodeStubGetStateByRangeArgs holds the arguments of one call to GetStateByRange.
+type ChaincodeStubGetStateByRangeArgs struct {
+	Arg1 string
+	Arg2 string
+}
+
+// ChaincodeStubGetStateByRangeWithPaginationArgs holds the arguments of one call to GetStateByRangeWithPagination.
+type ChaincodeStubGetStateByRangeWithPaginationArgs struct {
+	Arg1 string
+	Arg2 string
+	Arg3 int32
+	Arg4 string
+}
+
+// ChaincodeStubGetStateValidationParameterArgs holds the arguments of one call to GetStateValidationParameter.
+type ChaincodeStubGetStateValidationParameterArgs struct {
+	Arg1 string
+}
+
+// ChaincodeStubInvokeChaincodeArgs holds the arguments of one call to InvokeChaincode.
+type ChaincodeStubInvokeChaincodeArgs struct {
+	Arg1 string
+	Arg2 [][]byte
+	Arg3 string
+}
+
+// ChaincodeStubPurgePrivateDataArgs holds the arguments of one call to PurgePrivateData.
+type ChaincodeStubPurgePrivateDataArgs struct {
+	Arg1 string
+	Arg2 string
+}
+
+// ChaincodeStubPutPrivateDataArgs holds the arguments of one call to PutPrivateData.
+type ChaincodeStubPutPrivateDataArgs struct {
+	Arg1 string
+	Arg2 string
+	Arg3 []byte
+}
+
+// ChaincodeStubPutStateArgs holds the arguments of one call to PutState.
+type ChaincodeStubPutStateArgs struct {
+	Arg1 string
+	Arg2 []byte
+}
+
+// ChaincodeStubSetEventArgs holds the arguments of one call to SetEvent.
+type ChaincodeStubSetEventArgs struct {
+	Arg1 string
+	Arg2 []byte
+}
+
+// ChaincodeStubSetPrivateDataValidationParameterArgs holds the arguments of one call to SetPrivateDataValidationParameter.
+type ChaincodeStubSetPrivateDataValidationParameterArgs struct {
+	Arg1 string
+	Arg2 string
+	Arg3 []byte
+}
+
+// ChaincodeStubSetStateValidationParameterArgs holds the arguments of one call to SetStateValidationParameter.
+type ChaincodeStubSetStateValidationParameterArgs struct {
+	Arg1 string
+	Arg2 []byte
+}
+
+// ChaincodeStubSplitCompositeKeyArgs holds the arguments of one call to SplitCompositeKey.
+type ChaincodeStubSplitCompositeKeyArgs struct {
+	Arg1 string
 }
 
 func (fake *ChaincodeStub) CreateCompositeKey(arg1 string, arg2 []string) (string, error) {
@@ -571,10 +645,7 @@ func (fake *ChaincodeStub) CreateCompositeKey(arg1 string, arg2 []string) (strin
 	}
 	fake.createCompositeKeyMutex.Lock()
 	ret, specificReturn := fake.createCompositeKeyReturnsOnCall[len(fake.createCompositeKeyArgsForCall)]
-	fake.createCompositeKeyArgsForCall = append(fake.createCompositeKeyArgsForCall, struct {
-		arg1 string
-		arg2 []string
-	}{arg1, arg2Copy})
+	fake.createCompositeKeyArgsForCall = append(fake.createCompositeKeyArgsForCall, ChaincodeStubCreateCompositeKeyArgs{arg1, arg2Copy})
 	stub := fake.CreateCompositeKeyStub
 	fakeReturns := fake.createCompositeKeyReturns
 	fake.recordInvocation("CreateCompositeKey", []interface{}{arg1, arg2Copy})
@@ -604,7 +675,15 @@ func (fake *ChaincodeStub) CreateCompositeKeyArgsForCall(i int) (string, []strin
 	fake.createCompositeKeyMutex.RLock()
 	defer fake.createCompositeKeyMutex.RUnlock()
 	argsForCall := fake.createCompositeKeyArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *ChaincodeStub) CreateCompositeKeyArgs() []ChaincodeStubCreateCompositeKeyArgs {
+	fake.createCompositeKeyMutex.RLock()
+	defer fake.createCompositeKeyMutex.RUnlock()
+	args := make([]ChaincodeStubCreateCompositeKeyArgs, len(fake.createCompositeKeyArgsForCall))
+	copy(args, fake.createCompositeKeyArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) CreateCompositeKeyReturns(result1 string, result2 error) {
@@ -636,10 +715,7 @@ func (fake *ChaincodeStub) CreateCompositeKeyReturnsOnCall(i int, result1 string
 func (fake *ChaincodeStub) DelPrivateData(arg1 string, arg2 string) error {
 	fake.delPrivateDataMutex.Lock()
 	ret, specificReturn := fake.delPrivateDataReturnsOnCall[len(fake.delPrivateDataArgsForCall)]
-	fake.delPrivateDataArgsForCall = append(fake.delPrivateDataArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
+	fake.delPrivateDataArgsForCall = append(fake.delPrivateDataArgsForCall, ChaincodeStubDelPrivateDataArgs{arg1, arg2})
 	stub := fake.DelPrivateDataStub
 	fakeReturns := fake.delPrivateDataReturns
 	fake.recordInvocation("DelPrivateData", []interface{}{arg1, arg2})
@@ -669,7 +745,15 @@ func (fake *ChaincodeStub) DelPrivateDataArgsForCall(i int) (string, string) {
 	fake.delPrivateDataMutex.RLock()
 	defer fake.delPrivateDataMutex.RUnlock()
 	argsForCall := fake.delPrivateDataArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *ChaincodeStub) DelPrivateDataArgs() []ChaincodeStubDelPrivateDataArgs {
+	fake.delPrivateDataMutex.RLock()
+	defer fake.delPrivateDataMutex.RUnlock()
+	args := make([]ChaincodeStubDelPrivateDataArgs, len(fake.delPrivateDataArgsForCall))
+	copy(args, fake.delPrivateDataArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) DelPrivateDataReturns(result1 error) {
@@ -698,9 +782,7 @@ func (fake *ChaincodeStub) DelPrivateDataReturnsOnCall(i int, result1 error) {
 func (fake *ChaincodeStub) DelState(arg1 string) error {
 	fake.delStateMutex.Lock()
 	ret, specificReturn := fake.delStateReturnsOnCall[len(fake.delStateArgsForCall)]
-	fake.delStateArgsForCall = append(fake.delStateArgsForCall, struct {
-		arg1 string
-	}{arg1})
+	fake.delStateArgsForCall = append(fake.delStateArgsForCall, ChaincodeStubDelStateArgs{arg1})
 	stub := fake.DelStateStub
 	fakeReturns := fake.delStateReturns
 	fake.recordInvocation("DelState", []interface{}{arg1})
@@ -730,7 +812,15 @@ func (fake *ChaincodeStub) DelStateArgsForCall(i int) string {
 	fake.delStateMutex.RLock()
 	defer fake.delStateMutex.RUnlock()
 	argsForCall := fake.delStateArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *ChaincodeStub) DelStateArgs() []ChaincodeStubDelStateArgs {
+	fake.delStateMutex.RLock()
+	defer fake.delStateMutex.RUnlock()
+	args := make([]ChaincodeStubDelStateArgs, len(fake.delStateArgsForCall))
+	copy(args, fake.delStateArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) DelStateReturns(result1 error) {
@@ -759,8 +849,7 @@ func (fake *ChaincodeStub) DelStateReturnsOnCall(i int, result1 error) {
 func (fake *ChaincodeStub) FinishWriteBatch() error {
 	fake.finishWriteBatchMutex.Lock()
 	ret, specificReturn := fake.finishWriteBatchReturnsOnCall[len(fake.finishWriteBatchArgsForCall)]
-	fake.finishWriteBatchArgsForCall = append(fake.finishWriteBatchArgsForCall, struct {
-	}{})
+	fake.finishWriteBatchArgsForCall = append(fake.finishWriteBatchArgsForCall, struct{}{})
 	stub := fake.FinishWriteBatchStub
 	fakeReturns := fake.finishWriteBatchReturns
 	fake.recordInvocation("FinishWriteBatch", []interface{}{})
@@ -812,10 +901,7 @@ func (fake *ChaincodeStub) FinishWriteBatchReturnsOnCall(i int, result1 error) {
 func (fake *ChaincodeStub) GetAllStatesCompositeKeyWithPagination(arg1 int32, arg2 string) (shim.StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
 	fake.getAllStatesCompositeKeyWithPaginationMutex.Lock()
 	ret, specificReturn := fake.getAllStatesCompositeKeyWithPaginationReturnsOnCall[len(fake.getAllStatesCompositeKeyWithPaginationArgsForCall)]
-	fake.getAllStatesCompositeKeyWithPaginationArgsForCall = append(fake.getAllStatesCompositeKeyWithPaginationArgsForCall, struct {
-		arg1 int32
-		arg2 string
-	}{arg1, arg2})
+	fake.getAllStatesCompositeKeyWithPaginationArgsForCall = append(fake.getAllStatesCompositeKeyWithPaginationArgsForCall, ChaincodeStubGetAllStatesCompositeKeyWithPaginationArgs{arg1, arg2})
 	stub := fake.GetAllStatesCompositeKeyWithPaginationStub
 	fakeReturns := fake.getAllStatesCompositeKeyWithPaginationReturns
 	fake.recordInvocation("GetAllStatesCompositeKeyWithPagination", []interface{}{arg1, arg2})
@@ -845,7 +931,15 @@ func (fake *ChaincodeStub) GetAllStatesCompositeKeyWithPaginationArgsForCall(i i
 	fake.getAllStatesCompositeKeyWithPaginationMutex.RLock()
 	defer fake.getAllStatesCompositeKeyWithPaginationMutex.RUnlock()
 	argsForCall := fake.getAllStatesCompositeKeyWithPaginationArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *ChaincodeStub) GetAllStatesCompositeKeyWithPaginationArgs() []ChaincodeStubGetAllStatesCompositeKeyWithPaginationArgs {
+	fake.getAllStatesCompositeKeyWithPaginationMutex.RLock()
+	defer fake.getAllStatesCompositeKeyWithPaginationMutex.RUnlock()
+	args := make([]ChaincodeStubGetAllStatesCompositeKeyWithPaginationArgs, len(fake.getAllStatesCompositeKeyWithPaginationArgsForCall))
+	copy(args, fake.getAllStatesCompositeKeyWithPaginationArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetAllStatesCompositeKeyWithPaginationReturns(result1 shim.StateQueryIteratorInterface, result2 *peer.QueryResponseMetadata, result3 error) {
@@ -880,8 +974,7 @@ func (fake *ChaincodeStub) GetAllStatesCompositeKeyWithPaginationReturnsOnCall(i
 func (fake *ChaincodeStub) GetArgs() [][]byte {
 	fake.getArgsMutex.Lock()
 	ret, specificReturn := fake.getArgsReturnsOnCall[len(fake.getArgsArgsForCall)]
-	fake.getArgsArgsForCall = append(fake.getArgsArgsForCall, struct {
-	}{})
+	fake.getArgsArgsForCall = append(fake.getArgsArgsForCall, struct{}{})
 	stub := fake.GetArgsStub
 	fakeReturns := fake.getArgsReturns
 	fake.recordInvocation("GetArgs", []interface{}{})
@@ -933,8 +1026,7 @@ func (fake *ChaincodeStub) GetArgsReturnsOnCall(i int, result1 [][]byte) {
 func (fake *ChaincodeStub) GetArgsSlice() ([]byte, error) {
 	fake.getArgsSliceMutex.Lock()
 	ret, specificReturn := fake.getArgsSliceReturnsOnCall[len(fake.getArgsSliceArgsForCall)]
-	fake.getArgsSliceArgsForCall = append(fake.getArgsSliceArgsForCall, struct {
-	}{})
+	fake.getArgsSliceArgsForCall = append(fake.getArgsSliceArgsForCall, struct{}{})
 	stub := fake.GetArgsSliceStub
 	fakeReturns := fake.getArgsSliceReturns
 	fake.recordInvocation("GetArgsSlice", []interface{}{})
@@ -989,8 +1081,7 @@ func (fake *ChaincodeStub) GetArgsSliceReturnsOnCall(i int, result1 []byte, resu
 func (fake *ChaincodeStub) GetBinding() ([]byte, error) {
 	fake.getBindingMutex.Lock()
 	ret, specificReturn := fake.getBindingReturnsOnCall[len(fake.getBindingArgsForCall)]
-	fake.getBindingArgsForCall = append(fake.getBindingArgsForCall, struct {
-	}{})
+	fake.getBindingArgsForCall = append(fake.getBindingArgsForCall, struct{}{})
 	stub := fake.GetBindingStub
 	fakeReturns := fake.getBindingReturns
 	fake.recordInvocation("GetBinding", []interface{}{})
@@ -1045,8 +1136,7 @@ func (fake *ChaincodeStub) GetBindingReturnsOnCall(i int, result1 []byte, result
 func (fake *ChaincodeStub) GetChannelID() string {
 	fake.getChannelIDMutex.Lock()
 	ret, specificReturn := fake.getChannelIDReturnsOnCall[len(fake.getChannelIDArgsForCall)]
-	fake.getChannelIDArgsForCall = append(fake.getChannelIDArgsForCall, struct {
-	}{})
+	fake.getChannelIDArgsForCall = append(fake.getChannelIDArgsForCall, struct{}{})
 	stub := fake.GetChannelIDStub
 	fakeReturns := fake.getChannelIDReturns
 	fake.recordInvocation("GetChannelID", []interface{}{})
@@ -1098,8 +1188,7 @@ func (fake *ChaincodeStub) GetChannelIDReturnsOnCall(i int, result1 string) {
 func (fake *ChaincodeStub) GetCreator() ([]byte, error) {
 	fake.getCreatorMutex.Lock()
 	ret, specificReturn := fake.getCreatorReturnsOnCall[len(fake.getCreatorArgsForCall)]
-	fake.getCreatorArgsForCall = append(fake.getCreatorArgsForCall, struct {
-	}{})
+	fake.getCreatorArgsForCall = append(fake.getCreatorArgsForCall, struct{}{})
 	stub := fake.GetCreatorStub
 	fakeReturns := fake.getCreatorReturns
 	fake.recordInvocation("GetCreator", []interface{}{})
@@ -1154,8 +1243,7 @@ func (fake *ChaincodeStub) GetCreatorReturnsOnCall(i int, result1 []byte, result
 func (fake *ChaincodeStub) GetDecorations() map[string][]byte {
 	fake.getDecorationsMutex.Lock()
 	ret, specificReturn := fake.getDecorationsReturnsOnCall[len(fake.getDecorationsArgsForCall)]
-	fake.getDecorationsArgsForCall = append(fake.getDecorationsArgsForCall, struct {
-	}{})
+	fake.getDecorationsArgsForCall = append(fake.getDecorationsArgsForCall, struct{}{})
 	stub := fake.GetDecorationsStub
 	fakeReturns := fake.getDecorationsReturns
 	fake.recordInvocation("GetDecorations", []interface{}{})
@@ -1207,8 +1295,7 @@ func (fake *ChaincodeStub) GetDecorationsReturnsOnCall(i int, result1 map[string
 func (fake *ChaincodeStub) GetFunctionAndParameters() (string, []string) {
 	fake.getFunctionAndParametersMutex.Lock()
 	ret, specificReturn := fake.getFunctionAndParametersReturnsOnCall[len(fake.getFunctionAndParametersArgsForCall)]
-	fake.getFunctionAndParametersArgsForCall = append(fake.getFunctionAndParametersArgsForCall, struct {
-	}{})
+	fake.getFunctionAndParametersArgsForCall = append(fake.getFunctionAndParametersArgsForCall, struct{}{})
 	stub := fake.GetFunctionAndParametersStub
 	fakeReturns := fake.getFunctionAndParametersReturns
 	fake.recordInvocation("GetFunctionAndParameters", []interface{}{})
@@ -1263,9 +1350,7 @@ func (fake *ChaincodeStub) GetFunctionAndParametersReturnsOnCall(i int, result1 
 func (fake *ChaincodeStub) GetHistoryForKey(arg1 string) (shim.HistoryQueryIteratorInterface, error) {
 	fake.getHistoryForKeyMutex.Lock()
 	ret, specificReturn := fake.getHistoryForKeyReturnsOnCall[len(fake.getHistoryForKeyArgsForCall)]
-	fake.getHistoryForKeyArgsForCall = append(fake.getHistoryForKeyArgsForCall, struct {
-		arg1 string
-	}{arg1})
+	fake.getHistoryForKeyArgsForCall = append(fake.getHistoryForKeyArgsForCall, ChaincodeStubGetHistoryForKeyArgs{arg1})
 	stub := fake.GetHistoryForKeyStub
 	fakeReturns := fake.getHistoryForKeyReturns
 	fake.recordInvocation("GetHistoryForKey", []interface{}{arg1})
@@ -1295,7 +1380,15 @@ func (fake *ChaincodeStub) GetHistoryForKeyArgsForCall(i int) string {
 	fake.getHistoryForKeyMutex.RLock()
 	defer fake.getHistoryForKeyMutex.RUnlock()
 	argsForCall := fake.getHistoryForKeyArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *ChaincodeStub) GetHistoryForKeyArgs() []ChaincodeStubGetHistoryForKeyArgs {
+	fake.getHistoryForKeyMutex.RLock()
+	defer fake.getHistoryForKeyMutex.RUnlock()
+	args := make([]ChaincodeStubGetHistoryForKeyArgs, len(fake.getHistoryForKeyArgsForCall))
+	copy(args, fake.getHistoryForKeyArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetHistoryForKeyReturns(result1 shim.HistoryQueryIteratorInterface, result2 error) {
@@ -1325,15 +1418,17 @@ func (fake *ChaincodeStub) GetHistoryForKeyReturnsOnCall(i int, result1 shim.His
 }
 
 func (fake *ChaincodeStub) GetMultiplePrivateData(arg1 string, arg2 ...string) ([][]byte, error) {
+	var arg2Copy []string
+	if arg2 != nil {
+		arg2Copy = make([]string, len(arg2))
+		copy(arg2Copy, arg2)
+	}
 	fake.getMultiplePrivateDataMutex.Lock()
 	ret, specificReturn := fake.getMultiplePrivateDataReturnsOnCall[len(fake.getMultiplePrivateDataArgsForCall)]
-	fake.getMultiplePrivateDataArgsForCall = append(fake.getMultiplePrivateDataArgsForCall, struct {
-		arg1 string
-		arg2 []string
-	}{arg1, arg2})
+	fake.getMultiplePrivateDataArgsForCall = append(fake.getMultiplePrivateDataArgsForCall, ChaincodeStubGetMultiplePrivateDataArgs{arg1, arg2Copy})
 	stub := fake.GetMultiplePrivateDataStub
 	fakeReturns := fake.getMultiplePrivateDataReturns
-	fake.recordInvocation("GetMultiplePrivateData", []interface{}{arg1, arg2})
+	fake.recordInvocation("GetMultiplePrivateData", []interface{}{arg1, arg2Copy})
 	fake.getMultiplePrivateDataMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2...)
@@ -1360,7 +1455,15 @@ func (fake *ChaincodeStub) GetMultiplePrivateDataArgsForCall(i int) (string, []s
 	fake.getMultiplePrivateDataMutex.RLock()
 	defer fake.getMultiplePrivateDataMutex.RUnlock()
 	argsForCall := fake.getMultiplePrivateDataArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *ChaincodeStub) GetMultiplePrivateDataArgs() []ChaincodeStubGetMultiplePrivateDataArgs {
+	fake.getMultiplePrivateDataMutex.RLock()
+	defer fake.getMultiplePrivateDataMutex.RUnlock()
+	args := make([]ChaincodeStubGetMultiplePrivateDataArgs, len(fake.getMultiplePrivateDataArgsForCall))
+	copy(args, fake.getMultiplePrivateDataArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetMultiplePrivateDataReturns(result1 [][]byte, result2 error) {
@@ -1390,14 +1493,17 @@ func (fake *ChaincodeStub) GetMultiplePrivateDataReturnsOnCall(i int, result1 []
 }
 
 func (fake *ChaincodeStub) GetMultipleStates(arg1 ...string) ([][]byte, error) {
+	var arg1Copy []string
+	if arg1 != nil {
+		arg1Copy = make([]string, len(arg1))
+		copy(arg1Copy, arg1)
+	}
 	fake.getMultipleStatesMutex.Lock()
 	ret, specificReturn := fake.getMultipleStatesReturnsOnCall[len(fake.getMultipleStatesArgsForCall)]
-	fake.getMultipleStatesArgsForCall = append(fake.getMultipleStatesArgsForCall, struct {
-		arg1 []string
-	}{arg1})
+	fake.getMultipleStatesArgsForCall = append(fake.getMultipleStatesArgsForCall, ChaincodeStubGetMultipleStatesArgs{arg1Copy})
 	stub := fake.GetMultipleStatesStub
 	fakeReturns := fake.getMultipleStatesReturns
-	fake.recordInvocation("GetMultipleStates", []interface{}{arg1})
+	fake.recordInvocation("GetMultipleStates", []interface{}{arg1Copy})
 	fake.getMultipleStatesMutex.Unlock()
 	if stub != nil {
 		return stub(arg1...)
@@ -1424,7 +1530,15 @@ func (fake *ChaincodeStub) GetMultipleStatesArgsForCall(i int) []string {
 	fake.getMultipleStatesMutex.RLock()
 	defer fake.getMultipleStatesMutex.RUnlock()
 	argsForCall := fake.getMultipleStatesArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *ChaincodeStub) GetMultipleStatesArgs() []ChaincodeStubGetMultipleStatesArgs {
+	fake.getMultipleStatesMutex.RLock()
+	defer fake.getMultipleStatesMutex.RUnlock()
+	args := make([]ChaincodeStubGetMultipleStatesArgs, len(fake.getMultipleStatesArgsForCall))
+	copy(args, fake.getMultipleStatesArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetMultipleStatesReturns(result1 [][]byte, result2 error) {
@@ -1456,10 +1570,7 @@ func (fake *ChaincodeStub) GetMultipleStatesReturnsOnCall(i int, result1 [][]byt
 func (fake *ChaincodeStub) GetPrivateData(arg1 string, arg2 string) ([]byte, error) {
 	fake.getPrivateDataMutex.Lock()
 	ret, specificReturn := fake.getPrivateDataReturnsOnCall[len(fake.getPrivateDataArgsForCall)]
-	fake.getPrivateDataArgsForCall = append(fake.getPrivateDataArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
+	fake.getPrivateDataArgsForCall = append(fake.getPrivateDataArgsForCall, ChaincodeStubGetPrivateDataArgs{arg1, arg2})
 	stub := fake.GetPrivateDataStub
 	fakeReturns := fake.getPrivateDataReturns
 	fake.recordInvocation("GetPrivateData", []interface{}{arg1, arg2})
@@ -1489,7 +1600,15 @@ func (fake *ChaincodeStub) GetPrivateDataArgsForCall(i int) (string, string) {
 	fake.getPrivateDataMutex.RLock()
 	defer fake.getPrivateDataMutex.RUnlock()
 	argsForCall := fake.getPrivateDataArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *ChaincodeStub) GetPrivateDataArgs() []ChaincodeStubGetPrivateDataArgs {
+	fake.getPrivateDataMutex.RLock()
+	defer fake.getPrivateDataMutex.RUnlock()
+	args := make([]ChaincodeStubGetPrivateDataArgs, len(fake.getPrivateDataArgsForCall))
+	copy(args, fake.getPrivateDataArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetPrivateDataReturns(result1 []byte, result2 error) {
@@ -1526,11 +1645,7 @@ func (fake *ChaincodeStub) GetPrivateDataByPartialCompositeKey(arg1 string, arg2
 	}
 	fake.getPrivateDataByPartialCompositeKeyMutex.Lock()
 	ret, specificReturn := fake.getPrivateDataByPartialCompositeKeyReturnsOnCall[len(fake.getPrivateDataByPartialCompositeKeyArgsForCall)]
-	fake.getPrivateDataByPartialCompositeKeyArgsForCall = append(fake.getPrivateDataByPartialCompositeKeyArgsForCall, struct {
-		arg1 string
-		arg2 string
-		arg3 []string
-	}{arg1, arg2, arg3Copy})
+	fake.getPrivateDataByPartialCompositeKeyArgsForCall = append(fake.getPrivateDataByPartialCompositeKeyArgsForCall, ChaincodeStubGetPrivateDataByPartialCompositeKeyArgs{arg1, arg2, arg3Copy})
 	stub := fake.GetPrivateDataByPartialCompositeKeyStub
 	fakeReturns := fake.getPrivateDataByPartialCompositeKeyReturns
 	fake.recordInvocation("GetPrivateDataByPartialCompositeKey", []interface{}{arg1, arg2, arg3Copy})
@@ -1560,7 +1675,15 @@ func (fake *ChaincodeStub) GetPrivateDataByPartialCompositeKeyArgsForCall(i int)
 	fake.getPrivateDataByPartialCompositeKeyMutex.RLock()
 	defer fake.getPrivateDataByPartialCompositeKeyMutex.RUnlock()
 	argsForCall := fake.getPrivateDataByPartialCompositeKeyArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.Arg1, argsForCall.Arg2, argsForCall.Arg3
+}
+
+func (fake *ChaincodeStub) GetPrivateDataByPartialCompositeKeyArgs() []ChaincodeStubGetPrivateDataByPartialCompositeKeyArgs {
+	fake.getPrivateDataByPartialCompositeKeyMutex.RLock()
+	defer fake.getPrivateDataByPartialCompositeKeyMutex.RUnlock()
+	args := make([]ChaincodeStubGetPrivateDataByPartialCompositeKeyArgs, len(fake.getPrivateDataByPartialCompositeKeyArgsForCall))
+	copy(args, fake.getPrivateDataByPartialCompositeKeyArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetPrivateDataByPartialCompositeKeyReturns(result1 shim.StateQueryIteratorInterface, result2 error) {
@@ -1592,11 +1715,7 @@ func (fake *ChaincodeStub) GetPrivateDataByPartialCompositeKeyReturnsOnCall(i in
 func (fake *ChaincodeStub) GetPrivateDataByRange(arg1 string, arg2 string, arg3 string) (shim.StateQueryIteratorInterface, error) {
 	fake.getPrivateDataByRangeMutex.Lock()
 	ret, specificReturn := fake.getPrivateDataByRangeReturnsOnCall[len(fake.getPrivateDataByRangeArgsForCall)]
-	fake.getPrivateDataByRangeArgsForCall = append(fake.getPrivateDataByRangeArgsForCall, struct {
-		arg1 string
-		arg2 string
-		arg3 string
-	}{arg1, arg2, arg3})
+	fake.getPrivateDataByRangeArgsForCall = append(fake.getPrivateDataByRangeArgsForCall, ChaincodeStubGetPrivateDataByRangeArgs{arg1, arg2, arg3})
 	stub := fake.GetPrivateDataByRangeStub
 	fakeReturns := fake.getPrivateDataByRangeReturns
 	fake.recordInvocation("GetPrivateDataByRange", []interface{}{arg1, arg2, arg3})
@@ -1626,7 +1745,15 @@ func (fake *ChaincodeStub) GetPrivateDataByRangeArgsForCall(i int) (string, stri
 	fake.getPrivateDataByRangeMutex.RLock()
 	defer fake.getPrivateDataByRangeMutex.RUnlock()
 	argsForCall := fake.getPrivateDataByRangeArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.Arg1, argsForCall.Arg2, argsForCall.Arg3
+}
+
+func (fake *ChaincodeStub) GetPrivateDataByRangeArgs() []ChaincodeStubGetPrivateDataByRangeArgs {
+	fake.getPrivateDataByRangeMutex.RLock()
+	defer fake.getPrivateDataByRangeMutex.RUnlock()
+	args := make([]ChaincodeStubGetPrivateDataByRangeArgs, len(fake.getPrivateDataByRangeArgsForCall))
+	copy(args, fake.getPrivateDataByRangeArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetPrivateDataByRangeReturns(result1 shim.StateQueryIteratorInterface, result2 error) {
@@ -1658,10 +1785,7 @@ func (fake *ChaincodeStub) GetPrivateDataByRangeReturnsOnCall(i int, result1 shi
 func (fake *ChaincodeStub) GetPrivateDataHash(arg1 string, arg2 string) ([]byte, error) {
 	fake.getPrivateDataHashMutex.Lock()
 	ret, specificReturn := fake.getPrivateDataHashReturnsOnCall[len(fake.getPrivateDataHashArgsForCall)]
-	fake.getPrivateDataHashArgsForCall = append(fake.getPrivateDataHashArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
+	fake.getPrivateDataHashArgsForCall = append(fake.getPrivateDataHashArgsForCall, ChaincodeStubGetPrivateDataHashArgs{arg1, arg2})
 	stub := fake.GetPrivateDataHashStub
 	fakeReturns := fake.getPrivateDataHashReturns
 	fake.recordInvocation("GetPrivateDataHash", []interface{}{arg1, arg2})
@@ -1691,7 +1815,15 @@ func (fake *ChaincodeStub) GetPrivateDataHashArgsForCall(i int) (string, string)
 	fake.getPrivateDataHashMutex.RLock()
 	defer fake.getPrivateDataHashMutex.RUnlock()
 	argsForCall := fake.getPrivateDataHashArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *ChaincodeStub) GetPrivateDataHashArgs() []ChaincodeStubGetPrivateDataHashArgs {
+	fake.getPrivateDataHashMutex.RLock()
+	defer fake.getPrivateDataHashMutex.RUnlock()
+	args := make([]ChaincodeStubGetPrivateDataHashArgs, len(fake.getPrivateDataHashArgsForCall))
+	copy(args, fake.getPrivateDataHashArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetPrivateDataHashReturns(result1 []byte, result2 error) {
@@ -1723,10 +1855,7 @@ func (fake *ChaincodeStub) GetPrivateDataHashReturnsOnCall(i int, result1 []byte
 func (fake *ChaincodeStub) GetPrivateDataQueryResult(arg1 string, arg2 string) (shim.StateQueryIteratorInterface, error) {
 	fake.getPrivateDataQueryResultMutex.Lock()
 	ret, specificReturn := fake.getPrivateDataQueryResultReturnsOnCall[len(fake.getPrivateDataQueryResultArgsForCall)]
-	fake.getPrivateDataQueryResultArgsForCall = append(fake.getPrivateDataQueryResultArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
+	fake.getPrivateDataQueryResultArgsForCall = append(fake.getPrivateDataQueryResultArgsForCall, ChaincodeStubGetPrivateDataQueryResultArgs{arg1, arg2})
 	stub := fake.GetPrivateDataQueryResultStub
 	fakeReturns := fake.getPrivateDataQueryResultReturns
 	fake.recordInvocation("GetPrivateDataQueryResult", []interface{}{arg1, arg2})
@@ -1756,7 +1885,15 @@ func (fake *ChaincodeStub) GetPrivateDataQueryResultArgsForCall(i int) (string, 
 	fake.getPrivateDataQueryResultMutex.RLock()
 	defer fake.getPrivateDataQueryResultMutex.RUnlock()
 	argsForCall := fake.getPrivateDataQueryResultArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *ChaincodeStub) GetPrivateDataQueryResultArgs() []ChaincodeStubGetPrivateDataQueryResultArgs {
+	fake.getPrivateDataQueryResultMutex.RLock()
+	defer fake.getPrivateDataQueryResultMutex.RUnlock()
+	args := make([]ChaincodeStubGetPrivateDataQueryResultArgs, len(fake.getPrivateDataQueryResultArgsForCall))
+	copy(args, fake.getPrivateDataQueryResultArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetPrivateDataQueryResultReturns(result1 shim.StateQueryIteratorInterface, result2 error) {
@@ -1788,10 +1925,7 @@ func (fake *ChaincodeStub) GetPrivateDataQueryResultReturnsOnCall(i int, result1
 func (fake *ChaincodeStub) GetPrivateDataValidationParameter(arg1 string, arg2 string) ([]byte, error) {
 	fake.getPrivateDataValidationParameterMutex.Lock()
 	ret, specificReturn := fake.getPrivateDataValidationParameterReturnsOnCall[len(fake.getPrivateDataValidationParameterArgsForCall)]
-	fake.getPrivateDataValidationParameterArgsForCall = append(fake.getPrivateDataValidationParameterArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
+	fake.getPrivateDataValidationParameterArgsForCall = append(fake.getPrivateDataValidationParameterArgsForCall, ChaincodeStubGetPrivateDataValidationParameterArgs{arg1, arg2})
 	stub := fake.GetPrivateDataValidationParameterStub
 	fakeReturns := fake.getPrivateDataValidationParameterReturns
 	fake.recordInvocation("GetPrivateDataValidationParameter", []interface{}{arg1, arg2})
@@ -1821,7 +1955,15 @@ func (fake *ChaincodeStub) GetPrivateDataValidationParameterArgsForCall(i int) (
 	fake.getPrivateDataValidationParameterMutex.RLock()
 	defer fake.getPrivateDataValidationParameterMutex.RUnlock()
 	argsForCall := fake.getPrivateDataValidationParameterArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *ChaincodeStub) GetPrivateDataValidationParameterArgs() []ChaincodeStubGetPrivateDataValidationParameterArgs {
+	fake.getPrivateDataValidationParameterMutex.RLock()
+	defer fake.getPrivateDataValidationParameterMutex.RUnlock()
+	args := make([]ChaincodeStubGetPrivateDataValidationParameterArgs, len(fake.getPrivateDataValidationParameterArgsForCall))
+	copy(args, fake.getPrivateDataValidationParameterArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetPrivateDataValidationParameterReturns(result1 []byte, result2 error) {
@@ -1853,9 +1995,7 @@ func (fake *ChaincodeStub) GetPrivateDataValidationParameterReturnsOnCall(i int,
 func (fake *ChaincodeStub) GetQueryResult(arg1 string) (shim.StateQueryIteratorInterface, error) {
 	fake.getQueryResultMutex.Lock()
 	ret, specificReturn := fake.getQueryResultReturnsOnCall[len(fake.getQueryResultArgsForCall)]
-	fake.getQueryResultArgsForCall = append(fake.getQueryResultArgsForCall, struct {
-		arg1 string
-	}{arg1})
+	fake.getQueryResultArgsForCall = append(fake.getQueryResultArgsForCall, ChaincodeStubGetQueryResultArgs{arg1})
 	stub := fake.GetQueryResultStub
 	fakeReturns := fake.getQueryResultReturns
 	fake.recordInvocation("GetQueryResult", []interface{}{arg1})
@@ -1885,7 +2025,15 @@ func (fake *ChaincodeStub) GetQueryResultArgsForCall(i int) string {
 	fake.getQueryResultMutex.RLock()
 	defer fake.getQueryResultMutex.RUnlock()
 	argsForCall := fake.getQueryResultArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *ChaincodeStub) GetQueryResultArgs() []ChaincodeStubGetQueryResultArgs {
+	fake.getQueryResultMutex.RLock()
+	defer fake.getQueryResultMutex.RUnlock()
+	args := make([]ChaincodeStubGetQueryResultArgs, len(fake.getQueryResultArgsForCall))
+	copy(args, fake.getQueryResultArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetQueryResultReturns(result1 shim.StateQueryIteratorInterface, result2 error) {
@@ -1917,11 +2065,7 @@ func (fake *ChaincodeStub) GetQueryResultReturnsOnCall(i int, result1 shim.State
 func (fake *ChaincodeStub) GetQueryResultWithPagination(arg1 string, arg2 int32, arg3 string) (shim.StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
 	fake.getQueryResultWithPaginationMutex.Lock()
 	ret, specificReturn := fake.getQueryResultWithPaginationReturnsOnCall[len(fake.getQueryResultWithPaginationArgsForCall)]
-	fake.getQueryResultWithPaginationArgsForCall = append(fake.getQueryResultWithPaginationArgsForCall, struct {
-		arg1 string
-		arg2 int32
-		arg3 string
-	}{arg1, arg2, arg3})
+	fake.getQueryResultWithPaginationArgsForCall = append(fake.getQueryResultWithPaginationArgsForCall, ChaincodeStubGetQueryResultWithPaginationArgs{arg1, arg2, arg3})
 	stub := fake.GetQueryResultWithPaginationStub
 	fakeReturns := fake.getQueryResultWithPaginationReturns
 	fake.recordInvocation("GetQueryResultWithPagination", []interface{}{arg1, arg2, arg3})
@@ -1951,7 +2095,15 @@ func (fake *ChaincodeStub) GetQueryResultWithPaginationArgsForCall(i int) (strin
 	fake.getQueryResultWithPaginationMutex.RLock()
 	defer fake.getQueryResultWithPaginationMutex.RUnlock()
 	argsForCall := fake.getQueryResultWithPaginationArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.Arg1, argsForCall.Arg2, argsForCall.Arg3
+}
+
+func (fake *ChaincodeStub) GetQueryResultWithPaginationArgs() []ChaincodeStubGetQueryResultWithPaginationArgs {
+	fake.getQueryResultWithPaginationMutex.RLock()
+	defer fake.getQueryResultWithPaginationMutex.RUnlock()
+	args := make([]ChaincodeStubGetQueryResultWithPaginationArgs, len(fake.getQueryResultWithPaginationArgsForCall))
+	copy(args, fake.getQueryResultWithPaginationArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetQueryResultWithPaginationReturns(result1 shim.StateQueryIteratorInterface, result2 *peer.QueryResponseMetadata, result3 error) {
@@ -1986,8 +2138,7 @@ func (fake *ChaincodeStub) GetQueryResultWithPaginationReturnsOnCall(i int, resu
 func (fake *ChaincodeStub) GetSignedProposal() (*peer.SignedProposal, error) {
 	fake.getSignedProposalMutex.Lock()
 	ret, specificReturn := fake.getSignedProposalReturnsOnCall[len(fake.getSignedProposalArgsForCall)]
-	fake.getSignedProposalArgsForCall = append(fake.getSignedProposalArgsForCall, struct {
-	}{})
+	fake.getSignedProposalArgsForCall = append(fake.getSignedProposalArgsForCall, struct{}{})
 	stub := fake.GetSignedProposalStub
 	fakeReturns := fake.getSignedProposalReturns
 	fake.recordInvocation("GetSignedProposal", []interface{}{})
@@ -2042,9 +2193,7 @@ func (fake *ChaincodeStub) GetSignedProposalReturnsOnCall(i int, result1 *peer.S
 func (fake *ChaincodeStub) GetState(arg1 string) ([]byte, error) {
 	fake.getStateMutex.Lock()
 	ret, specificReturn := fake.getStateReturnsOnCall[len(fake.getStateArgsForCall)]
-	fake.getStateArgsForCall = append(fake.getStateArgsForCall, struct {
-		arg1 string
-	}{arg1})
+	fake.getStateArgsForCall = append(fake.getStateArgsForCall, ChaincodeStubGetStateArgs{arg1})
 	stub := fake.GetStateStub
 	fakeReturns := fake.getStateReturns
 	fake.recordInvocation("GetState", []interface{}{arg1})
@@ -2074,7 +2223,15 @@ func (fake *ChaincodeStub) GetStateArgsForCall(i int) string {
 	fake.getStateMutex.RLock()
 	defer fake.getStateMutex.RUnlock()
 	argsForCall := fake.getStateArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *ChaincodeStub) GetStateArgs() []ChaincodeStubGetStateArgs {
+	fake.getStateMutex.RLock()
+	defer fake.getStateMutex.RUnlock()
+	args := make([]ChaincodeStubGetStateArgs, len(fake.getStateArgsForCall))
+	copy(args, fake.getStateArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetStateReturns(result1 []byte, result2 error) {
@@ -2111,10 +2268,7 @@ func (fake *ChaincodeStub) GetStateByPartialCompositeKey(arg1 string, arg2 []str
 	}
 	fake.getStateByPartialCompositeKeyMutex.Lock()
 	ret, specificReturn := fake.getStateByPartialCompositeKeyReturnsOnCall[len(fake.getStateByPartialCompositeKeyArgsForCall)]
-	fake.getStateByPartialCompositeKeyArgsForCall = append(fake.getStateByPartialCompositeKeyArgsForCall, struct {
-		arg1 string
-		arg2 []string
-	}{arg1, arg2Copy})
+	fake.getStateByPartialCompositeKeyArgsForCall = append(fake.getStateByPartialCompositeKeyArgsForCall, ChaincodeStubGetStateByPartialCompositeKeyArgs{arg1, arg2Copy})
 	stub := fake.GetStateByPartialCompositeKeyStub
 	fakeReturns := fake.getStateByPartialCompositeKeyReturns
 	fake.recordInvocation("GetStateByPartialCompositeKey", []interface{}{arg1, arg2Copy})
@@ -2144,7 +2298,15 @@ func (fake *ChaincodeStub) GetStateByPartialCompositeKeyArgsForCall(i int) (stri
 	fake.getStateByPartialCompositeKeyMutex.RLock()
 	defer fake.getStateByPartialCompositeKeyMutex.RUnlock()
 	argsForCall := fake.getStateByPartialCompositeKeyArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *ChaincodeStub) GetStateByPartialCompositeKeyArgs() []ChaincodeStubGetStateByPartialCompositeKeyArgs {
+	fake.getStateByPartialCompositeKeyMutex.RLock()
+	defer fake.getStateByPartialCompositeKeyMutex.RUnlock()
+	args := make([]ChaincodeStubGetStateByPartialCompositeKeyArgs, len(fake.getStateByPartialCompositeKeyArgsForCall))
+	copy(args, fake.getStateByPartialCompositeKeyArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetStateByPartialCompositeKeyReturns(result1 shim.StateQueryIteratorInterface, result2 error) {
@@ -2181,12 +2343,7 @@ func (fake *ChaincodeStub) GetStateByPartialCompositeKeyWithPagination(arg1 stri
 	}
 	fake.getStateByPartialCompositeKeyWithPaginationMutex.Lock()
 	ret, specificReturn := fake.getStateByPartialCompositeKeyWithPaginationReturnsOnCall[len(fake.getStateByPartialCompositeKeyWithPaginationArgsForCall)]
-	fake.getStateByPartialCompositeKeyWithPaginationArgsForCall = append(fake.getStateByPartialCompositeKeyWithPaginationArgsForCall, struct {
-		arg1 string
-		arg2 []string
-		arg3 int32
-		arg4 string
-	}{arg1, arg2Copy, arg3, arg4})
+	fake.getStateByPartialCompositeKeyWithPaginationArgsForCall = append(fake.getStateByPartialCompositeKeyWithPaginationArgsForCall, ChaincodeStubGetStateByPartialCompositeKeyWithPaginationArgs{arg1, arg2Copy, arg3, arg4})
 	stub := fake.GetStateByPartialCompositeKeyWithPaginationStub
 	fakeReturns := fake.getStateByPartialCompositeKeyWithPaginationReturns
 	fake.recordInvocation("GetStateByPartialCompositeKeyWithPagination", []interface{}{arg1, arg2Copy, arg3, arg4})
@@ -2216,7 +2373,15 @@ func (fake *ChaincodeStub) GetStateByPartialCompositeKeyWithPaginationArgsForCal
 	fake.getStateByPartialCompositeKeyWithPaginationMutex.RLock()
 	defer fake.getStateByPartialCompositeKeyWithPaginationMutex.RUnlock()
 	argsForCall := fake.getStateByPartialCompositeKeyWithPaginationArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+	return argsForCall.Arg1, argsForCall.Arg2, argsForCall.Arg3, argsForCall.Arg4
+}
+
+func (fake *ChaincodeStub) GetStateByPartialCompositeKeyWithPaginationArgs() []ChaincodeStubGetStateByPartialCompositeKeyWithPaginationArgs {
+	fake.getStateByPartialCompositeKeyWithPaginationMutex.RLock()
+	defer fake.getStateByPartialCompositeKeyWithPaginationMutex.RUnlock()
+	args := make([]ChaincodeStubGetStateByPartialCompositeKeyWithPaginationArgs, len(fake.getStateByPartialCompositeKeyWithPaginationArgsForCall))
+	copy(args, fake.getStateByPartialCompositeKeyWithPaginationArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetStateByPartialCompositeKeyWithPaginationReturns(result1 shim.StateQueryIteratorInterface, result2 *peer.QueryResponseMetadata, result3 error) {
@@ -2251,10 +2416,7 @@ func (fake *ChaincodeStub) GetStateByPartialCompositeKeyWithPaginationReturnsOnC
 func (fake *ChaincodeStub) GetStateByRange(arg1 string, arg2 string) (shim.StateQueryIteratorInterface, error) {
 	fake.getStateByRangeMutex.Lock()
 	ret, specificReturn := fake.getStateByRangeReturnsOnCall[len(fake.getStateByRangeArgsForCall)]
-	fake.getStateByRangeArgsForCall = append(fake.getStateByRangeArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
+	fake.getStateByRangeArgsForCall = append(fake.getStateByRangeArgsForCall, ChaincodeStubGetStateByRangeArgs{arg1, arg2})
 	stub := fake.GetStateByRangeStub
 	fakeReturns := fake.getStateByRangeReturns
 	fake.recordInvocation("GetStateByRange", []interface{}{arg1, arg2})
@@ -2284,7 +2446,15 @@ func (fake *ChaincodeStub) GetStateByRangeArgsForCall(i int) (string, string) {
 	fake.getStateByRangeMutex.RLock()
 	defer fake.getStateByRangeMutex.RUnlock()
 	argsForCall := fake.getStateByRangeArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *ChaincodeStub) GetStateByRangeArgs() []ChaincodeStubGetStateByRangeArgs {
+	fake.getStateByRangeMutex.RLock()
+	defer fake.getStateByRangeMutex.RUnlock()
+	args := make([]ChaincodeStubGetStateByRangeArgs, len(fake.getStateByRangeArgsForCall))
+	copy(args, fake.getStateByRangeArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetStateByRangeReturns(result1 shim.StateQueryIteratorInterface, result2 error) {
@@ -2316,12 +2486,7 @@ func (fake *ChaincodeStub) GetStateByRangeReturnsOnCall(i int, result1 shim.Stat
 func (fake *ChaincodeStub) GetStateByRangeWithPagination(arg1 string, arg2 string, arg3 int32, arg4 string) (shim.StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
 	fake.getStateByRangeWithPaginationMutex.Lock()
 	ret, specificReturn := fake.getStateByRangeWithPaginationReturnsOnCall[len(fake.getStateByRangeWithPaginationArgsForCall)]
-	fake.getStateByRangeWithPaginationArgsForCall = append(fake.getStateByRangeWithPaginationArgsForCall, struct {
-		arg1 string
-		arg2 string
-		arg3 int32
-		arg4 string
-	}{arg1, arg2, arg3, arg4})
+	fake.getStateByRangeWithPaginationArgsForCall = append(fake.getStateByRangeWithPaginationArgsForCall, ChaincodeStubGetStateByRangeWithPaginationArgs{arg1, arg2, arg3, arg4})
 	stub := fake.GetStateByRangeWithPaginationStub
 	fakeReturns := fake.getStateByRangeWithPaginationReturns
 	fake.recordInvocation("GetStateByRangeWithPagination", []interface{}{arg1, arg2, arg3, arg4})
@@ -2351,7 +2516,15 @@ func (fake *ChaincodeStub) GetStateByRangeWithPaginationArgsForCall(i int) (stri
 	fake.getStateByRangeWithPaginationMutex.RLock()
 	defer fake.getStateByRangeWithPaginationMutex.RUnlock()
 	argsForCall := fake.getStateByRangeWithPaginationArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+	return argsForCall.Arg1, argsForCall.Arg2, argsForCall.Arg3, argsForCall.Arg4
+}
+
+func (fake *ChaincodeStub) GetStateByRangeWithPaginationArgs() []ChaincodeStubGetStateByRangeWithPaginationArgs {
+	fake.getStateByRangeWithPaginationMutex.RLock()
+	defer fake.getStateByRangeWithPaginationMutex.RUnlock()
+	args := make([]ChaincodeStubGetStateByRangeWithPaginationArgs, len(fake.getStateByRangeWithPaginationArgsForCall))
+	copy(args, fake.getStateByRangeWithPaginationArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetStateByRangeWithPaginationReturns(result1 shim.StateQueryIteratorInterface, result2 *peer.QueryResponseMetadata, result3 error) {
@@ -2386,9 +2559,7 @@ func (fake *ChaincodeStub) GetStateByRangeWithPaginationReturnsOnCall(i int, res
 func (fake *ChaincodeStub) GetStateValidationParameter(arg1 string) ([]byte, error) {
 	fake.getStateValidationParameterMutex.Lock()
 	ret, specificReturn := fake.getStateValidationParameterReturnsOnCall[len(fake.getStateValidationParameterArgsForCall)]
-	fake.getStateValidationParameterArgsForCall = append(fake.getStateValidationParameterArgsForCall, struct {
-		arg1 string
-	}{arg1})
+	fake.getStateValidationParameterArgsForCall = append(fake.getStateValidationParameterArgsForCall, ChaincodeStubGetStateValidationParameterArgs{arg1})
 	stub := fake.GetStateValidationParameterStub
 	fakeReturns := fake.getStateValidationParameterReturns
 	fake.recordInvocation("GetStateValidationParameter", []interface{}{arg1})
@@ -2418,7 +2589,15 @@ func (fake *ChaincodeStub) GetStateValidationParameterArgsForCall(i int) string 
 	fake.getStateValidationParameterMutex.RLock()
 	defer fake.getStateValidationParameterMutex.RUnlock()
 	argsForCall := fake.getStateValidationParameterArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *ChaincodeStub) GetStateValidationParameterArgs() []ChaincodeStubGetStateValidationParameterArgs {
+	fake.getStateValidationParameterMutex.RLock()
+	defer fake.getStateValidationParameterMutex.RUnlock()
+	args := make([]ChaincodeStubGetStateValidationParameterArgs, len(fake.getStateValidationParameterArgsForCall))
+	copy(args, fake.getStateValidationParameterArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) GetStateValidationParameterReturns(result1 []byte, result2 error) {
@@ -2450,8 +2629,7 @@ func (fake *ChaincodeStub) GetStateValidationParameterReturnsOnCall(i int, resul
 func (fake *ChaincodeStub) GetStringArgs() []string {
 	fake.getStringArgsMutex.Lock()
 	ret, specificReturn := fake.getStringArgsReturnsOnCall[len(fake.getStringArgsArgsForCall)]
-	fake.getStringArgsArgsForCall = append(fake.getStringArgsArgsForCall, struct {
-	}{})
+	fake.getStringArgsArgsForCall = append(fake.getStringArgsArgsForCall, struct{}{})
 	stub := fake.GetStringArgsStub
 	fakeReturns := fake.getStringArgsReturns
 	fake.recordInvocation("GetStringArgs", []interface{}{})
@@ -2503,8 +2681,7 @@ func (fake *ChaincodeStub) GetStringArgsReturnsOnCall(i int, result1 []string) {
 func (fake *ChaincodeStub) GetTransient() (map[string][]byte, error) {
 	fake.getTransientMutex.Lock()
 	ret, specificReturn := fake.getTransientReturnsOnCall[len(fake.getTransientArgsForCall)]
-	fake.getTransientArgsForCall = append(fake.getTransientArgsForCall, struct {
-	}{})
+	fake.getTransientArgsForCall = append(fake.getTransientArgsForCall, struct{}{})
 	stub := fake.GetTransientStub
 	fakeReturns := fake.getTransientReturns
 	fake.recordInvocation("GetTransient", []interface{}{})
@@ -2559,8 +2736,7 @@ func (fake *ChaincodeStub) GetTransientReturnsOnCall(i int, result1 map[string][
 func (fake *ChaincodeStub) GetTxID() string {
 	fake.getTxIDMutex.Lock()
 	ret, specificReturn := fake.getTxIDReturnsOnCall[len(fake.getTxIDArgsForCall)]
-	fake.getTxIDArgsForCall = append(fake.getTxIDArgsForCall, struct {
-	}{})
+	fake.getTxIDArgsForCall = append(fake.getTxIDArgsForCall, struct{}{})
 	stub := fake.GetTxIDStub
 	fakeReturns := fake.getTxIDReturns
 	fake.recordInvocation("GetTxID", []interface{}{})
@@ -2612,8 +2788,7 @@ func (fake *ChaincodeStub) GetTxIDReturnsOnCall(i int, result1 string) {
 func (fake *ChaincodeStub) GetTxTimestamp() (*timestamppb.Timestamp, error) {
 	fake.getTxTimestampMutex.Lock()
 	ret, specificReturn := fake.getTxTimestampReturnsOnCall[len(fake.getTxTimestampArgsForCall)]
-	fake.getTxTimestampArgsForCall = append(fake.getTxTimestampArgsForCall, struct {
-	}{})
+	fake.getTxTimestampArgsForCall = append(fake.getTxTimestampArgsForCall, struct{}{})
 	stub := fake.GetTxTimestampStub
 	fakeReturns := fake.getTxTimestampReturns
 	fake.recordInvocation("GetTxTimestamp", []interface{}{})
@@ -2673,11 +2848,7 @@ func (fake *ChaincodeStub) InvokeChaincode(arg1 string, arg2 [][]byte, arg3 stri
 	}
 	fake.invokeChaincodeMutex.Lock()
 	ret, specificReturn := fake.invokeChaincodeReturnsOnCall[len(fake.invokeChaincodeArgsForCall)]
-	fake.invokeChaincodeArgsForCall = append(fake.invokeChaincodeArgsForCall, struct {
-		arg1 string
-		arg2 [][]byte
-		arg3 string
-	}{arg1, arg2Copy, arg3})
+	fake.invokeChaincodeArgsForCall = append(fake.invokeChaincodeArgsForCall, ChaincodeStubInvokeChaincodeArgs{arg1, arg2Copy, arg3})
 	stub := fake.InvokeChaincodeStub
 	fakeReturns := fake.invokeChaincodeReturns
 	fake.recordInvocation("InvokeChaincode", []interface{}{arg1, arg2Copy, arg3})
@@ -2707,7 +2878,15 @@ func (fake *ChaincodeStub) InvokeChaincodeArgsForCall(i int) (string, [][]byte, 
 	fake.invokeChaincodeMutex.RLock()
 	defer fake.invokeChaincodeMutex.RUnlock()
 	argsForCall := fake.invokeChaincodeArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.Arg1, argsForCall.Arg2, argsForCall.Arg3
+}
+
+func (fake *ChaincodeStub) InvokeChaincodeArgs() []ChaincodeStubInvokeChaincodeArgs {
+	fake.invokeChaincodeMutex.RLock()
+	defer fake.invokeChaincodeMutex.RUnlock()
+	args := make([]ChaincodeStubInvokeChaincodeArgs, len(fake.invokeChaincodeArgsForCall))
+	copy(args, fake.invokeChaincodeArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) InvokeChaincodeReturns(result1 *peer.Response) {
@@ -2736,10 +2915,7 @@ func (fake *ChaincodeStub) InvokeChaincodeReturnsOnCall(i int, result1 *peer.Res
 func (fake *ChaincodeStub) PurgePrivateData(arg1 string, arg2 string) error {
 	fake.purgePrivateDataMutex.Lock()
 	ret, specificReturn := fake.purgePrivateDataReturnsOnCall[len(fake.purgePrivateDataArgsForCall)]
-	fake.purgePrivateDataArgsForCall = append(fake.purgePrivateDataArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
+	fake.purgePrivateDataArgsForCall = append(fake.purgePrivateDataArgsForCall, ChaincodeStubPurgePrivateDataArgs{arg1, arg2})
 	stub := fake.PurgePrivateDataStub
 	fakeReturns := fake.purgePrivateDataReturns
 	fake.recordInvocation("PurgePrivateData", []interface{}{arg1, arg2})
@@ -2769,7 +2945,15 @@ func (fake *ChaincodeStub) PurgePrivateDataArgsForCall(i int) (string, string) {
 	fake.purgePrivateDataMutex.RLock()
 	defer fake.purgePrivateDataMutex.RUnlock()
 	argsForCall := fake.purgePrivateDataArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *ChaincodeStub) PurgePrivateDataArgs() []ChaincodeStubPurgePrivateDataArgs {
+	fake.purgePrivateDataMutex.RLock()
+	defer fake.purgePrivateDataMutex.RUnlock()
+	args := make([]ChaincodeStubPurgePrivateDataArgs, len(fake.purgePrivateDataArgsForCall))
+	copy(args, fake.purgePrivateDataArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) PurgePrivateDataReturns(result1 error) {
@@ -2803,11 +2987,7 @@ func (fake *ChaincodeStub) PutPrivateData(arg1 string, arg2 string, arg3 []byte)
 	}
 	fake.putPrivateDataMutex.Lock()
 	ret, specificReturn := fake.putPrivateDataReturnsOnCall[len(fake.putPrivateDataArgsForCall)]
-	fake.putPrivateDataArgsForCall = append(fake.putPrivateDataArgsForCall, struct {
-		arg1 string
-		arg2 string
-		arg3 []byte
-	}{arg1, arg2, arg3Copy})
+	fake.putPrivateDataArgsForCall = append(fake.putPrivateDataArgsForCall, ChaincodeStubPutPrivateDataArgs{arg1, arg2, arg3Copy})
 	stub := fake.PutPrivateDataStub
 	fakeReturns := fake.putPrivateDataReturns
 	fake.recordInvocation("PutPrivateData", []interface{}{arg1, arg2, arg3Copy})
@@ -2837,7 +3017,15 @@ func (fake *ChaincodeStub) PutPrivateDataArgsForCall(i int) (string, string, []b
 	fake.putPrivateDataMutex.RLock()
 	defer fake.putPrivateDataMutex.RUnlock()
 	argsForCall := fake.putPrivateDataArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.Arg1, argsForCall.Arg2, argsForCall.Arg3
+}
+
+func (fake *ChaincodeStub) PutPrivateDataArgs() []ChaincodeStubPutPrivateDataArgs {
+	fake.putPrivateDataMutex.RLock()
+	defer fake.putPrivateDataMutex.RUnlock()
+	args := make([]ChaincodeStubPutPrivateDataArgs, len(fake.putPrivateDataArgsForCall))
+	copy(args, fake.putPrivateDataArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) PutPrivateDataReturns(result1 error) {
@@ -2871,10 +3059,7 @@ func (fake *ChaincodeStub) PutState(arg1 string, arg2 []byte) error {
 	}
 	fake.putStateMutex.Lock()
 	ret, specificReturn := fake.putStateReturnsOnCall[len(fake.putStateArgsForCall)]
-	fake.putStateArgsForCall = append(fake.putStateArgsForCall, struct {
-		arg1 string
-		arg2 []byte
-	}{arg1, arg2Copy})
+	fake.putStateArgsForCall = append(fake.putStateArgsForCall, ChaincodeStubPutStateArgs{arg1, arg2Copy})
 	stub := fake.PutStateStub
 	fakeReturns := fake.putStateReturns
 	fake.recordInvocation("PutState", []interface{}{arg1, arg2Copy})
@@ -2904,7 +3089,15 @@ func (fake *ChaincodeStub) PutStateArgsForCall(i int) (string, []byte) {
 	fake.putStateMutex.RLock()
 	defer fake.putStateMutex.RUnlock()
 	argsForCall := fake.putStateArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *ChaincodeStub) PutStateArgs() []ChaincodeStubPutStateArgs {
+	fake.putStateMutex.RLock()
+	defer fake.putStateMutex.RUnlock()
+	args := make([]ChaincodeStubPutStateArgs, len(fake.putStateArgsForCall))
+	copy(args, fake.putStateArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) PutStateReturns(result1 error) {
@@ -2938,10 +3131,7 @@ func (fake *ChaincodeStub) SetEvent(arg1 string, arg2 []byte) error {
 	}
 	fake.setEventMutex.Lock()
 	ret, specificReturn := fake.setEventReturnsOnCall[len(fake.setEventArgsForCall)]
-	fake.setEventArgsForCall = append(fake.setEventArgsForCall, struct {
-		arg1 string
-		arg2 []byte
-	}{arg1, arg2Copy})
+	fake.setEventArgsForCall = append(fake.setEventArgsForCall, ChaincodeStubSetEventArgs{arg1, arg2Copy})
 	stub := fake.SetEventStub
 	fakeReturns := fake.setEventReturns
 	fake.recordInvocation("SetEvent", []interface{}{arg1, arg2Copy})
@@ -2971,7 +3161,15 @@ func (fake *ChaincodeStub) SetEventArgsForCall(i int) (string, []byte) {
 	fake.setEventMutex.RLock()
 	defer fake.setEventMutex.RUnlock()
 	argsForCall := fake.setEventArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *ChaincodeStub) SetEventArgs() []ChaincodeStubSetEventArgs {
+	fake.setEventMutex.RLock()
+	defer fake.setEventMutex.RUnlock()
+	args := make([]ChaincodeStubSetEventArgs, len(fake.setEventArgsForCall))
+	copy(args, fake.setEventArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) SetEventReturns(result1 error) {
@@ -3005,11 +3203,7 @@ func (fake *ChaincodeStub) SetPrivateDataValidationParameter(arg1 string, arg2 s
 	}
 	fake.setPrivateDataValidationParameterMutex.Lock()
 	ret, specificReturn := fake.setPrivateDataValidationParameterReturnsOnCall[len(fake.setPrivateDataValidationParameterArgsForCall)]
-	fake.setPrivateDataValidationParameterArgsForCall = append(fake.setPrivateDataValidationParameterArgsForCall, struct {
-		arg1 string
-		arg2 string
-		arg3 []byte
-	}{arg1, arg2, arg3Copy})
+	fake.setPrivateDataValidationParameterArgsForCall = append(fake.setPrivateDataValidationParameterArgsForCall, ChaincodeStubSetPrivateDataValidationParameterArgs{arg1, arg2, arg3Copy})
 	stub := fake.SetPrivateDataValidationParameterStub
 	fakeReturns := fake.setPrivateDataValidationParameterReturns
 	fake.recordInvocation("SetPrivateDataValidationParameter", []interface{}{arg1, arg2, arg3Copy})
@@ -3039,7 +3233,15 @@ func (fake *ChaincodeStub) SetPrivateDataValidationParameterArgsForCall(i int) (
 	fake.setPrivateDataValidationParameterMutex.RLock()
 	defer fake.setPrivateDataValidationParameterMutex.RUnlock()
 	argsForCall := fake.setPrivateDataValidationParameterArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.Arg1, argsForCall.Arg2, argsForCall.Arg3
+}
+
+func (fake *ChaincodeStub) SetPrivateDataValidationParameterArgs() []ChaincodeStubSetPrivateDataValidationParameterArgs {
+	fake.setPrivateDataValidationParameterMutex.RLock()
+	defer fake.setPrivateDataValidationParameterMutex.RUnlock()
+	args := make([]ChaincodeStubSetPrivateDataValidationParameterArgs, len(fake.setPrivateDataValidationParameterArgsForCall))
+	copy(args, fake.setPrivateDataValidationParameterArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) SetPrivateDataValidationParameterReturns(result1 error) {
@@ -3073,10 +3275,7 @@ func (fake *ChaincodeStub) SetStateValidationParameter(arg1 string, arg2 []byte)
 	}
 	fake.setStateValidationParameterMutex.Lock()
 	ret, specificReturn := fake.setStateValidationParameterReturnsOnCall[len(fake.setStateValidationParameterArgsForCall)]
-	fake.setStateValidationParameterArgsForCall = append(fake.setStateValidationParameterArgsForCall, struct {
-		arg1 string
-		arg2 []byte
-	}{arg1, arg2Copy})
+	fake.setStateValidationParameterArgsForCall = append(fake.setStateValidationParameterArgsForCall, ChaincodeStubSetStateValidationParameterArgs{arg1, arg2Copy})
 	stub := fake.SetStateValidationParameterStub
 	fakeReturns := fake.setStateValidationParameterReturns
 	fake.recordInvocation("SetStateValidationParameter", []interface{}{arg1, arg2Copy})
@@ -3106,7 +3305,15 @@ func (fake *ChaincodeStub) SetStateValidationParameterArgsForCall(i int) (string
 	fake.setStateValidationParameterMutex.RLock()
 	defer fake.setStateValidationParameterMutex.RUnlock()
 	argsForCall := fake.setStateValidationParameterArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *ChaincodeStub) SetStateValidationParameterArgs() []ChaincodeStubSetStateValidationParameterArgs {
+	fake.setStateValidationParameterMutex.RLock()
+	defer fake.setStateValidationParameterMutex.RUnlock()
+	args := make([]ChaincodeStubSetStateValidationParameterArgs, len(fake.setStateValidationParameterArgsForCall))
+	copy(args, fake.setStateValidationParameterArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) SetStateValidationParameterReturns(result1 error) {
@@ -3135,9 +3342,7 @@ func (fake *ChaincodeStub) SetStateValidationParameterReturnsOnCall(i int, resul
 func (fake *ChaincodeStub) SplitCompositeKey(arg1 string) (string, []string, error) {
 	fake.splitCompositeKeyMutex.Lock()
 	ret, specificReturn := fake.splitCompositeKeyReturnsOnCall[len(fake.splitCompositeKeyArgsForCall)]
-	fake.splitCompositeKeyArgsForCall = append(fake.splitCompositeKeyArgsForCall, struct {
-		arg1 string
-	}{arg1})
+	fake.splitCompositeKeyArgsForCall = append(fake.splitCompositeKeyArgsForCall, ChaincodeStubSplitCompositeKeyArgs{arg1})
 	stub := fake.SplitCompositeKeyStub
 	fakeReturns := fake.splitCompositeKeyReturns
 	fake.recordInvocation("SplitCompositeKey", []interface{}{arg1})
@@ -3167,7 +3372,15 @@ func (fake *ChaincodeStub) SplitCompositeKeyArgsForCall(i int) string {
 	fake.splitCompositeKeyMutex.RLock()
 	defer fake.splitCompositeKeyMutex.RUnlock()
 	argsForCall := fake.splitCompositeKeyArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.Arg1
+}
+
+func (fake *ChaincodeStub) SplitCompositeKeyArgs() []ChaincodeStubSplitCompositeKeyArgs {
+	fake.splitCompositeKeyMutex.RLock()
+	defer fake.splitCompositeKeyMutex.RUnlock()
+	args := make([]ChaincodeStubSplitCompositeKeyArgs, len(fake.splitCompositeKeyArgsForCall))
+	copy(args, fake.splitCompositeKeyArgsForCall)
+	return args
 }
 
 func (fake *ChaincodeStub) SplitCompositeKeyReturns(result1 string, result2 []string, result3 error) {
@@ -3201,13 +3414,12 @@ func (fake *ChaincodeStub) SplitCompositeKeyReturnsOnCall(i int, result1 string,
 
 func (fake *ChaincodeStub) StartWriteBatch() {
 	fake.startWriteBatchMutex.Lock()
-	fake.startWriteBatchArgsForCall = append(fake.startWriteBatchArgsForCall, struct {
-	}{})
+	fake.startWriteBatchArgsForCall = append(fake.startWriteBatchArgsForCall, struct{}{})
 	stub := fake.StartWriteBatchStub
 	fake.recordInvocation("StartWriteBatch", []interface{}{})
 	fake.startWriteBatchMutex.Unlock()
 	if stub != nil {
-		fake.StartWriteBatchStub()
+		stub()
 	}
 }
 
@@ -3233,9 +3445,18 @@ func (fake *ChaincodeStub) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *ChaincodeStub) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *ChaincodeStub) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}

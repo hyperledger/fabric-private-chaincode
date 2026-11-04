@@ -10,27 +10,28 @@ import (
 type CredentialVerifier struct {
 	VerifyCredentialsStub        func(*protos.Credentials, string) error
 	verifyCredentialsMutex       sync.RWMutex
-	verifyCredentialsArgsForCall []struct {
-		arg1 *protos.Credentials
-		arg2 string
-	}
-	verifyCredentialsReturns struct {
+	verifyCredentialsArgsForCall []CredentialVerifierVerifyCredentialsArgs
+	verifyCredentialsReturns     struct {
 		result1 error
 	}
 	verifyCredentialsReturnsOnCall map[int]struct {
 		result1 error
 	}
 	invocations      map[string][][]interface{}
+	callOrder        []string
 	invocationsMutex sync.RWMutex
+}
+
+// CredentialVerifierVerifyCredentialsArgs holds the arguments of one call to VerifyCredentials.
+type CredentialVerifierVerifyCredentialsArgs struct {
+	Arg1 *protos.Credentials
+	Arg2 string
 }
 
 func (fake *CredentialVerifier) VerifyCredentials(arg1 *protos.Credentials, arg2 string) error {
 	fake.verifyCredentialsMutex.Lock()
 	ret, specificReturn := fake.verifyCredentialsReturnsOnCall[len(fake.verifyCredentialsArgsForCall)]
-	fake.verifyCredentialsArgsForCall = append(fake.verifyCredentialsArgsForCall, struct {
-		arg1 *protos.Credentials
-		arg2 string
-	}{arg1, arg2})
+	fake.verifyCredentialsArgsForCall = append(fake.verifyCredentialsArgsForCall, CredentialVerifierVerifyCredentialsArgs{arg1, arg2})
 	stub := fake.VerifyCredentialsStub
 	fakeReturns := fake.verifyCredentialsReturns
 	fake.recordInvocation("VerifyCredentials", []interface{}{arg1, arg2})
@@ -60,7 +61,15 @@ func (fake *CredentialVerifier) VerifyCredentialsArgsForCall(i int) (*protos.Cre
 	fake.verifyCredentialsMutex.RLock()
 	defer fake.verifyCredentialsMutex.RUnlock()
 	argsForCall := fake.verifyCredentialsArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.Arg1, argsForCall.Arg2
+}
+
+func (fake *CredentialVerifier) VerifyCredentialsArgs() []CredentialVerifierVerifyCredentialsArgs {
+	fake.verifyCredentialsMutex.RLock()
+	defer fake.verifyCredentialsMutex.RUnlock()
+	args := make([]CredentialVerifierVerifyCredentialsArgs, len(fake.verifyCredentialsArgsForCall))
+	copy(args, fake.verifyCredentialsArgsForCall)
+	return args
 }
 
 func (fake *CredentialVerifier) VerifyCredentialsReturns(result1 error) {
@@ -96,9 +105,18 @@ func (fake *CredentialVerifier) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
+func (fake *CredentialVerifier) CallOrder() []string {
+	fake.invocationsMutex.RLock()
+	defer fake.invocationsMutex.RUnlock()
+	order := make([]string, len(fake.callOrder))
+	copy(order, fake.callOrder)
+	return order
+}
+
 func (fake *CredentialVerifier) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
+	fake.callOrder = append(fake.callOrder, key)
 	if fake.invocations == nil {
 		fake.invocations = map[string][][]interface{}{}
 	}
