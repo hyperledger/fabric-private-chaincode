@@ -16,9 +16,9 @@ import (
 	"strings"
 
 	"github.com/hyperledger/fabric-private-chaincode/internal/attestation"
-	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/epid/pdo"
 	"github.com/hyperledger/fabric-private-chaincode/internal/attestation/simulation"
 	"github.com/hyperledger/fabric-private-chaincode/internal/protos"
+	"github.com/hyperledger/fabric-private-chaincode/sgx/attestation/epid/pdo"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/types/known/anypb"
 )
