@@ -110,7 +110,19 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: 'go.mod'
-          cache-dependency-path: '**/go.sum'
+          cache: false
+      # Each suite compiles other packages with other flags (-race, fpc_cgo,
+      # coverage) than the build job, so it keeps its own Go cache instead of
+      # the build job's. Only pushes (upstream: main) save it, and PRs read
+      # main's, so PR branches don't fill the repo's cache quota with copies.
+      - uses: actions/cache/restore@v6
+        id: gocache
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: go-${{ matrix.test }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: go-${{ matrix.test }}-
       - uses: actions/download-artifact@v8
         with:
           name: build
@@ -136,6 +148,13 @@ jobs:
           make -C utils/docker run-dev DOCKER_DEV_SKIP_BUILD=1 \
             GOMODCACHE_PATH="$(go env GOMODCACHE)" GOCACHE_PATH="$HOME/.cache/go-build" \
             DOCKER_DEV_OPTIONAL_CMD="env IS_CI_RUNNING=true make $target"
+      - uses: actions/cache/save@v6
+        if: github.event_name == 'push' && steps.gocache.outputs.cache-hit != 'true'
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ steps.gocache.outputs.cache-primary-key }}
 
   # The Go side with only Go and Docker, as a developer without the SGX
   # toolchain has it (e.g. on a Mac): no dev container, no FPC_CGO.
