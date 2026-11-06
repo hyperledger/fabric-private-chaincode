@@ -50,7 +50,6 @@ func Topology() []api.Topology {
 	fabricTopology := fabric.NewDefaultTopology()
 	fabricTopology.AddOrganizationsByName("Org1")
 	fpctopo.AddFPC(fabricTopology, ChaincodeName, chaincodeImageName, fpcOptions...)
-	fabricTopology.SetLogging("fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info", "")
 	fscTopology := fsc.NewTopology()
 
 	// client

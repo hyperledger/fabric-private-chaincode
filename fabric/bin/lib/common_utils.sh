@@ -2,6 +2,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+# Fabric processes (peer, orderer, the peer CLI, the client SDK) read their log
+# spec from here; unset, they log every gRPC connection step at info
+: "${FABRIC_LOGGING_SPEC:=grpc=error:comm.grpc=error:gossip=warning:info}"
+export FABRIC_LOGGING_SPEC
+
 if [[ -z "$TERM" ]] || [[ "$TERM" == 'dumb' ]]; then
     # to avoid 'tput: No value for $TERM and no -T specified' errors ..
     cred=

@@ -51,3 +51,26 @@ func TestErccImage(t *testing.T) {
 		t.Fatalf("got ercc image %q, want fpc/ercc-nosgx", img)
 	}
 }
+
+func TestEnableFPCSetsLogSpecOnlyOverTheDefault(t *testing.T) {
+	newTopology := func(spec string) *topology.Topology {
+		return &topology.Topology{
+			Consortiums: []*topology.Consortium{{Organizations: []string{"Org1"}}},
+			Channels:    []*topology.Channel{{Name: "testchannel"}},
+			Peers:       []*topology.Peer{{Name: "peer0", Organization: "Org1"}},
+			Logging:     &topology.Logging{Spec: spec},
+		}
+	}
+
+	top := newTopology("grpc=error:info")
+	EnableFPC(top)
+	if top.Logging.Spec != LogSpec {
+		t.Fatalf("got log spec %q over the FSC default, want %q", top.Logging.Spec, LogSpec)
+	}
+
+	top = newTopology("info")
+	EnableFPC(top)
+	if top.Logging.Spec != "info" {
+		t.Fatalf("got log spec %q, want the topology's own %q", top.Logging.Spec, "info")
+	}
+}
