@@ -725,11 +725,9 @@ handle_channel_join() {
     echo "Packaging ${ERCC_ID} ..."
     handle_lifecycle_ercc_package
     para
-    sleep 3
     echo "Installing ${ERCC_ID} ..."
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode install ${ERCC_PACKAGE}
     para
-    sleep 3
     echo "Querying installed chaincodes to find package id.."
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode queryinstalled >& ${ERCC_QUERY_INSTALL_LOG}
     para
@@ -738,20 +736,16 @@ handle_channel_join() {
     echo "Approve for my org"
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode approveformyorg -o ${ORDERER_ADDR} --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --package-id ${ERCC_PACKAGE_ID} --sequence ${ERCC_SEQUENCE}
     para
-    sleep 3
     echo "Checking for commit readiness"
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode checkcommitreadiness --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --sequence ${ERCC_SEQUENCE} --output json
     para
-    sleep 3
     echo "Committing chaincode definition...."
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode commit -o ${ORDERER_ADDR} --channelID ${CHAN_ID} --name ${ERCC_ID} --version ${ERCC_VERSION} --sequence ${ERCC_SEQUENCE}
     para
-    sleep 3
     # Note: Below is not crucial but they do display potentially useful info and the second also is liveness-test for ercc
     echo "Query commited chaincodes on the channel"
     try $RUN ${FABRIC_BIN_DIR}/peer lifecycle chaincode querycommitted --channelID ${CHAN_ID}
     para
-    sleep 3
 
     # - exit (otherwise main function will invoke operation again!)
     exit 0
