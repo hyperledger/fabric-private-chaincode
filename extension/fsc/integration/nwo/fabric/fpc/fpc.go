@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/netip"
 	"os"
 	"path/filepath"
@@ -121,9 +122,6 @@ func (n *Extension) PostRun(load bool) {
 		err := n.generateConnections(org.Name)
 		Expect(err).ToNot(HaveOccurred())
 	}
-
-	// Give some time to the enclave to get up and running...
-	time.Sleep(3 * time.Second)
 }
 
 func (n *Extension) deployChaincode(chaincode *fpctopo.Chaincode) {
@@ -150,8 +148,8 @@ func (n *Extension) deployChaincode(chaincode *fpctopo.Chaincode) {
 	n.runDockerContainers(chaincode, packageIDs)
 
 	nnetwork.CheckCommitReadinessUntilReady(n.network, chaincode.Channel, &chaincode.Chaincode, n.network.PeerOrgsByPeers(peers), peers...)
+	// CommitChaincode returns once every peer has the definition committed
 	nnetwork.CommitChaincode(n.network, chaincode.Channel, orderer, &chaincode.Chaincode, peers[0], peers...)
-	time.Sleep(10 * time.Second)
 	for i, peer := range peers {
 		nnetwork.QueryInstalledReferences(n.network,
 			chaincode.Channel, chaincode.Chaincode.Label, packageIDs[i],
@@ -260,7 +258,16 @@ func (n *Extension) runDockerContainers(chaincode *fpctopo.Chaincode, packageIDs
 		Expect(err).ToNot(HaveOccurred())
 		_, err = cli.ContainerStart(ctx, resp.ID, client.ContainerStartOptions{})
 		Expect(err).ToNot(HaveOccurred())
-		time.Sleep(3 * time.Second)
+		// the peer dials the chaincode server only on the first invocation, so
+		// wait here until it accepts connections
+		Eventually(func() error {
+			conn, err := net.DialTimeout("tcp", "127.0.0.1:"+port, time.Second)
+			if err == nil {
+				conn.Close()
+			}
+			return err
+		}, n.network.EventuallyTimeout, 100*time.Millisecond).Should(Succeed(),
+			"chaincode container [%s] does not accept connections on port %s", containerName, port)
 
 		dockerLogger := logging.MustGetLogger("fpc.container." + containerName)
 		go func() {
