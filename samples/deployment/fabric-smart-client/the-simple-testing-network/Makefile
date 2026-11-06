@@ -10,8 +10,8 @@ build:
 	go build -o tstn
 
 images: 
-	$(DOCKER) pull hyperledger/fabric-ccenv:2.5
-	$(DOCKER) image tag hyperledger/fabric-ccenv:2.5 hyperledger/fabric-ccenv:latest
+	$(DOCKER) pull hyperledger/fabric-ccenv:3.1
+	$(DOCKER) image tag hyperledger/fabric-ccenv:3.1 hyperledger/fabric-ccenv:latest
 	$(DOCKER) pull hyperledger/explorer:latest
 	$(DOCKER) pull hyperledger/explorer-db:latest
 
