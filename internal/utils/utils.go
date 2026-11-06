@@ -29,7 +29,7 @@ func Read(file string) []byte {
 }
 
 func IsFPCCompositeKey(comp string) bool {
-	return strings.HasPrefix(comp, sep) && strings.HasSuffix(comp, sep)
+	return len(comp) >= 2 && strings.HasPrefix(comp, sep) && strings.HasSuffix(comp, sep)
 }
 
 func TransformToFPCKey(comp string) string {
@@ -43,6 +43,21 @@ func SplitFPCCompositeKey(comp_str string) []string {
 	}
 	comp := strings.Split(comp_str, sep)
 	return comp[1 : len(comp)-1]
+}
+
+// compositeKeyCreator is the part of shim.ChaincodeStubInterface that ToFabricKey needs.
+type compositeKeyCreator interface {
+	CreateCompositeKey(objectType string, attributes []string) (string, error)
+}
+
+// ToFabricKey returns the ledger key for an FPC key. An FPC composite key is
+// turned back into a Fabric composite key; any other key is returned unchanged.
+func ToFabricKey(stub compositeKeyCreator, key string) (string, error) {
+	if !IsFPCCompositeKey(key) {
+		return key, nil
+	}
+	comp := SplitFPCCompositeKey(key)
+	return stub.CreateCompositeKey(comp[0], comp[1:])
 }
 
 func ValidateEndpoint(endpoint string) error {
