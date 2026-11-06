@@ -194,7 +194,7 @@ Besides the default target, there are also following make targets:
 - `clean`: remove most build artifacts (but no docker images)
 - `clobber`: remove all build artifacts including built docker images
 - `checks`: do license and linting checks on source
-- `unit-test`, `suite-<name>`, `suites`: run the unit tests, run one integration suite, list the suites
+- `unit-test`, `suite-<name>`, `suites`: run the unit tests, run one integration suite, list the suites CI runs on this side (natively, or with `FPC_CGO=1`)
 - `in-container`: run a target in the dev container (`TARGET=...`, default `all`)
 
 Also note that the file `config.mk` contains various defaults which

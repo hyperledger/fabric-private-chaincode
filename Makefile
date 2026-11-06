@@ -33,26 +33,40 @@ build clean clobber:
 	$(foreach DIR, $(SUB_DIRS), $(MAKE) -C $(DIR) $@ || exit;)
 
 # Tests are split into unit tests and suites. Each suite starts its own
-# network and runs as a separate CI job; `make suites` lists them for the CI
-# matrix. `make test` runs everything, sequentially, as before.
+# network and runs as a separate CI job; `make suites` lists the ones CI runs
+# on this side (natively, or in the dev container with FPC_CGO=1).
+#
+# The Go side (GO_UNIT_TEST_DIRS, GO_SUITES) needs only Go and Docker. The
+# C side (CGO_UNIT_TEST_DIRS, CGO_SUITES) needs the SGX toolchain, i.e. the
+# dev container: the C/C++ code, plus internal and ercc, whose fpc_cgo tests
+# (PDO crypto, attestation) only run there. go_echo, go_auction and go_kv are
+# in both: with FPC_CGO=1 they build the chaincode with ego, for SGX.
+# go_simulation and test_network run their chaincode without SGX either way.
+GO_UNIT_TEST_DIRS = internal ercc ecc client_sdk samples/application samples/chaincode utils
+CGO_UNIT_TEST_DIRS = protos sgx/common internal ercc sgx/ecc_enclave sgx/samples
+GO_SUITES = go_echo go_auction go_kv go_simulation test_network
+CGO_SUITES = auction echo kv deployment client_sdk go_echo go_auction go_kv crash irb
 ifeq ($(FPC_CGO),1)
-UNIT_TEST_DIRS = protos sgx/common internal ercc sgx/ecc_enclave ecc fabric client_sdk samples/application samples/chaincode sgx/samples utils
-SUITES = auction echo kv deployment client_sdk go_echo go_auction go_kv go_simulation crash irb test_network
+SUITES = $(CGO_SUITES)
 else
-# the ecc unit tests use the mock enclave, so they run without the C side
-UNIT_TEST_DIRS = internal ercc ecc client_sdk samples/application samples/chaincode utils
-SUITES =
+SUITES = $(GO_SUITES)
 endif
 
-.PHONY: test unit-test suites $(addprefix suite-,$(SUITES))
+.PHONY: test unit-test cgo-unit-test cpplinter suites $(addprefix suite-,$(GO_SUITES) $(CGO_SUITES))
 
+# natively unit tests only; with FPC_CGO=1 also every suite of both sides
 test:
 	$(MAKE) unit-test
-	$(foreach SUITE, $(SUITES), $(MAKE) suite-$(SUITE) || exit;)
+	$(if $(filter 1,$(FPC_CGO)),$(foreach SUITE, $(sort $(CGO_SUITES) $(GO_SUITES)), $(MAKE) suite-$(SUITE) || exit;))
 
-unit-test:
-	$(foreach DIR, $(UNIT_TEST_DIRS), $(MAKE) -C $(DIR) test || exit;)
+# with FPC_CGO=1 both sides; CI runs cgo-unit-test in the dev container and
+# unit-test natively
+unit-test: $(if $(filter 1,$(FPC_CGO)),cgo-unit-test)
+	$(foreach DIR, $(filter-out $(if $(filter 1,$(FPC_CGO)),$(CGO_UNIT_TEST_DIRS)),$(GO_UNIT_TEST_DIRS)), $(MAKE) -C $(DIR) test || exit;)
 	cd extension/fsc && $(GO) test ./...
+
+cgo-unit-test:
+	$(foreach DIR, $(CGO_UNIT_TEST_DIRS), $(MAKE) -C $(DIR) test || exit;)
 
 suites:
 	@echo $(SUITES)
@@ -92,14 +106,15 @@ license:
 	@echo "License: Running licence checks.."
 	@scripts/check_license.sh
 
-linter: gotools
+linter: gotools $(if $(filter 1,$(FPC_CGO)),cpplinter)
 	@echo "LINT: Running code checks for Go files..."
 	@./scripts/golinter.sh ${FPC_PATH}
-ifeq ($(FPC_CGO),1)
+	@echo "LINT completed."
+
+# CI runs it on its own in the dev container; linter runs it with FPC_CGO=1
+cpplinter:
 	@echo "LINT: Running code checks for Cpp/header files..."
 	@./scripts/cpplinter.sh ${FPC_PATH}
-endif
-	@echo "LINT completed."
 
 gotools:
 	# install go tools if not present

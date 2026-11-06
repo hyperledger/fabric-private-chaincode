@@ -92,7 +92,7 @@ jobs:
 
       - name: list tests
         id: tests
-        # the suites run in the dev container, which builds the C side
+        # the suites that need the SGX toolchain run in the dev container
         run: echo "tests=$(FPC_CGO=1 make -s suites | jq -Rc 'split(" ") | ["unit"] + .')" >> "$GITHUB_OUTPUT"
 
   test:
@@ -143,7 +143,8 @@ jobs:
 
       - name: test
         run: |
-          if [ "${{ matrix.test }}" = unit ]; then target='unit-test checks'; else target='suite-${{ matrix.test }}'; fi
+          # the Go unit tests, Go linter and license check run in native (unit)
+          if [ "${{ matrix.test }}" = unit ]; then target='cgo-unit-test cpplinter'; else target='suite-${{ matrix.test }}'; fi
           mkdir -p "$HOME/.cache/go-build"
           make -C utils/docker run-dev DOCKER_DEV_SKIP_BUILD=1 \
             GOMODCACHE_PATH="$(go env GOMODCACHE)" GOCACHE_PATH="$HOME/.cache/go-build" \
@@ -164,7 +165,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test: [unit, go_echo, go_auction, go_kv, go_simulation]
+        # `make suites` without FPC_CGO (scripts/check-fpc-cgo.sh pins it)
+        test: [unit, go_echo, go_auction, go_kv, go_simulation, test_network]
     steps:
       - uses: actions/checkout@v7
         with:
