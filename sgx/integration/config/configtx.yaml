@@ -283,7 +283,8 @@ Orderer: &OrdererDefaults
         # - 127.0.0.1:7050
 
     # Batch Timeout: The amount of time to wait before creating a batch.
-    BatchTimeout: 2s
+    # 1s, as in the FSC test networks: each committed invocation waits for it
+    BatchTimeout: 1s
 
     # Batch Size: Controls the number of messages batched into a block.
     # The orderer views messages opaquely, but typically, messages may
