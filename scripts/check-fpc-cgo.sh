@@ -42,8 +42,10 @@ out="$(SGX_MODE=HW make -n -C utils/docker run-dev DOCKER_DEV_SKIP_BUILD=1 DOCKE
 grep -q -- "--env FPC_CGO=1" <<<"${out}" || fail "run-dev does not pass FPC_CGO=1"
 grep -q -- "--env SGX_MODE=HW" <<<"${out}" || fail "run-dev does not pass SGX_MODE=HW"
 
-# 6. the suites (all need the dev container for now) only with FPC_CGO=1
-[ -z "$(make -s suites)" ] || fail "make suites without FPC_CGO lists: $(make -s suites)"
+# 6. the suites CI runs natively (its matrix in .github/workflows/test.yml
+# hardcodes this list) and in the dev container
+[ "$(make -s suites)" = "go_echo go_auction go_kv go_simulation test_network" ] ||
+    fail "make suites without FPC_CGO lists: $(make -s suites)"
 [ -n "$(FPC_CGO=1 make -s suites)" ] || fail "FPC_CGO=1 make suites lists nothing"
 
 echo "FPC_CGO OK"
