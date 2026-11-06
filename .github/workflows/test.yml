@@ -137,9 +137,9 @@ jobs:
           zstd -dc build.tar.zst | tar -xf -
           zstd -dc images.tar.zst | docker load
           rm build.tar.zst images.tar.zst
-          # the Fabric images (peer, orderer, ccenv, baseos, ca) that `make build`
-          # pulled in the build job; pulling is faster than shipping them
-          make -C fabric images
+          # the other suites run the Fabric binaries from the build outputs;
+          # deployment's peer also builds a plain Go chaincode in fabric-ccenv
+          if [ "${{ matrix.test }}" = deployment ]; then make -C fabric images; fi
 
       - name: test
         run: |

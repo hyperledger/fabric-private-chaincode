@@ -5,16 +5,12 @@ include $(TOP)/build.mk
 
 GO_TEST_DIRS=echo auction kv_test simulation
 
-deps: ercc images
+# no Fabric ccenv/baseos images: FSC needs them only for chaincode the peers
+# build themselves, and FPC chaincode runs as its own container
+deps: ercc
 
 ercc:
 	$(MAKE) -C $(TOP)/ercc docker
-
-images:
-	$(DOCKER) pull hyperledger/fabric-baseos:2.5
-	$(DOCKER) image tag hyperledger/fabric-baseos:2.5 hyperledger/fabric-baseos:latest
-	$(DOCKER) pull hyperledger/fabric-ccenv:2.5
-	$(DOCKER) image tag hyperledger/fabric-ccenv:2.5 hyperledger/fabric-ccenv:latest
 
 test: deps
 	$(foreach DIR, $(GO_TEST_DIRS), $(MAKE) -C $(DIR) || exit ;)
