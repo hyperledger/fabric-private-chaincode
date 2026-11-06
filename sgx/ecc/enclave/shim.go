@@ -101,11 +101,10 @@ func (r *stubRegistry) get(i int) *Stubs {
 func get_state(key *C.char, val *C.uint8_t, max_val_len C.uint32_t, val_len *C.uint32_t, ctx unsafe.Pointer) {
 	stubs := registry.get(*(*int)(ctx))
 
-	// check if composite key
-	key_str := C.GoString(key)
-	if utils.IsFPCCompositeKey(key_str) {
-		comp := utils.SplitFPCCompositeKey(key_str)
-		key_str, _ = stubs.shimStub.CreateCompositeKey(comp[0], comp[1:])
+	// if composite key, derive Fabric key
+	key_str, err := utils.ToFabricKey(stubs.shimStub, C.GoString(key))
+	if err != nil {
+		panic("error while getting state")
 	}
 
 	data, err := stubs.shimStub.GetState(key_str)
@@ -128,11 +127,10 @@ func get_state(key *C.char, val *C.uint8_t, max_val_len C.uint32_t, val_len *C.u
 func put_state(key *C.char, val unsafe.Pointer, val_len C.int, ctx unsafe.Pointer) {
 	stubs := registry.get(*(*int)(ctx))
 
-	// check if composite key
-	key_str := C.GoString(key)
-	if utils.IsFPCCompositeKey(key_str) {
-		comp := utils.SplitFPCCompositeKey(key_str)
-		key_str, _ = stubs.shimStub.CreateCompositeKey(comp[0], comp[1:])
+	// if composite key, derive Fabric key
+	key_str, err := utils.ToFabricKey(stubs.shimStub, C.GoString(key))
+	if err != nil {
+		panic("error while putting state")
 	}
 
 	if stubs.shimStub.PutState(key_str, C.GoBytes(val, val_len)) != nil {
@@ -188,14 +186,13 @@ func get_state_by_partial_composite_key(comp_key *C.char, values *C.uint8_t, max
 func del_state(key *C.char, ctx unsafe.Pointer) {
 	stubs := registry.get(*(*int)(ctx))
 
-	// check if composite key
-	key_str := C.GoString(key)
-	if utils.IsFPCCompositeKey(key_str) {
-		comp := utils.SplitFPCCompositeKey(key_str)
-		key_str, _ = stubs.shimStub.CreateCompositeKey(comp[0], comp[1:])
+	// if composite key, derive Fabric key
+	key_str, err := utils.ToFabricKey(stubs.shimStub, C.GoString(key))
+	if err != nil {
+		panic("error while deleting state")
 	}
 
-	err := stubs.shimStub.DelState(key_str)
+	err = stubs.shimStub.DelState(key_str)
 	if err != nil {
 		panic("error while deleting state")
 	}

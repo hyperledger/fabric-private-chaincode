@@ -59,12 +59,10 @@ func (v *ValidatorImpl) ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrw
 		}
 
 		for i := 0; i < len(rwset.Reads); i++ {
-			k := utils.TransformToFPCKey(rwset.Reads[i].Key)
-
-			// check if composite key, if so, derive Fabric key
-			if utils.IsFPCCompositeKey(k) {
-				comp := utils.SplitFPCCompositeKey(k)
-				k, _ = stub.CreateCompositeKey(comp[0], comp[1:])
+			// if composite key, derive Fabric key
+			k, err := utils.ToFabricKey(stub, utils.TransformToFPCKey(rwset.Reads[i].Key))
+			if err != nil {
+				return fmt.Errorf("error (%w) converting key %s", err, rwset.Reads[i].Key)
 			}
 
 			v, err := stub.GetState(k)
@@ -117,12 +115,10 @@ func (v *ValidatorImpl) ReplayReadWrites(stub shim.ChaincodeStubInterface, fpcrw
 	if rwset.GetWrites() != nil {
 		logger.Debugf("Replaying writes")
 		for _, w := range rwset.Writes {
-			k := utils.TransformToFPCKey(w.Key)
-
-			// check if composite key, if so, derive Fabric key
-			if utils.IsFPCCompositeKey(k) {
-				comp := utils.SplitFPCCompositeKey(k)
-				k, _ = stub.CreateCompositeKey(comp[0], comp[1:])
+			// if composite key, derive Fabric key
+			k, err := utils.ToFabricKey(stub, utils.TransformToFPCKey(w.Key))
+			if err != nil {
+				return fmt.Errorf("error (%w) converting key %s", err, w.Key)
 			}
 
 			if w.IsDelete {
