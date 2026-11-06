@@ -36,13 +36,22 @@ func Chaincodes(t *topology.Topology) []*Chaincode {
 	return ccs
 }
 
-// EnableFPC registers the Enclave Registry Chaincode (ERCC) on the topology.
+// LogSpec is the Fabric log spec of FPC test networks: FPC at debug, the gRPC
+// connection chatter at error.
+const LogSpec = "fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info"
+
+// EnableFPC registers the Enclave Registry Chaincode (ERCC) on the topology
+// and, unless the topology set its own log spec, sets it to LogSpec.
 // Safe to call multiple times; ERCC is registered only once.
 func EnableFPC(t *topology.Topology) {
 	for _, cc := range Chaincodes(t) {
 		if cc.Chaincode.Name == "ercc" {
 			return
 		}
+	}
+	// "grpc=error:info" is the spec fabric.NewDefaultTopology sets
+	if t.Logging != nil && t.Logging.Spec == "grpc=error:info" {
+		t.Logging.Spec = LogSpec
 	}
 	AddFPCAtOrgs(t, "ercc", ErccImage(), nil)
 }

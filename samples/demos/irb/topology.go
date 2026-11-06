@@ -21,7 +21,6 @@ func Topology() []api.Topology {
 	fabricTopology := fabric.NewDefaultTopology()
 	fabricTopology.AddOrganizationsByName("Org1", "Org2", "Org3")
 	fpctopo.AddFPC(fabricTopology, "experimenter-approval-service", "fpc/irb-experiment")
-	fabricTopology.SetLogging("fpc=debug:grpc=error:comm.grpc=error:gossip=warning:info", "")
 	fscTopology := fsc.NewTopology()
 
 	// data provider
