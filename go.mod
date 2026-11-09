@@ -14,12 +14,12 @@ require (
 	github.com/hyperledger/fabric-samples/asset-transfer-basic/chaincode-go v0.0.0-20260918092737-5789681b4f4d
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.14.0
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/ginkgo/v2 v2.33.1
+	github.com/onsi/ginkgo/v2 v2.34.0
 	github.com/onsi/gomega v1.44.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
-	golang.org/x/sync v0.24.0
+	golang.org/x/sync v0.25.0
 	golang.org/x/tools v0.52.0
 	google.golang.org/grpc v1.85.0
 	google.golang.org/protobuf v1.36.12
@@ -54,9 +54,9 @@ require (
 	github.com/pelletier/go-toml/v2 v2.4.3 // indirect
 	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
-	github.com/spf13/pflag v1.0.10 // indirect
+	github.com/spf13/pflag v1.1.0 // indirect
 	github.com/stretchr/objx v0.8.0 // indirect
-	github.com/tidwall/gjson v1.20.0 // indirect
+	github.com/tidwall/gjson v1.20.1 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
 	github.com/tidwall/pretty v1.2.2 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
@@ -68,7 +68,7 @@ require (
 	golang.org/x/exp/typeparams v0.0.0-20261014143641-f0251eb4aa3e // indirect
 	golang.org/x/mod v0.42.0 // indirect
 	golang.org/x/net v0.62.0 // indirect
-	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/sys v0.50.0 // indirect
 	golang.org/x/telemetry v0.0.0-20261021172232-6cd571d43fbb // indirect
 	golang.org/x/text v0.43.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20261026165753-2ffab32bce7e // indirect
