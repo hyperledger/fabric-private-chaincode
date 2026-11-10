@@ -1,0 +1,54 @@
+# Copyright IBM Corp. All Rights Reserved.
+# Copyright 2020 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Docker Compose file for FPC Echo Chaincode (ECC) containers
+
+version: '2.1'
+
+networks:
+  fablo-network:
+    external: true
+    name: fablo_default
+
+services:
+  echo-go.peer0.org1.example.com:
+    container_name: echo-go.peer0.org1.example.com
+    image: fpc/echo-go:${CC_VER}
+    environment:
+      - CHAINCODE_PKG_ID=${CC_PKG_ID_ORG1}
+      - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
+      - FABRIC_LOGGING_SPEC=chaincode=debug:ecc=debug
+      - CORE_CHAINCODE_ID_NAME=${CC_PKG_ID_ORG1}
+      - SGX_MODE=${SGX_MODE:-HW}
+    devices:
+      - /dev/sgx_enclave:/dev/sgx_enclave
+      - /dev/sgx_provision:/dev/sgx_provision
+    volumes:
+      - /var/run/aesmd:/var/run/aesmd
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric-private-chaincode/samples/chaincode/echo-go
+    networks:
+      - fablo-network
+    restart: unless-stopped
+
+  echo-go.peer0.org2.example.com:
+    container_name: echo-go.peer0.org2.example.com
+    image: fpc/echo-go:${CC_VER}
+    environment:
+      - CHAINCODE_PKG_ID=${CC_PKG_ID_ORG2}
+      - CHAINCODE_SERVER_ADDRESS=0.0.0.0:9999
+      - FABRIC_LOGGING_SPEC=chaincode=debug:ecc=debug
+      - CORE_CHAINCODE_ID_NAME=${CC_PKG_ID_ORG2}
+      - SGX_MODE=${SGX_MODE:-HW}
+    devices:
+      - /dev/sgx_enclave:/dev/sgx_enclave
+      - /dev/sgx_provision:/dev/sgx_provision
+    volumes:
+      - /var/run/aesmd:/var/run/aesmd
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric-private-chaincode/samples/chaincode/echo-go
+    networks:
+      - fablo-network
+    restart: unless-stopped
+
+# Made with Bob
