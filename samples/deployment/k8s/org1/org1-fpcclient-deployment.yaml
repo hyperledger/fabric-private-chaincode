@@ -67,6 +67,9 @@ spec:
             - mountPath: /opt/gopath/src/github.com/hyperledger/fabric-private-chaincode/
               name: fpc-claim
           workingDir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+#      nodeSelector:
+#        kubernetes.io/arch: amd64
+# test to see if minikube can start a docker amd64 image even though it is running arm64
       restartPolicy: Always
       volumes:
         - name: fpcclient-claim3

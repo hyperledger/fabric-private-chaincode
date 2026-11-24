@@ -9,8 +9,8 @@ set -euo pipefail
 ERCC=ercc-peer0-$ORG
 FPCCC=fpccc-peer0-$ORG
 
-peer lifecycle chaincode install packages/$ERCC.tgz
-peer lifecycle chaincode install packages/$FPCCC.tgz
+peer lifecycle chaincode install packages/$ERCC.tar.gz
+peer lifecycle chaincode install packages/$FPCCC.tar.gz
 peer lifecycle chaincode queryinstalled
 
 ERCC_PKG_ID=$(peer lifecycle chaincode queryinstalled | grep ercc | awk '{print $3}' | sed 's/.$//')
