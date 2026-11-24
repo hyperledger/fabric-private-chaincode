@@ -1,0 +1,43 @@
+global:
+  fabricVersion: 2.4.7
+  tls: true
+  engine: docker
+  monitoring:
+    loglevel: info
+
+orgs:
+  - organization:
+      name: Orderer
+      domain: orderer.example.com
+    orderers:
+      - groupName: group1
+        type: solo
+        instances: 1
+
+  - organization:
+      name: Org1
+      domain: org1.example.com
+    peer:
+      instances: 1
+      db: LevelDb
+
+  - organization:
+      name: Org2
+      domain: org2.example.com
+    peer:
+      instances: 1
+      db: LevelDb
+
+channels:
+  - name: mychannel
+    orgs:
+      - name: Org1
+        peers:
+          - peer0
+      - name: Org2
+        peers:
+          - peer0
+
+chaincodes: []
+
+# Made with Bob

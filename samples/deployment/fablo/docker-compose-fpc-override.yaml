@@ -1,0 +1,32 @@
+# Copyright IBM Corp. All Rights Reserved.
+# Copyright 2020 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# This file provides FPC-specific Docker Compose overrides for the Fablo-generated network.
+# It adds SGX device support and FPC environment variables to peer containers.
+
+version: '2.1'
+
+services:
+  peer0.org1.example.com:
+    devices:
+      - /dev/sgx_enclave:/dev/sgx_enclave
+      - /dev/sgx_provision:/dev/sgx_provision
+    environment:
+      - CORE_PEER_FPC_ENABLED=true
+      - SGX_MODE=${SGX_MODE:-HW}
+    volumes:
+      - /var/run/aesmd:/var/run/aesmd
+
+  peer0.org2.example.com:
+    devices:
+      - /dev/sgx_enclave:/dev/sgx_enclave
+      - /dev/sgx_provision:/dev/sgx_provision
+    environment:
+      - CORE_PEER_FPC_ENABLED=true
+      - SGX_MODE=${SGX_MODE:-HW}
+    volumes:
+      - /var/run/aesmd:/var/run/aesmd
+
+# Made with Bob
